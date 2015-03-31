@@ -1,0 +1,22 @@
+[31-03-2015 06:00:59][ERR] Error: Failed to lookup view "error" in views directory "F:\bibliotech\views"
+    at EventEmitter.app.render (F:\bibliotech\node_modules\express\lib\application.js:555:17)
+    at ServerResponse.res.render (F:\bibliotech\node_modules\express\lib\response.js:938:7)
+    at F:\bibliotech\routes\index.js:50:51
+    at Layer.handle [as handle_request] (F:\bibliotech\node_modules\express\lib\router\layer.js:82:5)
+    at next (F:\bibliotech\node_modules\express\lib\router\route.js:110:13)
+    at Route.dispatch (F:\bibliotech\node_modules\express\lib\router\route.js:91:3)
+    at Layer.handle [as handle_request] (F:\bibliotech\node_modules\express\lib\router\layer.js:82:5)
+    at F:\bibliotech\node_modules\express\lib\router\index.js:267:22
+    at Function.proto.process_params (F:\bibliotech\node_modules\express\lib\router\index.js:321:12)
+    at next (F:\bibliotech\node_modules\express\lib\router\index.js:261:10)
+[31-03-2015 06:01:27][ERR] Error: Failed to lookup view "error" in views directory "F:\bibliotech\views"
+    at EventEmitter.app.render (F:\bibliotech\node_modules\express\lib\application.js:555:17)
+    at ServerResponse.res.render (F:\bibliotech\node_modules\express\lib\response.js:938:7)
+    at F:\bibliotech\routes\index.js:50:51
+    at Layer.handle [as handle_request] (F:\bibliotech\node_modules\express\lib\router\layer.js:82:5)
+    at next (F:\bibliotech\node_modules\express\lib\router\route.js:110:13)
+    at Route.dispatch (F:\bibliotech\node_modules\express\lib\router\route.js:91:3)
+    at Layer.handle [as handle_request] (F:\bibliotech\node_modules\express\lib\router\layer.js:82:5)
+    at F:\bibliotech\node_modules\express\lib\router\index.js:267:22
+    at Function.proto.process_params (F:\bibliotech\node_modules\express\lib\router\index.js:321:12)
+    at next (F:\bibliotech\node_modules\express\lib\router\index.js:261:10)

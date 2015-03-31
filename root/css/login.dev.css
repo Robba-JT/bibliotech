@@ -1,0 +1,73 @@
+* { box-sizing:border-box }
+
+html, body {
+    background-color: #E6E6E6;
+    background-image: url("../../images/background_login.jpg");
+    background-size: 100% 100%;
+    background-attachment: fixed;
+    margin: 0;
+    padding: 0;
+    color: ghostwhite;
+    font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+}
+
+body > div {
+    background: url("../../images/black_patch.jpg");
+    width: 600px;
+    max-width: 96%;
+    margin: 2%;
+    padding: 5px;
+    border-radius: 10px;
+    position: relative;
+    opacity: .9;
+}
+
+form h3 {
+    text-decoration: underline;
+}
+
+form input {
+    margin: 5px;
+    padding: 5px;
+}
+
+[type=email], [type=text], [type=password] {
+    display: block;
+    width: 90%;
+    border: 1px black solid;
+    border-radius: 5px;
+}
+
+label, [type=checkbox] {
+    margin: 5px;
+    display: inline;
+    cursor: pointer;
+}
+
+[type=button], [type=submit] {
+    font-weight: bold;
+    border-radius: 5px;
+    min-width: 20%;
+    cursor: pointer;
+}
+
+[type=button]:hover, [type=submit]:hover {
+    text-decoration: underline;
+    font-style: italic;
+}
+
+[type=submit] {
+    float: right;
+}
+
+[new=true] {
+    display: none;
+}
+
+#gSignIn {
+    margin-left: 5px !important;
+}
+
+.error {
+    border: 4px #CB4747 solid;
+}

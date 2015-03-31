@@ -1,0 +1,21 @@
+<div id="viewer" style="width: 99%; height: 99%"></div>
+<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+<script type="text/javascript">
+    google.load("books", "0", { language: "fr" });
+    var noPreview = function () {
+            document.getElementById("viewer").innerHTML = "<h2 style='color: white; text-align: center;'><BR>Aucun aper\xe7u disponible.</h2>";
+        },
+        removeFooter = function () {
+            var viewer = document.getElementById("viewer").children,
+                footer = viewer[0].children;
+
+            footer[footer.length-1].remove();
+        },
+        initialize = function () {
+            var viewer = new google.books.DefaultViewer(document.getElementById("viewer"),{ showLinkChrome: !1 });
+            viewer.load("{{bookid}}", noPreview, removeFooter);
+        };
+
+    google.setOnLoadCallback(initialize);
+    document.oncontextmenu = function () { return !1; };
+</script>

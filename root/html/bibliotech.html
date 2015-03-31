@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="fr">
+    <head>
+        <title id="Description">Bibliotech</title>
+        <meta name="author" content="Julien Tassin"/>
+        <meta name="description" content="Bibliotech">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+        <link rel="stylesheet" href="../css/min/bibliotech.css" type="text/css"/>
+    </head>
+    <body>
+		<div id="waiting">
+            <img src="images/iconmonstr-loading-12-icon-white.png" width="256" height="256" class="roundIcon" />
+        </div>
+
+        <div id="waitingAnim">
+            <div id="one"></div>
+            <div id="two"></div>
+            <div id="three"></div>
+            <div id="four"></div>
+            <div id="five"></div>
+        </div>
+
+        <div class="maskednavbar navbar">
+            <div id="maskedToggle" class="togglenavbar">
+                <img alt="Afficher le menu - Ctrl + M" src="images/iconmonstr-menu-2-icon-alt.png" width="32" height="32" />
+            </div>
+        </div>
+
+        <div id="maskedorder" class="maskednavbar navbar">
+            <div id="maskedOrder" class="notdisplayed saveorder togglenavbar">
+                <img alt="Enregistrer la disposition" src="images/iconmonstr-save-9-icon-alt.png" width="32" height="32" />
+            </div>
+        </div>
+
+        <div id="navbar" class="navbar notdisplayed">
+            <div id="affichToggle" class="togglenavbar">
+                <img alt="Masquer le menu - Ctrl + M" blur="iconmonstr-menu-2-icon-white.png" blur="iconmonstr-menu-2-icon-white.png" hover="iconmonstr-menu-2-icon-black.png" width="32" height="32" />
+            </div>
+            <div id="logout">
+                <img alt="Logout - Ctrl + L" blur="eject-icon-white.png" hover="eject-icon-black.png" width="32" height="32" />
+            </div>
+            <div id="recherche" class="action reqBlock">
+                <img alt="Recherche - Ctrl + R" active="iconmonstr-magnifier-5-icon-alt.png" blur="iconmonstr-magnifier-5-icon-white.png" hover="iconmonstr-magnifier-5-icon-black.png" width="32" height="32" />
+            </div>
+            <div id="profil" class="action">
+                <img alt="Profil - Ctrl + P" blur="iconmonstr-user-icon-white.png" hover="iconmonstr-user-icon-black.png" width="32" height="32" />
+            </div>
+            <div id="collection" class="action">
+                <img alt="Bibliothèque - Ctrl + B" active="iconmonstr-layer-20-icon-alt.png" blur="iconmonstr-layer-20-icon-white.png" hover=iconmonstr-layer-20-icon-black.png width="32" height="32" />
+            </div>
+            <div id="tags" class="action notdisplayed">
+                <img alt="Tags" blur="iconmonstr-tags-6-icon-white.png" hover="iconmonstr-tags-6-icon-black.png" width="32" height="32" />
+            </div>
+            <div id="tris" class="action">
+                <img alt="Tri" blur="iconmonstr-sort-2-icon-white.png" hover="iconmonstr-sort-2-icon-black.png" width="32" height="32" />
+            </div>
+            <div id="notifications" class="action notdisplayed">
+                <img alt="Notifications" blur="iconmonstr-info-7-icon-white.png" hover="iconmonstr-info-7-icon-black.png" width="32" height="32" />
+                <span class="notifications notdisplayed"></span>
+            </div>
+            <div class="action filtre">
+                <input type="search" id="filtre" autocomplete="off" />
+            </div>
+            <div id="newbook" class="action">
+                <img alt="Ajouter un livre" blur="iconmonstr-note-25-white.png" hover="iconmonstr-note-25-black.png" width="32" height="32" />
+            </div>
+            <div id="contact">
+                <img alt="Informations - Ctrl + I" blur="iconmonstr-email-12-icon-white.png" hover="iconmonstr-email-12-icon-black.png" width="32" height="32" />
+            </div>
+            <div class="picture notdisplayed"></div>
+            <div id="affichOrder" class="saveorder notdisplayed">
+                <img alt="Enregistrer la disposition" src="images/iconmonstr-save-9-icon-white.png" width="32" height="32" />
+            </div>
+        </div>
+
+<!--        <div id="cloud">
+            <img id="closeCloud" src="images/iconmonstr-x-mark-3-icon-alt.png" alt="Fermer" width="64" height="64" />
+        </div>-->
+
+<!--        <div id="sorts" class="deroulant notdisplayed"></div>
+        <div id="notifs" class="deroulant notdisplayed"></div>-->
+
+<!--        <div id="contactWindow" class="jqxwindow">
+            <div id="contactWindowHeader" class="jqxheader">
+                <div class="windowheader">Contactez-nous!</div>
+            </div>
+            <div id="contactWindowContent">
+                <img id="google" alt="Google+" src="images/iconmonstr-google-plus-3-icon-grey.png" width="64" height="64" />
+                <img id="facebook" alt="Facebook" src="images/iconmonstr-facebook-3-icon-grey.png" width="64" height="64" />
+                <img id="email" alt="Mail" src="images/iconmonstr-email-8-icon-grey.png" width="64" height="64" />
+            </div>
+        </div> -->
+
+<!--        <div id="confirmWindow" class="jqxwindow">
+            <div id="confirmWindowHeader" class="jqxheader">
+                <div class="windowheader">Avertissement</div>
+            </div>
+            <div id="confirmWindowContent">
+                <div id="confirmMsg"></div>
+                <button id="confirmOk">Valider</button>
+                <button id="confirmNok">Annuler</button>
+            </div>
+        </div> -->
+
+<!--        <div id="recommandWindow" class="jqxwindow">
+            <div id="recommandWindowHeader" class="jqxheader">
+                <div class="windowheader">Recommander&nbsp;&agrave;&nbsp;un&nbsp;ami</div>
+            </div>
+            <div id="recommandWindowContent">
+                <form role="form" id="recommandSearch">
+                    <input id="recommandinput" type="email" autocomplete="off" oninput="checkValid(this)" onpropertychange="checkValid(this)" placeholder="Email"/>
+                    <input type="submit" id="submitrecommand" value="Valider" />
+                </form>
+                <br />
+                <div>Si&nbsp;votre&nbsp;ami&nbsp;est&nbsp;inscrit,&nbsp;il&nbsp;recevra&nbsp;une&nbsp;notification&nbsp;de&nbsp;votre&nbsp;part.&nbsp;<BR>Dans&nbsp;le&nbsp;cas&nbsp;contraire,&nbsp;il&nbsp;recevra&nbsp;par&nbsp;mail&nbsp;une&nbsp;invitation&nbsp;au&nbsp;site.</div>
+            </div>
+        </div> -->
+
+<!--		<div id="searchWindow" class="jqxwindow">
+            <div id="searchWindowHeader" class="jqxheader">
+                <div class="windowheader">Recherche</div>
+            </div>
+            <div id="searchWindowContent">
+                <form role="form" id="formSearch">
+                    <div class="search">
+                        <input id="searchinput" autocomplete="on" oninput="checkValid(this)" onpropertychange="checkValid(this)" placeholder="Rechercher"/>
+                        <input type="submit" id="submitsearch" value="Lancer" />
+                    </div>
+                    <div class="notdisplayed" id="recommand4u">
+                        <div>Recommand&eacute;s&nbsp;pour&nbsp;vous</div>
+                    </div>
+                    <div id="searchby">
+                        <h3>Recherche&nbsp;par:</h3>
+                        <div search="all">Tous</div>
+                        <div search="isbn">ISBN</div>
+                        <div search="title">Titre</div>
+                        <div search="authors">Auteur</div>
+                        <div search="publisher">Editeur</div>
+                    </div>
+                    <div id="langage">
+                        <h3>Langue:</h3>
+                        <div langage="all">Toutes</div>
+                        <div langage="fr">Français</div>
+                        <div langage="en">Anglais</div>
+                    </div>
+                </form>
+            </div>
+		</div>-->
+
+<!--		<div id="profilWindow" class="jqxwindow">
+            <div id="profilWindowHeader" class="jqxheader">
+                <div class="windowheader">Profil</div>
+            </div>
+            <div id="profilWindowContent">
+                <form role="form" id="formProfil">
+                    <div>
+                        <input type="email" id="mail" value="" class="text-input" />
+                        <input type="submit" value="Valider" id="sendButton"/>
+                    </div>
+                    <div>
+                        <input type="text" oninput="checkValid(this)" onpropertychange="checkValid(this)" id="name" autocomplete="off" placeholder="Nom" />
+                    </div>
+                    <div>
+                        <input class="notdisplayed" type="password" oninput="checkValid(this)" onpropertychange="checkValid(this)" id="pwd" placeholder="Mot de passe" />
+                    </div>
+                    <div id="errPwd" class="errMsg">Mot&nbsp;de&nbsp;passe&nbsp;invalide!</div>
+                    <div class="googleSync notdisplayed">
+                        <div id="googleSignIn">connexion&nbsp;Google</div>
+                    </div>
+                    <div class="googleSync notdisplayed">
+                        <div id="googleSync">synchronisation&nbsp;automatique&nbsp;Google</div>
+                    </div>
+                    <div class="googleSync notdisplayed">
+                        <div><input type="button" value="Importer maintenant" id="importNow" /></div>
+                        <div><input type="button" value="Exporter maintenant" id="exportNow" /></div>
+                    </div>
+                    <div class="profilbutton">
+                        <div>
+                            <input class="notdisplayed" type="button" value="Modifier mot de passe" id="changePwd" />
+                        </div>
+                        <div id="delete">Supprimer&nbsp;mon&nbsp;compte</div>
+                    </div>
+                    <div>
+                        <input class="notdisplayed" type="password" oninput="checkValid(this)" onpropertychange="checkValid(this)" id="newPwd" placeholder="Nouveau mot de passe"/>
+                    </div>
+                    <div>
+                        <input class="notdisplayed" type="password" oninput="checkValid(this)" onpropertychange="checkValid(this)" id="confirmPwd" placeholder="Confirmez votre mot de passe" />
+                    </div>
+                    <div>Nombre&nbsp;de&nbsp;connexion:&nbsp;<span id="nbConnect"></span></div>
+                    <div>Nombre&nbsp;de&nbsp;livres enregistrés:&nbsp;<span id="nbBooks"></span></div>
+                </form>
+            </div>
+		</div>-->
+
+<!--        <div id="contextMenu" class="jqxwindow">
+            <div class="navgrid">
+                <div class="navrow">
+                    <div class="navcell"></div>
+                    <div class="navcell"><img nav="top" src="images/iconmonstr-arrow-24-icon-top-white.png" width="32" height="32" /></div>
+                    <div class="navcell"></div>
+                </div><div class="navrow">
+                    <div class="navcell"><img nav="left" src="images/iconmonstr-arrow-24-icon-left-white.png" width="32" height="32"/></div>
+                    <div class="navcell"></div>
+                    <div class="navcell"><img nav="right" src="images/iconmonstr-arrow-24-icon-right-white.png" width="32" height="32"/></div>
+                </div><div class="navrow">
+                    <div class="navcell"></div>
+                    <div class="navcell"><img nav="bottom" src="images/iconmonstr-arrow-24-icon-bottom-white.png" width="32" height="32"/></div>
+                    <div class="navcell"></div>
+                </div>
+            </div>
+            <ul>
+                <li type="separator"></li>
+                <li>Actions&nbsp;
+                    <ul>
+                        <li actclick="sendFriend">Recommander&nbsp;</li>
+                        <li actclick="previewDetail">Preview&nbsp;</li>
+                        <li actclick="googleBooks">Google&nbsp;Books&nbsp;</li>
+                        <li actclick="connexSearch">Recherche&nbsp;connexe&nbsp;</li>
+
+                    </ul>
+                </li>
+                <li actclick="linksearch">Rechercher&nbsp;<span id="selection"></span></li>
+                <li actclick="upload">T&eacute;l&eacute;charger&nbsp;une&nbsp;couverture&nbsp;</li>
+                <li actclick="fullscreen">Plein&nbsp;&Eacute;cran&nbsp;</li>
+                <li actclick="addDetail">Ajouter&nbsp;</li>
+                <li actclick="updateDetail">Enregistrer&nbsp;</li>
+                <li type="separator"></li>
+                <li actclick="closeDetail">Fermer</li>
+            </ul>
+        </div>-->
+
+<!--        <div id="detailWindow" class="jqxwindow">
+            <div id="detailWindowHeader" class="jqxheader"></div>
+            <div id="detailWindowContent">
+                <div class="detailCover">
+                    <div id="detailCover"></div>
+                    <div class="imgAction">
+                        <div id="upload" actclick="upload" class="detailbutton"><img alt="Upload" width="48" height="48"/></div>
+                        <div id="fullscreen" actclick="fullscreen" class="detailbutton"><img alt="Fullscreen" width="48" height="48"/></div>
+                    </div>
+                    <div id="uploadHidden">
+                        <label for="exampleInputFile">Upload&nbsp;une&nbsp;couverture</label>
+                        <input type="file" id="uploadForm" accept="image/*" />
+                        <input type="hidden" id="bookId"/>
+                    </div>
+                </div>
+                <div class="detailContent">
+                    <div class="volumeInfo">
+                        <div class="label" for="title">Titre:</div>
+                        <div class="direct link" id="title"></div>
+                    </div>
+                    <div class="volumeInfo">
+                        <div class="direct link" id="subtitle"></div>
+                    </div>
+                    <div class="volumeInfo">
+                        <div class="label" for="authors">Auteur:</div>
+                        <div class="direct link" id="authors"></div>
+                    </div>
+                    <div class="volumeInfo">
+                        <div class="label" for="publisher">Edit&eacute;&nbsp;par:</div>
+                        <div><span class="direct link" id="publisher"></span><span class="direct" id="publishedDate"></span></div>
+                    </div>
+                    <div class="volumeInfo">
+                        <div class="label" for="pageCount">Nombre&nbsp;de&nbsp;pages:</div>
+                        <div class="direct" id="pageCount"></div>
+                    </div>
+                    <div class="volumeInfo">
+                        <div class="label" for="ISBNs">ISBNs:</div>
+                        <div><span class="direct link" id="isbn10"></span>&nbsp;/&nbsp;<span class="direct link" id="isbn13"></span></div>
+                    </div>
+                    <div class="volumeInfo">
+                        <div class="label" for="categories">Cat&eacute;gories:</div>
+                        <div class="direct" id="categories"></div>
+                    </div>
+                    <div class="volumeInfo">
+                        <div class="label" for="detailDescription">Description:</div>
+                        <div><span id="description" class="direct"></span><span class="toolong">Afficher&nbsp;la&nbsp;suite</span></div>
+                    </div>
+                    <div class="inCollection">
+                        <div class="label" for="tags">Tags:</div>
+                        <div>
+                            <form role="form" id="tagForm">
+                                <input id="tagText" type="text" placeholder="Nouveau tag" maxlength="20"/>
+                                <input type="submit" value="Ajouter" />
+                            </form>
+                        </div>
+                    </div>
+                    <div class="inCollection">
+                        <div></div>
+                        <div id="userTags"></div>
+                    </div>
+                    <div class="inCollection">
+                        <div class="label" for="note">Note:</div>
+                        <div id="userNote" value="">
+                            <img note=1 />
+                            <img note=2 />
+                            <img note=3 />
+                            <img note=4 />
+                            <img note=5 />
+                        </div>
+                    </div>
+                    <div class="inCollection">
+                        <div class="label" for="userComment">Commentaires:</div>
+                        <div>
+                            <textarea id="userComment" rows="5"></textarea>
+                            <div id="userDate"></div>
+                        </div>
+                    </div>
+                    <div class="comments">
+                        <div class="label" for="avis">Avis&nbsp;des&nbsp;lecteurs:</div>
+                        <div id="comments"></div>
+                    </div>
+                    <form id="preview" target="iPreview" method="POST" action="/preview"><input type="hidden" id="bookid" name="bookid"/></form>
+                </div>
+            </div>
+        </div>-->
+
+<!--        <div id="previewWindow" class="jqxwindow">
+            <div id="previewWindowHeader"></div>
+            <div id="previewWindowContent">
+                <iframe id="iPreview" name="iPreview" seamless=true></iframe>
+            </div>
+        </div>-->
+
+<!--        <div id="addWindow" class="jqxwindow">
+            <div id="addWindowHeader">
+                <div class="windowheader">Ajouter&nbsp;un&nbsp;livre</div>
+            </div>
+            <div id="addWindowContent">
+                <form role="form" id="formNew">
+                    <div>
+                        <div class="label" for="title">Titre:</div>
+                        <div class="input"><input id="newTitle" oninput="checkValid(this)" onpropertychange="checkValid(this)" type="text" field="title" size="70" maxLength="100" required/></div>
+                    </div>
+                    <div>
+                        <div class="label" for="authors">Auteurs:</div>
+                        <div class="input"><input type="text" field="authors" size="70" maxLength="100"/></div>
+                    </div>
+                    <div>
+                        <div class="label" for="publisher">Editeur:</div>
+                        <div class="input"><input type="text" field="publisher" size="70" maxLength="100"/></div>
+                    </div>
+                    <div>
+                        <div class="label" for="publishedDate">Date&nbsp;de&nbsp;publication:</div>
+                        <div class="input"><input type="date" field="publishedDate"/></div>
+                    </div>
+                    <div>
+                        <div class="label" for="pageCount">Nombre&nbsp;de&nbsp;pages:</div>
+                        <div class="input"><input type="number" field="pageCount" size="5" maxLength="5"/></div>
+                    </div>
+                    <div>
+                        <div class="label" for="isbn10">Isbn&nbsp;10:</div>
+                        <div class="input"><input type="text" field="isbn10" size="10" maxLength="10"/></div>
+                    </div>
+                    <div>
+                        <div class="label" for="isbn13">Isbn&nbsp;13:</div>
+                        <div class="input"><input type="text" field="isbn13" size="13" maxLength="13"/></div>
+                    </div>
+                    <div>
+                        <div class="label" for="description">Description:</div>
+                        <div class="input"><textarea field="description" cols="40" rows="5"></textarea></div>
+                    </div>
+                    <div class="submitnew">
+                        <input type="submit" id="submitnew" value="Valider" />
+                    </div>
+                </form>
+            </div>
+        </div>-->
+
+        <div class="template notdisplayed">
+            <div id="tempCell" draggable="true">
+                <div class="title"></div>
+                <!--<div class="infos">-->
+                    <div class="cover">
+                        <button class="bouton ajouter">Ajouter</button>
+                        <button class="bouton supprimer">Supprimer</button>
+                    </div>
+                <!--</div>-->
+                <div class="authors"></div>
+            </div>
+
+            <div id="tempTag">
+                <button class="libelle"></button>
+                <button><b>x</b></button>
+            </div>
+
+            <div id="tempComment">
+                <div><span id="commentAuthor"></span>&nbsp;-&nbsp;le&nbsp;<span id="commentDate"></span>.&nbsp;Note:&nbsp;<span id="commentNote"></span></div>
+                <cite><br /><span id="commentComment"></span><span class="toolong">Afficher&nbsp;la&nbsp;suite</span></cite>
+                <hr />
+            </div>
+
+            <div id="tempNote">
+                <img id="zero" src="images/star_nok.png" width="48" height="48" />
+                <img id="plus" src="images/star_ok.png" width="48" height="48" />
+            </div>
+        </div>
+        <div id="dock"></div>
+        <div id="footer" class="notdisplayed"><img src="images/iconmonstr-arrow-31-top-alt.png" alt="Back to Top"/></div>
+        <script src="http://www.google.com/jsapi"></script>
+        <script src="js/min/bibliotech.lib.js"></script>
+        <script src="js/min/bibliotech.js"></script>
+    </body>
+</html>

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="fr">
+    <head>
+        <title id="Description">Bibliotech Login</title>
+        <meta name="author" content="Julien Tassin"/>
+        <meta name="description" content="Bibliotech">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+        <link rel="stylesheet" href="../css/min/login.css" type="text/css" />
+    </head>
+    <body>
+        <div>
+            <form>
+                <input type="email" name="login" placeholder="someone@mail.com" value="" required="true" />
+                <input type="text" name="name" autocomplete="off" placeholder="Nom" new="true" />
+                <input type="password" name="pwd" placeholder="Mot de passe" required="true" />
+                <input type="password" id="pwd" placeholder="Confirmez votre mot de passe" new="true" />
+                <!--<BR><label for="active">Garder ma session active</label><input type="checkbox" name="active" />-->
+                <BR><input type="button" value="Créer Compte" /><input type="submit" value="Connexion"/>
+            </form>
+            <span id="gSignIn"></span>
+        </div>
+        <script src="https://apis.google.com/js/client:platform.js" defer></script>
+        <script src="js/min/login.lib.js"></script>
+        <script src="js/min/login.js"></script>
+    </body>
+</html>
