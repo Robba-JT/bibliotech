@@ -33,8 +33,8 @@ module.exports.BooksAPI = BooksAPI = function (db) {
                 "fields": "items(id, etag, accessInfo(accessViewStatus), volumeInfo(title, authors, description, imageLinks))",
                 "projection": "lite",
                 "order": "relevance",
-                "printType": "books"/*,
-                "key": "AIzaSyA0t8hJ9KrKfTBKVBBZq5gXIbg7vuh5yHk"*/
+                "printType": "books",
+                "key": "AIzaSyA0t8hJ9KrKfTBKVBBZq5gXIbg7vuh5yHk"
             },
             "import": {
                 "maxResults": 40,
