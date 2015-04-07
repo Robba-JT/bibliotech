@@ -25,24 +25,24 @@ module.exports.BooksAPI = BooksAPI = function (db) {
         Params = {
             "searchOne": {
                 "fields": "id,etag, accessInfo(accessViewStatus),volumeInfo(title, subtitle, authors, publisher, publishedDate, description, industryIdentifiers, pageCount, categories, imageLinks, canonicalVolumeLink)",
-                "projection": "full",
-                "key": "AIzaSyA0t8hJ9KrKfTBKVBBZq5gXIbg7vuh5yHk"
+                "projection": "full"/*,
+                "key": "AIzaSyA0t8hJ9KrKfTBKVBBZq5gXIbg7vuh5yHk"*/
             },
             "search": {
                 "maxResults": 40,
                 "fields": "items(id, etag, accessInfo(accessViewStatus), volumeInfo(title, authors, description, imageLinks))",
                 "projection": "lite",
                 "order": "relevance",
-                "printType": "books",
-                "key": "AIzaSyA0t8hJ9KrKfTBKVBBZq5gXIbg7vuh5yHk"
+                "printType": "books"/*,
+                "key": "AIzaSyA0t8hJ9KrKfTBKVBBZq5gXIbg7vuh5yHk"*/
             },
             "import": {
                 "maxResults": 40,
                 "shelf": 7,
                 "fields": "items(id)",
                 "projection": "lite",
-                "printType": "books",
-                "key": "AIzaSyA0t8hJ9KrKfTBKVBBZq5gXIbg7vuh5yHk"
+                "printType": "books"/*,
+                "key": "AIzaSyA0t8hJ9KrKfTBKVBBZq5gXIbg7vuh5yHk"*/
             }
         },
         formatOne = function (book) {
@@ -92,13 +92,13 @@ module.exports.BooksAPI = BooksAPI = function (db) {
             covers.find(filter).toArray(callback);
         },
         loadBase64 = function (book, index) {
-            var defColor = Q.defer(), params = reqOption, retbook = { _id: book._id };
+            var defColor = Q.defer(), params = reqOption, retbook = { _id: book._id, cover: book.cover };
             if (!!index) { retbook.index = index };
             params.url = book.cover;
             params.encoding = "binary";
             request.get(params, function (error, response, body) {
                 if (!!error || response.statusCode !== 200) {
-                    defColor.reject({ error: error || "Invalid request" });
+                    defColor.reject(retbook);
                 } else {
                     retbook.cover = "data:" + response.headers["content-type"] + ";base64," + new Buffer(body, "binary").toString("base64");
                     defColor.resolve(retbook);
@@ -109,8 +109,40 @@ module.exports.BooksAPI = BooksAPI = function (db) {
         searchBooks = function (params, callback) {
             params = _.assign(params, Params.search);
             gBooks.volumes.list(params, callback);
+        },
+        searchOne = function (bookid, callback) {
+            loadOne({ id: bookid }, function (error, response) {
+                if (!!error || !response) {
+                    var params = _.assign({ volumeId: bookid }, Params.searchOne);
+                    gBooks.volumes.get(params, function (error, response) {
+                        if (!!error || !response) { callback(error || new Error("Bad Single Request!!!")); } else {
+                            var book = formatOne(response);
+                            book.isNew = true;
+                            callback(null, book);
+                        }
+                    });
+                } else {
+                    return callback(null, response);
+                }
+            });
+        },
+        updateBook = function (newbook, callback) {
+            books.update({ id: newbook.id }, newbook, { upsert: true }, callback);
+        },
+        addBook = function (bookid, callback) {
+            searchOne(bookid, function (error, response) {
+                if (error) { return callback(error); }
+                if (!!response.isNew) {
+                    delete response.isNew;
+                    updateBook(response, function (error, success) {
+                        if (error) { return callback(error); }
+                        return callback(null, response);
+                    });
+                } else {
+                    return callback(null, response);
+                }
+            });
         };
-
 
     this.formatBooks = formatBooks;
     this.loadCovers = loadCovers;
@@ -118,9 +150,27 @@ module.exports.BooksAPI = BooksAPI = function (db) {
     this.loadBooks = loadBooks;
     this.loadNotifs = loadNotifs;
     this.loadBase64 = loadBase64;
+    this.searchOne = searchOne;
     this.searchBooks = searchBooks;
-/**
-    books.find({}).toArray(function (error, colbook) {
+    this.addBook = addBook;
+
+/*    loadBooks({}, function (err, response) {
+        if (!!err) { console.error(err); }
+        var books = [];
+        for (var jta in response) {
+            var book = response[jta];
+            if (book._id) {
+                books.push({ book: book.id });
+            }
+        }
+        console.log(books);
+        db.collection("users").update({ _id: "robba.jt@gmail.com" }, {$set: { userbooks: books }}, function (err, success) {
+            console.error(err);
+            console.log(success);
+        });
+    });*/
+
+/*    books.find({}).toArray(function (error, colbook) {
         if (!!error) { return console.error("find", error); }
         books.remove({}, function (err, success) {
             if (!!err) { return console.error("remove", err); }
@@ -130,7 +180,7 @@ module.exports.BooksAPI = BooksAPI = function (db) {
                 params.volumeId = book.id;
                 gBooks.volumes.get(params, function (error, response) {
                     if (!!error) { return console.error(book.title, error); }
-                    var newbook = formatBookData(response)[0];
+                    var newbook = formatOne(response);
                     books.update({ id: newbook.id }, newbook, { upsert: true },function (err, result) {
                         if (!!err) { return console.error("insert", newbook.title, err); }
                         console.log("Inserted new book: " + newbook.title);
@@ -138,8 +188,7 @@ module.exports.BooksAPI = BooksAPI = function (db) {
                 });
             }
         });
-    });
-**/
+    });*/
 
 /** Gestion des livres  **/
 /**

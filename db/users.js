@@ -121,9 +121,9 @@ module.exports.UsersAPI = UsersAPI = function (db) {
         return defFind.promise;
     };
 
-    this.updateLogin = function (userid) {
+    this.updateUser = function (userid, data) {
         var defUpdate = Q.defer();
-        updateUser({ "_id": userid }, { "$set": { "last_connect": new Date() }, "$inc": { "connect_number": 1 }}, function (err, result) {
+        updateUser({ "_id": userid }, data, function (err, result) {
             if (!!err) { defUpdate.reject(err); } else { defUpdate.resolve(result); }
         });
         return defUpdate.promise;

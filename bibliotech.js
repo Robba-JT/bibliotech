@@ -19,11 +19,11 @@ var express = require("express"),
     path = require("path"),
     cons = require("consolidate"),
     MongoClient = require("mongodb").MongoClient,
+    ip = require("ip"),
     mongoUrl = "mongodb://" + config.mongoHost + ":" + config.mongoPort + "/" + config.mongoDB,
     MongoStore = require("connect-mongo")(session),
     routes = require("./routes"),
     extconsole = require("extended-console"),
-    ip = require("ip"),
     tools = require("./tools/logs").logsAPI(fs),
     mainIO = require("./io/mainIO");
 
@@ -45,7 +45,7 @@ console.extended
 
 MongoClient.connect(mongoUrl, function (err, db) {
     "use strict";
-    if (err) { throw err; }
+    if (err) { console.error(err); throw err; }
     console.info("Mongo server listening on " + mongoUrl);
 
     app.engine("html", cons.swig)
