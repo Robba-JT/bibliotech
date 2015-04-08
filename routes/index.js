@@ -68,7 +68,6 @@ module.exports = exports = function (app, db) {
     // Google Login
         .post("/googleAuth", function (req, res) {
             oauth2Client.getToken(req.body.code, function (err, token) {
-                if (!!err) { console.error(err); }
                 if (!!token) {
                     oauth2Client.setCredentials(token);
                     req.session.token = oauth2Client;
