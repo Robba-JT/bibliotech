@@ -50,15 +50,15 @@ module.exports = exports = function (app, db) {
 
 	//Login
 		.post("/login", function (req, res) {
-			users.validateLogin(req.body.login, req.body.pwd, false)
-                .then(function (user) { req.session.user = user; res.jsonp({ success: !!user }); })
+			users.validateLogin(req.body.a, req.body.c, false)
+                .then(function (user) { req.session.user = user._id; res.jsonp({ success: !!user }); })
                 .catch(function (err) { res.jsonp({ error: err.message || "Invalid credentials!!!" }); });
 		})
 
 	//Login
 		.post("/new", function (req, res) {
-			users.addUser(req.body.login, req.body.pwd, req.body.name)
-                .then(function (user) { req.session.user = user; res.jsonp({ success: !!user }); })
+			users.addUser(req.body.a, req.body.c, req.body.b)
+                .then(function (user) { req.session.user = user._id; res.jsonp({ success: !!user }); })
                 .catch(function (err) { res.jsonp({ error: err.message || "Creation error!!!" }); });
 		})
 

@@ -96,12 +96,14 @@ module.exports = mainIO = function (socket, db) {
                 .then(function (userData) {
                     if (!userData) { return socket.emit("logout", true); }
                     thisUser = userData;
-                    userAPI.updateUser(thisUser._id, { "$set": { "last_connect": new Date() }, "$inc": { "connect_number": 1 }});
+                    thisUser.googleSignIn = !!userInfos.googleSignIn;
+                    userAPI.updateUser(userData._id, { "$set": { "last_connect": new Date() }, "$inc": { "connect_number": 1 }});
                     socket.emit("user", {
                         id: thisUser._id,
                         name: thisUser.name,
                         connex: thisUser.connect_number,
-                        googleSignIn: !!userInfos.googleSignIn,
+                        first: !thisUser.connect_number,
+                        googleSignIn: !!thisUser.googleSignIn,
                         googleSync: thisUser.googleSync,
                         picture: userInfos.picture,
                         link: userInfos.link
@@ -194,8 +196,36 @@ module.exports = mainIO = function (socket, db) {
             })
             .catch(function (error) { console.error(error); });
     });
+
     socket.on("removeBook", function (bookid) {
         userAPI.updateUser(thisUser._id, {$pull: { userbooks: { book: bookid }}});
         _.remove(thisBooks, { id: bookid })
+    });
+
+    socket.on("updateUser", function (data) {
+        userAPI.validateLogin(thisUser._id, data.pwd, thisUser.googleSignIn)
+            .then(function (response) {
+                var newData = { name: data.name, googleSync: !!data.googleSync };
+                if (!!data.newPwd) { newData.password = userAPI.encryptPwd(data.newPwd); }
+                userAPI.updateUser(thisUser._id, {$set: newData });
+                socket.emit("updateOk", data);
+            })
+            .catch(function (error) {
+                console.error(error);
+                socket.emit("updateOk", false);
+            });
+    });
+
+    socket.on("deleteUser", function (password) {
+        userAPI.validateLogin(thisUser._id, password)
+            .then(function (response) {
+                bookAPI.deleteUserData(thisUser._id);
+                userAPI.deleteUser({ _id: thisUser._id });
+                socket.emit("logout");
+            })
+            .catch(function (error) {
+                console.error(error);
+                socket.emit("updateOk", false);
+            });
     });
 };

@@ -88,8 +88,14 @@ module.exports.BooksAPI = BooksAPI = function (db) {
         loadNotifs = function (filter, callback) {
             notifs.find(filter).sort({ date: 1 }).toArray(callback);
         },
+        deleteNotifs = function (filter, callback) {
+            notifs.remove(filter, callback);
+        },
         loadCovers = function (filter, callback) {
             covers.find(filter).toArray(callback);
+        },
+        deleteCovers = function (filter, callback) {
+            covers.remove(filter, callback);
         },
         loadBase64 = function (book, index) {
             var defColor = Q.defer(), params = reqOption, retbook = { _id: book._id, cover: book.cover };
@@ -153,6 +159,10 @@ module.exports.BooksAPI = BooksAPI = function (db) {
     this.searchOne = searchOne;
     this.searchBooks = searchBooks;
     this.addBook = addBook;
+    this.deleteUserData = function (userId) {
+        deleteCovers({ "_id.user": userId });
+        deleteNotifs({ "_id.to": userId });
+    };
 
 /*    loadBooks({}, function (err, response) {
         if (!!err) { console.error(err); }

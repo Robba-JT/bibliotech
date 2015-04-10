@@ -79,10 +79,10 @@ module.exports.UsersAPI = UsersAPI = function (db) {
 
     this.validateLogin = function (userid, password, googleSignIn) {
         var defLogin = Q.defer();
-        findUser({ "_id": userid.toLowerCase() }, function (err, result) {
-            if (!!err) { defLogin.reject(new Error("Error Database")); } else if (!result) { defLogin.reject(new Error("Invalid user")); } else {
-                if (!!googleSignIn || bcrypt.compareSync(password, result.password)) {
-                    defLogin.resolve(userid);
+        findUser({ "_id": userid.toLowerCase() }, function (err, response) {
+            if (!!err) { defLogin.reject(new Error("Error Database")); } else if (!response) { defLogin.reject(new Error("Invalid user")); } else {
+                if (!!googleSignIn || bcrypt.compareSync(password, response.password)) {
+                    defLogin.resolve(response);
                 } else {
                     defLogin.reject(new Error("Invalid password"));
                 }
@@ -108,7 +108,7 @@ module.exports.UsersAPI = UsersAPI = function (db) {
                 "userbooks": 0
             };
         insertUser(user, function (err, result) {
-            if (!!err) { defCreate.reject(new Error("Error Database")); } else { defCreate.resolve(userid); }
+            if (!!err) { defCreate.reject(new Error("Error Database")); } else { defCreate.resolve(user); }
         });
         return defCreate.promise;
     };
@@ -127,5 +127,7 @@ module.exports.UsersAPI = UsersAPI = function (db) {
             if (!!err) { defUpdate.reject(err); } else { defUpdate.resolve(result); }
         });
         return defUpdate.promise;
-    }
+    };
+    this.deleteUser = deleteUser;
+    this.encryptPwd = encryptPwd;
 };
