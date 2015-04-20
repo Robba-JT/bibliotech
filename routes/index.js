@@ -38,8 +38,8 @@ module.exports = exports = function (app, db) {
 
     //Logout
 		.get("/logout", function (req, res) {
-            oauth2Client.revokeCredentials(function (err) {
-                req.session.destroy(function (err) {
+            req.session.destroy(function (err) {
+                oauth2Client.revokeCredentials(function (err) {
                     res.redirect("/");
                 });
 			});
@@ -63,7 +63,7 @@ module.exports = exports = function (app, db) {
 		})
 
     //Preview
-        .post("/preview", function (req, res, next) { res.render("preview", { bookid: req.body.bookid }); })
+        .post("/preview", function (req, res, next) { res.render("preview", { bookid: req.body.previewid }); })
 
     // Google Login
         .post("/googleAuth", function (req, res) {

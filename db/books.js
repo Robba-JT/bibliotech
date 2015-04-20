@@ -148,6 +148,12 @@ module.exports.BooksAPI = BooksAPI = function (db) {
                     return callback(null, response);
                 }
             });
+        },
+        updateCover = function (data, callback) {
+            var ids = { _id: { user: data.user, book: data.book }},
+                cover = { cover: data.cover, mainColor: data.mainColor };
+
+            covers.update(ids, cover, { upsert: true }, callback);
         };
 
     this.formatBooks = formatBooks;
@@ -159,10 +165,8 @@ module.exports.BooksAPI = BooksAPI = function (db) {
     this.searchOne = searchOne;
     this.searchBooks = searchBooks;
     this.addBook = addBook;
-    this.deleteUserData = function (userId) {
-        deleteCovers({ "_id.user": userId });
-        deleteNotifs({ "_id.to": userId });
-    };
+    this.deleteUserData = function (userId) { deleteCovers({ "_id.user": userId }); deleteNotifs({ "_id.to": userId }); };
+    this.updateCover = updateCover;
 
 /*    loadBooks({}, function (err, response) {
         if (!!err) { console.error(err); }
