@@ -3,8 +3,8 @@ var express = require("express"),
     json = require("express-json"),
     fs = require("fs"),
     app = express(),
-    execMode = "dev",
-    config = JSON.parse(fs.readFileSync("config.json"))[execMode],
+    config = JSON.parse(fs.readFileSync("config.json"))[app.settings.env],
+    port = config.port,
     cors = require("cors"),
     errorhandler = require("errorhandler"),
     bodyParser = require("body-parser"),
@@ -12,7 +12,6 @@ var express = require("express"),
     cookie = require("express/node_modules/cookie"),
     session = require("express-session"),
     favicon = require("serve-favicon"),
-    port = config.port,
     http = require("http"),
     server = http.Server(app).listen(port),
     io = require("socket.io")(server),
@@ -34,7 +33,7 @@ console.extended
 		tools.logsWrite("info", arguments);
 	}).on("log", function () {
         "use strict";
-		if (execMode === "dev") { tools.logsWrite("log", arguments); }
+		if (app.settings.env === "development") { tools.logsWrite("log", arguments); }
 	}).on("war", function () {
         "use strict";
 		tools.logsWrite("error", arguments);

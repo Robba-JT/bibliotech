@@ -178,11 +178,11 @@ module.exports = mainIO = function (socket, db) {
             .catch(function (error) { console.error(error); })
     });
 
-    socket.on("addDetail", function (book) {
-        if (book.id !== lastDetail.id) {
-            console.log("update collection");
+    socket.on("updateBook", function (book) {
+        if (!!lastDetail && book === lastDetail.id) {
+            console.log("addDetail - add to collection", book, lastDetail);
         } else {
-            console.log("add to collection");
+            console.log("addDetail - update collection", book, lastDetail);
         }
     });
 
