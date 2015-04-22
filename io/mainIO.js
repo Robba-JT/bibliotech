@@ -178,11 +178,10 @@ module.exports = mainIO = function (socket, db) {
             .catch(function (error) { console.error(error); })
     });
 
-    socket.on("updateBook", function (book) {
-        if (!!lastDetail && book === lastDetail.id) {
-            console.log("addDetail - add to collection", book, lastDetail);
-        } else {
-            console.log("addDetail - update collection", book, lastDetail);
+    socket.on("updateBook", function (data) {
+        var defReq = [];
+        if (!!data.cover && !!data.maincolor) {
+            defReq.push(defBooks("updateCover", { user: thisUser._id, book: data.id, cover: data.cover, mainColor: data.mainColor }));
         }
     });
 
