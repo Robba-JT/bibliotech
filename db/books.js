@@ -20,6 +20,7 @@ module.exports.BooksAPI = BooksAPI = function (db) {
     if (!(this instanceof BooksAPI)) { return new BooksAPI(db); }
 
     var books = db.collection("books"),
+        comments = db.collection("comments"),
         notifs = db.collection("notifications"),
         covers = db.collection("covers"),
         Params = {
@@ -100,6 +101,7 @@ module.exports.BooksAPI = BooksAPI = function (db) {
         loadBase64 = function (book, index) {
             var defColor = Q.defer(), params = reqOption, retbook = { _id: book._id, cover: book.cover };
             if (!!index) { retbook.index = index };
+            if (!book.cover) { defColor.resolve(book); }
             params.url = book.cover;
             params.encoding = "binary";
             request.get(params, function (error, response, body) {
@@ -135,6 +137,12 @@ module.exports.BooksAPI = BooksAPI = function (db) {
         updateBook = function (newbook, callback) {
             books.update({ id: newbook.id }, newbook, { upsert: true }, callback);
         },
+        loadComments = function (filter, callback) {
+            comments.find(filter).toArray(callback);
+        },
+        updateComment = function (data, callback) {
+            comments.update({ _id: data._id }, {$set: data }, { upsert: true}, callback);
+        },
         addBook = function (bookid, callback) {
             searchOne(bookid, function (error, response) {
                 if (error) { return callback(error); }
@@ -150,10 +158,7 @@ module.exports.BooksAPI = BooksAPI = function (db) {
             });
         },
         updateCover = function (data, callback) {
-            var ids = { _id: { user: data.user, book: data.book }},
-                cover = { cover: data.cover, mainColor: data.mainColor };
-
-            covers.update(ids, cover, { upsert: true }, callback);
+            covers.update({ _id: data._id }, {$set: data }, { upsert: true }, callback);
         };
 
     this.formatBooks = formatBooks;
@@ -167,6 +172,8 @@ module.exports.BooksAPI = BooksAPI = function (db) {
     this.addBook = addBook;
     this.deleteUserData = function (userId) { deleteCovers({ "_id.user": userId }); deleteNotifs({ "_id.to": userId }); };
     this.updateCover = updateCover;
+    this.loadComments = loadComments;
+    this.updateComment = updateComment;
 
 /*    loadBooks({}, function (err, response) {
         if (!!err) { console.error(err); }
