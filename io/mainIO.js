@@ -97,18 +97,21 @@ module.exports = mainIO = function (socket, db) {
                     .then(function (userData) {
                         if (!userData) { return socket.emit("logout", true); }
                         thisUser = userData;
-                        var booksList = _.pluck(userData.userbooks, "book");
+                        var booksList = _.pluck(userData.userbooks, "book"),
+                            tagsList = _.countBy(_.flatten(_.compact(_.pluck(userData.userbooks, "tags")), true).sort());
+
                         thisUser.googleSignIn = !!userInfos.googleSignIn;
-                        userAPI.updateUser(userData._id, { "$set": { "last_connect": new Date() }, "$inc": { "connect_number": 1 }});
+                        userAPI.updateUser({ _id: userData._id }, { "$set": { "last_connect": new Date() }, "$inc": { "connect_number": 1 }});
                         socket.emit("user", {
-                            id: thisUser._id,
-                            name: thisUser.name,
                             connex: thisUser.connect_number,
                             first: !thisUser.connect_number,
                             googleSignIn: !!thisUser.googleSignIn,
                             googleSync: thisUser.googleSync,
+                            id: thisUser._id,
+                            link: userInfos.link,
+                            name: thisUser.name,
                             picture: userInfos.picture,
-                            link: userInfos.link
+                            tags: tagsList
                         });
                         Q.allSettled([
                             defBooks("loadNotifs", { "_id.to": thisUser._id, isnew: true }),
@@ -123,15 +126,15 @@ module.exports = mainIO = function (socket, db) {
                                 comments = _.groupBy(Comments.value, function (elt) { return elt._id.book; }) || [];
 
                             for (var book in books) {
-                                var tags = _.find(userData.books, function (_book) { if (_book.book === books[book].id) { return _book.tags; }}),
+                                var tags = _.result(_.find(userData.userbooks, function (_book) { if (_book.book === books[book].id) { return _book; }}), "tags"),
                                     comment = _.filter(comments[books[book].id], function (elt) { return elt._id.user !== thisUser._id }),
                                     userComment = _.filter(comments[books[book].id], function (elt) { return elt._id.user === thisUser._id }),
                                     cover = _.find(covers, function (cover) {
-                                        if (cover._id && cover._id.book && cover._id.book === books[book].id) { return cover; }
+                                        if (cover._id && cover._id.book && cover._id.book === books[book].id) { return true; }
                                     });
+
                                 books[book].tags = tags || [];
                                 books[book].comments = comment || [];
-
                                 if (!!userComment.length) {
                                     books[book].userComment = userComment[0].comment || "";
                                     books[book].userNote = userComment[0].note || "";
@@ -159,7 +162,7 @@ module.exports = mainIO = function (socket, db) {
                                     books: thisBooks
                                 });
                                 socket.emit("endRequest", books.length);
-                            });
+                            }).catch(function (error) { console.error(error); });
                         });
                     });
             }).catch(function (error) { console.error(error); socket.emit("logout", true); });
@@ -193,6 +196,19 @@ module.exports = mainIO = function (socket, db) {
             .catch(function (error) { console.error(error); })
     });
 
+    socket.on("addBook", function (bookid) {
+        defBooks("addBook", bookid)
+            .then(function (book) {
+                userAPI.updateUser({ _id: thisUser._id }, {$addToSet: { userbooks: { book: bookid }}});
+                bookAPI.loadBase64(book).then(function (response) {
+                    if (!!response.cover) { book.cover = response.cover; }
+                    thisBooks.push(book);
+                    socket.emit("returnAdd", book);
+                });
+            })
+            .catch(function (error) { console.error(error); });
+    });
+
     socket.on("updateBook", function (data) {
         var defReq = [];
         if (!!data.cover && !!data.maincolor) {
@@ -204,26 +220,14 @@ module.exports = mainIO = function (socket, db) {
             if (!!data.userComment) { update.comment = data.userComment; }
             defReq.push(defBooks("updateComment", update));
         }
-        /*if (!!data.tags) {
-            defReq.push(userAPI.updateUser(thisUser._id, ));
-        }*/
-    });
-
-    socket.on("addBook", function (bookid) {
-        defBooks("addBook", bookid)
-            .then(function (book) {
-                userAPI.updateUser(thisUser._id, {$addToSet: { userbooks: { book: bookid }}});
-                bookAPI.loadBase64(book).then(function (response) {
-                    if (!!response.cover) { book.cover = response.cover; }
-                    thisBooks.push(book);
-                    socket.emit("returnAdd", book);
-                });
-            })
-            .catch(function (error) { console.error(error); });
+        if (!!data.tags) {
+            defReq.push(userAPI.updateUser({ _id: thisUser._id, "userbooks.book": data.id }, {$set: { "userbooks.$.tags" : data.tags }}));
+        }
+        Q.allSettled(defReq).catch(function (err) { console.error(err); });
     });
 
     socket.on("removeBook", function (bookid) {
-        userAPI.updateUser(thisUser._id, {$pull: { userbooks: { book: bookid }}});
+        userAPI.updateUser({ _id: thisUser._id }, {$pull: { userbooks: { book: bookid }}});
         _.remove(thisBooks, { id: bookid })
     });
 
@@ -232,7 +236,7 @@ module.exports = mainIO = function (socket, db) {
             .then(function (response) {
                 var newData = { name: data.name, googleSync: !!data.googleSync };
                 if (!!data.newPwd) { newData.password = userAPI.encryptPwd(data.newPwd); }
-                userAPI.updateUser(thisUser._id, {$set: newData });
+                userAPI.updateUser({ _id: thisUser._id }, {$set: newData });
                 socket.emit("updateOk", data);
             })
             .catch(function (error) {
@@ -244,8 +248,8 @@ module.exports = mainIO = function (socket, db) {
     socket.on("deleteUser", function (password) {
         userAPI.validateLogin(thisUser._id, password)
             .then(function (response) {
-                bookAPI.deleteUserData(thisUser._id);
-                userAPI.deleteUser({ _id: thisUser._id });
+                bookAPI.removeUserData(thisUser._id);
+                userAPI.removeUser({ _id: thisUser._id });
                 socket.emit("logout");
             })
             .catch(function (error) {

@@ -89,13 +89,13 @@ module.exports.BooksAPI = BooksAPI = function (db) {
         loadNotifs = function (filter, callback) {
             notifs.find(filter).sort({ date: 1 }).toArray(callback);
         },
-        deleteNotifs = function (filter, callback) {
+        removeNotifs = function (filter, callback) {
             notifs.remove(filter, callback);
         },
         loadCovers = function (filter, callback) {
             covers.find(filter).toArray(callback);
         },
-        deleteCovers = function (filter, callback) {
+        removeCovers = function (filter, callback) {
             covers.remove(filter, callback);
         },
         loadBase64 = function (book, index) {
@@ -170,7 +170,8 @@ module.exports.BooksAPI = BooksAPI = function (db) {
     this.searchOne = searchOne;
     this.searchBooks = searchBooks;
     this.addBook = addBook;
-    this.deleteUserData = function (userId) { deleteCovers({ "_id.user": userId }); deleteNotifs({ "_id.to": userId }); };
+    this.removeCovers = removeCovers;
+    this.removeUserData = function (userId) { removeCovers({ "_id.user": userId }); removeNotifs({ "_id.to": userId }); };
     this.updateCover = updateCover;
     this.loadComments = loadComments;
     this.updateComment = updateComment;

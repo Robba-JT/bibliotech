@@ -15,7 +15,7 @@ module.exports.UsersAPI = UsersAPI = function (db) {
         insertUser = function (data, callback) {
             users.insert(data, callback);
         },
-        deleteUser = function (query, callback) {
+        removeUser = function (query, callback) {
             users.remove(query, callback);
         },
         encryptPwd = function (password) {
@@ -121,13 +121,13 @@ module.exports.UsersAPI = UsersAPI = function (db) {
         return defFind.promise;
     };
 
-    this.updateUser = function (userid, data) {
+    this.updateUser = function (query, data) {
         var defUpdate = Q.defer();
-        updateUser({ "_id": userid }, data, function (err, result) {
+        updateUser(query, data, function (err, result) {
             if (!!err) { defUpdate.reject(err); } else { defUpdate.resolve(result); }
         });
         return defUpdate.promise;
     };
-    this.deleteUser = deleteUser;
+    this.removeUser = removeUser;
     this.encryptPwd = encryptPwd;
 };
