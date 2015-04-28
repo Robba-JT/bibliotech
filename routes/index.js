@@ -38,11 +38,11 @@ module.exports = exports = function (app, db) {
 
     //Logout
 		.get("/logout", function (req, res) {
-            req.session.destroy(function (err) {
-                oauth2Client.revokeCredentials(function (err) {
+            oauth2Client.revokeCredentials(function (err) {
+                req.session.destroy(function (err) {
                     res.redirect("/");
                 });
-			});
+			 });
 		})
 
 	//Erreur url

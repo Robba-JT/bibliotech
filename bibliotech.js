@@ -23,23 +23,23 @@ var express = require("express"),
     MongoStore = require("connect-mongo")(session),
     routes = require("./routes"),
     extconsole = require("extended-console"),
-    tools = require("./tools/logs").logsAPI(fs),
+    logsApi = require("./tools/logs").LogsAPI(fs),
     mainIO = require("./io/mainIO");
 
 console.extended.timestampFormat = "DD-MM-YYYY hh:mm:ss";
 console.extended
 	.on("inf", function () {
         "use strict";
-		tools.logsWrite("info", arguments);
+		logsApi.logsWrite("info", arguments);
 	}).on("log", function () {
         "use strict";
-		if (app.settings.env === "development") { tools.logsWrite("log", arguments); }
+		if (app.settings.env === "development") { logsApi.logsWrite("log", arguments); }
 	}).on("war", function () {
         "use strict";
-		tools.logsWrite("error", arguments);
+		logsApi.logsWrite("error", arguments);
 	}).on("err", function () {
         "use strict";
-		tools.logsWrite("error", arguments);
+		logsApi.logsWrite("error", arguments);
 	});
 
 MongoClient.connect(mongoUrl, function (err, db) {

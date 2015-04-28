@@ -26,24 +26,24 @@ module.exports.BooksAPI = BooksAPI = function (db) {
         Params = {
             "searchOne": {
                 "fields": "id,etag, accessInfo(accessViewStatus),volumeInfo(title, subtitle, authors, publisher, publishedDate, description, industryIdentifiers, pageCount, categories, imageLinks, canonicalVolumeLink)",
-                "projection": "full"/*,
-                "key": "AIzaSyA0t8hJ9KrKfTBKVBBZq5gXIbg7vuh5yHk"*/
+                "projection": "full",
+                "key": "AIzaSyA0t8hJ9KrKfTBKVBBZq5gXIbg7vuh5yHk"
             },
             "search": {
                 "maxResults": 40,
                 "fields": "items(id, etag, accessInfo(accessViewStatus), volumeInfo(title, authors, description, imageLinks))",
                 "projection": "lite",
                 "order": "relevance",
-                "printType": "books"/*,
-                "key": "AIzaSyA0t8hJ9KrKfTBKVBBZq5gXIbg7vuh5yHk"*/
+                "printType": "books",
+                "key": "AIzaSyA0t8hJ9KrKfTBKVBBZq5gXIbg7vuh5yHk"
             },
             "import": {
                 "maxResults": 40,
                 "shelf": 7,
                 "fields": "items(id)",
                 "projection": "lite",
-                "printType": "books"/*,
-                "key": "AIzaSyA0t8hJ9KrKfTBKVBBZq5gXIbg7vuh5yHk"*/
+                "printType": "books",
+                "key": "AIzaSyA0t8hJ9KrKfTBKVBBZq5gXIbg7vuh5yHk"
             }
         },
         formatOne = function (book) {
@@ -100,7 +100,7 @@ module.exports.BooksAPI = BooksAPI = function (db) {
         },
         loadBase64 = function (book, index) {
             var defColor = Q.defer(), params = reqOption, retbook = { _id: book._id, cover: book.cover };
-            if (!!index) { retbook.index = index };
+            if (!!index) { retbook.index = index; }
             if (!book.cover) { defColor.resolve(book); }
             params.url = book.cover;
             params.encoding = "binary";

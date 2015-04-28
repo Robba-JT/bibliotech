@@ -22,9 +22,9 @@ module.exports = mainIO = function (socket, db) {
         currUser = function (id) {
             var defGet = Q.defer();
             sessionDB.findOne({ _id: id }, function (err, response) {
-                if (!!err || !response.session) { defGet.reject(err || new Error("No session!!!")) } else {
+                if (!!err || !response.session) { defGet.reject(err || new Error("No session!!!")); } else {
                     var session = JSON.parse(response.session);
-                    if (!session.user && !session.token && !session.token.credentials) { defGet.reject(new Error("Invalid session!!!")) } else {
+                    if (!session.user && !session.token && !session.token.credentials) { defGet.reject(new Error("Invalid session!!!")); } else {
                         if (!!session.user) { defGet.resolve({ username: session.user }); } else {
                             oauth2Client = session.token.credentials;
                             gAuth.userinfo.v2.me.get(oauth2Client, function (err, infos) {
@@ -68,12 +68,14 @@ module.exports = mainIO = function (socket, db) {
                             }
                         }
                     });
-            }
+            };
             loop();
             return defLoop.promise;
-        };
+        },
+        connecting = function () {};
 
-    socket.on("connected", function () {
+    socket.on("isConnected", function () {
+        console.log("sessionId", sessionId);
         currUser(sessionId)
             .then(function (userInfos) {
                 userAPI.findUser(userInfos.username)
@@ -120,21 +122,23 @@ module.exports = mainIO = function (socket, db) {
                             defBooks("loadComments", { "_id.book" : { $in : booksList }})
                         ]).spread(function (Notifs, Books, Covers, Comments) {
                             var def64 = [],
-                                notifs = Notifs.value || "",
+                                notifs = Notifs.value || [],
                                 books = Books.value || [],
                                 covers = Covers.value || [],
-                                comments = _.groupBy(Comments.value, function (elt) { return elt._id.book; }) || [];
+                                comments = _.groupBy(Comments.value, function (elt) { return elt._id.book; }) || [],
+                                returnTags = function (elt) { return elt.book === books[book].id; },
+                                returnComments = function (elt) { return elt._id.user !== thisUser._id; },
+                                returnUserComments = function (elt) { return elt._id.user === thisUser._id; },
+                                returnCover = function (cover) { return cover._id && cover._id.book && cover._id.book === books[book].id; };
 
                             for (var book in books) {
-                                var tags = _.result(_.find(userData.userbooks, function (_book) { if (_book.book === books[book].id) { return _book; }}), "tags"),
-                                    comment = _.filter(comments[books[book].id], function (elt) { return elt._id.user !== thisUser._id }),
-                                    userComment = _.filter(comments[books[book].id], function (elt) { return elt._id.user === thisUser._id }),
-                                    cover = _.find(covers, function (cover) {
-                                        if (cover._id && cover._id.book && cover._id.book === books[book].id) { return true; }
-                                    });
+                                var tags = _.result(_.find(userData.userbooks, returnTags), "tags"),
+                                    comment = _.filter(comments[books[book].id], returnComments),
+                                    userComment = _.filter(comments[books[book].id], returnUserComments),
+                                    cover = _.find(covers, returnCover);
 
-                                books[book].tags = tags || [];
-                                books[book].comments = comment || [];
+                                books[book].tags = tags;
+                                books[book].comments = comment;
                                 if (!!userComment.length) {
                                     books[book].userComment = userComment[0].comment || "";
                                     books[book].userNote = userComment[0].note || "";
@@ -191,9 +195,9 @@ module.exports = mainIO = function (socket, db) {
                     if (!!cover.altcolor) { book.altcolor = cover.altcolor; }
                     lastDetail = book;
                     socket.emit("returnDetail", book);
-                })
+                });
             })
-            .catch(function (error) { console.error(error); })
+            .catch(function (error) { console.error(error); });
     });
 
     socket.on("addBook", function (bookid) {
@@ -220,15 +224,13 @@ module.exports = mainIO = function (socket, db) {
             if (!!data.userComment) { update.comment = data.userComment; }
             defReq.push(defBooks("updateComment", update));
         }
-        if (!!data.tags) {
-            defReq.push(userAPI.updateUser({ _id: thisUser._id, "userbooks.book": data.id }, {$set: { "userbooks.$.tags" : data.tags }}));
-        }
+        if (!!data.tags) { defReq.push(userAPI.updateUser({ _id: thisUser._id, "userbooks.book": data.id }, {$set: { "userbooks.$.tags" : data.tags }})); }
         Q.allSettled(defReq).catch(function (err) { console.error(err); });
     });
 
     socket.on("removeBook", function (bookid) {
         userAPI.updateUser({ _id: thisUser._id }, {$pull: { userbooks: { book: bookid }}});
-        _.remove(thisBooks, { id: bookid })
+        _.remove(thisBooks, { id: bookid });
     });
 
     socket.on("updateUser", function (data) {

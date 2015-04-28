@@ -54,5 +54,5 @@ module.exports.SessionsAPI = SessionsAPI = function (db) {
             }
             callback(null, session);
         });
-    }
+    };
 };
