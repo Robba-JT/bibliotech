@@ -29,7 +29,9 @@ module.exports = exports = function (app, db) {
 				if (!!req.session.user || !!req.session.token) {
 					next();
 				} else {
-					res.render("login");
+                    req.session.destroy(function (err) {
+					   res.render("login");
+                    });
 				}
 			},
 			function (req, res) {
