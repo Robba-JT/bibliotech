@@ -1,4 +1,5 @@
 var UsersAPI = require("../db/users").UsersAPI,
+    trads = require("../tools/trads"),
     google = require("googleapis"),
     OAuth2Client = google.auth.OAuth2,
     oauth2Client = new OAuth2Client(
@@ -25,23 +26,24 @@ module.exports = exports = function (app, db) {
 	//Display pages
 		.get("/",
 			function (req, res, next) {
+                var language = (!!trads[req.acceptsLanguages()[0]]) ? req.acceptsLanguages()[0] : "fr";
 				if (!!req.session.user || !!req.session.token) {
 					next();
 				} else {
-                    req.session.destroy(function (err) {
-					   res.render("login");
-                    });
+                    res.render("login", trads[language].login);
 				}
 			},
 			function (req, res) {
-				res.render("bibliotech");
+                var language = (!!trads[req.acceptsLanguages()[0]]) ? req.acceptsLanguages()[0] : "fr";
+				res.render("bibliotech", trads[language].bibliotech);
 			}
 		)
 
     //Logout
 		.get("/logout", function (req, res) {
-            oauth2Client.revokeCredentials(function (err) {
-                req.session.destroy(function (err) {
+            res.clearCookie("_bsession");
+            req.session.destroy(function (err) {
+                oauth2Client.revokeCredentials(function (err) {
                     res.redirect("/");
                 });
 			 });

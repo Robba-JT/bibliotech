@@ -33,7 +33,7 @@ console.extended
 		logsApi.logsWrite("info", arguments);
 	}).on("log", function () {
         "use strict";
-		if (app.settings.env === "development") { logsApi.logsWrite("log", arguments); }
+		if (app.settings.env !== "development") { logsApi.logsWrite("log", arguments); }
 	}).on("war", function () {
         "use strict";
 		logsApi.logsWrite("error", arguments);
