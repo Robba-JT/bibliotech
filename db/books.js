@@ -65,58 +65,14 @@ module.exports.BooksAPI = BooksAPI = function (db) {
                 "access": (!!book.accessInfo) ? book.accessInfo.accessViewStatus : "NONE"
             };
         },
-        formatBooks = function (books) {
-            var retbooks = [];
-            if (!_.isArray(books)) { return formatOne(books); }
-            for (var book in books) {
-                retbooks.push(formatOne(books[book]));
-            }
-            return retbooks;
-        },
-        coversQuery = function (query) {
-            var defCover = Q.defer();
-            covers.find(query).toArray(function (err, cover) {
-                if (!!err) { defCover.reject(err); } else { defCover.resolve(cover); }
-            });
-            return defCover.promise;
-        },
-        loadBooks = function (filter, callback) {
-            books.find(filter).sort({ title : 1 }).toArray(callback);
-        },
         loadOne = function (filter, callback) {
             books.findOne(filter, callback);
-        },
-        loadNotifs = function (filter, callback) {
-            notifs.find(filter).sort({ date: 1 }).toArray(callback);
         },
         removeNotifs = function (filter, callback) {
             notifs.remove(filter, callback);
         },
-        loadCovers = function (filter, callback) {
-            covers.find(filter).toArray(callback);
-        },
         removeCovers = function (filter, callback) {
             covers.remove(filter, callback);
-        },
-        loadBase64 = function (book, index) {
-            var defColor = Q.defer(), params = reqOption, retbook = { _id: book._id, cover: book.cover };
-            if (!!index) { retbook.index = index; }
-            if (!book.cover) { defColor.resolve(book); }
-            params.url = book.cover;
-            params.encoding = "binary";
-            request.get(params, function (error, response, body) {
-                if (!!error || response.statusCode !== 200) {
-                    defColor.reject(retbook);
-                } else {
-                    retbook.cover = "data:" + response.headers["content-type"] + ";base64," + new Buffer(body, "binary").toString("base64");
-                    defColor.resolve(retbook);
-                }
-            });
-            return defColor.promise;
-        },
-        searchBooks = function (params, callback) {
-            params = _.assign(params, Params.search);
-            gBooks.volumes.list(params, callback);
         },
         searchOne = function (bookid, callback) {
             loadOne({ id: bookid }, function (error, response) {
@@ -136,45 +92,74 @@ module.exports.BooksAPI = BooksAPI = function (db) {
         },
         updateBook = function (newbook, callback) {
             books.update({ id: newbook.id }, newbook, { upsert: true }, callback);
-        },
-        loadComments = function (filter, callback) {
-            comments.find(filter).toArray(callback);
-        },
-        updateComment = function (data, callback) {
-            comments.update({ _id: data._id }, {$set: data }, { upsert: true}, callback);
-        },
-        addBook = function (bookid, callback) {
-            searchOne(bookid, function (error, response) {
-                if (error) { return callback(error); }
-                if (!!response.isNew) {
-                    delete response.isNew;
-                    updateBook(response, function (error, success) {
-                        if (error) { return callback(error); }
-                        return callback(null, response);
-                    });
-                } else {
-                    return callback(null, response);
-                }
-            });
-        },
-        updateCover = function (data, callback) {
-            covers.update({ _id: data._id }, {$set: data }, { upsert: true }, callback);
         };
 
-    this.formatBooks = formatBooks;
-    this.loadCovers = loadCovers;
-    this.loadOne = loadOne;
-    this.loadBooks = loadBooks;
-    this.loadNotifs = loadNotifs;
-    this.loadBase64 = loadBase64;
+    this.formatBooks = function (books) {
+        var retbooks = [];
+        if (!_.isArray(books)) { return formatOne(books); }
+        for (var book in books) {
+            retbooks.push(formatOne(books[book]));
+        }
+        return retbooks;
+    };
+    this.loadCovers = function (filter, callback) {
+        covers.find(filter).toArray(callback);
+    };
+    this.loadBooks = function (filter, callback) {
+        books.find(filter).sort({ title : 1 }).toArray(callback);
+    };
+    this.loadNotifs = function (filter, callback) {
+        notifs.find(filter).sort({ date: 1 }).toArray(callback);
+    };
+    this.loadBase64 = function (book, index) {
+        var defColor = Q.defer(), params = reqOption, retbook = { _id: book._id, cover: book.cover };
+        if (!!index) { retbook.index = index; }
+        if (!book.cover) { defColor.resolve(book); }
+        params.url = book.cover;
+        params.encoding = "binary";
+        request.get(params, function (error, response, body) {
+            if (!!error || response.statusCode !== 200) {
+                defColor.reject(retbook);
+            } else {
+                retbook.cover = "data:" + response.headers["content-type"] + ";base64," + new Buffer(body, "binary").toString("base64");
+                defColor.resolve(retbook);
+            }
+        });
+        return defColor.promise;
+    };
     this.searchOne = searchOne;
-    this.searchBooks = searchBooks;
-    this.addBook = addBook;
+    this.searchBooks = function (params, callback) {
+        params = _.assign(params, Params.search);
+        gBooks.volumes.list(params, callback);
+    };
+    this.addBook = function (bookid, callback) {
+        searchOne(bookid, function (error, response) {
+            if (error) { return callback(error); }
+            if (!!response.isNew) {
+                delete response.isNew;
+                updateBook(response, function (error, success) {
+                    if (error) { return callback(error); }
+                    return callback(null, response);
+                });
+            } else {
+                return callback(null, response);
+            }
+        });
+    };
+    this.updateNotif = function (data, callback) {
+        notifs.update({ _id: data._id }, { $set: data }, { upsert: true }, callback);
+    };
     this.removeCovers = removeCovers;
     this.removeUserData = function (userId) { removeCovers({ "_id.user": userId }); removeNotifs({ "_id.to": userId }); };
-    this.updateCover = updateCover;
-    this.loadComments = loadComments;
-    this.updateComment = updateComment;
+    this.updateCover = function (data, callback) {
+        covers.update({ _id: data._id }, {$set: data }, { upsert: true }, callback);
+    };
+    this.loadComments = function (filter, callback) {
+        comments.find(filter).toArray(callback);
+    };
+    this.updateComment = function (data, callback) {
+        comments.update({ _id: data._id }, {$set: data }, { upsert: true}, callback);
+    };
 
 /*    loadBooks({}, function (err, response) {
         if (!!err) { console.error(err); }

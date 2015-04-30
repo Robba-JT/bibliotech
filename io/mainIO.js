@@ -75,7 +75,6 @@ module.exports = mainIO = function (socket, db) {
         connecting = function () {};
 
     socket.on("isConnected", function () {
-        console.log("sessionId", sessionId);
         currUser(sessionId)
             .then(function (userInfos) {
                 userAPI.findUser(userInfos.username)
@@ -99,8 +98,8 @@ module.exports = mainIO = function (socket, db) {
                     .then(function (userData) {
                         if (!userData) { return socket.emit("logout", true); }
                         thisUser = userData;
-                        var booksList = _.pluck(userData.userbooks, "book"),
-                            tagsList = _.countBy(_.flatten(_.compact(_.pluck(userData.userbooks, "tags")), true).sort());
+                        var booksList = _.pluck(userData.books, "book"),
+                            tagsList = _.countBy(_.flatten(_.compact(_.pluck(userData.books, "tags")), true).sort());
 
                         thisUser.googleSignIn = !!userInfos.googleSignIn;
                         userAPI.updateUser({ _id: userData._id }, { "$set": { "last_connect": new Date() }, "$inc": { "connect_number": 1 }});
@@ -116,7 +115,7 @@ module.exports = mainIO = function (socket, db) {
                             tags: tagsList
                         });
                         Q.allSettled([
-                            defBooks("loadNotifs", { "_id.to": thisUser._id, isnew: true }),
+                            defBooks("loadNotifs", { "_id.to": thisUser._id, isNew: true }),
                             defBooks("loadBooks", { id : { $in : booksList }}),
                             defBooks("loadCovers", { "_id.user" : thisUser._id }),
                             defBooks("loadComments", { "_id.book" : { $in : booksList }})
@@ -132,7 +131,7 @@ module.exports = mainIO = function (socket, db) {
                                 returnCover = function (cover) { return cover._id && cover._id.book && cover._id.book === books[book].id; };
 
                             for (var book in books) {
-                                var tags = _.result(_.find(userData.userbooks, returnTags), "tags"),
+                                var tags = _.result(_.find(userData.books, returnTags), "tags"),
                                     comment = _.filter(comments[books[book].id], returnComments),
                                     userComment = _.filter(comments[books[book].id], returnUserComments),
                                     cover = _.find(covers, returnCover);
@@ -203,7 +202,7 @@ module.exports = mainIO = function (socket, db) {
     socket.on("addBook", function (bookid) {
         defBooks("addBook", bookid)
             .then(function (book) {
-                userAPI.updateUser({ _id: thisUser._id }, {$addToSet: { userbooks: { book: bookid }}});
+                userAPI.updateUser({ _id: thisUser._id }, {$addToSet: { books: { book: bookid }}});
                 bookAPI.loadBase64(book).then(function (response) {
                     if (!!response.cover) { book.cover = response.cover; }
                     thisBooks.push(book);
@@ -224,12 +223,12 @@ module.exports = mainIO = function (socket, db) {
             if (!!data.userComment) { update.comment = data.userComment; }
             defReq.push(defBooks("updateComment", update));
         }
-        if (!!data.tags) { defReq.push(userAPI.updateUser({ _id: thisUser._id, "userbooks.book": data.id }, {$set: { "userbooks.$.tags" : data.tags }})); }
+        if (!!data.tags) { defReq.push(userAPI.updateUser({ _id: thisUser._id, "books.book": data.id }, {$set: { "books.$.tags" : data.tags }})); }
         Q.allSettled(defReq).catch(function (err) { console.error(err); });
     });
 
     socket.on("removeBook", function (bookid) {
-        userAPI.updateUser({ _id: thisUser._id }, {$pull: { userbooks: { book: bookid }}});
+        userAPI.updateUser({ _id: thisUser._id }, {$pull: { books: { book: bookid }}});
         _.remove(thisBooks, { id: bookid });
     });
 
@@ -258,5 +257,19 @@ module.exports = mainIO = function (socket, db) {
                 console.error(error);
                 socket.emit("updateOk", false);
             });
+    });
+
+    socket.on("sendNotif", function (data) {
+        var notif = {
+            _id: {
+                to: data.recommand.toLowerCase(),
+                book: data.book
+            },
+            from: thisUser.name,
+            isNew: true,
+            title: data.title
+        };
+        console.log(notif);
+        defBooks("updateNotif", notif);
     });
 };
