@@ -15,7 +15,7 @@ module.exports = mainIO = function (socket, db) {
 
     var sessionDB = db.collection("sessions"),
         sessionId = socket.handshake.sessionId,
-        thisUser, thisBooks, oauth2Client, lastSearch, lastDetail,
+        thisUser, thisBooks, oauth2Client, lastSearch = {}, lastDetail = {},
         userAPI = new UsersAPI(db),
         bookAPI = new BooksAPI(db),
         mailAPI = new MailsAPI(db),
@@ -49,30 +49,59 @@ module.exports = mainIO = function (socket, db) {
             bookAPI[request](query, function (err, response) { if (!!err) { defReq.reject(err); } else { defReq.resolve(response); } });
             return defReq.promise;
         },
+        searchDetail = function (bookid, callback) {
+            if (!!lastDetail && !!lastDetail.id && lastDetail.id === bookid) { return callback(null, lastDetail); }
+            defBooks("searchOne", bookid)
+                .then(function (book) {
+                    var defReq = [];
+                    if (!!book) {
+                        if (!book.cover) {
+                            defReq.push(defBooks("loadCovers", { _id: { user: thisUser._id, book: bookid }}));
+                        } else {
+                            defReq.push(bookAPI.loadBase64(book));
+                        }
+                    }
+                    Q.allSettled(defReq).spread(function (response) {
+                        var cover = response.value;
+                        if (!!cover.cover) { book.cover = cover.cover; }
+                        if (!!cover.altcolor) { book.altcolor = cover.altcolor; }
+                        lastDetail = book;
+                        callback(null, book);
+                    });
+                })
+                .catch(function (error) { callback(error); });
+        },
         searchLoop = function (fn, param) {
-            param.startIndex = 0;
-            lastSearch = [];
-            var defLoop = Q.defer(),
-                loop = function () {
+            var defLoop = Q.defer();
+            if (!!lastSearch && !!lastSearch.param && _.isEqual(lastSearch.param, param)) {
+                socket.emit("books", lastSearch.books);
+                defLoop.resolve(lastSearch.books.length);
+            } else {
+                lastSearch = { param: { q: param.q, langRestrict: param.langRestrict }, books: [] };
+                param.startIndex = 0;
+                var loop = function () {
                     bookAPI[fn](param, function (error, response) {
                         if (!!error || !response || !response.items) { defLoop.reject(error || new Error("Bad Request")); } else {
                             var books = bookAPI.formatBooks(response.items);
-                            lastSearch.push(books);
-                            lastSearch = _.flatten(lastSearch);
+                            lastSearch.books.push(books);
                             param.startIndex += books.length;
                             socket.emit("books", books);
                             if (books.length === 40 && param.startIndex < 400) {
                                 loop();
                             } else {
+                                lastSearch.books = _.flattenDeep(lastSearch.books);
                                 defLoop.resolve(param.startIndex);
                             }
                         }
                     });
-            };
-            loop();
+                };
+                loop();
+            }
             return defLoop.promise;
         },
-        connecting = function () {};
+        addBookToUser = function (bookid) {
+            userAPI.updateUser({ _id: thisUser._id }, {$addToSet: { books: { book: bookid }}});
+        };
 
     socket.on("isConnected", function () {
         currUser(sessionId)
@@ -174,43 +203,27 @@ module.exports = mainIO = function (socket, db) {
     socket.on("searchBooks", function (param) {
         searchLoop("searchBooks", param)
             .catch(function (error) { console.error(error); })
-            .done(function () { socket.emit("endRequest", lastSearch.length); });
+            .done(function () { socket.emit("endRequest", lastSearch.books.length); });
     });
 
     socket.on("searchDetail", function (bookid) {
-        defBooks("searchOne", bookid)
-            .then(function (book) {
-                var defReq = [];
-                if (!!book) {
-                    if (!book.cover) {
-                        defReq.push(defBooks("loadCovers", { _id: { user: thisUser._id, book: bookid }}));
-                    } else {
-                        defReq.push(bookAPI.loadBase64(book));
-                    }
-                }
-                Q.allSettled(defReq).spread(function (response) {
-                    var cover = response.value;
-                    if (!!cover.cover) { book.cover = cover.cover; }
-                    if (!!cover.altcolor) { book.altcolor = cover.altcolor; }
-                    lastDetail = book;
-                    socket.emit("returnDetail", book);
-                });
-            })
-            .catch(function (error) { console.error(error); });
+        searchDetail(bookid, function (error, response) {
+            if (!!error) { console.error(error); }
+            if (!!response) { socket.emit("returnDetail", response); }
+        });
     });
 
     socket.on("addBook", function (bookid) {
-        defBooks("addBook", bookid)
-            .then(function (book) {
-                userAPI.updateUser({ _id: thisUser._id }, {$addToSet: { books: { book: bookid }}});
-                bookAPI.loadBase64(book).then(function (response) {
-                    if (!!response.cover) { book.cover = response.cover; }
-                    thisBooks.push(book);
-                    socket.emit("returnAdd", book);
-                });
-            })
-            .catch(function (error) { console.error(error); });
+        searchDetail(bookid, function (error, book) {
+            if (!!error) { console.error(error); }
+            if (!!book) {
+                socket.emit("returnAdd", book);
+                addBookToUser(bookid);
+            }
+        });
     });
+
+    socket.on("addDetail", addBookToUser);
 
     socket.on("updateBook", function (data) {
         var defReq = [];
@@ -271,5 +284,13 @@ module.exports = mainIO = function (socket, db) {
         };
         console.log(notif);
         defBooks("updateNotif", notif);
+    });
+
+    socket.on("readNotif", function (bookid) {
+        searchDetail(bookid, function (error, response) {
+            if (!!error) { console.error(error); }
+            if (!!response) { socket.emit("returnDetail", response); }
+        });
+        defBooks("updateNotif", { _id: { to: thisUser._id, book: bookid }, isNew: false });
     });
 };

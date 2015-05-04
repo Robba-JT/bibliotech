@@ -132,20 +132,6 @@ module.exports.BooksAPI = BooksAPI = function (db) {
         params = _.assign(params, Params.search);
         gBooks.volumes.list(params, callback);
     };
-    this.addBook = function (bookid, callback) {
-        searchOne(bookid, function (error, response) {
-            if (error) { return callback(error); }
-            if (!!response.isNew) {
-                delete response.isNew;
-                updateBook(response, function (error, success) {
-                    if (error) { return callback(error); }
-                    return callback(null, response);
-                });
-            } else {
-                return callback(null, response);
-            }
-        });
-    };
     this.updateNotif = function (data, callback) {
         notifs.update({ _id: data._id }, { $set: data }, { upsert: true }, callback);
     };
@@ -158,7 +144,7 @@ module.exports.BooksAPI = BooksAPI = function (db) {
         comments.find(filter).toArray(callback);
     };
     this.updateComment = function (data, callback) {
-        comments.update({ _id: data._id }, {$set: data }, { upsert: true}, callback);
+        comments.update({ _id: data._id }, {$set: data }, { upsert: true }, callback);
     };
 
 /*    loadBooks({}, function (err, response) {
