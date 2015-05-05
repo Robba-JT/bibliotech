@@ -27,12 +27,8 @@ module.exports = exports = function (app, db) {
 		.get("/",
 			function (req, res, next) {
                 var language = (!!trads[req.acceptsLanguages()[0]]) ? req.acceptsLanguages()[0] : "fr";
-				if (!!req.session.user || !!req.session.token && req.session.token.credentials.expiry_date > new Date()) {
-                    oauth2Client.refreshAccessToken(function (error, newToken) {
-                        if (!!error) { console.error(error); }
-                        if (!!newToken) { req.session.token.credentials = newToken; }
-                        next();
-                    });
+				if (!!req.session.user || (!!req.session.token && req.session.token.credentials.expiry_date > new Date())) {
+                    next();
 				} else {
                     req.session.destroy(function (err) {
                         oauth2Client.revokeCredentials(function (err) {

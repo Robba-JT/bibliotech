@@ -75,5 +75,9 @@ module.exports.UsersAPI = UsersAPI = function (db) {
         users.remove(query, callback);
     };
 
+    this.hasBook = function (user, book, callback) {
+        users.findOne({ _id: user, "books.book": book }, callback);
+    };
+
     this.encryptPwd = encryptPwd;
 };
