@@ -50,13 +50,15 @@ MongoClient.connect(mongoUrl, function (err, db) {
     app.engine("html", cons.swig)
         .set("view engine", "html")
         .set("views", path.join(__dirname + "/views"))
-        .use(errorhandler(config.errorHandlerOptions))
+        .set("etag", "strong")
+        .use(express.static(path.join(__dirname, "root")))
         .use(cors())
         .use(compression())
         .use(json())
+        .use(favicon(path.join(__dirname, "root/images/iconmonstr-bold-icon-24.png")))
+        .use(errorhandler(config.errorHandlerOptions))
         .use(bodyParser.urlencoded({ extended: false }))
 		.use(bodyParser.json())
-        .use(express.static(path.join(__dirname, "root")))
 		.use(session({
 			key: "_bsession",
 			secret: "robba1979",
@@ -67,8 +69,7 @@ MongoClient.connect(mongoUrl, function (err, db) {
 				url: mongoUrl,
 				autoRemove: "native"
 			})
-		}))
-        .use(favicon(path.join(__dirname, "root/images/iconmonstr-bold-icon-24.png")));
+		}));
 
     io.use(function (connData, next) {
 		if (!connData.handshake.headers.cookie) {

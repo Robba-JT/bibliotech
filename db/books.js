@@ -25,7 +25,7 @@ module.exports.BooksAPI = BooksAPI = function (db) {
         covers = db.collection("covers"),
         Params = {
             "searchOne": {
-                "fields": "id,etag, accessInfo(accessViewStatus),volumeInfo(title, subtitle, authors, publisher, publishedDate, description, industryIdentifiers, pageCount, categories, imageLinks, canonicalVolumeLink)",
+                "fields": "id, etag, accessInfo(accessViewStatus), volumeInfo(title, subtitle, authors, publisher, publishedDate, description, industryIdentifiers, pageCount, categories, imageLinks, canonicalVolumeLink)",
                 "projection": "full",
                 "key": "AIzaSyA0t8hJ9KrKfTBKVBBZq5gXIbg7vuh5yHk"
             },
@@ -40,8 +40,8 @@ module.exports.BooksAPI = BooksAPI = function (db) {
             "import": {
                 "maxResults": 40,
                 "shelf": 7,
-                "fields": "items(id)",
-                "projection": "lite",
+                "fields": "items(id, etag, accessInfo(accessViewStatus), volumeInfo(title, subtitle, authors, publisher, publishedDate, description, industryIdentifiers, pageCount, categories, imageLinks, canonicalVolumeLink))",
+                "projection": "full",
                 "printType": "books",
                 "key": "AIzaSyA0t8hJ9KrKfTBKVBBZq5gXIbg7vuh5yHk"
             }
@@ -75,25 +75,41 @@ module.exports.BooksAPI = BooksAPI = function (db) {
             covers.remove(filter, callback);
         },
         searchOne = function (bookid, callback) {
-            loadOne({ id: bookid }, function (error, response) {
-                if (!!error || !response) {
-                    var params = _.assign({ volumeId: bookid }, Params.searchOne);
-                    gBooks.volumes.get(params, function (error, response) {
-                        if (!!error || !response) { callback(error || new Error("Bad Single Request!!!")); } else {
-                            var book = formatOne(response);
-                            book.isNew = true;
+            var params = _.assign({ volumeId: bookid }, Params.searchOne);
+            gBooks.volumes.get(params, function (error, response) {
+                if (!!error || !response) { callback(error || new Error("Bad Single Request!!!")); } else {
+                    var book = formatOne(response);
+                    book.isNew = true;
+                    if (!!book.cover) {
+                        loadBase64(book.cover).done(function (response) {
+                            if (!!response && !!response.cover) { book.cover = response.cover; }
                             callback(null, book);
-                        }
-                    });
-                } else {
-                    return callback(null, response);
+                        });
+                    } else {
+                        callback(null, book);
+                    }
                 }
             });
         },
-        updateBook = function (newbook, callback) {
-            books.update({ id: newbook.id }, newbook, { upsert: true }, callback);
+        loadBase64 = function (url, index) {
+            var defColor = Q.defer(), params = reqOption;
+            if (!url) { defColor.reject(); }
+            params.url = url;
+            params.encoding = "binary";
+            request.get(params, function (error, response, body) {
+                if (!!error || response.statusCode !== 200) {
+                    defColor.reject();
+                } else {
+                    defColor.resolve({ cover: "data:" + response.headers["content-type"] + ";base64," + new Buffer(body, "binary").toString("base64"), index: index });
+                }
+            });
+            return defColor.promise;
         };
 
+    this.updateBook = function (newbook, callback) {
+        delete newbook.isNew;
+        books.update({ id: newbook.id }, newbook, { upsert: true }, callback);
+    };
     this.formatBooks = function (books) {
         var retbooks = [];
         if (!_.isArray(books)) { return formatOne(books); }
@@ -111,22 +127,7 @@ module.exports.BooksAPI = BooksAPI = function (db) {
     this.loadNotifs = function (filter, callback) {
         notifs.find(filter).sort({ date: 1 }).toArray(callback);
     };
-    this.loadBase64 = function (book, index) {
-        var defColor = Q.defer(), params = reqOption, retbook = { _id: book._id, cover: book.cover };
-        if (!!index) { retbook.index = index; }
-        if (!book.cover) { defColor.resolve(book); }
-        params.url = book.cover;
-        params.encoding = "binary";
-        request.get(params, function (error, response, body) {
-            if (!!error || response.statusCode !== 200) {
-                defColor.reject(retbook);
-            } else {
-                retbook.cover = "data:" + response.headers["content-type"] + ";base64," + new Buffer(body, "binary").toString("base64");
-                defColor.resolve(retbook);
-            }
-        });
-        return defColor.promise;
-    };
+    this.loadBase64 = loadBase64;
     this.loadOne = loadOne;
     this.searchOne = searchOne;
     this.searchBooks = function (params, callback) {
