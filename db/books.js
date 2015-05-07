@@ -23,7 +23,7 @@ module.exports.BooksAPI = BooksAPI = function (db) {
         comments = db.collection("comments"),
         notifs = db.collection("notifications"),
         covers = db.collection("covers"),
-        Params = {
+        reqParams = {
             "searchOne": {
                 "fields": "id, etag, accessInfo(accessViewStatus), volumeInfo(title, subtitle, authors, publisher, publishedDate, description, industryIdentifiers, pageCount, categories, imageLinks, canonicalVolumeLink)",
                 "projection": "full",
@@ -40,8 +40,8 @@ module.exports.BooksAPI = BooksAPI = function (db) {
             "import": {
                 "maxResults": 40,
                 "shelf": 7,
-                "fields": "items(id, etag, accessInfo(accessViewStatus), volumeInfo(title, subtitle, authors, publisher, publishedDate, description, industryIdentifiers, pageCount, categories, imageLinks, canonicalVolumeLink))",
-                "projection": "full",
+                "fields": "items(id)",
+                "projection": "lite",
                 "printType": "books",
                 "key": "AIzaSyA0t8hJ9KrKfTBKVBBZq5gXIbg7vuh5yHk"
             }
@@ -75,14 +75,14 @@ module.exports.BooksAPI = BooksAPI = function (db) {
             covers.remove(filter, callback);
         },
         searchOne = function (bookid, callback) {
-            var params = _.assign({ volumeId: bookid }, Params.searchOne);
+            var params = _.assign({ volumeId: bookid }, reqParams.searchOne);
             gBooks.volumes.get(params, function (error, response) {
                 if (!!error || !response) { callback(error || new Error("Bad Single Request!!!")); } else {
                     var book = formatOne(response);
                     book.isNew = true;
                     if (!!book.cover) {
                         loadBase64(book.cover).done(function (response) {
-                            if (!!response && !!response.cover) { book.cover = response.cover; }
+                            if (!!response && !!response.base64) { book.base64 = response.base64; }
                             callback(null, book);
                         });
                     } else {
@@ -100,7 +100,7 @@ module.exports.BooksAPI = BooksAPI = function (db) {
                 if (!!error || response.statusCode !== 200) {
                     defColor.reject();
                 } else {
-                    defColor.resolve({ cover: "data:" + response.headers["content-type"] + ";base64," + new Buffer(body, "binary").toString("base64"), index: index });
+                    defColor.resolve({ base64: "data:" + response.headers["content-type"] + ";base64," + new Buffer(body, "binary").toString("base64"), index: index });
                 }
             });
             return defColor.promise;
@@ -108,6 +108,7 @@ module.exports.BooksAPI = BooksAPI = function (db) {
 
     this.updateBook = function (newbook, callback) {
         delete newbook.isNew;
+        delete newbook.base64;
         books.update({ id: newbook.id }, newbook, { upsert: true }, callback);
     };
     this.formatBooks = function (books) {
@@ -131,17 +132,13 @@ module.exports.BooksAPI = BooksAPI = function (db) {
     this.loadOne = loadOne;
     this.searchOne = searchOne;
     this.searchBooks = function (params, callback) {
-        gBooks.volumes.list(_.assign(params, Params.search), callback);
+        gBooks.volumes.list(_.assign(params, reqParams.search), callback);
     };
     this.associatedBooks = function (params, callback) {
-        gBooks.volumes.associated.list(_.assign(params, Params.search), callback);
+        gBooks.volumes.associated.list(_.assign(params, reqParams.search), callback);
     };
     this.myGoogleBooks = function (params, callback) {
-        params.langRestrict = "fr";
-        gBooks.mylibrary.bookshelves.list(params, callback);
-    };
-    this.myGoogleVolumes = function (params, callback) {
-        gBooks.mylibrary.bookshelves.volumes.list((!!params.import) ? _.assign(params, Params.import) : _.assign(params, Params.search), callback);
+        gBooks.mylibrary.bookshelves.volumes.list((!!params.search) ? _.assign(params, reqParams.search) : _.assign(params, reqParams.import), callback);
     };
     this.googleAdd = function (params, callback) {
         params.shelf = 7;

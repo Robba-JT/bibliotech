@@ -46,8 +46,8 @@ module.exports = exports = function (app, db) {
     //Logout
 		.get("/logout", function (req, res) {
             res.clearCookie("_bsession");
-            req.session.destroy(function (err) {
-                oauth2Client.revokeCredentials(function (err) {
+            oauth2Client.revokeCredentials(function (err) {
+                req.session.destroy(function (err) {
                     res.redirect("/");
                 });
 			 });
@@ -59,7 +59,11 @@ module.exports = exports = function (app, db) {
 	//Login
 		.post("/login", function (req, res) {
 			users.validateLogin(req.body.a, req.body.c, false)
-                .then(function (user) { req.session.user = user._id; res.jsonp({ success: !!user }); })
+                .then(function (user) {
+                    req.session.user = user._id;
+                    if (!!!!req.body.o) { req.session.cookie.maxAge = null; }
+                    res.jsonp({ success: !!user });
+                })
                 .catch(function (err) { res.jsonp({ error: err.message || "Invalid credentials!!!" }); });
 		})
 
@@ -78,6 +82,7 @@ module.exports = exports = function (app, db) {
             oauth2Client.getToken(req.body.code, function (err, token) {
                 if (!!token) {
                     oauth2Client.setCredentials(token);
+                    req.session.cookie.expires = token.expiry_date;
                     req.session.token = oauth2Client;
                 }
 				res.jsonp({ success: !!token });

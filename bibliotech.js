@@ -63,12 +63,16 @@ MongoClient.connect(mongoUrl, function (err, db) {
 			key: "_bsession",
 			secret: "robba1979",
 			resave: false,
+            unset: "destroy",
 			saveUninitialized: false,
-            maxAge: config.maxAge,
 			store: new MongoStore({
 				url: mongoUrl,
-				autoRemove: "native"
-			})
+				autoRemove: "native",
+                touchAfter: 24 * 3600
+			}),
+            cookie: {
+                maxAge: config.maxAge
+            }
 		}));
 
     io.use(function (connData, next) {

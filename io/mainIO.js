@@ -18,7 +18,7 @@ module.exports = mainIO = function (socket, db) {
         userAPI = new UsersAPI(db),
         bookAPI = new BooksAPI(db),
         mailAPI = new MailsAPI(db),
-        thisUser, thisBooks, lastSearch = {}, lastDetail = {},
+        thisUser, thisBooks = [], lastSearch = {}, lastDetail = {},
         currUser = function (id) {
             var defGet = Q.defer();
             sessionDB.findOne({ _id: id }, function (err, response) {
@@ -43,12 +43,6 @@ module.exports = mainIO = function (socket, db) {
                 }
             });
             return defGet.promise;
-        },
-        refreshToken = function () {
-            console.log("thisUser.token", thisUser.token);
-            if (!!thisUser.token && thisUser.token.expiry_date > new Date()) {
-                //
-            }
         },
         defBooks = function (request, query) {
             var defReq = Q.defer();
@@ -75,21 +69,29 @@ module.exports = mainIO = function (socket, db) {
                             listBooks.push(books);
                             params.startIndex += books.length;
                             if (_.isFunction(callback)) { callback(books); }
-                            if (books.length === 40 && params.startIndex < 400) {
-                                loop();
-                            } else {
-                                defLoop.resolve(_.flattenDeep(listBooks));
-                            }
+                            if (books.length === 40 && params.startIndex < 400) { loop(); } else { defLoop.resolve(_.flattenDeep(listBooks)); }
                         } else { defLoop.resolve(_.flattenDeep(listBooks)); }
                     });
                 };
             loop();
             return defLoop.promise;
         },
+        addBook = function (bookid) {
+            var defAdd = Q.defer();
+            searchDetail(bookid, function (error, book) {
+                if (!!error) { defAdd.reject(error); }
+                if (!!book) {
+                    addBookToUser(book);
+                    defAdd.resolve(book);
+                }
+            });
+            return defAdd.promise;
+        },
         addBookToUser = function (book) {
             userAPI.updateUser({ _id: thisUser._id }, {$addToSet: { books: { book: book.id }}});
             if (!!book.isNew) { defBooks("updateBook", book); }
             if (!!thisUser.googleSync) { bookAPI.googleAdd(_.assign({ volumeId: book.id }, thisUser.token)); }
+            thisBooks.push(book);
         };
 
     socket.on("isConnected", function () {
@@ -172,8 +174,8 @@ module.exports = mainIO = function (socket, db) {
                             Q.allSettled(def64).then(function (results) {
                                 var covers = _.map(results, "value");
                                 for (var cover in covers) {
-                                    if (!!covers[cover].index) {
-                                        books[covers[cover].index].cover = covers[cover].cover;
+                                    if (!!covers[cover] && !!covers[cover].index) {
+                                        books[covers[cover].index].base64 = covers[cover].base64;
                                     }
                                 }
                                 thisBooks = books;
@@ -207,23 +209,20 @@ module.exports = mainIO = function (socket, db) {
     socket.on("searchDetail", function (bookid) {
         searchDetail(bookid, function (error, response) {
             if (!!error) { console.error("searchDetail", error); }
-            if (!!response) { console.log(response); socket.emit("returnDetail", response); }
-        });
-    });
-
-    socket.on("addBook", function (bookid) {
-        searchDetail(bookid, function (error, book) {
-            if (!!error) { console.error("addBook", error); }
-            if (!!book) {
-                socket.emit("returnAdd", book);
-                addBookToUser(book);
+            if (!!response) {
+                socket.emit("returnDetail", response);
+                lastDetail = response;
             }
         });
     });
 
-    socket.on("addDetail", function () {
-        addBookToUser(lastDetail);
+    socket.on("addBook", function (bookid) {
+        addBook(bookid)
+            .then(function (book) { socket.emit("returnAdd", book); })
+            .catch(function (error) { console.error("addBook", error); });
     });
+
+    socket.on("addDetail", function () { addBookToUser(lastDetail); });
 
     socket.on("updateBook", function (data) {
         var defReq = [];
@@ -309,23 +308,27 @@ module.exports = mainIO = function (socket, db) {
     });
 
     socket.on("recommanded", function () {
-        var params = thisUser.token;
-        params.import = false;
-        params.shelf = 8;
-        searchLoop("myGoogleVolumes", params, function (books) { socket.emit("books", books); })
+        searchLoop("myGoogleBooks", _.assign({ search: true, shelf: 8 }, thisUser.token), function (books) { socket.emit("books", books); })
             .catch(function (error) { console.error("recommanded", error); })
             .done(function (books) { socket.emit("endRequest", (!!books) ? books.length : 0); });
     });
 
     socket.on("importNow", function () {
         if (!thisUser.token) { return; }
-        searchLoop("myGoogleVolumes", _.assign({ import: true }, thisUser.token)).then(function (books) {
-            for (var jta in books) {
-                if (_.findIndex(thisUser.books, { book: books[jta].id}) === -1) {
-                    console.log(jta, _.findIndex(thisUser.books, { book: books[jta].id}));
-                    //userAPI.updateUser({ _id: thisUser._id }, {$addToSet: { books: { book: books[jta].id }}});
-                }
-            }
+        var qAdd = [], params = _.assign(thisUser.token),
+            gestionImport = function (books) {
+                _.forEach(books, function (book) {
+                    if (_.findIndex(thisUser.books, { book: book.id}) === -1) {
+                        qAdd.push(addBook(book.id));
+                    }
+                });
+            };
+
+        searchLoop("myGoogleBooks", params, gestionImport).done(function () {
+            Q.allSettled(qAdd)
+                .then(function () { socket.emit("collection", { books: _.sortBy(thisBooks, "title") }); })
+                .catch(function (error) { console.error("importNow", error); })
+                .done(function () { socket.emit("endRequest", thisBooks.length); });
         });
     });
 
