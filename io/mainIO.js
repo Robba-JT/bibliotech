@@ -226,8 +226,8 @@ module.exports = mainIO = function (socket, db) {
 
     socket.on("updateBook", function (data) {
         var defReq = [];
-        if (!!data.cover && !!data.maincolor) {
-            defReq.push(defBooks("updateCover", { _id: { user: thisUser._id, book: data.id }, cover: data.cover, mainColor: data.mainColor, date: new Date() }));
+        if (!!data.base64 && !!data.maincolor) {
+            defReq.push(defBooks("updateCover", { _id: { user: thisUser._id, book: data.id }, cover: data.base64, mainColor: data.maincolor, date: new Date() }));
         }
         if (!!data.userNote || !!data.userComment) {
             var update = { _id: { user: thisUser._id, book: data.id }, date: new Date(), name: thisUser.name };

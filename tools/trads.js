@@ -25,6 +25,7 @@ module.exports = exports = {
             alls: "Toutes",
             author: "Auteur",
             authors: "Auteurs",
+            cancel: "Annuler",
             categories: "Catégories",
             collection: "Bibliothèque",
             comments: "Commentaires",
@@ -37,6 +38,7 @@ module.exports = exports = {
             errConfirm: "Les mots de passe ne sont pas identiques!",
             errFilter: "Le filtre doit contenir au moins 3 caractères!",
             errName: "Le nom doit contenir au moins 4 caractères!",
+            error: "Erreur",
             errPwd: "Le mot de passe doit contenir entre 4 et 12 caractères!",
             errRecommand: "Vous ne pouvez pas vous notifier!",
             errSearch: "La recherche doit contenir au moins 3 caractères!",
@@ -47,6 +49,7 @@ module.exports = exports = {
             gimport: "Importer maintenant",
             gplus: "Google +",
             gsync: "Synchronisation automatique Google",
+            info: "Information",
             isbn: "ISBN",
             language: "Langue",
             logout: "Déconnexion",
@@ -79,7 +82,8 @@ module.exports = exports = {
             sorts: "Tris",
             tags: "Tags",
             title: "Titre",
-            valid: "Valider"
+            valid: "Valider",
+            warning: "Attention"
         }
     },
     en: {
@@ -108,6 +112,7 @@ module.exports = exports = {
             alls: "All",
             author: "Author",
             authors: "Authors",
+            cancel: "Cancel",
             categories: "Categories",
             collection: "Collection",
             comments: "Comments",
@@ -120,6 +125,7 @@ module.exports = exports = {
             errConfirm: "Password fields are not identical!",
             errFilter: "Filter field must contain at least 3 characters!",
             errName: "Name field must contain at least 4 characters!",
+            error: "Error",
             errPwd: "Password field must contain between 4 and 12 characters!",
             errRecommand: "You can not notify you!",
             errSearch: "Search field must contain at least 3 characters!",
@@ -130,6 +136,7 @@ module.exports = exports = {
             gimport: "Import now",
             gplus: "Google +",
             gsync: "Auto sync Google",
+            info: "Information",
             isbn: "ISBN",
             language: "Language",
             logout: "logout",
@@ -162,7 +169,8 @@ module.exports = exports = {
             sorts: "Sorts",
             tags: "Tags",
             title: "Title",
-            valid: "Ok"
+            valid: "Ok",
+            warning: "Warning"
         }
     }
 };
