@@ -52,11 +52,11 @@ module.exports = mainIO = function (socket, db) {
         searchDetail = function (bookid, callback) {
             if (!!lastDetail && !!lastDetail.id && lastDetail.id === bookid) { return callback(null, lastDetail); }
             defBooks("loadOne", { id: bookid })
-                .then(callback)
+                .then(function (book) { callback(null, book); })
                 .catch(function (error) {
                     defBooks("searchOne", bookid)
-                        .catch(callback)
-                        .then(function (response) { callback(null, response); });
+                        .then(function (response) { callback(null, response); })
+                        .catch(callback);
                 });
         },
         searchLoop = function (fn, param, callback) {
@@ -244,7 +244,7 @@ module.exports = mainIO = function (socket, db) {
         _.remove(thisBooks, { id: bookid });
         if (!!thisUser.googleSync) {
             defBooks("googleRemove", _.assign({ volumeId: bookid }, thisUser.token))
-                .then(function (response) { console.log(response); })
+                //.then(function (response) { console.log(response); })
                 .catch(function (error) { console.error("googleRemove", error); });
         }
     });
