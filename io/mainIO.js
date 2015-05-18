@@ -296,7 +296,7 @@ module.exports = mainIO = function (socket, db) {
     socket.on("readNotif", function (bookid) {
         searchDetail(bookid, function (error, response) {
             if (!!error) { console.error("readNotif", error); }
-            if (!!response) { socket.emit("returnDetail", response); }
+            if (!!response) { socket.emit("returnNotif", response); }
         });
         defBooks("updateNotif", { _id: { to: thisUser._id, book: bookid }, isNew: false });
     });
