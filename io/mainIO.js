@@ -50,7 +50,7 @@ module.exports = mainIO = function (socket, db) {
             return defReq.promise;
         },
         searchDetail = function (bookid, callback) {
-            if (!!lastDetail && !!lastDetail.id && lastDetail.id === bookid) { return callback(null, lastDetail); }
+            if (!!lastDetail && !!lastDetail.id && _.isEqual(lastDetail.id, bookid)) { return callback(null, lastDetail); }
             defBooks("loadOne", { id: bookid })
                 .then(function (book) { callback(null, book); })
                 .catch(function (error) {
@@ -90,7 +90,12 @@ module.exports = mainIO = function (socket, db) {
         addBookToUser = function (book) {
             userAPI.updateUser({ _id: thisUser._id }, {$addToSet: { books: { book: book.id }}});
             if (!!book.isNew) { defBooks("updateBook", book); }
-            if (!!thisUser.googleSync) { bookAPI.googleAdd(_.assign({ volumeId: book.id }, thisUser.token)); }
+            if (!!book.id.user) {
+                userAPI.updateUser({ _id: thisUser._id }, { "$inc": { "userbooks": 1 }});
+                thisUser.userbooks++;
+            } else {
+                if (!!thisUser.googleSync) { bookAPI.googleAdd(_.assign({ volumeId: book.id }, thisUser.token)); }
+            }
             thisBooks.push(book);
         };
 
@@ -146,10 +151,10 @@ module.exports = mainIO = function (socket, db) {
                                 books = Books.value || [],
                                 covers = Covers.value || [],
                                 comments = _.groupBy(Comments.value, function (elt) { return elt._id.book; }) || [],
-                                returnTags = function (elt) { return elt.book === books[book].id; },
+                                returnTags = function (elt) { return _.isEqual(elt.book, books[book].id); },
                                 returnComments = function (elt) { return elt._id.user !== thisUser._id; },
                                 returnUserComments = function (elt) { return elt._id.user === thisUser._id; },
-                                returnCover = function (cover) { return cover._id && cover._id.book && cover._id.book === books[book].id; };
+                                returnCover = function (cover) { return _.isEqual(cover._id.book, books[book].id); };
 
                             for (var book in books) {
                                 var tags = _.result(_.find(userData.books, returnTags), "tags"),
@@ -226,8 +231,8 @@ module.exports = mainIO = function (socket, db) {
 
     socket.on("updateBook", function (data) {
         var defReq = [];
-        if (!!data.base64 && !!data.maincolor) {
-            defReq.push(defBooks("updateCover", { _id: { user: thisUser._id, book: data.id }, cover: data.base64, mainColor: data.maincolor, date: new Date() }));
+        if (!!data.alternative && !!data.maincolor) {
+            defReq.push(defBooks("updateCover", { _id: { user: thisUser._id, book: data.id }, cover: data.alternative, mainColor: data.maincolor, date: new Date() }));
         }
         if (!!data.userNote || !!data.userComment) {
             var update = { _id: { user: thisUser._id, book: data.id }, date: new Date(), name: thisUser.name };
@@ -242,7 +247,7 @@ module.exports = mainIO = function (socket, db) {
     socket.on("removeBook", function (bookid) {
         userAPI.updateUser({ _id: thisUser._id }, {$pull: { books: { book: bookid }}});
         _.remove(thisBooks, { id: bookid });
-        if (!!thisUser.googleSync) {
+        if (!!thisUser.googleSync && !bookid.user) {
             defBooks("googleRemove", _.assign({ volumeId: bookid }, thisUser.token))
                 //.then(function (response) { console.log(response); })
                 .catch(function (error) { console.error("googleRemove", error); });
@@ -339,5 +344,11 @@ module.exports = mainIO = function (socket, db) {
             defExport.push(defBooks("googleAdd", _.assign({ volumeId: thisUser.books[jta].book }, thisUser.token)));
         }
         Q.allSettled(defExport).catch(function (error) { console.error("exportNow", error); });
+    });
+
+    socket.on("newbook", function (data) {
+        data.authors = [data.authors];
+        addBookToUser(_.assign({ id: { user: thisUser._id, book: thisUser.userbooks }, isNew: true }, data));
+        console.log(thisUser.userbooks);
     });
 };
