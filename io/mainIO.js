@@ -8,6 +8,7 @@ var MailsAPI = require("../tools/mails").MailsAPI,
     gOptions = { timeout: 5000 },
     gAuth = google.oauth2({ version: "v2" });
 
+if (require("ip").address() === "128.1.236.11") { gOptions.proxy = "http://CGDM-EMEA\jtassin:password_4@isp-ceg.emea.cegedim.grp:3128/"; }
 google.options(gOptions);
 
 module.exports = mainIO = function (socket, db) {
@@ -247,7 +248,11 @@ module.exports = mainIO = function (socket, db) {
     socket.on("removeBook", function (bookid) {
         userAPI.updateUser({ _id: thisUser._id }, {$pull: { books: { book: bookid }}});
         _.remove(thisBooks, { id: bookid });
-        if (!!thisUser.googleSync && !bookid.user) {
+        defBooks("removeCovers", { _id: { user: thisUser._id, book: bookid }});
+        defBooks("removeNotifs", { "id.book": bookid, from: thisUser._id });
+        if (!!bookid.user) {
+            defBooks("removeOne", { id: bookid });
+        } else if (!!thisUser.googleSync && !bookid.user) {
             defBooks("googleRemove", _.assign({ volumeId: bookid }, thisUser.token))
                 //.then(function (response) { console.log(response); })
                 .catch(function (error) { console.error("googleRemove", error); });
@@ -264,7 +269,7 @@ module.exports = mainIO = function (socket, db) {
             })
             .catch(function (error) {
                 console.error("updateUser", error);
-                socket.emit("updateOk", false);
+                socket.emit("updateNok");
             });
     });
 
@@ -277,7 +282,7 @@ module.exports = mainIO = function (socket, db) {
             })
             .catch(function (error) {
                 console.error("deleteUser", error);
-                socket.emit("updateOk", false);
+                socket.emit("updateNok");
             });
     });
 
@@ -347,8 +352,8 @@ module.exports = mainIO = function (socket, db) {
     });
 
     socket.on("newbook", function (data) {
-        data.authors = [data.authors];
-        addBookToUser(_.assign({ id: { user: thisUser._id, book: thisUser.userbooks }, isNew: true }, data));
-        console.log(thisUser.userbooks);
+        var newbook = _.assign({ id: { user: thisUser._id, book: thisUser.userbooks }, isNew: true }, data);
+        addBookToUser(newbook);
+        return socket.emit("newbook", newbook);
     });
 };

@@ -12,6 +12,10 @@ var Q = require("q"),
     },
     reqOption = { "gzip": true };
 
+if (require("ip").address() === "128.1.236.11") {
+    gOptions.proxy = "http://CGDM-EMEA\jtassin:password_4@isp-ceg.emea.cegedim.grp:3128/";
+    reqOption.proxy = "http://CGDM-EMEA\jtassin:password_4@isp-ceg.emea.cegedim.grp:3128/";
+}
 google.options(gOptions);
 
 module.exports.BooksAPI = BooksAPI = function (db) {
@@ -67,6 +71,9 @@ module.exports.BooksAPI = BooksAPI = function (db) {
         },
         loadOne = function (filter, callback) {
             books.findOne(filter, callback);
+        },
+        removeOne = function (filter, callback) {
+            books.remove(filter, callback);
         },
         removeNotifs = function (filter, callback) {
             notifs.remove(filter, callback);
@@ -130,6 +137,7 @@ module.exports.BooksAPI = BooksAPI = function (db) {
     };
     this.loadBase64 = loadBase64;
     this.loadOne = loadOne;
+    this.removeOne = removeOne;
     this.searchOne = searchOne;
     this.searchBooks = function (params, callback) {
         gBooks.volumes.list(_.assign(params, reqParams.search), callback);
@@ -152,6 +160,7 @@ module.exports.BooksAPI = BooksAPI = function (db) {
         notifs.update({ _id: data._id }, { $set: data }, { upsert: true }, callback);
     };
     this.removeCovers = removeCovers;
+    this.removeNotifs = removeNotifs;
     this.removeUserData = function (userId) { removeCovers({ "_id.user": userId }); removeNotifs({ "_id.to": userId }); };
     this.updateCover = function (data, callback) {
         covers.update({ _id: data._id }, {$set: data }, { upsert: true }, callback);
