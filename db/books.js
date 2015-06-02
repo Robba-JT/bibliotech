@@ -116,7 +116,7 @@ module.exports.BooksAPI = BooksAPI = function (db) {
     this.updateBook = function (newbook, callback) {
         delete newbook.isNew;
         delete newbook.base64;
-        books.update({ id: newbook.id }, newbook, { upsert: true }, callback);
+        books.update({ id: newbook.id }, {$set: newbook }, { upsert: true }, callback);
     };
     this.formatBooks = function (books) {
         var retbooks = [];

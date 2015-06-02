@@ -242,6 +242,7 @@ module.exports = mainIO = function (socket, db) {
             defReq.push(defBooks("updateComment", update));
         }
         if (!!data.tags) { defReq.push(userAPI.updateUser({ _id: thisUser._id, "books.book": data.id }, {$set: { "books.$.tags" : data.tags }})); }
+        if (!!data.update) { defReq.push(defBooks("updateBook", _.assign(data.update, { id: data.id }))); }
         Q.allSettled(defReq).catch(function (error) { console.error("updateBook", error); });
     });
 
