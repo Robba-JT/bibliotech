@@ -10,6 +10,7 @@ module.exports = exports = {
             errConfirmed: "Les mots de passe ne sont pas identiques!",
             errName: "Le nom doit contenir au moins 4 caractères!",
             errPwd: "Le mot de passe doit contenir entre 4 et 12 caractères!",
+            forgetPassword: "Mot de passe oublié!",
             lang: "fr",
             name: "Nom",
             password: "Mot de passe",
@@ -111,7 +112,8 @@ module.exports = exports = {
             cancel: "Cancel",
             errName: "Name field must contain at least 4 characters!",
             errPwd: "Password field must contain between 4 and 12 characters!",
-            errConfirmed: "Password fields are not identical!"
+            errConfirmed: "Password fields are not identical!",
+            forgetPassword: "Forget Password"
         },
         bibliotech: {
             add: "Add",

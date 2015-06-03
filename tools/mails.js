@@ -1,11 +1,11 @@
 var nodemailer = require("nodemailer"),
     smtpTransport = nodemailer.createTransport(require("nodemailer-smtp-transport")({
         service: "Gmail",
-        auth: { user: "bibliotech.web@gmail.com", pass: "robba1979" },
+        auth: { user: "robba.jt@gmail.com", pass: "robba1979" },
         debug : true
     })),
     mailLogin = {
-        from: "Bibliotech ✔ <bibliotech.web@gmail.com>",
+        from: "Bibliotech ✔ <robba.jt@gmail.com>",
         subject: "Nouveau mot de passe ✔",
         text: "Voici votre nouveau mot de passe: ",
         html: "<b>Voici votre nouveau mot de passe:</b> "

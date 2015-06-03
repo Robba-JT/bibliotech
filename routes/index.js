@@ -1,5 +1,6 @@
 var UsersAPI = require("../db/users").UsersAPI,
     trads = require("../tools/trads"),
+    MailsAPI = require("../tools/mails").MailsAPI,
     google = require("googleapis"),
     OAuth2Client = google.auth.OAuth2,
     oauth2Client = new OAuth2Client(
@@ -15,7 +16,8 @@ google.options(gOptions);
 module.exports = exports = function (app, db) {
     "use strict";
 
-    var users = new UsersAPI(db);
+    var users = new UsersAPI(db),
+        mails = new MailsAPI();
 
 	app
 	//Errorhandler
@@ -73,6 +75,15 @@ module.exports = exports = function (app, db) {
 			users.addUser(req.body.a, req.body.c, req.body.b)
                 .then(function (user) { req.session.user = user._id; res.jsonp({ success: !!user }); })
                 .catch(function (err) { res.jsonp({ error: err.message || "Creation error!!!" }); });
+		})
+
+	//Mot de passe oublié
+		.post("/mail", function (req, res) {
+            console.log(req.body.a, req.body.b);
+            mails.sendPassword(req.body.a, req.body.b, function (error, response) {
+                console.error(error);
+                res.jsonp({ success: !error });
+            });
 		})
 
     //Preview
