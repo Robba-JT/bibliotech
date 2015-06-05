@@ -12,6 +12,7 @@ var express = require("express"),
     cookie = require("express/node_modules/cookie"),
     session = require("express-session"),
     favicon = require("serve-favicon"),
+    serveStatic = require("serve-static"),
     http = require("http"),
     server = http.Server(app).listen(port),
     io = require("socket.io")(server),
@@ -51,11 +52,11 @@ MongoClient.connect(mongoUrl, function (err, db) {
         .set("view engine", "html")
         .set("views", path.join(__dirname + "/views"))
         .set("etag", "strong")
-        .use(express.static(path.join(__dirname, "root")))
+        .use(compression({ level : 9 }))
         .use(cors())
-        .use(compression())
         .use(json())
-        .use(favicon(path.join(__dirname, "root/images/iconmonstr-bold-icon-24.png")))
+        .use(serveStatic(path.join(__dirname, "root"), { maxAge: 86400000 }))
+        .use(favicon(path.join(__dirname, "root/images/bold-icon-24.png")))
         .use(errorhandler(config.errorHandlerOptions))
         .use(bodyParser.urlencoded({ extended: false }))
 		.use(bodyParser.json())

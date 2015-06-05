@@ -91,11 +91,11 @@ module.exports = mainIO = function (socket, db) {
         addBookToUser = function (book) {
             userAPI.updateUser({ _id: thisUser._id }, {$addToSet: { books: { book: book.id }}});
             if (!!book.isNew) { defBooks("updateBook", book); }
-            if (!!book.id.user) {
+            if (!!book.id.user && _.isEqual(book.id.user, thisUser._id)) {
                 userAPI.updateUser({ _id: thisUser._id }, { "$inc": { "userbooks": 1 }});
                 thisUser.userbooks++;
             } else {
-                if (!!thisUser.googleSync) { bookAPI.googleAdd(_.assign({ volumeId: book.id }, thisUser.token)); }
+                if (!_.isObject(book.id) && !!thisUser.googleSync) { bookAPI.googleAdd(_.assign({ volumeId: book.id }, thisUser.token)); }
             }
             thisBooks.push(book);
         };
