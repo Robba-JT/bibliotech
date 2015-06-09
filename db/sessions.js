@@ -9,12 +9,10 @@ module.exports.SessionsAPI = SessionsAPI = function (db) {
     }
     var sessions = db.collection("sessions");
 
-    //this.startSession = function (username, remember, googleSignIn, googleInfos, callback) {
     this.startSession = function (username, remember, code, callback) {
         var current_date = (new Date()).valueOf().toString(),
             random = Math.random().toString(),
             sessionid = crypto.createHash("sha1").update(current_date + random).digest("hex"),
-            //session = { username: username, _id: sessionid, remember: remember, googleSignIn: googleSignIn, googleInfos: googleInfos, connectionDate : new Date() };
             session = { _id: sessionid, connectionDate : new Date() };
 
         if (!!username) { session.username = username; session.remember = session.remember; }

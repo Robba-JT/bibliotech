@@ -66,11 +66,17 @@ module.exports = mainIO = function (socket, db) {
                     bookAPI[fn](params, function (error, response) {
                         if (!!error) { console.error("searchLoop", error); }
                         if (!!response && !!response.items) {
-                            var books = bookAPI.formatBooks(response.items);
-                            listBooks.push(books);
-                            params.startIndex += books.length;
-                            if (_.isFunction(callback)) { callback(books); }
-                            if (books.length === 40 && params.startIndex < 400) { loop(); } else { defLoop.resolve(_.flattenDeep(listBooks)); }
+                            var books = bookAPI.formatBooks(response.items), defCovers = [];
+                            _.forEach(books, function (book, index) { defCovers.push(bookAPI.loadBase64(book.cover, index)); });
+                            Q.allSettled(defCovers).then(function (results) {
+                                results.forEach(function (result) {
+                                    if (result.state === "fulfilled") { books[result.value.index].cover = result.value.base64; }
+                                });
+                                listBooks.push(books);
+                                params.startIndex += books.length;
+                                if (_.isFunction(callback)) { callback(books); }
+                                if (books.length === 40 && params.startIndex < 400) { loop(); } else { defLoop.resolve(_.flattenDeep(listBooks)); }
+                            });
                         } else { defLoop.resolve(_.flattenDeep(listBooks)); }
                     });
                 };
@@ -251,7 +257,7 @@ module.exports = mainIO = function (socket, db) {
         _.remove(thisBooks, { id: bookid });
         defBooks("removeCovers", { _id: { user: thisUser._id, book: bookid }});
         defBooks("removeNotifs", { "id.book": bookid, from: thisUser._id });
-        if (!!bookid.user) {
+        if (_.isEqual(bookid.user, thisUser._id)) {
             defBooks("removeOne", { id: bookid });
         } else if (!!thisUser.googleSync && !bookid.user) {
             defBooks("googleRemove", _.assign({ volumeId: bookid }, thisUser.token))
@@ -296,7 +302,7 @@ module.exports = mainIO = function (socket, db) {
                         to: data.recommand.toLowerCase(),
                         book: data.book
                     },
-                    from: thisUser.name,
+                    from: thisUser.name + "<" + thisUser._id + ">",
                     isNew: true,
                     title: data.title
                 });
@@ -307,7 +313,7 @@ module.exports = mainIO = function (socket, db) {
     socket.on("readNotif", function (bookid) {
         searchDetail(bookid, function (error, response) {
             if (!!error) { console.error("readNotif", error); }
-            if (!!response) { socket.emit("returnNotif", response); }
+            if (!!response) { socket.emit("returnNotif", lastDetail = response); }
         });
         defBooks("updateNotif", { _id: { to: thisUser._id, book: bookid }, isNew: false });
     });

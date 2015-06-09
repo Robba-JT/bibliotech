@@ -105,7 +105,7 @@ module.exports.BooksAPI = BooksAPI = function (db) {
             params.encoding = "binary";
             request.get(params, function (error, response, body) {
                 if (!!error || response.statusCode !== 200) {
-                    defColor.reject();
+                    defColor.reject(error || new Error("status: " + response.statusCode));
                 } else {
                     defColor.resolve({ base64: "data:" + response.headers["content-type"] + ";base64," + new Buffer(body, "binary").toString("base64"), index: index });
                 }

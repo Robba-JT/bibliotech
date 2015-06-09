@@ -55,7 +55,7 @@ MongoClient.connect(mongoUrl, function (err, db) {
         .use(compression({ level : 9 }))
         .use(cors())
         .use(json())
-        .use(serveStatic(path.join(__dirname, "root"), { maxAge: 86400000 }))
+        .use(serveStatic(path.join(__dirname, "root"), { maxAge: 864000000 }))
         .use(favicon(path.join(__dirname, "root/images/bold-icon-24.png")))
         .use(errorhandler(config.errorHandlerOptions))
         .use(bodyParser.urlencoded({ extended: false }))
