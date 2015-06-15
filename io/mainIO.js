@@ -3,12 +3,12 @@ var MailsAPI = require("../tools/mails").MailsAPI,
     ent = require("ent"),
     _ = require("lodash"),
     fs = require("fs"),
+    ObjectID = require("mongodb").ObjectID,
     BooksAPI = require("../db/books").BooksAPI,
     google = require("googleapis"),
     gOptions = { timeout: 5000 },
     gAuth = google.oauth2({ version: "v2" });
 
-if (require("ip").address() === "128.1.236.11") { gOptions.proxy = "http://CGDM-EMEA\jtassin:password_4@isp-ceg.emea.cegedim.grp:3128/"; }
 google.options(gOptions);
 
 module.exports = mainIO = function (socket, db) {
@@ -70,7 +70,10 @@ module.exports = mainIO = function (socket, db) {
                             _.forEach(books, function (book, index) { defCovers.push(bookAPI.loadBase64(book.cover, index)); });
                             Q.allSettled(defCovers).then(function (results) {
                                 results.forEach(function (result) {
-                                    if (result.state === "fulfilled") { books[result.value.index].cover = result.value.base64; }
+                                    if (result.state === "fulfilled") {
+                                        books[result.value.index].cover = true;
+                                        books[result.value.index].base64 = result.value.base64;
+                                    }
                                 });
                                 listBooks.push(books);
                                 params.startIndex += books.length;
@@ -95,14 +98,17 @@ module.exports = mainIO = function (socket, db) {
             return defAdd.promise;
         },
         addBookToUser = function (book) {
-            userAPI.updateUser({ _id: thisUser._id }, {$addToSet: { books: { book: book.id }}});
-            if (!!book.isNew) { defBooks("updateBook", book); }
+            var update = { $addToSet: { books: { book: book.id }}};
             if (!!book.id.user && _.isEqual(book.id.user, thisUser._id)) {
-                userAPI.updateUser({ _id: thisUser._id }, { "$inc": { "userbooks": 1 }});
+                update.$inc = { "userbooks": 1 };
                 thisUser.userbooks++;
             } else {
                 if (!_.isObject(book.id) && !!thisUser.googleSync) { bookAPI.googleAdd(_.assign({ volumeId: book.id }, thisUser.token)); }
             }
+            if (!!book.from) { update.$addToSet.books.from = book.from; }
+            if (!!book.alt) { update.$addToSet.books.cover = new ObjectID(book.alt); }
+            userAPI.updateUser({ _id: thisUser._id }, update);
+            if (!!book.isNew) { defBooks("updateBook", book); }
             thisBooks.push(book);
         };
 
@@ -131,7 +137,8 @@ module.exports = mainIO = function (socket, db) {
                         if (!userData) { return socket.emit("logout", true); }
                         thisUser = userData;
                         var booksList = _.pluck(userData.books, "book"),
-                            tagsList = _.countBy(_.flatten(_.compact(_.pluck(userData.books, "tags")), true).sort());
+                            tagsList = _.countBy(_.flatten(_.compact(_.pluck(userData.books, "tags")), true).sort()),
+                            coverList = _.compact(_.pluck(userData.books, "cover"));
 
                         thisUser.googleSignIn = !!userInfos.googleSignIn;
                         thisUser.token = userInfos.token;
@@ -145,12 +152,13 @@ module.exports = mainIO = function (socket, db) {
                             link: userInfos.link,
                             name: thisUser.name,
                             picture: userInfos.picture,
-                            tags: tagsList
+                            tags: tagsList,
+                            session: sessionId
                         });
                         Q.allSettled([
                             defBooks("loadNotifs", { "_id.to": thisUser._id, isNew: true }),
                             defBooks("loadBooks", { id : { $in : booksList }}),
-                            defBooks("loadCovers", { "_id.user" : thisUser._id }),
+                            defBooks("loadCovers", { "_id": {$in: coverList }}),
                             defBooks("loadComments", { "_id.book" : { $in : booksList }})
                         ]).spread(function (Notifs, Books, Covers, Comments) {
                             var def64 = [],
@@ -158,19 +166,21 @@ module.exports = mainIO = function (socket, db) {
                                 books = Books.value || [],
                                 covers = Covers.value || [],
                                 comments = _.groupBy(Comments.value, function (elt) { return elt._id.book; }) || [],
-                                returnTags = function (elt) { return _.isEqual(elt.book, books[book].id); },
+                                returnInfo = function (elt) { return _.isEqual(elt.book, books[book].id); },
                                 returnComments = function (elt) { return elt._id.user !== thisUser._id; },
                                 returnUserComments = function (elt) { return elt._id.user === thisUser._id; },
                                 returnCover = function (cover) { return _.isEqual(cover._id.book, books[book].id); };
 
                             for (var book in books) {
-                                var tags = _.result(_.find(userData.books, returnTags), "tags"),
+                                var infos = _.find(userData.books, returnInfo),
                                     comment = _.filter(comments[books[book].id], returnComments),
                                     userComment = _.filter(comments[books[book].id], returnUserComments),
-                                    cover = _.find(covers, returnCover);
+                                    cover = _.find(covers, { _id: _.result(infos, "cover")});
 
-                                books[book].tags = tags;
+                                books[book].tags = _.result(infos, "tags");
+                                books[book].from = _.result(infos, "from");
                                 books[book].comments = comment;
+                                books[book].alt = _.result(infos, "cover");
                                 if (!!userComment.length) {
                                     books[book].userComment = userComment[0].comment || "";
                                     books[book].userNote = userComment[0].note || "";
@@ -179,24 +189,23 @@ module.exports = mainIO = function (socket, db) {
                                 if (!!cover) {
                                     if (!!books[book].cover) { bookAPI.removeCovers({ _id: { user: thisUser._id , book: books[book].id }}); } else {
                                         books[book].alternative = cover.cover;
-                                        books[book].mainColor = cover.mainColor;
+                                        books[book].mainColor = cover.color;
                                     }
-                                } else if (!!books[book].cover) { def64.push(bookAPI.loadBase64(books[book].cover, book)); }
-                            }
-                            Q.allSettled(def64).then(function (results) {
-                                var covers = _.map(results, "value");
-                                for (var cover in covers) {
-                                    if (!!covers[cover] && !!covers[cover].index) {
-                                        books[covers[cover].index].base64 = covers[cover].base64;
-                                    }
+                                } else if (!!books[book].cover) {
+                                    def64.push(bookAPI.loadBase64(books[book].cover, book));
+                                    books[book].cover = true;
                                 }
-                                thisBooks = books;
-                                socket.emit("collection", {
-                                    tags: _.countBy(_.flatten(_.map(userData.books, "tags")).sort()),
-                                    orders: thisUser.orders,
-                                    notifs: notifs,
-                                    books: thisBooks
-                                });
+                            }
+                            socket.emit("collection", {
+                                tags: _.countBy(_.flatten(_.map(userData.books, "tags")).sort()),
+                                orders: thisUser.orders,
+                                notifs: notifs,
+                                books: books
+                            });
+                            thisBooks = books;
+                            Q.allSettled(def64).then(function (results) {
+                                var covers = _.map(results, "value"), retCovers = [];
+                                socket.emit("covers", covers);
                                 socket.emit("endRequest", books.length);
                             }).catch(function (error) { console.error("isConnected - Q.allSettled(def64)", error); });
                         });
@@ -239,7 +248,9 @@ module.exports = mainIO = function (socket, db) {
     socket.on("updateBook", function (data) {
         var defReq = [];
         if (!!data.alternative && !!data.maincolor) {
-            defReq.push(defBooks("updateCover", { _id: { user: thisUser._id, book: data.id }, cover: data.alternative, mainColor: data.maincolor, date: new Date() }));
+            defReq.push(defBooks("addCover", { cover: data.alternative, color: data.maincolor, date: new Date() }).then(function (cover) {
+                userAPI.updateUser({ _id: thisUser._id, "books.book": data.id }, {$set: { "books.$.cover" : cover }});
+            }));
         }
         if (!!data.userNote || !!data.userComment) {
             var update = { _id: { user: thisUser._id, book: data.id }, date: new Date(), name: thisUser.name };
@@ -304,18 +315,34 @@ module.exports = mainIO = function (socket, db) {
                     },
                     from: thisUser.name + "<" + thisUser._id + ">",
                     isNew: true,
-                    title: data.title
+                    title: data.title,
+                    alt: data.alt
                 });
             }
         });
     });
 
-    socket.on("readNotif", function (bookid) {
-        searchDetail(bookid, function (error, response) {
+    socket.on("readNotif", function (notif) {
+        searchDetail(notif._id.book, function (error, response) {
             if (!!error) { console.error("readNotif", error); }
-            if (!!response) { socket.emit("returnNotif", lastDetail = response); }
+            if (!!response) {
+                response.from = notif.from;
+                if (!response.base64 && !!notif.alt) {
+                    response.alt = notif.alt;
+                    bookAPI.loadCover({ _id: new ObjectID(notif.alt) }, function (error, result) {
+                        if (!!error) { console.error(error); }
+                        if (!!result) {
+                            response.base64 = result.cover;
+                            response.mainColor = result.color;
+                        }
+                        socket.emit("returnNotif", lastDetail = response);
+                    });
+                } else {
+                    socket.emit("returnNotif", lastDetail = response);
+                }
+            }
         });
-        defBooks("updateNotif", { _id: { to: thisUser._id, book: bookid }, isNew: false });
+        defBooks("updateNotif", { _id: notif._id, isNew: false });
     });
 
     socket.on("associated", function (bookid) {

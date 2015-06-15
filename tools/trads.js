@@ -1,6 +1,7 @@
 module.exports = exports = {
     fr: {
         login: {
+            lang: "fr",
             active: "Garder la session active",
             cancel: "Annuler",
             confirmed: "Confirmez votre mot de passe",
@@ -18,6 +19,7 @@ module.exports = exports = {
             valid: "Valider"
         },
         bibliotech: {
+            lang: "fr",
             add: "Ajouter",
             addbook: "Ajouter un livre",
             affich: "Afficher le menu",
@@ -48,6 +50,7 @@ module.exports = exports = {
             errTitle: "Le titre doit contenir au moins 6 caractères!",
             filter: "Filtre",
             french: "Français",
+            from: "Recommandé par",
             gconnexion: "Connexion Google",
             gexport: "Exporter maintenant",
             gimport: "Importer maintenant",
@@ -69,7 +72,7 @@ module.exports = exports = {
             nbPages: "Nombre de pages",
             newBook: "Nouvel enregistrement",
             newPwd: "Nouveau mot de passe",
-            newTag: "Nouveau tag",
+            newTag: "Nouvelle étiquette",
             note: "Note",
             notifications: "Notifications",
             on: "le",
@@ -91,7 +94,7 @@ module.exports = exports = {
             searchGo: "Lancer",
             sorts: "Tris",
             subtitle: "Subtitle",
-            tags: "Tags",
+            tags: "Etiquettes",
             title: "Titre",
             valid: "Valider",
             warning: "Attention"
@@ -116,6 +119,7 @@ module.exports = exports = {
             forgetPassword: "Forget Password"
         },
         bibliotech: {
+            lang: "en",
             add: "Add",
             addbook: "Add a book",
             affich: "Menu",
@@ -146,6 +150,7 @@ module.exports = exports = {
             errTitle: "Title field must contain at least 6 characters!",
             filter: "Filter",
             french: "Français",
+            from: "Recommanded by",
             gconnexion: "Google Connection",
             gexport: "Export now",
             gimport: "Import now",

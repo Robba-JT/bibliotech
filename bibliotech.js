@@ -25,7 +25,8 @@ var express = require("express"),
     routes = require("./routes"),
     extconsole = require("extended-console"),
     logsApi = require("./tools/logs").LogsAPI(fs),
-    mainIO = require("./io/mainIO");
+    mainIO = require("./io/mainIO"),
+    _ = require("lodash");
 
 console.extended.timestampFormat = "DD-MM-YYYY hh:mm:ss";
 console.extended
@@ -92,4 +93,18 @@ MongoClient.connect(mongoUrl, function (err, db) {
 
     routes(app, db);
     console.info("Express server listening on " + ip.address() + ":" + port);
+
+    //Suppression Covers non utilisées
+    db.collection("covers").find().toArray(function (error, covers) {
+        if (!!error) { return console.error("Covers removed", error); }
+        db.collection("users").find({}, { "books.cover": true }).toArray(function (error, books) {
+            if (!!error) { return console.error(error); }
+            var removed = 0;
+            books = _.flattenDeep(_.pluck(books, "books"));
+            covers.forEach(function (result) {
+                if (_.findIndex(books, { cover: result._id }) === -1) { removed++; db.collection("covers").remove({ _id: result._id }); }
+            });
+            console.info("Covers removed", removed);
+        });
+    });
 });

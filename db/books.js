@@ -1,5 +1,6 @@
 var Q = require("q"),
     request = require("request"),
+    ObjectID = require("mongodb").ObjectID,
     google = require("googleapis"),
     gBooks = google.books({ version: "v1" }),
     _ = require("lodash"),
@@ -12,10 +13,6 @@ var Q = require("q"),
     },
     reqOption = { "gzip": true };
 
-if (require("ip").address() === "128.1.236.11") {
-    gOptions.proxy = "http://CGDM-EMEA\jtassin:password_4@isp-ceg.emea.cegedim.grp:3128/";
-    reqOption.proxy = "http://CGDM-EMEA\jtassin:password_4@isp-ceg.emea.cegedim.grp:3128/";
-}
 google.options(gOptions);
 
 module.exports.BooksAPI = BooksAPI = function (db) {
@@ -70,7 +67,18 @@ module.exports.BooksAPI = BooksAPI = function (db) {
             };
         },
         loadOne = function (filter, callback) {
-            books.findOne(filter, callback);
+            books.findOne(filter, function (error, book) {
+                if (!!error || !book) { callback(error || new Error("No book")); } else {
+                    if (!!book.cover) {
+                        loadBase64(book.cover).done(function (response) {
+                            if (!!response && !!response.base64) { book.base64 = response.base64; }
+                            callback(null, book);
+                        });
+                    } else {
+                        callback(null, book);
+                    }
+                }
+            });
         },
         removeOne = function (filter, callback) {
             books.remove(filter, callback);
@@ -97,6 +105,9 @@ module.exports.BooksAPI = BooksAPI = function (db) {
                     }
                 }
             });
+        },
+        loadCover = function (filter, callback) {
+            covers.findOne(filter, callback);
         },
         loadBase64 = function (url, index) {
             var defColor = Q.defer(), params = reqOption;
@@ -126,6 +137,7 @@ module.exports.BooksAPI = BooksAPI = function (db) {
         }
         return retbooks;
     };
+    this.loadCover = loadCover;
     this.loadCovers = function (filter, callback) {
         covers.find(filter).toArray(callback);
     };
@@ -161,7 +173,7 @@ module.exports.BooksAPI = BooksAPI = function (db) {
     };
     this.removeCovers = removeCovers;
     this.removeNotifs = removeNotifs;
-    this.removeUserData = function (userId) { removeCovers({ "_id.user": userId }); removeNotifs({ "_id.to": userId }); };
+    this.removeUserData = function (userId) { /*removeCovers({ "_id.user": userId }); */removeNotifs({ "_id.to": userId }); };
     this.updateCover = function (data, callback) {
         covers.update({ _id: data._id }, {$set: data }, { upsert: true }, callback);
     };
@@ -170,5 +182,15 @@ module.exports.BooksAPI = BooksAPI = function (db) {
     };
     this.updateComment = function (data, callback) {
         comments.update({ _id: data._id }, {$set: data }, { upsert: true }, callback);
+    };
+    this.addCover = function (data, callback) {
+        loadCover({ cover: data.cover }, function (error, result) {
+            if (!!error) { return callback(error); }
+            if (!!result) { return callback(null, result._id); }
+            covers.insert(data, function (error, result) {
+                if (!!error) { return callback(error); }
+                return callback(null, data._id);
+            });
+        });
     };
 };
