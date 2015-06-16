@@ -10,6 +10,7 @@ var UsersAPI = require("../db/users").UsersAPI,
     ),
     gOptions = { timeout: 5000, auth: oauth2Client };
 
+if (require("ip").address() === "128.1.236.11") { gOptions.proxy = "http://CGDM-EMEA\jtassin:password_4@isp-ceg.emea.cegedim.grp:3128/"; }
 google.options(gOptions);
 
 module.exports = exports = function (app, db) {
