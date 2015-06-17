@@ -10,7 +10,6 @@ var UsersAPI = require("../db/users").UsersAPI,
     ),
     gOptions = { timeout: 5000, auth: oauth2Client };
 
-if (require("ip").address() === "128.1.236.11") { gOptions.proxy = "http://CGDM-EMEA\jtassin:password_4@isp-ceg.emea.cegedim.grp:3128/"; }
 google.options(gOptions);
 
 module.exports = exports = function (app, db) {
@@ -91,7 +90,7 @@ module.exports = exports = function (app, db) {
 
     // Google Login
         .post("/googleAuth", function (req, res) {
-            oauth2Client.getToken(req.body.code, function (err, token) {
+            oauth2Client.getToken(req.body.c, function (err, token) {
                 if (!!token) {
                     oauth2Client.setCredentials(token);
                     req.session.cookie.expires = token.expiry_date;
