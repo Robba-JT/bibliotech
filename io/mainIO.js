@@ -121,7 +121,7 @@ module.exports = mainIO = function (socket, db) {
                             userAPI.addUser(userInfos.username, userInfos.username, userInfos.name, function (error) {
                                 if (!!error) {
                                     console.error("isConnected - userAPI.addUser", error);
-                                    return socket.emit("logout", true);
+                                    return socket.emit("lo", true);
                                 }
                                 return {
                                     _id: userInfos.username,
@@ -134,7 +134,7 @@ module.exports = mainIO = function (socket, db) {
                         }
                     })
                     .then(function (userData) {
-                        if (!userData) { return socket.emit("logout", true); }
+                        if (!userData) { return socket.emit("lo", true); }
                         thisUser = userData;
                         var booksList = _.pluck(userData.books, "book"),
                             tagsList = _.countBy(_.flatten(_.compact(_.pluck(userData.books, "tags")), true).sort()),
@@ -210,7 +210,7 @@ module.exports = mainIO = function (socket, db) {
                             }).catch(function (error) { console.error("isConnected - Q.allSettled(def64)", error); });
                         });
                     });
-            }).catch(function (error) { console.error("isConnected - currUser", error); socket.emit("logout", true); });
+            }).catch(function (error) { console.error("isConnected - currUser", error); socket.emit("lo", true); });
     });
 
     socket.on("searchBooks", function (param) {
@@ -296,7 +296,7 @@ module.exports = mainIO = function (socket, db) {
             .then(function (response) {
                 bookAPI.removeUserData(thisUser._id);
                 userAPI.removeUser({ _id: thisUser._id });
-                socket.emit("logout");
+                socket.emit("lo");
             })
             .catch(function (error) {
                 console.error("deleteUser", error);
