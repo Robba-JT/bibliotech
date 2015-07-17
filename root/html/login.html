@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="{{lang}}">
+    <head>
+        <title id="Description">{{title}}</title>
+        <meta name="author" content="Julien Tassin"/>
+        <meta name="description" content="Bibliotech">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+        <link rel="stylesheet" href="../css/login.css" type="text/css" />
+    </head>
+    <body>
+		<div><img src="images/loading-12-icon.png" width="256" height="256" class="k" /></div>
+        <section>
+            <form>
+                <input type="email" name="a" placeholder="{{email}}" required />
+                <input type="text" name="b" autocomplete="off" placeholder="{{name}}" m="{{errName}}" h />
+                <input type="password" name="c" placeholder="{{password}}" m="{{errPwd}}" required />
+                <input type="password" name="d" placeholder="{{confirmed}}" m="{{errConfirmed}}" h />
+                <span class="g"></span>
+                <label>{{active}}<input type="checkbox" name="o" /></label>
+                <BR><input type="button" j="{{create}}" k="{{cancel}}" value="{{create}}"/><input type="submit" j="{{connection}}" k="{{valid}}" value="{{connection}}" />
+            </form>
+            <button class="m">{{forgetPassword}}</button>
+            <span id="f"></span>
+        </section>
+        <script>window.___gcfg = { lang: "{{lang}}" };</script>
+        <script src="js/login.lib.js"></script>
+        <!--<script src="js/login.js"></script>-->
+        <script src="js/dev/login.dev.js"></script>
+    </body>
+</html>

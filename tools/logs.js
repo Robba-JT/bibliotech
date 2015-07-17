@@ -1,5 +1,4 @@
 var _ = require("lodash");
-
 module.exports.LogsAPI = LogsAPI = function (fs) {
     "use strict";
 

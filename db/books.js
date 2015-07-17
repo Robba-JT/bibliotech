@@ -13,6 +13,10 @@ var Q = require("q"),
     },
     reqOption = { "gzip": true };
 
+if (require("ip").address() === "128.1.236.11") {
+    gOptions.proxy = "http://CGDM-EMEA\jtassin:password_4@isp-ceg.emea.cegedim.grp:3128/";
+    reqOption.proxy = "http://CGDM-EMEA\jtassin:password_4@isp-ceg.emea.cegedim.grp:3128/";
+}
 google.options(gOptions);
 
 module.exports.BooksAPI = BooksAPI = function (db) {
@@ -109,6 +113,9 @@ module.exports.BooksAPI = BooksAPI = function (db) {
         loadCover = function (filter, callback) {
             covers.findOne(filter, callback);
         },
+        loadCovers = function (filter, callback) {
+            covers.find(filter).toArray(callback);
+        },
         loadBase64 = function (url, index) {
             var defColor = Q.defer(), params = reqOption;
             if (!url) { defColor.reject(); }
@@ -122,6 +129,41 @@ module.exports.BooksAPI = BooksAPI = function (db) {
                 }
             });
             return defColor.promise;
+        },
+        unusedCovers = function () {
+            loadCovers({}, function (error, allCovers) {
+                if (!!error) { return console.error("Covers removed", error); }
+                db.collection("users").find({}, { "books.cover": true }).toArray(function (error, userBooks) {
+                    if (!!error) { return console.error(error); }
+                    var toRemoved = [];
+                    userBooks = _.flattenDeep(_.pluck(userBooks, "books"));
+                    allCovers.forEach(function (result) { if (_.findIndex(userBooks, { cover: result._id }) === -1) { toRemoved.push(result._id); }});
+                    if (!!toRemoved.length) { removeCovers({ "_id": {$in: toRemoved }}); }
+                    console.info("Covers removed", toRemoved.length);
+                });
+            });
+        },
+        updateAllBooks = function () {
+            books.find({ "id.user": { $exists: false }}, { _id: false }).toArray(function (error, result) {
+                if (!!error) { console.error("Error Update Books", error); }
+                if (!!result) {
+                    var updated = 0, requests = [];
+                    result.forEach(function (oldOne) {
+                        var params = _.assign({ volumeId: oldOne.id }, reqParams.searchOne);
+                        requests.push(Q.fcall(gBooks.volumes.get(params, function (error, response) {
+                            if (!!error) { console.error("Error Update One", oldOne.id, error); } else {
+                                var newOne = formatOne(response);
+                                if (!_.isEqual(oldOne, newOne)) {
+                                    console.log("updated", newOne.title);
+                                    updated++;
+                                    books.update(newOne);
+                                }
+                            }
+                        })));
+                    });
+                    Q.allSettled(requests).then(function () { console.info("Books updated", updated); });
+                }
+            });
         };
 
     this.updateBook = function (newbook, callback) {
@@ -138,11 +180,12 @@ module.exports.BooksAPI = BooksAPI = function (db) {
         return retbooks;
     };
     this.loadCover = loadCover;
-    this.loadCovers = function (filter, callback) {
-        covers.find(filter).toArray(callback);
-    };
+    this.loadCovers = loadCovers;
     this.loadBooks = function (filter, callback) {
         books.find(filter).sort({ title : 1 }).toArray(callback);
+    };
+    this.loadAllBooks = function (filter, projection, callback) {
+        books.find(filter, projection).toArray(callback);
     };
     this.loadNotifs = function (filter, callback) {
         notifs.find(filter).sort({ date: 1 }).toArray(callback);
@@ -192,5 +235,10 @@ module.exports.BooksAPI = BooksAPI = function (db) {
                 return callback(null, data._id);
             });
         });
+    };
+
+    this.mainUpdate = function () {
+        unusedCovers();
+        //updateAllBooks();
     };
 };

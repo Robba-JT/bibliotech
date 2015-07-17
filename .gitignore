@@ -1,10 +1,5 @@
 /node_modules/
 /logs/*
-/root/html/
-/root/css/dev/
-/root/js/dev/
-/gruntfile.js
 /proxy.js
-/config.json
 /root/images/images_inv.js
 /root/images/images.js
