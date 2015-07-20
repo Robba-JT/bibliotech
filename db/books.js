@@ -141,9 +141,7 @@ module.exports.BooksAPI = BooksAPI = function (db) {
             });
         },
         updateAllBooks = function () {
-            var today, lastWeek;
-            today = lastWeek = new Date();
-            lastWeek.setDate(today.getDate() - 7);
+            var lastWeek = (new Date(((new Date()).setDate((new Date()).getDate() - 7))));
             books.find({ "date": { $lte: lastWeek }, "id.user": { $exists: false }}, { "_id": false }).toArray(function (error, result) {
                 if (!!error) { console.error("Error Update Books", error); }
                 if (!!result) {
