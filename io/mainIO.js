@@ -9,7 +9,6 @@ var MailsAPI = require("../tools/mails").MailsAPI,
     gOptions = { timeout: 5000 },
     gAuth = google.oauth2({ version: "v2" });
 
-if (require("ip").address() === "128.1.236.11") { gOptions.proxy = "http://CGDM-EMEA\jtassin:password_4@isp-ceg.emea.cegedim.grp:3128/"; }
 google.options(gOptions);
 
 module.exports = mainIO = function (socket, db) {

@@ -13,10 +13,6 @@ var Q = require("q"),
     },
     reqOption = { "gzip": true };
 
-if (require("ip").address() === "128.1.236.11") {
-    gOptions.proxy = "http://CGDM-EMEA\jtassin:password_4@isp-ceg.emea.cegedim.grp:3128/";
-    reqOption.proxy = "http://CGDM-EMEA\jtassin:password_4@isp-ceg.emea.cegedim.grp:3128/";
-}
 google.options(gOptions);
 
 module.exports.BooksAPI = BooksAPI = function (db) {
@@ -67,7 +63,8 @@ module.exports.BooksAPI = BooksAPI = function (db) {
                 "isbn10": (!!bookinfos.industryIdentifiers && !!_.find(bookinfos.industryIdentifiers, { type: "ISBN_10" })) ? _.find(bookinfos.industryIdentifiers, { type: "ISBN_10" }).identifier : "",
                 "isbn13": (!!bookinfos.industryIdentifiers && !!_.find(bookinfos.industryIdentifiers, { type: "ISBN_13" })) ? _.find(bookinfos.industryIdentifiers, { type: "ISBN_13" }).identifier : "",
                 "cover": (!!bookinfos.imageLinks) ? bookinfos.imageLinks.small || bookinfos.imageLinks.medium || bookinfos.imageLinks.large || bookinfos.imageLinks.extraLarge || bookinfos.imageLinks.thumbnail || bookinfos.imageLinks.smallThumbnail : "",
-                "access": (!!book.accessInfo) ? book.accessInfo.accessViewStatus : "NONE"
+                "access": (!!book.accessInfo) ? book.accessInfo.accessViewStatus : "NONE",
+                "date": new Date()
             };
         },
         loadOne = function (filter, callback) {
@@ -144,33 +141,48 @@ module.exports.BooksAPI = BooksAPI = function (db) {
             });
         },
         updateAllBooks = function () {
-            books.find({ "id.user": { $exists: false }}, { _id: false }).toArray(function (error, result) {
+            var today, lastWeek;
+            today = lastWeek = new Date();
+            lastWeek.setDate(today.getDate() - 7);
+            books.find({ "date": { $lte: lastWeek }, "id.user": { $exists: false }}, { "_id": false }).toArray(function (error, result) {
                 if (!!error) { console.error("Error Update Books", error); }
                 if (!!result) {
                     var updated = 0, requests = [];
                     result.forEach(function (oldOne) {
                         var params = _.assign({ volumeId: oldOne.id }, reqParams.searchOne);
-                        requests.push(Q.fcall(gBooks.volumes.get(params, function (error, response) {
-                            if (!!error) { console.error("Error Update One", oldOne.id, error); } else {
-                                var newOne = formatOne(response);
-                                if (!_.isEqual(oldOne, newOne)) {
-                                    console.log("updated", newOne.title);
-                                    updated++;
-                                    books.update(newOne);
+                        requests.push(new Promise(function () {
+                            gBooks.volumes.get(params, function (error, response) {
+                                if (!!error) { console.error("Error Update One", oldOne.id, error); } else {
+                                    var newOne = formatOne(response);
+                                    if (!booksEqual(oldOne, newOne)) {
+                                        console.log("updated", newOne.title);
+                                        updated++;
+                                        updateBook(newOne);
+                                    }
                                 }
-                            }
-                        })));
+                            });
+                        }));
                     });
                     Q.allSettled(requests).then(function () { console.info("Books updated", updated); });
                 }
             });
+        },
+        updateBook = function (newbook, callback) {
+            var book = Object.create(newbook);
+            delete book.isNew;
+            delete book.base64;
+            books.update({ id: book.id }, { $set: book }, { upsert: true }, callback);
+        },
+        booksEqual = function (a, b) {
+            var aII = Object.create(a), bII = Object.create(b);
+            delete aII.cover;
+            delete bII.cover;
+            delete aII.date;
+            delete bII.date;
+            return _.isEqual(aII, bII);
         };
 
-    this.updateBook = function (newbook, callback) {
-        delete newbook.isNew;
-        delete newbook.base64;
-        books.update({ id: newbook.id }, {$set: newbook }, { upsert: true }, callback);
-    };
+    this.updateBook = updateBook;
     this.formatBooks = function (books) {
         var retbooks = [];
         if (!_.isArray(books)) { return formatOne(books); }
@@ -216,7 +228,7 @@ module.exports.BooksAPI = BooksAPI = function (db) {
     };
     this.removeCovers = removeCovers;
     this.removeNotifs = removeNotifs;
-    this.removeUserData = function (userId) { /*removeCovers({ "_id.user": userId }); */removeNotifs({ "_id.to": userId }); };
+    this.removeUserData = function (userId) { removeNotifs({ "_id.to": userId }); };
     this.updateCover = function (data, callback) {
         covers.update({ _id: data._id }, {$set: data }, { upsert: true }, callback);
     };

@@ -380,22 +380,22 @@ button.remove {
     background-color: transparent;
 }
 
-#formNew .modify {
+.modify {
     background-color: darkgreen;
     border-radius: 5px;
     color: white;
     cursor: pointer;
 }
 
-#formNew .modify:hover {
+.modify:hover {
     background-color: green;
 }
 
-#formNew .hide {
+.hide {
     background-color: darkred;
 }
 
-#formNew .hide:hover {
+.hide:hover {
     background-color: red;
 }
 
@@ -603,6 +603,15 @@ button.remove {
 
 .window #delete:hover {
     background: red;
+}
+
+#searchWindow [type=radio], #searchWindow label {
+    cursor: pointer;
+}
+
+#searchWindow > img {
+    float: right;
+    cursor: default;
 }
 
 #wa {
@@ -902,11 +911,20 @@ button.remove {
     border-color: black;
 }
 
-#previewWindow > img {
+#previewWindow img[actclick="close"] {
     position: absolute;
-    top: 10px;
-    left: 10px;
+    top: 15px;
+    left: 15px;
     opacity: .75;
+}
+
+
+#previewWindow img[source="google-preview"] {
+    position: absolute;
+    bottom: 25px;
+    left: 10px;
+    opacity: .9;
+    cursor: pointer;
 }
 
 #previewWindow > iframe {

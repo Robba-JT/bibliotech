@@ -6,7 +6,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
         "use strict";
         var start = new Date();
         console.debug("µ.ready", start.toLocaleString());
-        var so = io({ reconnection: true }),
+        var socket = io({ reconnection: true }),
             colorthief = new ColorThief(),
             xcroll = function () { return { top: window.scrollY || µ.documentElement.scrollTop, left: window.scrollX || µ.documentElement.scrollLeft }; },
             User = {
@@ -25,13 +25,13 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     one("#errPwd").toggle(false);
                     if (!one("@pwd").reportValidity()) { return; }
                     Windows.confirm("warning", one("#delete").getAttribute("confirm")).then(function () {
-                        so.emit("deleteUser", one("@pwd").value);
+                        socket.emit("deleteUser", one("@pwd").value);
                     });
                     return false;
                 },
                 update: function () {
                     one("#errPwd").fade(false);
-                    so.emit("updateUser", this.serialize());
+                    socket.emit("updateUser", this.serialize());
                     return false;
                 },
                 updated: function (values) {
@@ -51,7 +51,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                         User.books = _.sortBy(User.books, "title");
                     }
                     var cell = Bookcells.one(book.id);
-                    if (!!cell) { cell.b = book; }
+                    if (!!cell) { cell.book = book; }
                     one("#nbBooks").html(User.books.length);
                 },
                 removebook: function (bookid) {
@@ -65,9 +65,9 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     if (index !== -1) { this.books[index] = _.assign(this.books[index], book); }
                     var bookcell = Bookcells.one(book.id);
                     if (!!bookcell && !!bookcell.col && (!!book.title || !!book.authors || !!book.alternative)) {
-                        if (!!book.title) { bookcell.c.one("header").html(book.title); }
-                        if (!!book.authors) { bookcell.c.one("figcaption").html(book.authors.join(", ")); }
-                        if (!!book.alternative) { bookcell.c.one(".cover").src = book.alternative; }
+                        if (!!book.title) { bookcell.cell.one("header").html(book.title); }
+                        if (!!book.authors) { bookcell.cell.one("figcaption").html(book.authors.join(", ")); }
+                        if (!!book.alternative) { bookcell.cell.one(".cover").src = book.alternative; }
                     }
                 },
                 updatetags: function () {
@@ -79,11 +79,9 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 },
                 collection: function () {
                     Windows.close();
-                    one("@filtre").value = one("#selectedTag").innerHTML = "";
-                    one("@filtre").setAttribute("data-prec", "");
-                    one("#tags").toggle(!_.isEmpty(User.tags));
                     all(".bookcell").toggleClass("tofilter tohide", false);
-                    one("#nbBooks").html(User.books.length);
+                    one("@filtre").value = one("@last").value = one("#selectedTag").innerHTML = "";
+                    one("#tags").toggle(!_.isEmpty(User.tags));
                     if (!one("#collection").hasClass("active")) {
                         Images.active.call(one("#collection"));
                         Bookcells.show(User.books, true);
@@ -205,8 +203,8 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     if (!closact || !_.includes(["notifications", "tris"], closact.getAttribute("id"))) { all(".deroulant").fade(false); }
                 },
                 nav: function () {
-                    if (!Detail.data.c) { return false; }
-                    var cell = Detail.data.c, cells = cell.parentNode.all(".bookcell"), row = cell.index(), col = parseInt(cell.parentNode.getAttribute("colid"), 10);
+                    if (!Detail.data.cell) { return false; }
+                    var cell = Detail.data.cell, cells = cell.parentNode.all(".bookcell"), row = cell.index(), col = parseInt(cell.parentNode.getAttribute("colid"), 10);
                     switch (this.getAttribute("nav")) {
                         case "top":
                             if (!row) { return false; }
@@ -226,7 +224,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                             row++;
                             break;
                     }
-                    one("[colid='" + col + "']").childNodes[row].one(".cover").trigger("click");
+                    if (one("[colid='" + col + "']").childNodes[row]) { one("[colid='" + col + "']").childNodes[row].one(".cover").trigger("click"); }
                     return false;
                 },
                 selectstart: function (event) {
@@ -255,10 +253,10 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                         Bookcells.books.push(books);
                         Bookcells.books = _.flattenDeep(Bookcells.books);
                     }
-                    for (var jta=0, lg = books.length; jta < lg; jta++) {
-                        if (!!Bookcells.one(books[jta].id)) { continue; }
-                        newCells.push(new Bookcell(User.book(books[jta].id) || books[jta]));
-                    }
+                    _.forEach(books, function (book) {
+                        if (!!Bookcells.one(book.id) || _.findIndex(newCells, _.matchesProperty("id", book.id)) !== -1) { return; }
+                        newCells.push(new Bookcell(User.book(book.id) || book));
+                    });
                     Bookcells.add(newCells);
                     Bookcells.display(newCells, true);
                     Waiting.toggle();
@@ -266,6 +264,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 returned: function (book) { Bookcells.one(book.id).returned(book); },
                 display: function (cells, toAdd) {
                     if (!cells && !!one(".sortBy")) { return Bookcells.sort.call(one(".sortBy")); }
+                    window.scroll(0, 0);
                     cells = cells || _.sortBy(Bookcells.cells, function (cell) { return [ cell.row, cell.col ]; });
                     var $dock = Dock.get(), last = !!toAdd ? all(".bookcell [colid]").length : 0, indice = 0;
                     cells.forEach(function (bcell, index) {
@@ -275,18 +274,16 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                         if (!!cell.hasClass("tohide") || !!cell.hasClass("tofilter")) {
                             $dock.one("section.notdisplayed").appendChild(cell);
                         } else {
-                            cell.css({ "visibility" : "hidden" }).toggleClass("toshow", true);
+                            //cell.css({ "visibility" : "hidden" }).toggleClass("toshow", true);
                             one("[colid='"+ indice % Dock.nbcols +"']").appendChild(cell);
                             indice++;
                         }
-                        cell.all("header, figure *:not(button)").setEvents("click", bcell.detail);
-                        cell.all("button").setEvents("click", bcell.action);
-                        cell.setEvents("mouseenter mouseleave", bcell.description);
+                        bcell.active();
                     });
                     Bookcells.loadcovers();
                 },
                 loadcovers: function () {
-                    for (var jta = 0, lg = Bookcells.cells.length; jta < lg; jta++) { Bookcells.cells[jta].loadcover(); }
+                    //Bookcells.cells.forEach(function (cell) { cell.loadcover(); });
                     one("#footer").toggle(!!xcroll().top);
                 },
                 bytags: function (tag) {
@@ -306,126 +303,33 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     Bookcells.display(cells);
                 },
                 filter: function () {
-                    var filtre = this.value.toLowerCase();
-                    if (!!this.checkValidity() && filtre !== this.getAttribute("data-prec")) {
-                        this.setAttribute("data-prec", filtre);
+                    var filtre = this.value.toLowerCase(), last = one("@last");
+                    if (!!this.checkValidity() && filtre !== last.value) {
+                        last.value = filtre;
                         Bookcells.cells.forEach(function (cell) {
-                            var title = cell.b.title.toLowerCase(),
-                                subtitle = (!!cell.b.subtitle) ? cell.b.subtitle.toLowerCase() : "",
-                                authors = (!!cell.b.authors) ? cell.b.authors.join(", ").toLowerCase() : "",
-                                description = cell.b.description.toLowerCase();
+                            var title = cell.book.title.toLowerCase(),
+                                subtitle = (!!cell.book.subtitle) ? cell.book.subtitle.toLowerCase() : "",
+                                authors = (!!cell.book.authors) ? cell.book.authors.join(", ").toLowerCase() : "",
+                                description = cell.book.description.toLowerCase();
 
-                            cell.c.toggleClass("tofilter", title.indexOf(filtre) === -1 && subtitle.indexOf(filtre) === -1 && authors.indexOf(filtre) === -1 && description.indexOf(filtre) === -1);
+                            cell.cell.toggleClass("tofilter", title.indexOf(filtre) === -1 && subtitle.indexOf(filtre) === -1 && authors.indexOf(filtre) === -1 && description.indexOf(filtre) === -1);
                         });
                         Bookcells.display();
                     }
                 }
             },
             Bookcell = function (book) {
-                var self = this,
-                    cell = one("#tempCell").cloneNode(true).removeAttributes("id").toggleClass("bookcell", true),
-                    action = function () {
-                        var type = this.classList;
-                        cell.all("button").fade();
-                        if (_.includes(type, "add")) { so.emit("addBook", book.id); }
-                        if (_.includes(type, "remove")) {
-                            if (one("#collection").hasClass("active")) {
-                                cell.fade(function () {
-                                    cell.removeAll();
-                                    Bookcells.loadcovers();
-                                });
-                            }
-                            so.emit("removeBook", book.id);
-                            one("#nbBooks").html(User.removebook(book.id));
-                        }
-                    },
-                    returned = function (book) {
-                        self.book = book;
-                        self.opened = true;
-                        Detail.data = self;
-                        Detail.show();
-                        Idb.setDetail(book);
-                    },
-                    description = function (event) {
-                        if (!!event.relatedTarget && !event.relatedTarget.hasClass("description")) { all(".description").removeAll(); }
-                        if (event.type !== "mouseenter") { return; }
-                        if (!book.description) {
-                            return false;
-                        } else {
-                            var index = book.description.indexOf(" ", 500),
-                                leave = function () { this.removeAll(); },
-                                position = {
-                                    "max-height": window.innerHeight,
-                                    left: (Math.min(this.offsetLeft + (this.clientWidth / 3), window.innerWidth - (this.clientWidth * 1.333))).toFixed(0)
-                                },
-                                top = (this.offsetTop + (this.clientHeight / 3)).toFixed(0),
-                                description = µ.body.newElement("div", { "width": this.clientWidth, "bookid": book.id, "class": "description notdisplayed" })
-                                    .css({ "width": this.clientWidth })
-                                    .setEvents("click", leave)
-                                    .html("<span>" + book.title + "</span><BR>"+book.description.substr(0, Math.max(index, 500)) + ((index !== -1) ? "..." : ""));
-
-                            if (top + description.clientHeight > µ.clientHeight) {
-                                position.bottom = this.clientHeight * 0.333;
-                            } else {
-                                position.top =  top;
-                            }
-                            description.css(position);
-                            setTimeout(function () { description.fade(0.9).setEvents("mouseleave", leave); }, 1000);
-                        }
-                    },
-                    detail = function () {
-                        if (User.bookindex(book.id) !== -1 || !!self.opened) {
-                            Detail.data = self;
-                            Detail.show(User.bookindex(book.id) !== -1);
-                        } else {
-                            Idb.getDetail(book.id).then(function (result) {
-                                if (!!result) {
-                                    Detail.data.book = result;
-                                    Detail.show(false);
-                                } else {
-                                    Waiting.toggle(1, 1);
-                                    so.emit("searchDetail", book.id);
-                                }
-                            });
-                        }
-                        return false;
-                    },
-                    loadcover = function () {
-                        if (!cell.hasClass("toshow")) { return; }
-                        var cover = cell.one(".cover");
-                        if (!!cover && window.innerHeight + xcroll().top > cell.offsetTop) {
-                            cell.toggleClass("toshow", false).css({ visibility: "visible" });
-                            cell.setEvents({ dragstart: ds, dragend: de });
-                            cell.one("footer").css({ "bottom": cell.one("figcaption").clientHeight + 5 });
-                            if (!!book.alternative || !!book.base64) { cover.src = book.alternative || book.base64; }
-                        }
-                    },
-                    ds = function (event) {
-                        this.toggleClass("isDrag", true);
-                        event.dataTransfer.effectAllowed = "move";
-                        event.dataTransfer.dropEffect = "move";
-                        event.dataTransfer.setData("cell", JSON.stringify(self.id));
-                    },
-                    de = function () {
-                        this.toggleClass("isDrag", false);
-                    };
-
                 this.id = book.id;
-                this.action = action;
                 this.book = book;
-                this.cell = cell;
-                this.loadcover = loadcover;
-                this.opened = false;
-                this.returned = returned;
-                this.detail = detail;
-                this.description = description;
-                cell.one("header").html(book.title);
-                cell.one("figcaption").html(!!book.authors ? book.authors.join(", ") : "");
-                cell.one(".previewable").toggle(!!book.access && book.access !== "NONE");
-                cell.one(".personnal").toggle(_.isEqual(book.id.user, User.id));
-                cell.one(".recommanded").toggle(!!book.from);
-                cell.one(".add").toggle(User.bookindex(book.id) === -1);
-                cell.one(".remove").toggle(User.bookindex(book.id) !== -1);
+                this.cell = one("#tempCell").cloneNode(true).removeAttributes("id").toggleClass("bookcell", true);
+                this.cell.one("header").html(book.title);
+                this.cell.one("figcaption").html(!!book.authors ? book.authors.join(", ") : "");
+                this.cell.one(".previewable").toggle(!!book.access && book.access !== "NONE");
+                this.cell.one(".personnal").toggle(_.isEqual(book.id.user, User.id));
+                this.cell.one(".recommanded").toggle(!!book.from);
+                this.cell.one(".add").toggle(User.bookindex(book.id) === -1);
+                this.cell.one(".remove").toggle(User.bookindex(book.id) !== -1);
+                if (!!book.alternative || !!book.base64) { this.cell.one(".cover").src = book.alternative || book.base64; }
                 return this;
             },
             Tags = {
@@ -524,7 +428,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     clone.one(".libelle").html(tag).toggleClass("new", !!isNew);
                     return clone;
                 },
-                list: function () { one("[name=tag]").setAttributes({ "list": !!this.value ? "tagsList" : "none" });}
+                list: function () { one("@tag").setAttributes({ "list": !!this.value ? "tagsList" : "none" });}
             },
             Notifs = {
                 show: function (list) {
@@ -552,7 +456,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     all("#notifications, #notifNumber").toggle(!!Notifs.list.length);
                     one("#notifNumber").html(Notifs.list.length);
                     Waiting.toggle(1, 1);
-                    so.emit("readNotif", notif);
+                    socket.emit("readNotif", notif);
                 }
             },
             Idb = {
@@ -580,7 +484,12 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     return new Promise(function (resolve, reject) {
                         if (!Idb.db) { reject(); }
                         var request = Idb.db.transaction(["queries"], "readwrite").objectStore("queries").index("by_query").get(JSON.stringify(key));
-                        request.onsuccess = function () { if (!!this.result && !!this.result.books.length) { resolve(this.result.books); } else { reject(); }};
+                        request.onsuccess = function () {
+                            if (!!this.result && !!this.result.books.length) {
+                                resolve(this.result.books);
+                            } else {
+                                reject();
+                            }};
                         request.onerror = reject;
                     });
                 },
@@ -612,17 +521,19 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
             Search = {
                 books: function (event) {
                     event.preventDefault();
-                    Search.clear();
                     var val = this.formToJson(), stored;
                     Search.last = { q: val.searchby + val.searchinput, langRestrict: val.langage };
-                    one("@filtre").setAttributes("data-prec", "").value = "";
+                    one("@filtre").value = one("@last").value = "";
+                    Search.clear();
                     Windows.close(function () {
                         Waiting.toggle(1, 1).then(function () {
-                            Idb.getQuery(Search.last).then(Bookcells.show, function () {
-                                one("#nvb").toggleClass("inactive", true);
-                                Waiting.anim(true);
-                                so.emit("searchBooks", Search.last);
-                            });
+                            Idb.getQuery(Search.last)
+                                .then(Bookcells.show)
+                                .catch(function () {
+                                    one("#nvb").toggleClass("inactive", true);
+                                    Waiting.anim(true);
+                                    socket.emit("searchBooks", Search.last);
+                                });
                         });
                     });
                     return false;
@@ -631,41 +542,43 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     Search.clear();
                     Search.last = { "recommand": User.id };
                     Windows.close(function () {
-                        Waiting.toggle(1, 1);
-                        Idb.getQuery(Search.last)
-                            .then(Bookcells.show)
-                            .catch(function () {
-                                one("#nvb").toggleClass("inactive", true);
-                                Waiting.anim(true);
-                                so.emit("recommanded");
-                            });
+                        Waiting.toggle(1, 1).then(function () {
+                            Idb.getQuery(Search.last)
+                                .then(Bookcells.show)
+                                .catch(function () {
+                                    one("#nvb").toggleClass("inactive", true);
+                                    Waiting.anim(true);
+                                    socket.emit("recommanded");
+                                });
+                        });
                     });
                 },
                 associated: function (bookid) {
                     Search.clear();
                     Search.last = { "associated": bookid };
                     Windows.close(function () {
-                        Waiting.toggle(1, 1);
-                        Idb.getQuery(Search.last)
-                            .then(Bookcells.show, function () {
-                                one("#nvb").toggleClass("inactive", true);
-                                Waiting.anim(true);
-                                so.emit("associated", bookid);
-                            });
+                        Waiting.toggle(1, 1).then(function () {
+                            Idb.getQuery(Search.last)
+                                .then(Bookcells.show, function () {
+                                    one("#nvb").toggleClass("inactive", true);
+                                    Waiting.anim(true);
+                                    socket.emit("associated", bookid);
+                                });
+                        });
                     });
                 },
                 gtrans: function () {
                     var action = this.id;
                     Windows.confirm("warning", "Cette opération va importer/exporter vos EBooks depuis/vers votre bibliothèque Google.<BR>Etes vous sur de vouloir continuer?")
                         .then(function () {
-                            if (action === "exportNow") { return so.emit("exportNow"); }
+                            if (action === "exportNow") { return socket.emit("exportNow"); }
                             Bookcells.destroy();
                             Images.active.call(one("#collection"));
                             one("#nvb").toggleClass("inactive", true);
                             Waiting.anim(true);
                             Windows.close(function () {
                                 Waiting.toggle(1, 1);
-                                so.emit("importNow");
+                                socket.emit("importNow");
                             });
                         });
                 },
@@ -673,6 +586,8 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     Bookcells.destroy();
                     Dock.remove();
                     Images.active.call(one("#recherche"));
+                    one("#formFilter").reset();
+                    if (one(".sortBy")) { Images.blur.call(one(".sortBy").toggleClass("sortBy", false)); }
                     one("#selectedTag").html("");
                 },
                 endRequest: function (nb) {
@@ -686,7 +601,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
             logout = function () {
                 User.destroy();
                 Bookcells.destroy();
-                so.close();
+                socket.close();
                 if (!!Idb.indexedDB) {
                     Idb.indexedDB.deleteDatabase(User.id);
                 }
@@ -712,7 +627,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     n = (this.value.length < 4 || this.value.length > 12);
                     break;
                 case "confirmPwd":
-                    n = (this.value !== one("[name=newPwd]").value);
+                    n = (this.value !== one("@newPwd").value);
                     break;
                 case "recommand":
                     n = (this.value.toLowerCase() === User.id);
@@ -759,7 +674,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     µ.removeEventListener("keyup", shortCuts);
                     all("[note]").forEach(Images.blur);
                     windows.forEach(function () { this.fade(false, function () { if (_.isFunction(callback)) { callback.call(); } else { Waiting.toggle(); }}); });
-                    _.forEach(all("form"), function (form) { form.reset(); });
+                    _.forEach(all("form:not(#formFilter)"), function (form) { form.reset(); });
                     delete Windows.on;
                 },
                 confirm: function (type, msg) {
@@ -794,9 +709,11 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                             for (var jta = 0, lg = newbook.authors.length; jta < lg; jta++) { newbook.authors[jta] = newbook.authors[jta].ns(); }
                             if (!!error) { return false; }
                             Waiting.over();
-                            so.emit("newbook", newbook);
+                            socket.emit("newbook", newbook);
                         } else {
-                            so.emit("addDetail");
+                            socket.emit("addDetail");
+                            console.debug(Detail.data);
+                            all("[actclick='upload']").toggle(!!Detail.data.book.base64);
                             Detail.newCell();
                         }
                     };
@@ -810,7 +727,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                             note = one("#userNote").value,
                             comment = one("#userComment").value,
                             maincolor = one("#detailCover").getAttribute("maincolor"),
-                            alternative = one("#detailCover").getAttribute("src");
+                            alternative = one("#detailCover").getAttribute("src") !== images["book-4-icon"].black ? one("#detailCover").getAttribute("src") : null;
 
                         if (_.isObject(bookid) && bookid.user === User.id) {
                             var formValues = one("#formNew").formToJson();
@@ -829,7 +746,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                             update = true;
                             values.userComment = comment;
                         }
-                        if (!book.tags.length && !!tags.length || !_.isEqual(tags, book.tags)) {
+                        if (!book.tags && !!tags.length || !_.isEqual(tags, book.tags)) {
                             update = "tags";
                             values.tags = tags;
                         }
@@ -840,7 +757,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                         }
                         if (!!update) {
                             values.userDate = new Date().toJSON();
-                            so.emit("updateBook", values);
+                            socket.emit("updateBook", values);
                             User.updatebook(values);
                             User.updatetags();
                             one("#tags").toggle(!_.isEmpty(User.tags) && one("#collection").hasClass("active"));
@@ -851,7 +768,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                         one("#uploadHidden [type=file]").trigger("click");
                     };
                     this.preview = function () {
-                        one("[name=previewid]").value = bookid;
+                        one("@previewid").value = bookid;
                         Waiting.over();
                         Windows.open.call("previewWindow").then(function (event) {
                             one("#preview").submit();
@@ -880,7 +797,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                         Bookcells.add(cell);
                         Bookcells.display();
                     }
-                    if (!!cell && !!cell.c) { cell.cell.all("button").fade(); }
+                    if (!!cell && !!cell.cell) { cell.cell.all("button").fade(); }
                     User.addbook(Detail.data.book);
                 },
                 userNote: function () {
@@ -959,7 +876,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     val.book = Detail.data.book.id;
                     val.title = Detail.data.book.title;
                     if (!!Detail.data.book.alt) { val.alt = Detail.data.book.alt; }
-                    so.emit("sendNotif", val);
+                    socket.emit("sendNotif", val);
                     one("#recommandWindow img").trigger("click");
                     return false;
                 },
@@ -1002,13 +919,11 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                             }
                         };
                     }
-                    one("#detailCover").src = book.alternative || book.base64|| images["book-4-icon"].black;
+                    one("#detailCover").setAttributes("maincolor", null).src = book.alternative || book.base64|| images["book-4-icon"].black;
                     win.all(".direct").html("");
                     win.all("#userTags > div").removeAll();
                     win.one("#detailWindow .windowheader span").html(book.title || one("#detailWindow .windowheader span").getAttribute("label"));
-                    all("[actclick=add]").toggle(!inCollection);
-                    all("[actclick=update]").toggle(!!inCollection);
-                    all("[actclick=recommand]").toggle(!!inCollection);
+                    all("[actclick=add], [actclick=update], [actclick=recommand]").toggle(!inCollection);
                     all("[actclick=associated]").toggle(!!book.id && !_.isObject(book.id));
                     all("[actclick=preview]").toggle(!!book.access && book.access !== "NONE");
                     all("[actclick=google]").setAttributes({ "link": book.link }).toggle(!!book.link);
@@ -1020,7 +935,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     Detail.userNote();
                     if (!!win.hasClass("notdisplayed")) { Windows.open.call("detailWindow"); }
                     _.forEach(book, function (value, jta) {
-                        var field = win.one("[field=" + jta + "]"), input = win.one("[name=" + jta + "]");
+                        var field = win.one("[field=" + jta + "]"), input = win.one("input[name=" + jta + "]");
                         if (!!field && jta !== "subtitle") {
                             field.closest("volumeInfo").toggle(!!value || _.isEqual(book.id.user, User.id));
                             field.toggle(!!value).toggleClass("noValue", !value);
@@ -1090,7 +1005,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                      Waiting.p = new Promise(function (resolve) {
                         var wa = one("#w");
                         wa.one("img").toggle(!!withIcon);
-                        if (!!Windows.on || !!Waiting.on || visible === wa.isVisible()) { resolve(); } else {
+                        if (!!Windows.on || !!Waiting.on) { resolve(); } else {
                             Waiting.on = true;
                             all(".description").removeAll();
                             if (!!visible) {
@@ -1136,14 +1051,99 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 }
             };
 
-        so.on("reconnect", function () {
-            console.debug("so.reconnect", so.connected, new Date().toLocaleString());
-            so.io.reconnect();
+        Bookcell.prototype.active = function () {
+            if (!!this.actived) { return; }
+            var self = this,
+                action = function () {
+                    var type = this.classList;
+                    self.cell.all("button").fade();
+                    if (_.includes(type, "add")) { socket.emit("addBook", self.id); }
+                    if (_.includes(type, "remove")) {
+                        if (one("#collection").hasClass("active")) {
+                            self.cell.fade(function () {
+                                self.cell.removeAll();
+                                Bookcells.loadcovers();
+                            });
+                        }
+                        socket.emit("removeBook", self.id);
+                        one("#nbBooks").html(User.removebook(self.id));
+                    }
+                },
+                description = function (event) {
+                    if (!!event.relatedTarget && !event.relatedTarget.hasClass("description")) { all(".description").removeAll(); }
+                    if (event.type !== "mouseenter") { return; }
+                    if (!self.book.description) { return; } else {
+                        var index = self.book.description.indexOf(" ", 500),
+                            leave = function () { this.removeAll(); },
+                            position = {
+                                "max-height": window.innerHeight,
+                                left: (Math.min(this.offsetLeft + (this.clientWidth / 3), window.innerWidth - (this.clientWidth * 1.333))).toFixed(0)
+                            },
+                            top = (this.offsetTop + (this.clientHeight / 3)).toFixed(0),
+                            description = µ.body.newElement("div", { "width": this.clientWidth, "bookid": self.id, "class": "description notdisplayed" })
+                                .css({ "width": this.clientWidth })
+                                .setEvents("click", leave)
+                                .html("<span>" + self.book.title + "</span><BR>" + self.book.description.substr(0, Math.max(index, 500)) + ((index !== -1) ? "..." : ""));
+
+                        if (top + description.clientHeight > µ.clientHeight) {
+                            position.bottom = this.clientHeight * 0.333;
+                        } else {
+                            position.top =  top;
+                        }
+                        description.css(position);
+                        setTimeout(function () { description.fade(0.9).setEvents("mouseleave", leave); }, 1000);
+                    }
+                },
+                detail = function () {
+                    if (User.bookindex(self.id) !== -1 || !!self.opened) {
+                        Detail.data = self;
+                        Detail.show(User.bookindex(self.id) !== -1);
+                    } else {
+                        Idb.getDetail(self.id).then(function (result) {
+                            if (!!result) {
+                                Detail.data.book = result;
+                                Detail.show(false);
+                            } else {
+                                Waiting.toggle(1, 1);
+                                socket.emit("searchDetail", self.id);
+                            }
+                        });
+                    }
+                    return false;
+                },
+                id = this.id,
+                dragstart = function (event) {
+                    this.toggleClass("isDrag", true);
+                    event.dataTransfer.effectAllowed = "move";
+                    event.dataTransfer.dropEffect = "move";
+                    event.dataTransfer.setData("cell", JSON.stringify(id));
+                },
+                dragend = function () {
+                    this.toggleClass("isDrag", false);
+                };
+
+            this.cell.all("header, figure *:not(button)").setEvents("click", detail);
+            this.cell.all("button").setEvents("click", action);
+            this.cell.setEvents({ "mouseenter mouseleave": description, dragstart: dragstart, dragend: dragend });
+            this.cell.one("footer").css({ "bottom": this.cell.one("figcaption").clientHeight + 5 });
+            this.actived = true;
+        };
+        Bookcell.prototype.returned = function (book) {
+            this.book = book;
+            this.opened = true;
+            Detail.data = this;
+            Detail.show();
+            Idb.setDetail(book);
+        };
+
+        socket.on("reconnect", function () {
+            console.debug("socket.reconnect", socket.connected, new Date().toLocaleString());
+            socket.io.reconnect();
         }).on("connect", function () {
-            so.emit("isConnected");
-            console.debug("so.connect", new Date().toLocaleString());
+            socket.emit("isConnected");
+            console.debug("socket.connect", new Date().toLocaleString());
         }).on("disconnect", function () {
-            console.debug("so.disconnect", new Date().toLocaleString());
+            console.debug("socket.disconnect", new Date().toLocaleString());
             User.destroy();
             Windows.close();
             Waiting.toggle(1, 1);
@@ -1155,11 +1155,12 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
             User.init(ret);
         }).on("collection", function (ret) {
             User.books = ret.books;
+            one("#nbBooks").html(User.books.length);
             console.debug("User.books", new Date().toLocaleString(), User.books.length);
             Notifs.show(ret.notifs);
             Tags.init();
             one("#collection").trigger("click");
-            console.debug("so.collection", new Date().toLocaleString(), (new Date() - start) / 1000);
+            console.debug("socket.collection", new Date().toLocaleString(), (new Date() - start) / 1000);
         }).on("books", Bookcells.show)
         .on("endRequest", Search.endRequest)
         .on("returnAdd", User.addbook)
@@ -1185,7 +1186,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 if (!cell.hasClass("toshow")) { cell.one(".cover").src = cover.base64; }
                 if (!!Detail.data.book && Detail.data.book.id === book.id) { one("#detailCover").src = cover.base64; }
             }
-            console.debug("so.covers", new Date().toLocaleString(), (new Date() - start) / 1000);
+            console.debug("socket.covers", new Date().toLocaleString(), (new Date() - start) / 1000);
         });
 
         µ.setEvents({ "keyup keydown": shortCuts, "scroll": Bookcells.loadcovers });

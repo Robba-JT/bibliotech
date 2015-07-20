@@ -63,7 +63,8 @@
             </div>
             <div class="action filtre">
                 <form id="formFilter" role="form">
-                    <input type="search" error="{{errFilter}}" name="filtre" autocomplete="off" placeholder="{{filter}}" data-prec="" />
+                    <input type="search" error="{{errFilter}}" name="filtre" autocomplete="off" placeholder="{{filter}}" />
+                    <input type="hidden" name="last"/>
                 </form>
             </div>
             <div id="newbook" class="action" window="newWindow">
@@ -133,6 +134,7 @@
                     <label>&nbsp;{{french}}<input type="radio" name="langage" value="fr" checked/></label>
                 </div>
             </form>
+            <img source="google-poweredby" blur="alt" title="Powered by Google"/>
 		</section>
 
         <section id="profileWindow" class="window notdisplayed">
@@ -273,6 +275,7 @@
 
         <section id="previewWindow" class="window notdisplayed">
             <img actclick="close" source="x-mark-3-icon" blur="alt" hover="black" width="48" height="48" title="{{close}}">
+            <img source="google-preview" blur="alt" title="Google Preview" actclick="google" hover="alt"/>
             <iframe id="iPreview" name="iPreview" seamless=true></iframe>
         </section>
 

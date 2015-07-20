@@ -163,7 +163,7 @@ Object.prototype.one = function () {
                 selects = document.getElementById(follow);
                 break;
             case "@":
-                selects = self.getElementsByName(follow)[0];
+                selects = document.getElementsByName(follow)[0];
                 break;
             case ".":
                 selects = self.getElementsByClassName(follow)[0];
@@ -186,7 +186,7 @@ Object.prototype.all = function () {
                 selects = [document.getElementById(follow)];
                 break;
             case "@":
-                selects = self.getElementsByName(follow);
+                selects = document.getElementsByName(follow);
                 break;
             case ".":
                 selects = self.getElementsByClassName(follow);
@@ -216,8 +216,6 @@ String.prototype.ns = function () {
 };
 
 Array.prototype.ns = function () {
-    for (var jta=0, lg = this.length; jta < lg; jta++) {
-        if (typeof this[jta] === "string") { this[jta] = this[jta].ns(); }
-    }
+    for (var jta=0, lg = this.length; jta < lg; jta++) { if (typeof this[jta] === "string") { this[jta] = this[jta].ns(); }}
     return this;
 };
