@@ -1,11 +1,11 @@
 Element.prototype.isVisible = function () { return this.offsetWidth > 0 && this.offsetHeight > 0; };
 Element.prototype.formToJson = function () {
-    var s = {};
+    var values = {};
     this.querySelectorAll("input, textarea").forEach(function() {
-        if (!!_.includes(["checkbox", "radio"], this.type.toLowerCase()) && !!this.checked || !_.includes(["checkbox", "radio"], this.type.toLowerCase()) && !!this.name && !!this.value) {
-            s[this.name] = this.value;
+        if (!!_.includes(["checkbox", "radio"], this.type.toLowerCase()) && !!this.checked || !_.includes(["checkbox", "radio"], this.type.toLowerCase()) && !!this.name) {
+            values[this.name] = this.value;
         }});
-    return s;
+    return values;
 };
 Element.prototype.hasClass = function (cl) { return this.classList.contains(cl); };
 Element.prototype.css = function (style) {
@@ -24,6 +24,11 @@ Element.prototype.closest = function (classe) {
 Element.prototype.html = function (code) {
     if (typeof code === "undefined") { return this.innerHTML; }
     this.innerHTML = code;
+    return this;
+};
+Element.prototype.text = function (code) {
+    if (typeof code === "undefined") { return this.innerText; }
+    this.innerText = code;
     return this;
 };
 Element.prototype.trigger = function (evt) {
@@ -71,7 +76,7 @@ Element.prototype.setAttributes = function (attrs) {
 Element.prototype.removeAttributes = function (attrs) {
     var self = this;
     if (typeof attrs === "string") { attrs = [attrs]; }
-    if (_.isArray(attrs)) { _.forEach(attrs, function (attr) { self.removeAttribute(attr); }); }
+    if (_.isArray(attrs)) { attrs.forEach(function (attr) { self.removeAttribute(attr); }); }
     return this;
 };
 
@@ -118,6 +123,11 @@ Object.prototype.toArray = function () {
 Object.prototype.html = function (code) {
     if (typeof code === "undefined") { return this; }
     this.forEach(function () { this.html(code); });
+    return this;
+};
+Object.prototype.text = function (code) {
+    if (typeof code === "undefined") { return this; }
+    this.forEach(function () { this.text(code); });
     return this;
 };
 Object.prototype.fade = function (display, callback) {
@@ -211,11 +221,11 @@ String.prototype.fd = function () {
 String.prototype.multiSelect = function () {
     return this.indexOf(" ") !== -1 || this.indexOf(",") !== -1 || this.indexOf(".") !== -1 || this.indexOf("#") !== -1 || this.indexOf(":") !== -1 || this.indexOf("]") !== -1;
 };
-String.prototype.ns = function () {
+String.prototype.noSpace = function () {
     return this.replace(/^\s+/g,"").replace(/\s+$/g,"");
 };
 
-Array.prototype.ns = function () {
-    for (var jta=0, lg = this.length; jta < lg; jta++) { if (typeof this[jta] === "string") { this[jta] = this[jta].ns(); }}
+Array.prototype.noSpace = function () {
+    for (var jta=0, lg = this.length; jta < lg; jta++) { if (typeof this[jta] === "string") { this[jta] = this[jta].noSpace(); }}
     return this;
 };

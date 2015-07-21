@@ -141,7 +141,7 @@ module.exports.BooksAPI = BooksAPI = function (db) {
             });
         },
         updateAllBooks = function () {
-            var lastWeek = (new Date(((new Date()).setDate((new Date()).getDate() - 7))));
+            var lastWeek = (new Date(((new Date()).setDate((new Date()).getDate() - 30))));
             books.find({ "date": { $lte: lastWeek }, "id.user": { $exists: false }}, { "_id": false }).toArray(function (error, result) {
                 if (!!error) { console.error("Error Update Books", error); }
                 if (!!result) {
@@ -236,6 +236,9 @@ module.exports.BooksAPI = BooksAPI = function (db) {
     this.updateComment = function (data, callback) {
         comments.update({ _id: data._id }, {$set: data }, { upsert: true }, callback);
     };
+    this.removeComment = function (comment, callback) {
+        comments.remove({ _id: comment._id }, callback);
+    };
     this.addCover = function (data, callback) {
         loadCover({ cover: data.cover }, function (error, result) {
             if (!!error) { return callback(error); }
@@ -249,6 +252,6 @@ module.exports.BooksAPI = BooksAPI = function (db) {
 
     this.mainUpdate = function () {
         unusedCovers();
-        //updateAllBooks();
+        updateAllBooks();
     };
 };

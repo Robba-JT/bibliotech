@@ -232,7 +232,7 @@
                         <div class="volumeInfo">
                             <button class="title" tabindex="-1">{{description}}:</button>
                             <BR><span field="description" class="direct"></span>
-                            <textarea placeholder="description" name="description" rows="5"></textarea>
+                            <textarea placeholder="{{description}}" name="description" rows="5"></textarea>
                             <span class="toolong notdisplayed">{{affichMore}}</span>
                         </div>
                     </form>
@@ -386,7 +386,7 @@
             </div>
 
             <div id="tempNotif">
-                <span id="notifName"></span>&nbsp;{{recommandName}}:&nbsp;<span id="notifTitle"></span>
+                <span class="notifName"></span>&nbsp;{{recommandName}}:&nbsp;<span class="notifTitle"></span>
             </div>
         </div>
 

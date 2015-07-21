@@ -165,7 +165,7 @@ module.exports = mainIO = function (socket, db) {
                                 notifs = Notifs.value || [],
                                 books = Books.value || [],
                                 covers = Covers.value || [],
-                                comments = _.groupBy(Comments.value, function (elt) { return elt._id.book; }) || [],
+                                comments = _.groupBy(Comments.value, function (elt) { return JSON.stringify(elt._id.book); }) || [],
                                 returnInfo = function (elt) { return _.isEqual(elt.book, books[book].id); },
                                 returnComments = function (elt) { return elt._id.user !== thisUser._id; },
                                 returnUserComments = function (elt) { return elt._id.user === thisUser._id; },
@@ -173,8 +173,8 @@ module.exports = mainIO = function (socket, db) {
 
                             for (var book in books) {
                                 var infos = _.find(userData.books, returnInfo),
-                                    comment = _.filter(comments[books[book].id], returnComments),
-                                    userComment = _.filter(comments[books[book].id], returnUserComments),
+                                    comment = _.filter(comments[JSON.stringify(books[book].id)], returnComments),
+                                    userComment = _.filter(comments[JSON.stringify(books[book].id)], returnUserComments),
                                     cover = _.find(covers, { _id: _.result(infos, "cover")});
 
                                 books[book].tags = _.result(infos, "tags");
@@ -247,19 +247,19 @@ module.exports = mainIO = function (socket, db) {
 
     socket.on("updateBook", function (data) {
         var defReq = [];
-        if (!!data.alternative && !!data.maincolor) {
-            defReq.push(defBooks("addCover", { cover: data.alternative, color: data.maincolor, date: new Date() }).then(function (cover) {
+        if (data.hasOwnProperty("alternative") && data.hasOwnProperty("mainColor")) {
+            defReq.push(defBooks("addCover", { cover: data.alternative, color: data.mainColor, date: new Date() }).then(function (cover) {
                 userAPI.updateUser({ _id: thisUser._id, "books.book": data.id }, {$set: { "books.$.cover" : cover }});
             }));
         }
-        if (!!data.userNote || !!data.userComment) {
+        if (data.hasOwnProperty("userNote") || data.hasOwnProperty("userComment")) {
             var update = { _id: { user: thisUser._id, book: data.id }, date: new Date(), name: thisUser.name };
-            if (!!data.userNote) { update.note = data.userNote; }
-            if (!!data.userComment) { update.comment = data.userComment; }
-            defReq.push(defBooks("updateComment", update));
+            if (data.hasOwnProperty("userNote")) { update.note = data.userNote; }
+            if (data.hasOwnProperty("userComment")) { update.comment = data.userComment; }
+            defReq.push(defBooks((!update.note && !update.comment) ? "removeComment" : "updateComment", update));
         }
-        if (!!data.tags) { defReq.push(userAPI.updateUser({ _id: thisUser._id, "books.book": data.id }, {$set: { "books.$.tags" : data.tags }})); }
-        if (!!data.update) { defReq.push(defBooks("updateBook", _.assign(data.update, { id: data.id }))); }
+        if (data.hasOwnProperty("tags")) { defReq.push(userAPI.updateUser({ _id: thisUser._id, "books.book": data.id }, {$set: { "books.$.tags" : data.tags }})); }
+        if (data.hasOwnProperty("update")) { defReq.push(defBooks("updateBook", _.assign(data.update, { id: data.id }))); }
         Q.allSettled(defReq).catch(function (error) { console.error("updateBook", error); });
     });
 
@@ -323,6 +323,7 @@ module.exports = mainIO = function (socket, db) {
     });
 
     socket.on("readNotif", function (notif) {
+        console.log(notif);
         searchDetail(notif._id.book, function (error, response) {
             if (!!error) { console.error("readNotif", error); }
             if (!!response) {

@@ -12,7 +12,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
             User = {
                 init: function (data) {
                     if (!data.id) { return logout(); }
-                    for (var jta in data) { this[jta] = data[jta]; }
+                    _.assign(this, data);
                     if (!!this.picture && !!this.link) {
                         one("#picture").toggle(true).newElement("img", { src: this.picture, title: "Google+" }).setEvents("click", function () { window.open(User.link); });
                     }
@@ -24,9 +24,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 delete: function () {
                     one("#errPwd").toggle(false);
                     if (!one("@pwd").reportValidity()) { return; }
-                    Windows.confirm("warning", one("#delete").getAttribute("confirm")).then(function () {
-                        socket.emit("deleteUser", one("@pwd").value);
-                    });
+                    Windows.confirm("warning", one("#delete").getAttribute("confirm")).then(function () { socket.emit("deleteUser", one("@pwd").value); });
                     return false;
                 },
                 update: function () {
@@ -52,7 +50,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     }
                     var cell = Bookcells.one(book.id);
                     if (!!cell) { cell.book = book; }
-                    one("#nbBooks").html(User.books.length);
+                    one("#nbBooks").text(User.books.length);
                 },
                 removebook: function (bookid) {
                     _.remove(this.books, _.matchesProperty("id", bookid));
@@ -60,13 +58,13 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 },
                 updatebook: function (book) {
                     var index = User.bookindex(book.id);
-                    if (!!book.update) { book = _.assign(book, book.update); }
+                    _.assign(book, book.update);
                     delete book.update;
-                    if (index !== -1) { this.books[index] = _.assign(this.books[index], book); }
+                    if (index !== -1) { _.assign(this.books[index], book); }
                     var bookcell = Bookcells.one(book.id);
-                    if (!!bookcell && !!bookcell.col && (!!book.title || !!book.authors || !!book.alternative)) {
-                        if (!!book.title) { bookcell.cell.one("header").html(book.title); }
-                        if (!!book.authors) { bookcell.cell.one("figcaption").html(book.authors.join(", ")); }
+                    if (!!bookcell && (!!book.title || !!book.authors || !!book.alternative)) {
+                        if (!!book.title) { bookcell.cell.one("header").text(book.title); }
+                        if (!!book.authors) { bookcell.cell.one("figcaption").text(book.authors.join(", ")); }
                         if (!!book.alternative) { bookcell.cell.one(".cover").src = book.alternative; }
                     }
                 },
@@ -78,14 +76,16 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     for (var jta in this) { if (!_.isFunction(this[jta])) { delete this[jta]; }}
                 },
                 collection: function () {
+                    window.scroll(0, 0);
                     Windows.close();
-                    all(".bookcell").toggleClass("tofilter tohide", false);
                     one("@filtre").value = one("@last").value = one("#selectedTag").innerHTML = "";
                     one("#tags").toggle(!_.isEmpty(User.tags));
                     if (!one("#collection").hasClass("active")) {
                         Images.active.call(one("#collection"));
-                        Bookcells.show(User.books, true);
+                        Bookcells.destroy();
+                        _.chunk(User.books, 40).forEach(Bookcells.show);
                     } else {
+                        all(".bookcell").toggleClass("tofilter tohide", false);
                         Bookcells.display();
                         Search.endRequest(User.books.length);
                     }
@@ -129,7 +129,6 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 remove: function () { if (!!one("#d")) { one("#d").removeAll(); }},
                 resize: function() {
                     if (Dock.nbcols !== ~~(window.innerWidth / 256)) {
-                        //Windows.close();
                         if (one("#detailWindow").isVisible()) { one("#detailWindow").css({ "height": ~~(window.innerHeight * 0.95), "max-height": ~~(window.innerHeight * 0.95) }); }
                         Tags.destroy();
                         all(".deroulant").fade(false);
@@ -173,9 +172,11 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 },
                 toggle: function () { all(".nvb").fade(function () { one("#d").css({ "padding-top": one("#nvb").isVisible() ? one("#nvb").clientHeight : 0 }); }); },
                 notif: function (state) {
+                    var notifs = one("#notifs");
                     if (!!state) { one("#sort").fade(false); }
-                    one("#notifs").css({ top: one("#nvb").clientHeight + 5, left: one("#notifications").offsetLeft });
-                    one("#notifs").fade(0.95);
+                    if (notifs.isVisible()) { notifs.fade(false); } else {
+                        notifs.css({ top: one("#nvb").clientHeight + 5, left: one("#notifications").offsetLeft }).fade(0.95);
+                    }
                 },
                 sort: function (state) {
                     var sorts = one("#sort");
@@ -204,7 +205,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 },
                 nav: function () {
                     if (!Detail.data.cell) { return false; }
-                    var cell = Detail.data.cell, cells = cell.parentNode.all(".bookcell"), row = cell.index(), col = parseInt(cell.parentNode.getAttribute("colid"), 10);
+                    var cell = Detail.data.cell, row = cell.index(), col = parseInt(cell.parentNode.getAttribute("colid"), 10);
                     switch (this.getAttribute("nav")) {
                         case "top":
                             if (!row) { return false; }
@@ -215,12 +216,10 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                             if (col === Dock.nbcols) { col = 0; row++; }
                             break;
                         case "left":
-                            if (!row && !col) { return false; }
                             if (!col) { col = Dock.nbcols; row--; }
                             col--;
                             break;
                         case "bottom":
-                            if (row >= cells.length) { return false; }
                             row++;
                             break;
                     }
@@ -237,6 +236,9 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                         window.scroll(0, scr);
                         if (scr <= 0.1) { window.scroll(0, 0); clearInterval(timer); }
                     }, 100);
+                },
+                toggleFooter: function () {
+                    one("#footer").toggle(!!xcroll().top);
                 }
             },
             Bookcells = {
@@ -246,25 +248,23 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 },
                 destroy: function () { Dock.remove(); Bookcells.books = []; Bookcells.cells = []; },
                 one: function (bookid) { return _.find(Bookcells.cells, _.matchesProperty("id", bookid)); },
-                show: function (books, empty) {
-                    if (!!empty) { Bookcells.destroy(); }
-                    var newCells = [];
-                    if (!!Search.last) {
-                        Bookcells.books.push(books);
-                        Bookcells.books = _.flattenDeep(Bookcells.books);
-                    }
-                    _.forEach(books, function (book) {
+                show: function (books) {
+                    var newCells = [], $dock = Dock.get(), indice = 0;
+                    books.forEach(function (book) {
                         if (!!Bookcells.one(book.id) || _.findIndex(newCells, _.matchesProperty("id", book.id)) !== -1) { return; }
                         newCells.push(new Bookcell(User.book(book.id) || book));
                     });
                     Bookcells.add(newCells);
                     Bookcells.display(newCells, true);
                     Waiting.toggle();
+                    if (!!Search.last) {
+                        Bookcells.books.push(books);
+                        Bookcells.books = _.flattenDeep(Bookcells.books);
+                    }
                 },
                 returned: function (book) { Bookcells.one(book.id).returned(book); },
                 display: function (cells, toAdd) {
                     if (!cells && !!one(".sortBy")) { return Bookcells.sort.call(one(".sortBy")); }
-                    window.scroll(0, 0);
                     cells = cells || _.sortBy(Bookcells.cells, function (cell) { return [ cell.row, cell.col ]; });
                     var $dock = Dock.get(), last = !!toAdd ? all(".bookcell [colid]").length : 0, indice = 0;
                     cells.forEach(function (bcell, index) {
@@ -284,12 +284,12 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 },
                 loadcovers: function () {
                     //Bookcells.cells.forEach(function (cell) { cell.loadcover(); });
-                    one("#footer").toggle(!!xcroll().top);
+                    Menu.toggleFooter();
                 },
                 bytags: function (tag) {
                     one("#formFilter").reset();
                     all(".bookcell").toggleClass("tofilter", false);
-                    one("#selectedTag").html(tag);
+                    one("#selectedTag").text(tag);
                     Bookcells.cells.forEach(function (cell) { cell.cell.toggleClass("tohide", !_.includes(cell.book.tags, tag)); });
                     Bookcells.display();
                 },
@@ -322,8 +322,8 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 this.id = book.id;
                 this.book = book;
                 this.cell = one("#tempCell").cloneNode(true).removeAttributes("id").toggleClass("bookcell", true);
-                this.cell.one("header").html(book.title);
-                this.cell.one("figcaption").html(!!book.authors ? book.authors.join(", ") : "");
+                this.cell.one("header").text(book.title);
+                this.cell.one("figcaption").text(!!book.authors ? book.authors.join(", ") : "");
                 this.cell.one(".previewable").toggle(!!book.access && book.access !== "NONE");
                 this.cell.one(".personnal").toggle(_.isEqual(book.id.user, User.id));
                 this.cell.one(".recommanded").toggle(!!book.from);
@@ -336,7 +336,6 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 init: function () {
                     Tags.cloud = [];
                     all("#cloud span").removeAll();
-                    var click = function () { Tags.show(); Bookcells.bytags(this.innerHTML = ""); Waiting.toggle(false); };
                     if (!!User.tags) {
                         var tagOptions = "";
                         _.forEach(User.tags, function (nb, tag) {
@@ -363,7 +362,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                             return false;
                         };
 
-                    _.forEach(Tags.cloud, function (tag, index) {
+                    Tags.cloud.forEach(function (tag, index) {
                         var µtag = cloud.newElement("span", { "title": tag.weight, "class": "tag tag" + Math.min(~~(tag.weight / 5) + 1, 10) }).html(tag.text),
                             top = height - (µtag.clientHeight / 2),
                             left = width - (µtag.clientWidth / 2),
@@ -404,11 +403,11 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     event.preventDefault();
                     var tag = this.formToJson().tag.toLowerCase(),
                         tags = all("#userTags > div").toArray(),
-                        exist = _.find(tags, function (elt) { return elt.one(".libelle").html() === tag; });
+                        exist = _.find(tags, function (elt) { return elt.one(".libelle").text() === tag; });
 
                     if (!exist) {
                         tags.push(Tags.new(tag, true));
-                        tags = _.sortBy(tags, function (tag) { return tag.one(".libelle").html(); });
+                        tags = _.sortBy(tags, function (tag) { return tag.one(".libelle").text(); });
                         tags.forEach(function (n) { one("#userTags").appendChild(n); });
                     }
                     this.reset();
@@ -420,7 +419,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     clone.setEvent("click", function (event) {
                         if (event.target.hasClass("libelle")) {
                             Windows.close();
-                            Bookcells.bytags(event.target.html());
+                            Bookcells.bytags(event.target.text());
                         } else {
                             this.fade(false, function () { clone.removeAll(); one("#detailWindow [autofocus]").focus(); });
                         }
@@ -435,26 +434,26 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     var notifs = [];
                     if (!!list) { Notifs.list = list; }
                     all("#notifications, #notifNumber").toggle(!!Notifs.list.length);
-                    one("#notifNumber").html(Notifs.list.length);
-                    for (var jta = 0, lg = Notifs.list.length; jta < lg; jta++) {
-                        var notif = one("#tempNotif").cloneNode(true);
-                        notif.setAttributes({ notif: JSON.stringify(N.list[jta]) }).removeAttribute("id");
-                        one("#notifName").html(Notifs.list[jta].from);
-                        one("#notifTitle").html(Notifs.list[jta].title);
-                        notif.setEvents("click", Notifs.click);
-                        one("#notifs").appendChild(notif);
-                    }
+                    one("#notifNumber").text(Notifs.list.length);
+                    Notifs.list.forEach(function (notif) {
+                        var clone = one("#tempNotif").cloneNode(true);
+                        clone.setAttributes({ notif: JSON.stringify(notif) }).removeAttribute("id");
+                        clone.one(".notifName").html(notif.from);
+                        clone.one(".notifTitle").text(notif.title);
+                        clone.setEvents("click", Notifs.click);
+                        one("#notifs").appendChild(clone);
+                    });
                 },
                 click: function () {
-                    var self = this,
-                        notif = JSON.parse(self.getAttribute("notif")),
+                    var notif = JSON.parse(this.getAttribute("notif")),
                         bookid = notif._id.book;
 
                     _.remove(Notifs.list, notif);
                     Notifs.last = notif;
-                    one("#notifs").toggle(function () { self.removeAll(); });
+                    one("#notifs").toggle();
+                    this.removeAll();
                     all("#notifications, #notifNumber").toggle(!!Notifs.list.length);
-                    one("#notifNumber").html(Notifs.list.length);
+                    one("#notifNumber").text(Notifs.list.length);
                     Waiting.toggle(1, 1);
                     socket.emit("readNotif", notif);
                 }
@@ -588,7 +587,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     Images.active.call(one("#recherche"));
                     one("#formFilter").reset();
                     if (one(".sortBy")) { Images.blur.call(one(".sortBy").toggleClass("sortBy", false)); }
-                    one("#selectedTag").html("");
+                    one("#selectedTag").text("");
                 },
                 endRequest: function (nb) {
                     one("#nvb").toggleClass("inactive", false);
@@ -674,14 +673,14 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     µ.removeEventListener("keyup", shortCuts);
                     all("[note]").forEach(Images.blur);
                     windows.forEach(function () { this.fade(false, function () { if (_.isFunction(callback)) { callback.call(); } else { Waiting.toggle(); }}); });
-                    _.forEach(all("form:not(#formFilter)"), function (form) { form.reset(); });
+                    all("form:not(#formFilter)").forEach(function () { this.reset(); });
                     delete Windows.on;
                 },
                 confirm: function (type, msg) {
                     return new Promise(function (resolve, reject) {
                         Waiting.over();
-                        one("#confirmWindow header span").html(one("#confirmWindow header span").getAttribute(type));
-                        one("#confirmWindow #confirm").html(msg);
+                        one("#confirmWindow header span").text(one("#confirmWindow header span").getAttribute(type));
+                        one("#confirmWindow #confirm").text(msg);
                         all("#confirmWindow button").setEvents("click", Windows.close);
                         one("#confirmWindow .valid").setEvents("click", function () { resolve(); });
                         one("#confirmWindow .cancel").toggle(type === "warning").setEvents("click", function () { reject(); });
@@ -706,14 +705,13 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                             var newbook = one("#formNew").formToJson(), error;
                             all("#formNew input, #formNew textarea").forEach(function () { if (!this.reportValidity()) { error = true; } });
                             newbook.authors = !!newbook.authors ? newbook.authors.split(",") : [];
-                            for (var jta = 0, lg = newbook.authors.length; jta < lg; jta++) { newbook.authors[jta] = newbook.authors[jta].ns(); }
+                            for (var jta = 0, lg = newbook.authors.length; jta < lg; jta++) { newbook.authors[jta] = newbook.authors[jta].noSpace(); }
                             if (!!error) { return false; }
                             Waiting.over();
                             socket.emit("newbook", newbook);
                         } else {
                             socket.emit("addDetail");
-                            console.debug(Detail.data);
-                            all("[actclick='upload']").toggle(!!Detail.data.book.base64);
+                            all("[actclick='upload']").toggle(!Detail.data.book.cover);
                             Detail.newCell();
                         }
                     };
@@ -723,37 +721,37 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     this.update = function () {
                         var update = false,
                             values = { id: bookid },
-                            tags = _.map(all("#userTags > div").toArray(), function (tag) { return tag.one(".libelle").html(); }),
+                            tags = _.map(all("#userTags > div").toArray(), function (tag) { return tag.one(".libelle").text(); }),
                             note = one("#userNote").value,
                             comment = one("#userComment").value,
-                            maincolor = one("#detailCover").getAttribute("maincolor"),
+                            mainColor = one("#detailCover").getAttribute("mainColor"),
                             alternative = one("#detailCover").getAttribute("src") !== images["book-4-icon"].black ? one("#detailCover").getAttribute("src") : null;
 
                         if (_.isObject(bookid) && bookid.user === User.id) {
                             var formValues = one("#formNew").formToJson();
                             formValues.authors = formValues.authors.split(",") || [];
-                            //formValues.authors.forEach(function (val, index) { formValues.authors[index] = val.ns(); });
                             _.forEach(formValues, function (val, key) {
+                                val = val.noSpace();
                                 if (!_.isEqual(book[key], val)) {
                                     update = true;
                                     if (!values.update) { values.update = {}; }
-                                    values.update[key] = val.ns();
+                                    values.update[key] = val;
                                 }
                             });
                         }
-                        if (!!note && note !== book.userNote) { update = true; values.userNote = note; }
-                        if (!!comment && comment !== book.userComment) {
+                        if ((!!note || !!book.userNote) && note !== book.userNote) { update = true; values.userNote = note; }
+                        if ((!!comment || !!book.userComment) && comment !== book.userComment) {
                             update = true;
                             values.userComment = comment;
                         }
-                        if (!book.tags && !!tags.length || !_.isEqual(tags, book.tags)) {
+                        if ((!!tags.length || !!book.tags && !!book.tags.length) && !_.isEqual(tags, book.tags)) {
                             update = "tags";
                             values.tags = tags;
                         }
-                        if (!!maincolor && book.alternative !== alternative) {
+                        if (!!mainColor && book.alternative !== alternative) {
                             update = true;
                             values.alternative = alternative;
-                            values.maincolor = maincolor;
+                            values.mainColor = mainColor;
                         }
                         if (!!update) {
                             values.userDate = new Date().toJSON();
@@ -791,9 +789,11 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     var cell = Bookcells.one(Detail.data.book.id);
                     if (one("#collection").hasClass("active") && !cell) {
                         var col = User.books.length % Dock.nbcols,
-                            row = all("[colid=" + User.books.length % Dock.nbcols + "] .bookcell").length;
+                            row = all("[colid='" + User.books.length % Dock.nbcols + "'] .bookcell").length;
 
-                        cell = _.extend({ col: col, row: row }, new B(Detail.data.book));
+                        cell = new Bookcell(Detail.data.book);
+                        cell.cell.col = col;
+                        cell.cell.row = row;
                         Bookcells.add(cell);
                         Bookcells.display();
                     }
@@ -836,7 +836,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     Detail.userNote();
                 },
                 links: function () {
-                    var sb = this.getAttribute("searchby"), txt = this.html();
+                    var sb = this.getAttribute("searchby"), txt = this.text();
                     if (!!sb && !!txt) {
                         one("#formSearch [type=search]", "").value = txt;
                         all("#formSearch [name=searchby]")[sb].checked = true;
@@ -861,7 +861,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                             return function(e) {
                                 image.onload = function () {
                                     var mainColor = Detail.mainColor(this);
-                                    this.toggleClass("new", true).setAttribute("maincolor", mainColor.hex);
+                                    this.toggleClass("new", true).setAttribute("mainColor", mainColor.hex);
                                     one("#detailContent").css("background", "radial-gradient(whitesmoke 40%, " + mainColor.hex + ")");
                                 };
                                 image.src = e.target.result;
@@ -900,13 +900,16 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 },
                 show: function (inCollection) {
                     var book = Detail.data.book, win = one("#detailWindow");
+                    one("#formNew").reset();
+                    one("#formRecommand").reset();
                     win.all("#formNew input, #formNew textarea").toggle(false);
                     win.all("#formNew button:not(.categories)").toggleClass("hide", false).toggleClass("modify", !!book.id && _.isEqual(book.id.user, User.id));
                     win.one("#detailWindow [type=file]").value = "";
                     one("#comments").children.removeAll();
+                    one("#userComment").value = "";
                     win.css({ "background": "whitesmoke", "max-height": ~~(window.innerHeight * 0.95) });
                     one("#userNote").value = book.note;
-                    win.all("#detailWindow .new").toggleClass("new", false);
+                    win.all(".new").toggleClass("new", false);
                     win.all(".inCollection").toggle(!!inCollection);
                     Tags.list();
                     if (!!book.mainColor) {
@@ -919,11 +922,12 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                             }
                         };
                     }
-                    one("#detailCover").setAttributes("maincolor", null).src = book.alternative || book.base64|| images["book-4-icon"].black;
-                    win.all(".direct").html("");
+                    one("#detailCover").setAttributes("mainColor", null).src = book.alternative || book.base64|| images["book-4-icon"].black;
+                    win.all(".direct").text("");
                     win.all("#userTags > div").removeAll();
-                    win.one("#detailWindow .windowheader span").html(book.title || one("#detailWindow .windowheader span").getAttribute("label"));
-                    all("[actclick=add], [actclick=update], [actclick=recommand]").toggle(!inCollection);
+                    win.one("#detailWindow .windowheader span").text(book.title || one("#detailWindow .windowheader span").getAttribute("label"));
+                    all("[actclick=add]").toggle(!inCollection);
+                    all("[actclick=update], [actclick=recommand]").toggle(!!inCollection);
                     all("[actclick=associated]").toggle(!!book.id && !_.isObject(book.id));
                     all("[actclick=preview]").toggle(!!book.access && book.access !== "NONE");
                     all("[actclick=google]").setAttributes({ "link": book.link }).toggle(!!book.link);
@@ -931,18 +935,19 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     win.all(".comments").toggle(!!book.comments && !!book.comments.length);
                     win.all("#detailWindow [field]").toggleClass("noValue", false);
                     win.all("[field=authors] span").removeAll();
-                    win.all(".volumeInfo").toggle(false);
+                    win.all(".volumeInfo.nonEditable").toggle(false);
+                    win.all(".volumeInfo:not(.nonEditable)").toggle(!!book.id && _.isEqual(book.id.user, User.id));
                     Detail.userNote();
                     if (!!win.hasClass("notdisplayed")) { Windows.open.call("detailWindow"); }
                     _.forEach(book, function (value, jta) {
-                        var field = win.one("[field=" + jta + "]"), input = win.one("input[name=" + jta + "]");
+                        var field = win.one("[field=" + jta + "]"), input = win.one("input[name=" + jta + "], textarea[name=" + jta + "]");
                         if (!!field && jta !== "subtitle") {
                             field.closest("volumeInfo").toggle(!!value || _.isEqual(book.id.user, User.id));
                             field.toggle(!!value).toggleClass("noValue", !value);
                         }
                         switch (jta) {
                             case "authors":
-                                value.forEach(function (aut) { field.newElement("span", { "class": "link", "searchby": 3 }).html(aut); });
+                                value.forEach(function (aut) { field.newElement("span", { "class": "link", "searchby": 3 }).text(aut); });
                                 input.value = value.join(", ");
                                 input.setAttribute("oldvalue", value.join(", "));
                                 field.parentNode.all("button").toggle(!!value.length);
@@ -952,7 +957,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                                 value.forEach(function (tag) { userTags.appendChild(Tags.new(tag)); });
                                 break;
                             case "userNote":
-                                Detail.clickNote.call(one("[note='" + value + "']"));
+                                if (!!value) { Detail.clickNote.call(one("[note='" + value + "']")); }
                                 break;
                             case "userComment":
                                 one("#userComment").value = value;
@@ -964,9 +969,9 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                                     if (!!com.comment) {
                                         var comment = one("#tempComment").cloneNode(true);
                                         comment.removeAttribute("id");
-                                        comment.one(".commentAuthor").html(com.name);
-                                        comment.one(".commentDate").html(com.date.fd());
-                                        comment.one(".commentNote").html(com.note);
+                                        comment.one(".commentAuthor").text(com.name);
+                                        comment.one(".commentDate").text(com.date.fd());
+                                        comment.one(".commentNote").text(com.note);
                                         comment.one(".commentComment").html(com.comment);
                                         one("#comments").appendChild(comment);
                                     }
@@ -978,7 +983,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                                 if (typeof mNote !== "undefined" && !!cNotes) {
                                     mNote = (mNote / cNotes).toFixed(2);
                                     one(".subtitle").toggle(true);
-                                    one("#mNote").html(mNote);
+                                    one("#mNote").text(mNote);
                                 }
                                 break;
                             default:
@@ -993,7 +998,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                                     field.setAttribute("datetime", new Date(value));
                                     value = value.fd();
                                 }
-                                field.html(value);
+                                if (jta === "description") { field.html(value); } else { field.text(value); }
                                 break;
                         }
                     });
@@ -1066,7 +1071,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                             });
                         }
                         socket.emit("removeBook", self.id);
-                        one("#nbBooks").html(User.removebook(self.id));
+                        one("#nbBooks").text(User.removebook(self.id));
                     }
                 },
                 description = function (event) {
@@ -1120,6 +1125,16 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 },
                 dragend = function () {
                     this.toggleClass("isDrag", false);
+                },
+                loadcover = function () {
+                    if (!self.cell.hasClass("toshow")) { return; }
+                    var cover = self.cell.one(".cover");
+                    if (!!cover && window.innerHeight + xcroll().top > self.cell.offsetTop) {
+                        self.cell.toggleClass("toshow", false).css({ visibility: "visible" });
+                        self.cell.setEvents({ dragstart: dragstart, dragend: dragend });
+                        self.cell.one("footer").css({ "bottom": self.cell.one("figcaption").clientHeight + 5 });
+                        if (!!self.book.alternative || !!self.book.base64) { cover.src = self.book.alternative || self.book.base64; }
+                    }
                 };
 
             this.cell.all("header, figure *:not(button)").setEvents("click", detail);
@@ -1127,6 +1142,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
             this.cell.setEvents({ "mouseenter mouseleave": description, dragstart: dragstart, dragend: dragend });
             this.cell.one("footer").css({ "bottom": this.cell.one("figcaption").clientHeight + 5 });
             this.actived = true;
+            //this.loadcover = loadcover;
         };
         Bookcell.prototype.returned = function (book) {
             this.book = book;
@@ -1155,7 +1171,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
             User.init(ret);
         }).on("collection", function (ret) {
             User.books = ret.books;
-            one("#nbBooks").html(User.books.length);
+            one("#nbBooks").text(User.books.length);
             console.debug("User.books", new Date().toLocaleString(), User.books.length);
             Notifs.show(ret.notifs);
             Tags.init();
@@ -1196,8 +1212,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
         one("#formProfil").setEvent("submit", User.update);
         one("#formRecommand").setEvent("submit", Detail.sendNotif);
         one("#formTag").setEvent("submit", Tags.add);
-        one("#formNew").setEvent("submit", function (event) { event.preventDefault(); });
-        one("#formFilter").setEvent("submit", function (event) { event.preventDefault(); });
+        all("#formNew, #formFilter").setEvents("submit", function (event) { event.preventDefault(); });
         all("#formNew button").setEvents("click", Detail.modify);
         one("#changePwd").setEvent("click", Windows.togglePwd);
         one("#delete").setEvent("click", User.delete);

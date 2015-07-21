@@ -381,22 +381,22 @@ button.remove {
 }
 
 .modify {
-    background-color: darkgreen;
+    background-color: darkgreen !important;
     border-radius: 5px;
-    color: white;
+    color: white !important;
     cursor: pointer;
 }
 
 .modify:hover {
-    background-color: green;
+    background-color: green !important;
 }
 
 .hide {
-    background-color: darkred;
+    background-color: darkred !important;
 }
 
 .hide:hover {
-    background-color: red;
+    background-color: red !important;
 }
 
 #formNew time:before, #formNew [type=date]:before {
