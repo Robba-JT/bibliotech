@@ -206,7 +206,6 @@ module.exports = mainIO = function (socket, db) {
                             Q.allSettled(def64).then(function (results) {
                                 var covers = _.map(results, "value"), retCovers = [];
                                 socket.emit("covers", covers);
-                                socket.emit("endRequest", books.length);
                             }).catch(function (error) { console.error("isConnected - Q.allSettled(def64)", error); });
                         });
                     });
