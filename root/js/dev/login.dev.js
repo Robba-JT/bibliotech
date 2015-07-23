@@ -37,6 +37,7 @@ var gp = function () {
             redirecturi: "postmessage",
             accesstype: "offline",
             callback: function (response) {
+                console.debug("google response", response);
                 if (!response.code) { return; }
                 sr("/googleAuth", { c: response.code }, function (s) {
                     if (!!s && !!s.success) { return window.location.reload(true); }
@@ -102,6 +103,7 @@ document.addEventListener("DOMContentLoaded", function () {
         razError();
         document.getElementsByTagName("div").fade(0.5);
         sr(document.querySelector("[h]").isv() ? "/new" : "/login", this.serialize(), function (s) {
+            console.debug("response", response);
             if (!!s && !!s.success) { return window.location.reload(true); }
             [].forEach.call(document.querySelectorAll("[type=email], [type=password], [type=text]"), function (el) { el.classList.add("e"); });
             document.getElementsByTagName("div").fade(false);

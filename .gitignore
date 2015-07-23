@@ -1,6 +1,7 @@
-/node_modules/
+/config.json
+/data/*
 /logs/*
+/node_modules/
 /proxy.js
 /root/images/images_inv.js
 /root/images/images.js
-/config.json

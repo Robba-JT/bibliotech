@@ -317,6 +317,7 @@ module.exports = mainIO = function (socket, db) {
                     title: data.title,
                     alt: data.alt
                 });
+                mailAPI.sendToFriend(thisUser.name + "<" + thisUser._id + ">", data.recommand.toLowerCase(), data.title, data.alt);
             }
         });
     });

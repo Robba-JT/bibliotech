@@ -30,6 +30,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 },
                 books: [],
                 bytags: function (tag) {
+                    if (!one("#collection").hasClass("active")) { return; }
                     window.scroll(0, 0);
                     one("#formFilter").reset();
                     all(".bookcell").toggleClass("tofilter", false);
@@ -48,12 +49,12 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     return new Promise(function (resolve) {
                         if (!cells && !!one(".sortBy")) { return Bookcells.sort.call(one(".sortBy")); }
                         cells = cells || _.sortBy(Bookcells.cells, function (cell) { return [ cell.row, cell.col ]; });
-                        var indice = 0;
+                        var indice = 0, $dock = Dock.get();
                         for (var jta = 0, lg = cells.length; jta < lg; jta++) {
                             var bcell = cells[jta], cell = cells[jta].cell;
                             if (!!cell.hasClass("tohide") || !!cell.hasClass("tofilter")) { Dock.get().one("section.notdisplayed").appendChild(cell); } else {
                                 cell.toggleClass("toshow", true);
-                                one("[colid='"+ ((!!filter) ? cell.col : indice % Dock.nbcols) +"']").appendChild(cell);
+                                $dock.one("[colid='"+ ((!!filter) ? cell.col : indice % Dock.nbcols) +"']").appendChild(cell);
                                 indice++;
                             }
                         }
@@ -80,7 +81,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 },
                 generate: function (books) {
                     return new Promise(function (resolve) {
-                        var newCells = [], $dock = Dock.get(), indice = 0;
+                        var newCells = [], indice = 0;
                         for (var jta = 0, lg = books.length; jta < lg; jta++) {
                             if (!!Bookcells.one(books[jta].id) || _.findIndex(newCells, _.matchesProperty("id", books[jta].id)) !== -1) { return; }
                             newCells.push(new Bookcell(User.book(books[jta].id) || books[jta], jta));
@@ -90,9 +91,6 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                         resolve(newCells);
                     });
                 },
-                getPositions: function () {
-                    for (var jta = 0, lg = Bookcells.cells.length; jta < lg; jta++) { Bookcells.cells[jta].getPosition(); }
-                },
                 loadcovers: function () {
                     for (var jta = 0, lg = Bookcells.cells.length; jta < lg; jta++) { Bookcells.cells[jta].loadcover(); }
                     Menu.toggleFooter();
@@ -101,22 +99,19 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 one: function (bookid) { return _.find(Bookcells.cells, _.matchesProperty("id", bookid)); },
                 returned: function (book) { Bookcells.one(book.id).returned(book); },
                 show: function (books) {
-                    var bArray = _.chunk(books, 40), pArray = [];
+                    var bArray = _.chunk(books, 40), pArray = [], cb = function (cells) { Bookcells.display(cells, true); };
                     for (var jta = 0, lg = bArray.length; jta < lg; jta++) {
-                        pArray.push(Bookcells.generate(bArray[jta]).then(function (cells) { Bookcells.display(cells, true); }));
+                        pArray.push(Bookcells.generate(bArray[jta]).then(cb));
                     }
                     return Promise.all(pArray);
                 },
                 sort: function () {
                     window.scroll(0, 0);
                     if (this.hasClass("active")) { return; }
-                    if (!!one(".sortBy")) {
-                        Images.blur.call(one(".sortBy").toggleClass("sortBy", false));
-                    }
-                    Images.hover.call(this.toggleClass("sortBy", true));
-                    var tby = this.getAttribute("by"), sort = this.getAttribute("sort"), cells = _.sortBy(Bookcells.cells, function (cell) { return cell.book[tby] || null; });
-                    if (!!sort) cells.reverse();
-                    Bookcells.display(cells);
+                    var self = this;
+                    if (!!one(".sortBy")) { Images.blur.call(one(".sortBy").toggleClass("sortBy", false)); }
+                    Images.hover.call(this).toggleClass("sortBy", true);
+                    Bookcells.display(_.sortByOrder(Bookcells.cells, function (cell) { return cell.book[self.getAttribute("by")] || null; }, self.getAttribute("sort") !== "desc"));
                 }
             },
             checkValid = function () {
@@ -213,8 +208,8 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                             values.userDate = new Date().toJSON();
                             socket.emit("updateBook", values);
                             User.updatebook(values);
-                            User.updatetags();
-                            one("#tags").toggle(!_.isEmpty(User.tags) && one("#collection").hasClass("active"));
+                            Tags.init();
+                            one("#tags").toggle(!!Tags.cloud.length && one("#collection").hasClass("active"));
                         }
                         Windows.close();
                     };
@@ -309,8 +304,6 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                             row = all("[colid='" + User.books.length % Dock.nbcols + "'] .bookcell").length;
 
                         cell = new Bookcell(Detail.data.book);
-                        cell.cell.col = col;
-                        cell.cell.row = row;
                         Bookcells.add(cell);
                         Bookcells.display();
                     }
@@ -473,7 +466,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                             dragover: function(event) { event.preventDefault(); },
                             drop: function (event) {
                                 event.preventDefault();
-                                var cell = Bookcells.one(JSON.parse(event.dataTransfer.getData("cell"))).cell, target = event.target.closest("bookcell");
+                                var cell = Bookcells.one(JSON.parse(event.dataTransfer.getData("text"))).cell, target = event.target.closest("bookcell");
                                 if (!!target) {
                                     if (cell !== target) {
                                         target.closest("col").insertBefore(cell, target);
@@ -482,6 +475,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                                     }
                                 } else {
                                     this.appendChild(cell);
+                                    if (one(".sortBy")) { Images.blur.call(one(".sortBy").toggleClass("sortBy", false)); }
                                 }
                                 return false;
                             }
@@ -495,16 +489,16 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 },
                 resize: function() {
                     if (Dock.nbcols !== ~~(window.innerWidth / 256)) {
-                        if (one("#detailWindow").isVisible()) {
-                            one("#detailWindow").css({ "height": ~~(window.innerHeight * 0.95), "max-height": ~~(window.innerHeight * 0.95) });
-                        }
-                        Tags.destroy();
+                        Tags.close().then(Tags.destroy);
                         all(".deroulant").fade(false);
                         Dock.nbcols = ~~(window.innerWidth / 256);
                         Dock.remove();
                         Bookcells.display();
                     } else {
                         all(".col").css({ "width": ~~(window.innerWidth / Dock.nbcols), "max-width": ~~(window.innerWidth / Dock.nbcols) });
+                    }
+                    if (one("#detailWindow").isVisible()) {
+                        one("#detailWindow").css({ "height": ~~(window.innerHeight * 0.95), "max-height": ~~(window.innerHeight * 0.95) });
                     }
                     return;
                 }
@@ -519,8 +513,8 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     Idb.db.transaction(["queries"], "readwrite").objectStore("queries").delete(key);
                 },
                 getDetail: function (bookid) {
-                    return new Promise(function (resolve, reject) {
-                        if (!Idb.db) { reject(); }
+                    return new Promise(function (resolve) {
+                        if (!Idb.db) { resolve(); }
                         var request = Idb.db.transaction(["details"], "readwrite").objectStore("details").index("by_id").get(bookid);
                         request.onsuccess = function () { if (!!this.result) { resolve(this.result); } else { resolve(); }};
                         request.onerror = function () { resolve(); };
@@ -576,8 +570,9 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                         Images.blur.call(isactive);
                     }
                     this.toggleClass("active", true);
-                    one("#tags").toggle(this.id === "collection" && !_.isEmpty(User.tags));
+                    one("#tags").toggle(this.id === "collection" && !!Tags.cloud.length);
                     if (!!thisImg) { thisImg.src = images[thisImg.getAttribute("source")][thisImg.getAttribute("active")]; }
+                    return this;
                 },
                 blur: function () {
                     var image = this.tagName.toLowerCase() === "img" ? this : this.one("img");
@@ -585,11 +580,13 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     if (!!image) { image.src = images[image.getAttribute("source")][image.getAttribute("blur")];
                         if (!image.isVisible() && !image.hasClass("nsv")) { image.css({ visibility: "visible" }); }
                     }
+                    return this;
                 },
                 hover: function () {
                     var image = this.tagName.toLowerCase() === "img" ? this : this.one("img");
                     if (!!this.hasClass("active") || !!this.hasClass("sortBy")) { return false; }
                     if (!!image) { image.src = images[image.getAttribute("source")][image.getAttribute("hover")]; }
+                    return this;
                 }
             },
             logout = function () {
@@ -673,7 +670,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 },
                 top: function () {
                     var timer = setInterval(function () {
-                        var scr = (xcroll().top / 2).toFixed(1);
+                        var scr = ((xcroll().top / 2) - 0.1).toFixed(1);
                         window.scroll(0, scr);
                         if (scr <= 0.1) { window.scroll(0, 0); clearInterval(timer); }
                     }, 100);
@@ -802,7 +799,10 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                             case 69: one("#tags").trigger("click"); action = true; break;
                             case 73: one("#contact").trigger("click"); action = true; break;
                         }
-                        if (action) { return false; }
+                        if (action) {
+                            event.preventDefault();
+                            return false;
+                        }
                     }
                 }
             },
@@ -822,14 +822,15 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     this.reset();
                     return false;
                 },
-                close: function () { if (one("#cloud").isVisible()) { Tags.show(); }},
-                destroy: function () {
-                    Tags.close();
-                    all("#cloud span").removeAll();
+                close: function () {
+                    return new Promise(function (resolve) {
+                        if (one("#cloud").isVisible()) { Tags.show().then(resolve); } else { Waiting.over(false); resolve(); }
+                    });
                 },
+                destroy: function () { all("#cloud span").removeAll(); },
                 generate: function () {
                     var cloud = one("#cloud"),
-                        click = function () { Tags.show(); Bookcells.bytags(this.innerText); Waiting.toggle(false); },
+                        click = function () { Tags.show(); Bookcells.bytags(this.text()); Waiting.toggle(false); },
                         height = ~~(cloud.clientHeight / 2),
                         width = ~~(cloud.clientWidth / 2),
                         ratio = width / height,
@@ -843,6 +844,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                             return false;
                         };
 
+                    Tags.destroy();
                     for (var jta = 0, lg = Tags.cloud.length; jta < lg; jta++) {
                         var tag = Tags.cloud[jta],
                             µtag = cloud.newElement("span", { "title": tag.weight, "class": "tag tag" + Math.min(~~(tag.weight / 5) + 1, 10) }).html(tag.text),
@@ -864,11 +866,12 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     cloud.all("span").setEvents("click", click);
                 },
                 init: function () {
+                    var tags = _.countBy(_.flatten(_.compact(_.pluck(User.books, "tags")), true).sort());
                     Tags.cloud = [];
-                    all("#cloud span").removeAll();
-                    if (!!User.tags) {
+                    Tags.destroy();
+                    if (!!tags) {
                         var tagOptions = "";
-                        _.forEach(User.tags, function (nb, tag) {
+                        _.forEach(tags, function (nb, tag) {
                             Tags.cloud.push({ "text": tag, "weight": nb });
                             tagOptions += "<option>" + tag + "</option>";
                         });
@@ -892,14 +895,17 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     return clone;
                 },
                 show: function () {
-                    if (one("#wa").isVisible() || !one("#collection").hasClass("active")) { return false; }
-                    Windows.close().then(function () {
-                        var cloud = one("#cloud"), vis = cloud.isVisible();
-                        all("html").toggleClass("overflown", !vis);
-                        if (!!vis) { cloud.fade(false); } else {
-                            cloud.fade(0.8).then(function () {
-                                if (!!cloud.all("span").length) { return false; }
-                                Tags.generate();
+                    var cloud = one("#cloud"), vis = cloud.isVisible();
+                    return new Promise(function (resolve) {
+                        if (one("#wa").isVisible() || !one("#collection").hasClass("active")) { resolve(); } else {
+                            Windows.close().then(function () {
+                                all("html").toggleClass("overflown", !vis);
+                                if (!!vis) { cloud.fade(false).then(resolve); } else {
+                                    cloud.fade(0.9).then(function () {
+                                        if (!cloud.all("span").length) { Tags.generate(); }
+                                        resolve();
+                                    });
+                                }
                             });
                         }
                     });
@@ -920,19 +926,19 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 collection: function () {
                     Windows.close();
                     one("@filtre").value = one("@last").value = one("#selectedTag").innerHTML = "";
-                    one("#tags").toggle(!_.isEmpty(User.tags));
                     if (!one("#collection").hasClass("active")) {
                         Bookcells.destroy();
+                        Waiting.anim(true);
                         Waiting.toggle(true, true).then(function () {
                             one("#nvb").toggleClass("inactive", true);
-                            Waiting.anim(true);
                             Images.active.call(one("#collection"));
                             Bookcells.show(User.books).then(Search.endRequest);
                         });
                     } else {
                         window.scroll(0, 0);
                         all(".bookcell").toggleClass("tofilter tohide", false);
-                        Bookcells.display().then(Search.endRequest);
+                        //Bookcells.display().then(Search.endRequest);
+                        one("#sort [by]").trigger("click");
                     }
                     return false;
                 },
@@ -987,7 +993,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     }
                 },
                 updatetags: function () {
-                    this.tags = _.countBy(_.flatten(_.compact(_.pluck(this.books, "tags")), true).sort());
+                    //this.tags = _.countBy(_.flatten(_.compact(_.pluck(this.books, "tags")), true).sort());
                     Tags.init();
                 }
             },
@@ -1027,14 +1033,15 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 close: function (notTog) {
                     return new Promise(function (resolve) {
                         var win = all(".window:not(.notdisplayed)"), forms = all("form:not(#formFilter)");
-                        if (!win.length) { resolve(); }
                         Waiting.over(false);
                         µ.removeEventListener("keyup", shortCuts);
-                        for (var jta = 0, lg = forms.length; jta < lg; jta++) { forms[jta].reset(); }
-                        win.fade(false).then(function () {
-                            delete Windows.on;
-                            if (notTog === true) { resolve(); } else { Waiting.toggle().then(resolve); }
-                        });
+                        if (!win.length) { resolve(); } else {
+                            for (var jta = 0, lg = forms.length; jta < lg; jta++) { forms[jta].reset(); }
+                            win.fade(false).then(function () {
+                                delete Windows.on;
+                                if (notTog === true) { resolve(); } else { Waiting.toggle().then(resolve); }
+                            });
+                        }
                     });
                 },
                 confirm: function (type, msg) {
@@ -1056,27 +1063,30 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     var self = this;
                     return new Promise(function (resolve, reject) {
                         var wid = (typeof self === "string") ? self : self.getAttribute("window"), win = one("#" + wid);
-                        Tags.close();
-                        if (one("#wa").isVisible()) { resolve(); }
-                        if (!_.includes(["previewWindow", "recommandWindow"], wid)) { all(".window:not(.notdisplayed)").fade(false); }
-                        if (wid === "profileWindow") {
-                            one("@mail").value = User.id;
-                            one("@name").value = User.name;
-                            if (!!User.googleSignIn) {
-                                one("@googleSignIn").setAttribute("checked", true);
-                                if (!!User.googleSync) { one("@googleSync").setAttribute("checked", true); }
-                            } else {
-                                one("@pwd").setAttribute("required", true);
-                            }
-                            if (!one(".changePwd.notdisplayed")) { Windows.togglePwd(); }
+                        if (!!Windows.on && Windows.on === wid) { Windows.close().then(resolve); } else {
+                            Tags.close().then(function () {
+                                if (one("#wa").isVisible()) { resolve(); }
+                                if (!_.includes(["previewWindow", "recommandWindow"], wid)) { all(".window:not(.notdisplayed)").fade(false); }
+                                if (wid === "profileWindow") {
+                                    one("@mail").value = User.id;
+                                    one("@name").value = User.name;
+                                    if (!!User.googleSignIn) {
+                                        one("@googleSignIn").setAttribute("checked", true);
+                                        if (!!User.googleSync) { one("@googleSync").setAttribute("checked", true); }
+                                    } else {
+                                        one("@pwd").setAttribute("required", true);
+                                    }
+                                    if (!one(".changePwd.notdisplayed")) { Windows.togglePwd(); }
+                                }
+                                Waiting.toggle(true).then(function () {
+                                    Windows.on = wid;
+                                    win.css({ "top": xcroll().top + 10 }).fade(true);
+                                    if (win.one("[autofocus]")) { win.one("[autofocus]").focus(); }
+                                    resolve();
+                                });
+                                all(".errMsg").toggle(false);
+                            });
                         }
-                        Waiting.toggle(true).then(function () {
-                            Windows.on = true;
-                            win.css({ "top": xcroll().top + 10 }).fade(true);
-                            if (win.one("[autofocus]")) { win.one("[autofocus]").focus(); }
-                            resolve();
-                        });
-                        all(".errMsg").toggle(false);
                     });
                 },
                 togglePwd: function () {
@@ -1104,6 +1114,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                         }
                         socket.emit("removeBook", self.id);
                         one("#nbBooks").text(User.removebook(self.id));
+                        if (!!self.book.tags.length) { Tags.init(); }
                     }
                 },
                 description = function (event) {
@@ -1114,7 +1125,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                             leave = function () { this.removeAll(); },
                             position = {
                                 "max-height": window.innerHeight,
-                                left: (Math.min(this.offsetLeft + (this.clientWidth / 3), window.innerWidth - (this.clientWidth * 1.333))).toFixed(0)
+                                left: (Math.min(this.xposition() + (this.clientWidth / 3), window.innerWidth - (this.clientWidth * 1.333))).toFixed(0)
                             },
                             top = (this.offsetTop + (this.clientHeight / 3)).toFixed(0),
                             description = µ.body.newElement("div", { "width": this.clientWidth, "bookid": self.id, "class": "description notdisplayed" })
@@ -1152,14 +1163,10 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     this.toggleClass("isDrag", true);
                     event.dataTransfer.effectAllowed = "move";
                     event.dataTransfer.dropEffect = "move";
-                    event.dataTransfer.setData("cell", JSON.stringify(id));
+                    event.dataTransfer.setData("text", JSON.stringify(id));
                 },
                 dragend = function () {
                     this.toggleClass("isDrag", false);
-                },
-                getPosition = function () {
-                    var parent = this.cell.parentNode, brothers = parent.children, col = parent.getAttribute("colid"), row = brothers.findIndex(this.cell);
-                    console.debug(this.book.title, "col", col, "row", row);
                 },
                 id = this.id,
                 loadcover = function () {
@@ -1174,13 +1181,12 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 },
                 self = this;
 
-            this.cell.all("header, figure *:not(button)").setEvents("click", detail);
+            this.cell.all("header, figure").setEvents("click", detail);
             this.cell.all("button").setEvents("click", action);
             this.cell.setEvents({ "mouseenter mouseleave": description, dragstart: dragstart, dragend: dragend });
             this.cell.one("footer").css({ "bottom": this.cell.one("figcaption").clientHeight + 5 });
             this.actived = true;
             this.loadcover = loadcover;
-            this.getPosition = getPosition;
         };
         Bookcell.prototype.returned = function (book) {
             this.book = book;
@@ -1194,11 +1200,11 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
             .on("books", Bookcells.show)
             .on("collection", function (ret) {
                 User.books = ret.books;
+                Tags.init();
                 one("#collection").trigger("click");
                 one("#nbBooks").text(User.books.length);
                 console.debug("User.books", new Date().toLocaleString(), User.books.length, (new Date() - start) / 1000);
                 Notifs.show(ret.notifs);
-                Tags.init();
             })
             .on("connect", function () {
                 socket.emit("isConnected");
@@ -1280,7 +1286,6 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
         all("#tags, #cloud > img").setEvents("click", Tags.show);
         all("#recherche, #profil, #contact").setEvents("click", Windows.open);
         one("#newbook").setEvent("click", Detail.new);
-        all("@filtre").setEvents("search", Bookcells.filter);
         all(".tnv").setEvents("click", Menu.toggle);
         all("[url]").setEvents("click", Menu.link);
         all("[mail]").setEvents("click", Menu.mail);
@@ -1289,5 +1294,15 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
         all("@tag").setEvents("input propertychange", Tags.list);
         window.setEvents({ "contextmenu": Menu.context, "resize": Dock.resize, "click": Menu.close, "selectstart": Menu.selectstart });
         all("[nav]").setEvents("click", Menu.nav);
+        (function (search) {
+            if (!!search) {
+                one("@filtre").setEvent("search", Bookcells.filter);
+            } else {
+                one("#formFilter").setEvent("submit", function (event) {
+                    Bookcells.filter.call(one("@filtre"));
+                    return false;
+                });
+            }
+        })("onsearch" in µ.createElement("input"));
     });
 }

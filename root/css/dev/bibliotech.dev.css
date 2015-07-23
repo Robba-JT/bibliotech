@@ -443,43 +443,43 @@ button.remove {
 }
 #cloud span.tag10 {
     color: #B8860B;
-    font-size: 550%;
+    font-size: 6em;
 }
 #cloud span.tag9 {
     color: #FF8C00;
-    font-size: 500%;
+    font-size: 5em;
 }
 #cloud span.tag8 {
     color: #FFA500;
-    font-size: 450%;
+    font-size: 4.5em;
 }
 #cloud span.tag7 {
     color: #8B4513;
-    font-size: 400%;
+    font-size: 4em;
 }
 #cloud span.tag6 {
     color: #D2691E;
-    font-size: 350%;
+    font-size: 3.5em;
 }
 #cloud span.tag5 {
     color: #CD853F;
-    font-size: 300%;
+    font-size: 3em;
 }
 #cloud span.tag4 {
     color: #DAA520;
-    font-size: 250%;
+    font-size: 2.5em;
 }
 #cloud span.tag3 {
     color: #F4A460;
-    font-size: 200%;
+    font-size: 2em;
 }
 #cloud span.tag2 {
     color: #D2B48C;
-    font-size: 150%;
+    font-size: 1.5em;
 }
 #cloud span.tag1 {
     color: #DEB887;
-    font-size: 100%;
+    font-size: 1em;
 }
 
 .window {
