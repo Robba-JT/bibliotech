@@ -141,27 +141,34 @@ module.exports.BooksAPI = BooksAPI = function (db) {
             });
         },
         updateAllBooks = function () {
-            var lastWeek = (new Date(((new Date()).setDate((new Date()).getDate() - 30))));
-            books.find({ "date": { $lte: lastWeek }, "id.user": { $exists: false }}, { "_id": false }).toArray(function (error, result) {
+            var last = (new Date(((new Date()).setDate((new Date()).getDate() - 30))));
+            books.find({ "date": { $lte: last }, "id.user": { $exists: false }}, { "_id": false }).toArray(function (error, result) {
                 if (!!error) { console.error("Error Update Books", error); }
                 if (!!result) {
-                    var updated = 0, requests = [];
+                    var updated = 0, removed = 0, requests = [];
                     result.forEach(function (oldOne) {
                         var params = _.assign({ volumeId: oldOne.id }, reqParams.searchOne);
                         requests.push(new Promise(function () {
                             gBooks.volumes.get(params, function (error, response) {
-                                if (!!error) { console.error("Error Update One", oldOne.id, error); } else {
+                                if (!!error) {
+                                    console.error("Error Update One", oldOne.id, error);
+                                    if (error.code === 404 && error.message === "The volume ID could not be found.") {
+                                        console.log("deleted", oldOne.title);
+                                        books.remove({ id: oldOne.id });
+                                        removed++;
+                                    }
+                                } else {
                                     var newOne = formatOne(response);
                                     if (!booksEqual(oldOne, newOne)) {
                                         console.log("updated", newOne.title);
                                         updated++;
-                                        updateBook(newOne);
                                     }
+                                    updateBook(newOne);
                                 }
                             });
                         }));
                     });
-                    Q.allSettled(requests).then(function () { console.info("Books updated", updated); });
+                    Q.allSettled(requests).then(function () { console.info("Books updated", updated, "removed", removed); });
                 }
             });
         },

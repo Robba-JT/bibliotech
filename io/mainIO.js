@@ -7,24 +7,30 @@ var MailsAPI = require("../tools/mails").MailsAPI,
     BooksAPI = require("../db/books").BooksAPI,
     google = require("googleapis"),
     gOptions = { timeout: 5000 },
-    gAuth = google.oauth2({ version: "v2" });
+    gAuth = google.oauth2({ version: "v2" }),
+    OAuth2Client = google.auth.OAuth2,
+    oauth2Client = new OAuth2Client(
+        "216469168993-dqhiqllodmfovgtrmjdf2ps5kj0h1gg9.apps.googleusercontent.com",
+        "lH-1TOOmmd2wNFaXOf2qY3dV",
+        "postmessage"
+    );
 
 google.options(gOptions);
 
 module.exports = mainIO = function (socket, db) {
     "use strict";
 
-    var sessionDB = db.collection("sessions"),
+    var /*sessionStore = socket.handshake.sessionStore,*/
         sessionId = socket.handshake.sessionId,
+        session = socket.handshake.session,
         userAPI = new UsersAPI(db),
         bookAPI = new BooksAPI(db),
         mailAPI = new MailsAPI(db),
         thisUser, thisBooks = [], lastSearch = {}, lastDetail = {},
-        currUser = function (id) {
+        currUser = function () {
             var defGet = Q.defer();
-            sessionDB.findOne({ _id: id }, function (err, response) {
-                if (!!err || !response.session) { defGet.reject(err || new Error("No session!!!")); } else {
-                    var session = JSON.parse(response.session);
+/*            sessionStore.get(sessionId, function (err, session) {
+                if (!!err || !session) { defGet.reject(err || new Error("No session!!!")); } else {
                     if (!session.user && !session.token && !session.token.credentials) { defGet.reject(new Error("Invalid session!!!")); } else {
                         if (!!session.user) { defGet.resolve({ username: session.user }); } else {
                             gAuth.userinfo.v2.me.get(session.token.credentials, function (err, infos) {
@@ -42,12 +48,28 @@ module.exports = mainIO = function (socket, db) {
                         }
                     }
                 }
-            });
+            });*/
+            if (!!session.user) { defGet.resolve({ username: session.user }); } else {
+                gAuth.userinfo.v2.me.get(session.token.credentials, function (err, infos) {
+                    if (!!err || !infos) { defGet.reject(err || new Error("gAuth - No info")); } else {
+                        defGet.resolve({
+                            username: infos.email,
+                            name: infos.name,
+                            googleSignIn: true,
+                            link: infos.link,
+                            picture: infos.picture,
+                            token: session.token.credentials
+                        });
+                    }
+                });
+            }
             return defGet.promise;
         },
         defBooks = function (request, query) {
             var defReq = Q.defer();
-            bookAPI[request](query, function (error, response) { if (!!error || !response) { defReq.reject(error || new Error("No response!")); } else { defReq.resolve(response); } });
+            bookAPI[request](query, function (error, response) {
+                if (!!error || !response) { defReq.reject(error || new Error("No response!")); } else { defReq.resolve(response); }
+            });
             return defReq.promise;
         },
         searchDetail = function (bookid, callback) {
@@ -110,11 +132,16 @@ module.exports = mainIO = function (socket, db) {
             userAPI.updateUser({ _id: thisUser._id }, update);
             if (!!book.isNew) { defBooks("updateBook", book); }
             thisBooks.push(book);
-        };
+        },
+        onEvent = socket.onevent;
+
+    socket.onevent = function () {
+        if (!!thisUser && !!thisUser.token && new Date() > thisUser.token.expiry_date) { return socket.emit("logout", true); }
+        onEvent.apply(this, arguments);
+    };
 
     socket.on("isConnected", function () {
-        currUser(sessionId)
-            .then(function (userInfos) {
+        currUser().then(function (userInfos) {
                 userAPI.findUser(userInfos.username)
                     .catch(function (error) {
                         if (!!userInfos.googleSignIn) {
@@ -323,7 +350,6 @@ module.exports = mainIO = function (socket, db) {
     });
 
     socket.on("readNotif", function (notif) {
-        console.log(notif);
         searchDetail(notif._id.book, function (error, response) {
             if (!!error) { console.error("readNotif", error); }
             if (!!response) {

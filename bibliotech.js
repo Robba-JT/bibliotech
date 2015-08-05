@@ -25,7 +25,8 @@ var express = require("express"),
     routes = require("./routes"),
     extconsole = require("extended-console"),
     logsApi = require("./tools/logs").LogsAPI(fs),
-    mainIO = require("./io/mainIO");
+    mainIO = require("./io/mainIO"),
+    connected = [];
 
 console.extended.timestampFormat = "DD-MM-YYYY hh:mm:ss";
 console.extended
@@ -47,6 +48,11 @@ MongoClient.connect(mongoUrl, function (err, db) {
     "use strict";
     if (err) { console.error(err); throw err; }
     console.info("Mongo server listening on " + mongoUrl);
+    var sessionStore = new MongoStore({
+        url: mongoUrl,
+        autoRemove: "native",
+        touchAfter: 24 * 3600
+    });
 
     app.engine("html", cons.swig)
         .set("view engine", "html")
@@ -63,20 +69,16 @@ MongoClient.connect(mongoUrl, function (err, db) {
 		.use(session({
 			key: "_bsession",
 			secret: "robba1979",
-			resave: false,
+			resave: true,
             unset: "destroy",
 			saveUninitialized: false,
-			store: new MongoStore({
-				url: mongoUrl,
-				autoRemove: "native",
-                touchAfter: 24 * 3600
-			}),
+			store: sessionStore,
             cookie: {
                 maxAge: config.maxAge
             }
 		}));
 
-    io.use(function (connData, next) {
+    io.of("/").use(function (connData, next) {
 		if (!connData.handshake.headers.cookie) {
 			next(new Error("Cookie inexistant!!!"));
 		} else {
@@ -85,7 +87,12 @@ MongoClient.connect(mongoUrl, function (err, db) {
 				next(new Error("Cookie invalide!!!"));
 			} else {
 				connData.handshake.sessionId = cookieParser.signedCookie(cookies._bsession, "robba1979");
-				next();
+                sessionStore.get(connData.handshake.sessionId, function (error, data) {
+                    if (!!error) { next(new Error("Session inexistante!!!")); }
+                    if (!data && !data.user && !data.token && !data.token.credentials) { next(new Error("Session invalide!!!")); }
+                    connData.handshake.session = new session.Session(connData.handshake, data);
+                    next();
+                });
 			}
 		}
 	}).on("connection", function (socket) { mainIO(socket, db); });

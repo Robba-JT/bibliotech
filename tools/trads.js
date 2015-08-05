@@ -78,11 +78,14 @@ module.exports = exports = {
             newBook: "Nouvel enregistrement",
             newPwd: "Nouveau mot de passe",
             newTag: "Nouvelle étiquette",
+            next: "Suivant ❯",
+            noConnect: "Connexion avec le serveur interrompu.",
             note: "Note",
             notifications: "Notifications",
             on: "le",
             password: "Mot de passe",
             preview: "Preview",
+            previous: "❮ Précédent",
             profile: "Profil",
             publishBy: "Edité par",
             publishedDate: "Publié le",
@@ -106,7 +109,8 @@ module.exports = exports = {
             torecommand: "Recommander",
             upload: "Télécharger une couverture",
             valid: "Valider",
-            warning: "Attention"
+            warning: "Attention",
+            waiting: "Veuillez patienter..."
         }
     },
     en: {
@@ -187,11 +191,14 @@ module.exports = exports = {
             newBook: "New record",
             newPwd: "New password",
             newTag: "New tag",
+            next: "Next ❯",
+            noConnect: "No connection.",
             note: "Note",
             notifications: "Notifications",
             on: "on",
             password: "Password",
             preview: "Preview",
+            previous: "❮ Previous",
             profile: "Profile",
             publishBy: "Publish by",
             publishedDate: "Published on",
@@ -215,7 +222,8 @@ module.exports = exports = {
             torecommand: "To recomand",
             upload: "Upload a cover",
             valid: "Ok",
-            warning: "Warning"
+            warning: "Warning",
+            waiting: "Please wait..."
         }
     }
 };

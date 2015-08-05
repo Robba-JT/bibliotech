@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="{{lang}}">
     <head>
         <title id="Description">Bibliotech</title>
@@ -21,6 +21,58 @@
             <div id="three"></div>
             <div id="four"></div>
             <div id="five"></div>
+        </div>
+
+        <div id="h" class="notdisplayed">
+            <header>Bienvenu sur Bibliotech!!!</header>
+            <hr />
+            <section>
+                <p>
+                    <img source="menu-2-icon" blur="white" width="32" height="32"/>
+                    <span>{{mask}}&nbsp;/&nbsp;{{affich}}&nbsp;-&nbsp;Ctrl&nbsp;+&nbsp;M</span>
+                </p>
+                <p>
+                    <img source="eject-icon" blur="white" width="32" height="32"/>
+                    <span>{{logout}}&nbsp;-&nbsp;Ctrl&nbsp;+&nbsp;L</span>
+                </p>
+                <p>
+                    <img source="magnifier-5-icon" blur="white" width="32" height="32"/>
+                    <span>{{search}}&nbsp;-&nbsp;Ctrl&nbsp;+&nbsp;R</span>
+                </p>
+                <p>
+                    <img source="user-icon" blur="white" hover="alt" width="32" height="32"/>
+                    <span>{{profile}}&nbsp;-&nbsp;Ctrl&nbsp;+&nbsp;P</span>
+                </p>
+                <p>
+                    <img source="layer-20-icon" blur="white" width="32" height="32"/>
+                    <span>{{collection}}&nbsp;-&nbsp;Ctrl&nbsp;+&nbsp;B</span>
+                </p>
+                <p>
+                    <img source="tags-6-icon" blur="white" width="32" height="32" />
+                    <span>{{tags}}&nbsp;-&nbsp;Ctrl&nbsp;+&nbsp;E</span>
+                </p>
+                <p>
+                    <img source="info-7-icon" blur="white" width="32" height="32" />
+                    <span>{{notifications}}</span>
+                </p>
+                <p>
+                    <img source="note-25" blur="white" width="32" height="32" />
+                    <span>{{addbook}}</span>
+                </p>
+                <p>
+                    <img source="email-11-icon" blur="white" width="32" height="32"/>
+                    <span>{{contacts}}&nbsp;-&nbsp;Ctrl&nbsp;+&nbsp;I</span>
+                </p>
+                <p>
+                    <img source="help-icon" blur="white" width="32" height="32"/>
+                    <span>Help&nbsp;-&nbsp;Ctrl&nbsp;+&nbsp;H</span>
+                </p>
+            </section>
+            <footer>
+                <button class="notdisplayed">{{previous}}</button>
+                <button>{{close}}</button>
+                <button class="notdisplayed">{{next}}</button>
+            </footer>
         </div>
 
         <nav class="mnv nvb notdisplayed">
@@ -149,7 +201,7 @@
                 <div>
                     <input type="text" name="name" error="{{errName}}" autocomplete="off" placeholder="{{name}}" autofocus />
                 </div>
-                <div class="gSignIn">
+                <div class="noSignIn">
                     <input type="password" name="pwd" error="{{errPwd}}" wrongpwd="Invalid password" placeholder="{{password}}" />
                 </div>
                 <div id="errPwd" class="errMsg notdisplayed">{{msgPwd}}</div>
@@ -163,7 +215,7 @@
                     <input type="button" value="{{gimport}}" id="importNow" />
                     <input type="button" value="{{gexport}}" id="exportNow" />
                 </div>
-                <div class="gSignIn">
+                <div class="noSignIn">
                     <input type="button" id="changePwd" value="{{modPwd}}" />
                     <input type="button" id="delete" value="{{deleteAccount}}" confirm="{{deleteConfirm}}" />
                 </div>
@@ -301,6 +353,7 @@
                 <img source="facebook-4-icon" blur="black" hover="alt" url="https://www.facebook.com/julien.tas1" width="64" height="64" title="Facebook"/>
                 <img source="github-icon" blur="black" hover="alt" url="https://github.com/Robba-JT/bibliotech" width="64" height="64" title="Github"/>
                 <img source="email-12-icon" blur="black" hover="alt" mail="biblio.tech@gmail.com?subject=Bibliotech" width="64" height="64" title="Mail"/>
+                <img source="help-icon" id="help" blur="black" hover="alt" width="64" height="64" title="Help"/>
             </article>
         </section>
 
@@ -394,9 +447,20 @@
             <img source="arrow-31-top" blur="alt" hover="white" width="32" height="32" title="Top"/>
         </footer>
 
+        <div id="noConnect" class="notdisplayed">
+            <span>{{noConnect}}</span>
+            <span>{{waiting}}</span>
+        </div>
+
         <script src="js/images.js"></script>
         <script src="js/bibliotech.lib.js"></script>
         <!--<script src="js/bibliotech.js"></script>-->
+
+        <!--<script src="lib/Promise.min.js"></script>
+        <script src="lib/lodash-3.7.0.js"></script>
+        <script src="lib/socket.io-1.3.6.js"></script>
+        <script src="lib/color-thief.js"></script>-->
+
         <script src="js/dev/bibliotech.proto.js"></script>
         <script src="js/dev/bibliotech.dev.js"></script>
     </body>

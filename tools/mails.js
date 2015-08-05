@@ -26,10 +26,7 @@ module.exports.MailsAPI = MailsAPI = function () {
     }
 
     var sendMail = function (options, callback) {
-            smtpTransport.sendMail(options, function (error, response) {
-                if (error) { return callback(error, null); }
-                return callback(null, response);
-            });
+            smtpTransport.sendMail(options, callback);
         };
 
     this.sendPassword = function (user, pwd, callback) {

@@ -42,9 +42,9 @@ module.exports = function (grunt) {
         },
         uglify: {
             options: {
-              compress: {
-                drop_console: true
-              }
+                compress: {
+                    drop_console: true
+                }
             },
             loginlib: {
                 files: { "root/js/login.lib.js": [
@@ -57,12 +57,10 @@ module.exports = function (grunt) {
             bibliotechlib: {
                 files: {
                     "root/js/bibliotech.lib.js": [
-                        /*"root/lib/jquery-2.1.3.js",*/
                         "root/lib/Promise.min.js",
                         "root/lib/color-thief.js",
-                        /*"root/lib/jqcloud-1.0.4.js",*/
                         "root/lib/lodash-3.7.0.js",
-                        "root/lib/socket.io-1.3.5.js"
+                        "root/lib/socket.io-1.3.6.js"
                     ]
                 }
             },

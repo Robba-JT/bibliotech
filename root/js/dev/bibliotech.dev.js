@@ -14,10 +14,10 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 this.cell.one("header").text(book.title);
                 this.cell.one("figcaption").text(!!book.authors ? book.authors.join(", ") : "");
                 this.cell.one(".previewable").toggle(!!book.access && book.access !== "NONE");
-                this.cell.one(".personnal").toggle(_.isEqual(book.id.user, User.id));
                 this.cell.one(".recommanded").toggle(!!book.from);
-                this.cell.one(".add").toggle(User.bookindex(book.id) === -1);
-                this.cell.one(".remove").toggle(User.bookindex(book.id) !== -1);
+                this.cell.one(".personnal").toggle(_.isEqual(book.id.user, current.id));
+                this.cell.one(".add").toggle(current.bookindex(book.id) === -1);
+                this.cell.one(".remove").toggle(current.bookindex(book.id) !== -1);
                 this.cell.col = totalCells % Dock.nbcols;
                 this.cell.row = Math.floor(totalCells / Dock.nbcols);
                 if (!!book.alternative || !!book.base64) { this.cell.one(".cover").src = book.alternative || book.base64; }
@@ -43,7 +43,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 },
                 cells: [],
                 destroy: function () {
-                    Dock.remove(); Bookcells.books = Bookcells.cells = [];
+                    Dock.remove(); Bookcells.cells = [];
                 },
                 display: function (cells, filter) {
                     return new Promise(function (resolve) {
@@ -83,8 +83,9 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     return new Promise(function (resolve) {
                         var newCells = [], indice = 0;
                         for (var jta = 0, lg = books.length; jta < lg; jta++) {
-                            if (!!Bookcells.one(books[jta].id) || _.findIndex(newCells, _.matchesProperty("id", books[jta].id)) !== -1) { return; }
-                            newCells.push(new Bookcell(User.book(books[jta].id) || books[jta], jta));
+                            if (!!Bookcells.one(books[jta].id) || _.findIndex(newCells, _.matchesProperty("id", books[jta].id)) !== -1) { continue; }
+                            var newCell = new Bookcell(current.book(books[jta].id) || books[jta], jta);
+                            newCells.push(new Bookcell(current.book(books[jta].id) || books[jta], jta));
                         }
                         Bookcells.add(newCells);
                         if (!one("#collection").hasClass("active") && !!Search.last) { Bookcells.books = _.flattenDeep(Bookcells.books.push(books)); }
@@ -99,11 +100,17 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 one: function (bookid) { return _.find(Bookcells.cells, _.matchesProperty("id", bookid)); },
                 returned: function (book) { Bookcells.one(book.id).returned(book); },
                 show: function (books) {
-                    var bArray = _.chunk(books, 40), pArray = [], cb = function (cells) { Bookcells.display(cells, true); };
+                    var bArray = _.chunk(books, 40), chain,
+                        gen = function (books) {
+                            return new Promise(function (resolve) {
+                                Bookcells.generate(books).then(function (cells) { Bookcells.display(cells, true); }).then(resolve);
+                            });
+                        };
+
                     for (var jta = 0, lg = bArray.length; jta < lg; jta++) {
-                        pArray.push(Bookcells.generate(bArray[jta]).then(cb));
+                        chain = !!chain ? chain.then(gen(bArray[jta])) : chain = gen(bArray[jta]);
                     }
-                    return Promise.all(pArray);
+                    return chain;
                 },
                 sort: function () {
                     window.scroll(0, 0);
@@ -134,7 +141,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     n = (this.value.length < 4 || this.value.length > 12);
                     break;
                 case "recommand":
-                    n = (this.value.toLowerCase() === User.id);
+                    n = (this.value.toLowerCase() === current.id);
                     break;
                 case "searchinput":
                     n = (this.value.length < 3);
@@ -147,10 +154,11 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 return;
             },
             colorthief = new ColorThief(),
+            current,
             Detail = {
                 action: function () {
-                    var bookid = Detail.data.book.id, index = User.bookindex(bookid), book, actclick = this.getAttribute("actclick");
-                    if (index !== -1) { book = User.books[index]; }
+                    var bookid = Detail.data.book.id, index = current.bookindex(bookid), book, actclick = this.getAttribute("actclick");
+                    if (index !== -1) { book = current.books[index]; }
                     this.add = function () {
                         if (!bookid) {
                             var newbook = one("#formNew").formToJson(), error, inputs = all("#formNew input, #formNew textarea");
@@ -178,7 +186,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                             mainColor = one("#detailCover").getAttribute("mainColor"),
                             alternative = one("#detailCover").getAttribute("src") !== images["book-4-icon"].black ? one("#detailCover").getAttribute("src") : null;
 
-                        if (_.isObject(bookid) && bookid.user === User.id) {
+                        if (_.isObject(bookid) && bookid.user === current.id) {
                             var formValues = one("#formNew").formToJson();
                             formValues.authors = formValues.authors.split(",") || [];
                             _.forEach(formValues, function (val, key) {
@@ -207,7 +215,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                         if (!!update) {
                             values.userDate = new Date().toJSON();
                             socket.emit("updateBook", values);
-                            User.updatebook(values);
+                            current.updatebook(values);
                             Tags.init();
                             one("#tags").toggle(!!Tags.cloud.length && one("#collection").hasClass("active"));
                         }
@@ -300,53 +308,32 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     all("[actclick=add], [actclick=update], #upload, .inCollection").toggle();
                     var cell = Bookcells.one(Detail.data.book.id);
                     if (one("#collection").hasClass("active") && !cell) {
-                        var col = User.books.length % Dock.nbcols,
-                            row = all("[colid='" + User.books.length % Dock.nbcols + "'] .bookcell").length;
+                        var col = current.books.length % Dock.nbcols,
+                            row = all("[colid='" + current.books.length % Dock.nbcols + "'] .bookcell").length;
 
                         cell = new Bookcell(Detail.data.book);
                         Bookcells.add(cell);
                         Bookcells.display();
                     }
                     if (!!cell && !!cell.cell) { cell.cell.all("button").fade(); }
-                    User.addbook(Detail.data.book);
+                    current.addbook(Detail.data.book);
                 },
-                uploadCover: function () {
-                    var image = this.files;
-                    if (!!image[0]) {
-                        if (!image[0].type.match(/image.*/) || image[0].size > 500000) {
-                            Windows.confirm("error", "Veuillez sélectionner un fichier de type 'image' inférieure à 500KB.");
-                            return false;
-                        }
-                        var reader = new FileReader();
-                        reader.onload = (function(image) {
-                            return function(e) {
-                                image.onload = function () {
-                                    var mainColor = Detail.mainColor(this);
-                                    this.toggleClass("new", true).setAttribute("mainColor", mainColor.hex);
-                                    one("#detailContent").css("background", "radial-gradient(whitesmoke 40%, " + mainColor.hex + ")");
-                                };
-                                image.src = e.target.result;
-                            };
-                        })(one("#detailCover"));
-                        reader.readAsDataURL(this.files[0]);
-                    }
-                },
-                userNote: function () {
-                    var stars = all("[note]").toArray(), note = one("#userNote").value;
-                    for (var index = 0; index < stars.length; index++) {
-                        if (index < note) {
-                            stars[index].src = images[stars[index].getAttribute("select")].black;
-                        } else {
-                            stars[index].src = images[stars[index].getAttribute("source")].black;
-                        }
-                    }
+                sendNotif: function (event) {
+                    event.preventDefault();
+                    var notif = this.formToJson();
+                    notif.book = Detail.data.book.id;
+                    notif.title = Detail.data.book.title;
+                    if (!!Detail.data.book.alt) { notif.alt = Detail.data.book.alt; }
+                    socket.emit("sendNotif", notif);
+                    one("#recommandWindow img").trigger("click");
+                    return false;
                 },
                 show: function (inCollection) {
                     var book = Detail.data.book, win = one("#detailWindow");
                     one("#formNew").reset();
                     one("#formRecommand").reset();
                     win.all("#formNew input, #formNew textarea").toggle(false);
-                    win.all("#formNew button:not(.categories)").toggleClass("hide", false).toggleClass("modify", !!book.id && _.isEqual(book.id.user, User.id));
+                    win.all("#formNew button:not(.categories)").toggleClass("hide", false).toggleClass("modify", !!book.id && _.isEqual(book.id.user, current.id));
                     win.one("#detailWindow [type=file]").value = "";
                     one("#comments").children.removeAll();
                     one("#userComment").value = "";
@@ -380,13 +367,13 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     win.all("#detailWindow [field]").toggleClass("noValue", false);
                     win.all("[field=authors] span").removeAll();
                     win.all(".volumeInfo.nonEditable").toggle(false);
-                    win.all(".volumeInfo:not(.nonEditable)").toggle(!!book.id && _.isEqual(book.id.user, User.id));
+                    win.all(".volumeInfo:not(.nonEditable)").toggle(!!book.id && _.isEqual(book.id.user, current.id));
                     Detail.userNote();
                     if (!!win.hasClass("notdisplayed")) { Windows.open.call("detailWindow"); }
                     _.forEach(book, function (value, jta) {
                         var field = win.one("[field=" + jta + "]"), input = win.one("input[name=" + jta + "], textarea[name=" + jta + "]");
                         if (!!field && jta !== "subtitle") {
-                            field.closest("volumeInfo").toggle(!!value || _.isEqual(book.id.user, User.id));
+                            field.closest("volumeInfo").toggle(!!value || _.isEqual(book.id.user, current.id));
                             field.toggle(!!value).toggleClass("noValue", !value);
                         }
                         switch (jta) {
@@ -447,6 +434,38 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                         }
                     });
                     all(".link").setEvents("click", Detail.links, false);
+                },
+                uploadCover: function () {
+                    var image = this.files;
+                    if (!!image[0]) {
+                        if (!image[0].type.match(/image.*/) || image[0].size > 500000) {
+                            Windows.confirm("error", "Veuillez sélectionner un fichier de type 'image' inférieure à 500KB.");
+                            return false;
+                        }
+                        var reader = new FileReader();
+                        reader.onload = (function(image) {
+                            return function(e) {
+                                image.onload = function () {
+                                    var mainColor = Detail.mainColor(this);
+                                    this.toggleClass("new", true).setAttribute("mainColor", mainColor.hex);
+                                    one("#detailContent").css("background", "radial-gradient(whitesmoke 40%, " + mainColor.hex + ")");
+                                };
+                                console.debug(e.target.result);
+                                image.src = e.target.result;
+                            };
+                        })(one("#detailCover"));
+                        reader.readAsDataURL(this.files[0]);
+                    }
+                },
+                userNote: function () {
+                    var stars = all("[note]").toArray(), note = one("#userNote").value;
+                    for (var index = 0; index < stars.length; index++) {
+                        if (index < note) {
+                            stars[index].src = images[stars[index].getAttribute("select")].black;
+                        } else {
+                            stars[index].src = images[stars[index].getAttribute("source")].black;
+                        }
+                    }
                 }
             },
             Dock = {
@@ -525,7 +544,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                         if (!Idb.db) { reject(); }
                         var request = Idb.db.transaction(["queries"], "readwrite").objectStore("queries").index("by_query").get(JSON.stringify(key));
                         request.onsuccess = function () {
-                            if (!!this.result && !!this.result.books.length) {
+                            if (!!this.result && !!this.result.books) {
                                 resolve(this.result.books);
                             } else {
                                 reject();
@@ -537,7 +556,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     Idb.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
                     return new Promise(function (resolve, reject) {
                         if (!!Idb.indexedDB) {
-                            var request = indexedDB.open(User.session, 1);
+                            var request = indexedDB.open(current.session, 1);
                             request.onerror = function () { reject(); };
                             request.onsuccess = function () {
                                 console.debug("DB Opened", new Date().toLocaleString());
@@ -590,13 +609,12 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 }
             },
             logout = function () {
+                Waiting.toggle(true);
                 User.destroy();
-                Bookcells.destroy();
-                socket.close();
-                if (!!Idb.indexedDB) {
-                    Idb.indexedDB.deleteDatabase(User.id);
-                }
-                return window.location.assign("/logout");
+                if (!!Idb.indexedDB) { Idb.indexedDB.deleteDatabase(current.session); }
+                socket.destroy();
+                location.assign("/logout");
+                return false;
             },
             Menu = {
                 close: function (event) {
@@ -637,7 +655,9 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                             row++;
                             break;
                     }
-                    if (one("[colid='" + col + "']").childNodes[row]) { one("[colid='" + col + "']").childNodes[row].one(".cover").trigger("click"); }
+                    if (one("[colid='" + col + "']").childNodes[row]) {
+                        one("[colid='" + col + "']").childNodes[row].one("header").trigger("click");
+                    }
                     return false;
                 },
                 notif: function (state) {
@@ -663,7 +683,9 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     }
                 },
                 toggle: function () {
-                    all(".nvb").fade().then(function () { one("#d").css({ "padding-top": one("#nvb").isVisible() ? one("#nvb").clientHeight : 0 }); });
+                    all(".nvb").fade().then(function () {
+                        if (!!one("#d")) { one("#d").css({ "padding-top": one("#nvb").isVisible() ? one("#nvb").clientHeight : 0 }); }
+                    });
                 },
                 toggleFooter: function () {
                     one("#footer").toggle(!!xcroll().top);
@@ -771,7 +793,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 },
                 recommand: function () {
                     Search.clear();
-                    Search.last = { "recommand": User.id };
+                    Search.last = { "recommand": current.id };
                     Windows.close(true).then(function () {
                         Waiting.toggle(true, true).then(function () {
                             Idb.getQuery(Search.last)
@@ -798,6 +820,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                             case 66: one("#collection").trigger("click"); action = true; break;
                             case 69: one("#tags").trigger("click"); action = true; break;
                             case 73: one("#contact").trigger("click"); action = true; break;
+                            case 72: one("#help").trigger("click"); action = true; break;
                         }
                         if (action) {
                             event.preventDefault();
@@ -806,7 +829,90 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     }
                 }
             },
-            socket = io({ reconnection: true }),
+            socket = (function (conn) {
+                var connect = function () {
+                        var connection = conn.connect("localhost:5678", { "secure": true, "multiplex": false });
+                        connection.once("connect", function () {
+                            this.once("disconnect", function (data) {
+                                console.debug("socket.disconnect", this.id, new Object(this), new Date().toLocaleString(), data);
+                                reconnect(this);
+                                User.destroy();
+                                Windows.close().then(function () {
+                                    Waiting.toggle(true, true);
+                                    Waiting.connection(true);
+                                    all(".deroulant").toggle(false);
+                                    if (!!one("#picture img")) { one("#picture img").removeAll(); }
+                                    all("#notifications, #tags").toggle(false);
+                                    Images.blur.call(one(".active").toggleClass("active", false));
+                                    var forms = all("form");
+                                    for (var jta = 0, lg = forms.length; jta < lg; jta++) { forms[jta].reset(); }
+                                    Bookcells.destroy();
+                                });
+                            })
+                            .on("books", Bookcells.show)
+                            .on("collection", function (ret) {
+                                current.books = ret.books;
+                                Tags.init();
+                                one("#collection").trigger("click");
+                                one("#nbBooks").text(current.books.length);
+                                console.debug("current.books", new Date().toLocaleString(), current.books.length, (new Date() - start) / 1000);
+                                Notifs.show(ret.notifs);
+                            })
+                            .on("covers", function (covers) {
+                                for (var jta = 0, lg = covers.length; jta < lg; jta++) {
+                                    if (!covers[jta] || !covers[jta].index || !covers[jta].base64) { continue; }
+                                    var cover = covers[jta], book = current.books[cover.index], bookcell = Bookcells.cells[cover.index];
+                                    book.base64 = cover.base64;
+                                    if (!!bookcell && !!bookcell.cell) {
+                                        var cell = bookcell.cell;
+                                        if (!cell.hasClass("toshow")) { cell.one(".cover").src = cover.base64; }
+                                        if (!!Detail.data.book && Detail.data.book.id === book.id) { one("#detailCover").src = cover.base64; }
+                                    }
+                                }
+                                console.debug("socket.covers", new Date().toLocaleString(), (new Date() - start) / 1000);
+                            })
+                            .on("endRequest", Search.endRequest)
+                            .on("error", function (error) { console.warn(error); })
+                            .on("logout", logout)
+                            .on("newbook", function (data) {
+                                Detail.bookid = data.id;
+                                Detail.data = { book: data };
+                                Detail.newCell();
+                                Detail.show(true);
+                                Waiting.over(false);
+                            })
+                            .on("returnAdd", userActions.addbook)
+                            .on("returnDetail", Bookcells.returned)
+                            .on("returnNotif", function (notif) {
+                                Detail.bookid = notif.id;
+                                Detail.data = { book: notif };
+                                Detail.show(current.bookindex(notif.id) !== -1);
+                            })
+                            .on("updateNok", userActions.nokdated)
+                            .on("updateOk", userActions.updated)
+                            .on("user", function (ret) {
+                                Menu.show();
+                                current = User.get().init(ret);
+                                if (!Idb.db) { Idb.init(); }
+                            }).emit("isConnected");
+                            console.debug("socket.connect", this.id, new Object(this), new Date().toLocaleString());
+
+                        });
+                        return connection;
+                    },
+                    reconnect = function(cur) {
+                        cur.destroy();
+                        var connectTimeInterval = setInterval(function () {
+                            if (!!cur && !!cur.connected && cur.io.readyState === "open") {
+                                clearInterval(connectTimeInterval);
+                                socket = connect();
+                            }
+                            try { cur.connect(); } catch(error) { /*console.error(error);*/ }
+                        }, 3000);
+                    };
+
+                return connect();
+            })(io),
             Tags = {
                 add: function (event) {
                     event.preventDefault();
@@ -866,7 +972,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     cloud.all("span").setEvents("click", click);
                 },
                 init: function () {
-                    var tags = _.countBy(_.flatten(_.compact(_.pluck(User.books, "tags")), true).sort());
+                    var tags = _.countBy(_.flatten(_.compact(_.pluck(current.books, "tags")), true).sort());
                     Tags.cloud = [];
                     Tags.destroy();
                     if (!!tags) {
@@ -885,8 +991,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     clone.removeAttribute("id");
                     clone.setEvent("click", function (event) {
                         if (event.target.hasClass("libelle")) {
-                            Windows.close();
-                            Bookcells.bytags(event.target.text());
+                            Windows.close().then(Bookcells.bytags(event.target.text()));
                         } else {
                             this.fade(false).then(function () { clone.removeAll(); one("#detailWindow [autofocus]").focus(); });
                         }
@@ -899,7 +1004,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     return new Promise(function (resolve) {
                         if (one("#wa").isVisible() || !one("#collection").hasClass("active")) { resolve(); } else {
                             Windows.close().then(function () {
-                                all("html").toggleClass("overflown", !vis);
+                                one("html").toggleClass("overflown", !vis);
                                 if (!!vis) { cloud.fade(false).then(resolve); } else {
                                     cloud.fade(0.9).then(function () {
                                         if (!cloud.all("span").length) { Tags.generate(); }
@@ -911,18 +1016,70 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     });
                 }
             },
-            User = {
-                addbook: function (book) {
-                    if (User.bookindex(book.id) === -1) {
-                        User.books.push(book);
-                        User.books = _.sortBy(User.books, "title");
+            User = (function () {
+                var instance, User = function () {};
+                User.prototype.init = function (data) {
+                    console.debug(data);
+                    _.assign(this, data);
+                    if (!!this.picture && !!this.link) {
+                        one("#picture").toggle(true).newElement("img", { src: this.picture, title: "Google+" }).setEvents("click", function () { window.open(current.link); });
+                    }
+                    all(".gSignIn").toggle(!!this.googleSignIn);
+                    all(".noSignIn").toggle(!this.googleSignIn);
+                    one(".noSignIn input").setAttributes("required", !this.googleSignIn);
+                    if (this.first) { Windows.help(true); }
+                    console.debug("current.initialize", new Date().toLocaleString());
+                    return this;
+                };
+                User.prototype.addbook = function (book) {
+                    if (this.bookindex(book.id) === -1) {
+                        this.books.push(book);
+                        this.books = _.sortBy(this.books, "title");
                     }
                     var cell = Bookcells.one(book.id);
                     if (!!cell) { cell.book = book; }
-                    one("#nbBooks").text(User.books.length);
+                    one("#nbBooks").text(this.books.length);
+                };
+                User.prototype.book = function (bookid) { return _.find(this.books, _.matchesProperty("id", bookid)); };
+                User.prototype.bookindex = function (bookid) {
+                    return _.findIndex(this.books, _.matchesProperty("id", bookid));
+                };
+                User.prototype.removebook = function (bookid) {
+                    _.remove(this.books, _.matchesProperty("id", bookid));
+                    return this.books.length;
+                };
+                User.prototype.updated = function (values) {
+                    this.name = values.name;
+                    this.googleSync = values.googleSync;
+                    Windows.close();
+                };
+                User.prototype.updatebook = function (book) {
+                    var index = this.bookindex(book.id);
+                    _.assign(book, book.update);
+                    delete book.update;
+                    if (index !== -1) { _.assign(this.books[index], book); }
+                    var bookcell = Bookcells.one(book.id);
+                    if (!!bookcell && (!!book.title || !!book.authors || !!book.alternative)) {
+                        if (!!book.title) { bookcell.cell.one("header").text(book.title); }
+                        if (!!book.authors) { bookcell.cell.one("figcaption").text(book.authors.join(", ")); }
+                        if (!!book.alternative) { bookcell.cell.one(".cover").src = book.alternative; }
+                    }
+                };
+
+                return {
+                    get: function () {
+                        if (!instance) { instance = new User(); }
+                        return instance;
+                    },
+                    destroy: function () {
+                        instance = false;
+                    }
+                };
+            })(),
+            userActions = {
+                addbook: function (book) {
+                    return current.addbook(book);
                 },
-                book: function (bookid) { return _.find(this.books, _.matchesProperty("id", bookid)); },
-                bookindex: function (bookid) { return _.findIndex(this.books, _.matchesProperty("id", bookid)); },
                 collection: function () {
                     Windows.close();
                     one("@filtre").value = one("@last").value = one("#selectedTag").innerHTML = "";
@@ -932,12 +1089,13 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                         Waiting.toggle(true, true).then(function () {
                             one("#nvb").toggleClass("inactive", true);
                             Images.active.call(one("#collection"));
-                            Bookcells.show(User.books).then(Search.endRequest);
+                            if (!!current.books.length) {
+                                Bookcells.show(current.books).then(Search.endRequest);
+                            } else { Search.endRequest(); }
                         });
                     } else {
                         window.scroll(0, 0);
                         all(".bookcell").toggleClass("tofilter tohide", false);
-                        //Bookcells.display().then(Search.endRequest);
                         one("#sort [by]").trigger("click");
                     }
                     return false;
@@ -948,53 +1106,14 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     Windows.confirm("warning", one("#delete").getAttribute("confirm")).then(function () { socket.emit("deleteUser", one("@pwd").value); });
                     return false;
                 },
-                destroy: function () {
-                    for (var jta in this) { if (!_.isFunction(this[jta])) { delete this[jta]; }}
-                },
-                init: function (data) {
-                    if (!data.id) { return logout(); }
-                    _.assign(this, data);
-                    if (!!this.picture && !!this.link) {
-                        one("#picture").toggle(true).newElement("img", { src: this.picture, title: "Google+" }).setEvents("click", function () { window.open(User.link); });
-                    }
-                    if (!!this.googleSignIn) { all(".gSignIn").toggleClass("notdisplayed"); }
-                    if (!!this.first) { one("#profileWindow").trigger("click"); }
-                    Idb.init();
-                    console.debug("User.initialize", new Date().toLocaleString(), (new Date() - start) / 1000);
-                },
                 nokdated: function () {
                     one("#errPwd").toggle(true);
                     return false;
-                },
-                removebook: function (bookid) {
-                    _.remove(this.books, _.matchesProperty("id", bookid));
-                    return this.books.length;
                 },
                 update: function () {
                     one("#errPwd").fade(false);
                     socket.emit("updateUser", this.serialize());
                     return false;
-                },
-                updated: function (values) {
-                    User.name = values.name;
-                    User.googleSync = values.googleSync;
-                    Windows.close();
-                },
-                updatebook: function (book) {
-                    var index = User.bookindex(book.id);
-                    _.assign(book, book.update);
-                    delete book.update;
-                    if (index !== -1) { _.assign(this.books[index], book); }
-                    var bookcell = Bookcells.one(book.id);
-                    if (!!bookcell && (!!book.title || !!book.authors || !!book.alternative)) {
-                        if (!!book.title) { bookcell.cell.one("header").text(book.title); }
-                        if (!!book.authors) { bookcell.cell.one("figcaption").text(book.authors.join(", ")); }
-                        if (!!book.alternative) { bookcell.cell.one(".cover").src = book.alternative; }
-                    }
-                },
-                updatetags: function () {
-                    //this.tags = _.countBy(_.flatten(_.compact(_.pluck(this.books, "tags")), true).sort());
-                    Tags.init();
                 }
             },
             Waiting = {
@@ -1012,12 +1131,13 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                             Waiting.on = true;
                             all(".description").removeAll();
                             if (!!visible) {
-                                all("html").toggleClass("overflown", true);
+                                one("html").toggleClass("overflown", true);
                                 wait.fade(0.5).then(resolve);
                             } else {
                                 wait.fade(false).then(function () {
-                                    all("html").toggleClass("overflown", false);
+                                    one("html").toggleClass("overflown", false);
                                     Waiting.over(false);
+                                    Waiting.connection(false);
                                     resolve();
                                 });
                             }
@@ -1027,6 +1147,20 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                         delete Waiting.on;
                     });
                     return Waiting.p;
+                },
+                connection: function (toShow) {
+                    var noConnect = one("#noConnect"),
+                        mouseMove = function (event) {
+                            noConnect.css({
+                                "top": (noConnect.clientHeight + event.clientY > window.innerHeight) ? event.clientY - noConnect.clientHeight: event.clientY,
+                                "left": (noConnect.clientWidth + event.clientX > window.innerWidth) ? event.clientX - noConnect.clientWidth: event.clientX
+                            });
+                        };
+
+                    if (!!toShow) { µ.setEvents({ mousemove: mouseMove }); } else {
+                        µ.removeEventListener("mousemove", mouseMove);
+                    }
+                    noConnect.toggle(toShow);
                 }
             },
             Windows = {
@@ -1034,6 +1168,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     return new Promise(function (resolve) {
                         var win = all(".window:not(.notdisplayed)"), forms = all("form:not(#formFilter)");
                         Waiting.over(false);
+                        if (one("#h").isVisible()) { Windows.help(false); }
                         µ.removeEventListener("keyup", shortCuts);
                         if (!win.length) { resolve(); } else {
                             for (var jta = 0, lg = forms.length; jta < lg; jta++) { forms[jta].reset(); }
@@ -1059,20 +1194,34 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     });
                 },
                 esc: function (event) { if (event.keyCode === 27) { Windows.close(); } },
+                help: function (toShow) {
+                    if (toShow === one("#h").isVisible()) { return; }
+                    if (typeof toShow !== "boolean") { toShow = !one("#h").isVisible(); }
+                    if (!!toShow) {
+                        Windows.close().then(function () {
+                            one("html").toggleClass("overflown", true);
+                            one("#h").toggle(true);
+                        });
+                    } else {
+                        one("html").toggleClass("overflown", false);
+                        one("#h").toggle(false);
+                    }
+                },
                 open: function () {
                     var self = this;
                     return new Promise(function (resolve, reject) {
                         var wid = (typeof self === "string") ? self : self.getAttribute("window"), win = one("#" + wid);
                         if (!!Windows.on && Windows.on === wid) { Windows.close().then(resolve); } else {
+                            if (one("#h").isVisible()) { Windows.help(false); }
                             Tags.close().then(function () {
                                 if (one("#wa").isVisible()) { resolve(); }
                                 if (!_.includes(["previewWindow", "recommandWindow"], wid)) { all(".window:not(.notdisplayed)").fade(false); }
                                 if (wid === "profileWindow") {
-                                    one("@mail").value = User.id;
-                                    one("@name").value = User.name;
-                                    if (!!User.googleSignIn) {
+                                    one("@mail").value = current.id;
+                                    one("@name").value = current.name;
+                                    if (!!current.googleSignIn) {
                                         one("@googleSignIn").setAttribute("checked", true);
-                                        if (!!User.googleSync) { one("@googleSync").setAttribute("checked", true); }
+                                        if (!!current.googleSync) { one("@googleSync").setAttribute("checked", true); }
                                     } else {
                                         one("@pwd").setAttribute("required", true);
                                     }
@@ -1113,7 +1262,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                             });
                         }
                         socket.emit("removeBook", self.id);
-                        one("#nbBooks").text(User.removebook(self.id));
+                        one("#nbBooks").text(current.removebook(self.id));
                         if (!!self.book.tags.length) { Tags.init(); }
                     }
                 },
@@ -1143,9 +1292,9 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     }
                 },
                 detail = function () {
-                    if (User.bookindex(self.id) !== -1 || !!self.opened) {
+                    if (current.bookindex(self.id) !== -1 || !!self.opened) {
                         Detail.data = self;
-                        Detail.show(User.bookindex(self.id) !== -1);
+                        Detail.show(current.bookindex(self.id) !== -1);
                     } else {
                         Idb.getDetail(self.id).then(function (result) {
                             if (!!result) {
@@ -1196,79 +1345,18 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
             Idb.setDetail(book);
         };
 
-        socket
-            .on("books", Bookcells.show)
-            .on("collection", function (ret) {
-                User.books = ret.books;
-                Tags.init();
-                one("#collection").trigger("click");
-                one("#nbBooks").text(User.books.length);
-                console.debug("User.books", new Date().toLocaleString(), User.books.length, (new Date() - start) / 1000);
-                Notifs.show(ret.notifs);
-            })
-            .on("connect", function () {
-                socket.emit("isConnected");
-                console.debug("socket.connect", new Date().toLocaleString());
-            })
-            .on("covers", function (covers) {
-                for (var jta = 0, lg = covers.length; jta < lg; jta++) {
-                    var cover = covers[jta], book = User.books[cover.index], bookcell = Bookcells.cells[cover.index];
-                    book.base64 = cover.base64;
-                    if (!!bookcell && !!bookcell.cell) {
-                        var cell = bookcell.cell;
-                        if (!cell.hasClass("toshow")) { cell.one(".cover").src = cover.base64; }
-                        if (!!Detail.data.book && Detail.data.book.id === book.id) { one("#detailCover").src = cover.base64; }
-                    }
-                }
-                console.debug("socket.covers", new Date().toLocaleString(), (new Date() - start) / 1000);
-            })
-            .on("disconnect", function () {
-                console.debug("socket.disconnect", new Date().toLocaleString());
-                User.destroy();
-                Windows.close();
-                Waiting.toggle(true, true);
-                all(".deroulant").toggle(false);
-                Bookcells.destroy();
-            })
-            .on("endRequest", Search.endRequest)
-            .on("error", function (error) { console.warn(error); })
-            .on("logout", logout)
-            .on("newbook", function (data) {
-                Detail.bookid = data.id;
-                Detail.data = { book: data };
-                Detail.newCell();
-                Detail.show(true);
-                Waiting.over(false);
-            })
-            .on("reconnect", function () {
-                console.debug("socket.reconnect", socket.connected, new Date().toLocaleString());
-                socket.io.reconnect();
-            })
-            .on("returnAdd", User.addbook)
-            .on("returnDetail", Bookcells.returned)
-            .on("returnNotif", function (notif) {
-                Detail.bookid = notif.id;
-                Detail.data = { book: notif };
-                Detail.show(User.bookindex(notif.id) !== -1);
-            })
-            .on("updateNok", User.nokdated)
-            .on("updateOk", User.updated)
-            .on("user", function (ret) {
-                Menu.show();
-                User.init(ret);
-            });
-
         µ.setEvents({ "keyup keydown": shortCuts, "scroll": Bookcells.loadcovers });
         all("input").setEvents("input propertychange", checkValid);
         one("#logout").setEvent("click", logout);
+        all("#h button, #help").setEvents({ "click": Windows.help });
         one("#formSearch").setEvent("submit", Search.books);
-        one("#formProfil").setEvent("submit", User.update);
+        one("#formProfil").setEvent("submit", userActions.update);
         one("#formRecommand").setEvent("submit", Detail.sendNotif);
         one("#formTag").setEvent("submit", Tags.add);
         all("#formNew, #formFilter").setEvents("submit", function (event) { event.preventDefault(); });
         all("#formNew button").setEvents("click", Detail.modify);
         one("#changePwd").setEvent("click", Windows.togglePwd);
-        one("#delete").setEvent("click", User.delete);
+        one("#delete").setEvent("click", userActions.delete);
         one("#tris").setEvent("click", Menu.sort);
         one("#notifications").setEvent("click", Menu.notif);
         all("#sort > div").setEvents("click", Bookcells.sort);
@@ -1282,7 +1370,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
         (function (toblur) { for (var jta = 0, lg = toblur.length; jta < lg; jta++) { Images.blur.call(toblur[jta]); } })(all("[blur]"));
         all("img").setAttributes({ "draggable": false });
         one("#nvb").toggleClass("notdisplayed", false);
-        one("#collection").setEvent("click", User.collection);
+        one("#collection").setEvent("click", userActions.collection);
         all("#tags, #cloud > img").setEvents("click", Tags.show);
         all("#recherche, #profil, #contact").setEvents("click", Windows.open);
         one("#newbook").setEvent("click", Detail.new);

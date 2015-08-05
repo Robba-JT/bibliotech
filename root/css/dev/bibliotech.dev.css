@@ -34,17 +34,70 @@ img {
 }
 
 
-#w {
+#w, #h {
 	position: fixed;
 	top: 0;
 	left: 0;
     height: 100%;
 	width: 100%;
+	background-color: #616161;
+    z-index: 6;
+}
+
+#h {
+    opacity: .96;
+    color: whitesmoke;
+}
+
+#h header {
+    margin: 10px;
+    font-size: 1.5em;
+    font-weight: bolder;
+    color: orange;
+}
+
+#h hr {
+    margin: 10px;
+}
+
+#h section {
+    margin: 15px;
+}
+
+#h section img {
+    margin: 5px;
+    vertical-align: middle;
+}
+
+#h section span {
+    margin: 5px;
+    height: 32px;
+}
+
+#h > footer {
+    position: fixed;
+    right: 10px;
+    bottom: 10px;
+}
+
+#h > footer button {
+    height: 30px;
+    background-color: darkgoldenrod;
+    font-weight: bold;
+    border: none !important;
+    cursor: pointer;
+    vertical-align: bottom;
+    color: whitesmoke;
+}
+
+#h > footer button:hover {
+    background-color: orange;
+}
+
+#w {
     cursor: wait;
     opacity: .50;
-	background-color: #616161;
     text-align: center;
-    z-index: 6;
 }
 
 #w.over {
@@ -685,6 +738,10 @@ button.remove {
     font-weight: bold;
 }
 
+#contactsWindow {
+    width: 400px !important;
+}
+
 #contactsWindow > article {
     text-align: center;
 }
@@ -1015,6 +1072,25 @@ button.remove {
 	margin: 2px;
 	padding: 5px;
 	border-radius: 5px;
+}
+
+#noConnect {
+    position: absolute;
+    background-color: darkred;
+    opacity: 0.9;
+    color: whitesmoke;
+    font-size: 1.2em;
+    max-width: 50%;
+    width: 400px;
+    padding: 5px;
+    z-index: 9;
+    border-radius: 5px;
+    top: 10px;
+    left: 10px;
+}
+
+#noConnect span {
+    white-space: nowrap;
 }
 
 .ri {

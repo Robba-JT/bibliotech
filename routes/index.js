@@ -48,9 +48,10 @@ module.exports = exports = function (app, db) {
     //Logout
 		.get("/logout", function (req, res) {
             res.clearCookie("_bsession");
-            oauth2Client.revokeCredentials(function (err) {
-                req.session.destroy(function (err) {
-                    res.redirect("/");
+            req.session.destroy(function (err) {
+                oauth2Client.revokeCredentials(function (err) {
+                    //res.redirect("/");
+                    setTimeout(function () { res.redirect("/"); }, 1000);
                 });
 			 });
 		})
@@ -78,7 +79,7 @@ module.exports = exports = function (app, db) {
 
 	//Mot de passe oublié
 		.post("/mail", function (req, res) {
-            console.log(req.body.a, req.body.b);
+            //console.log(req.body.a, req.body.b);
             mails.sendPassword(req.body.a, req.body.b, function (error, response) {
                 console.error(error);
                 res.jsonp({ success: !error });

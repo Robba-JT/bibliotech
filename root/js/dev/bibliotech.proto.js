@@ -149,14 +149,12 @@ Object.prototype.html = function (code) {
     this.forEach(function () { this.html(code); });
     return this;
 };
-/*Object.prototype.map = function (fn) {
-    var self = this;
-    if (typeof self.length === "undefined") { self = [self]; }
-    [].map.call(self, function (elt) { fn.call(elt); });
-    return this;
-};*/
 Object.prototype.one = function () {
-    var self = !this || this === window ? document : this, selects, selector = arguments[0], first = selector.substr(0, 1), follow = selector.substr(1, selector.length);
+    var self = !this || this === window ? document : this,
+        selects, selector = arguments[0],
+        first = selector.substr(0, 1),
+        follow = selector.substr(1, selector.length);
+
     if (!first || !follow) { return null; }
     if (!!follow.multiSelect()) {
         selects = self.querySelector(selector);
