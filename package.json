@@ -16,6 +16,7 @@
     "url": "https://github.com/Robba-JT/bibliotech/issues"
   },
   "dependencies": {
+    "async": "^1.4.0",
     "bcrypt-nodejs": "*",
     "body-parser": "^1.13.3",
     "bson": "^0.2.21",
