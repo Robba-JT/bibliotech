@@ -16,7 +16,10 @@ module.exports = exports = function (app, db) {
     "use strict";
 
     var users = new UsersAPI(db),
-        mails = new MailsAPI();
+        mails = new MailsAPI(),
+        getLang = function (req) {
+            return trads[(!!trads[req.acceptsLanguages()[0]]) ? req.acceptsLanguages()[0] : "fr"];
+        };
 
 	app
 	//Errorhandler
@@ -28,20 +31,22 @@ module.exports = exports = function (app, db) {
 	//Display pages
 		.get("/",
 			function (req, res, next) {
-                var language = (!!trads[req.acceptsLanguages()[0]]) ? req.acceptsLanguages()[0] : "fr";
+                //var language = (!!trads[req.acceptsLanguages()[0]]) ? req.acceptsLanguages()[0] : "fr";
 				if (!!req.session.user || (!!req.session.token && req.session.token.credentials.expiry_date > new Date())) {
                     next();
 				} else {
                     req.session.destroy(function (err) {
                         oauth2Client.revokeCredentials(function (err) {
-                            res.render("login", trads[language].login);
+                            //res.render("login", trads[language].login);
+                            res.render("login", getLang(req).login);
                         });
                     });
 				}
 			},
 			function (req, res) {
-                var language = (!!trads[req.acceptsLanguages()[0]]) ? req.acceptsLanguages()[0] : "fr";
-				res.render("bibliotech", trads[language].bibliotech);
+                //var language = (!!trads[req.acceptsLanguages()[0]]) ? req.acceptsLanguages()[0] : "fr";
+				//res.render("bibliotech", trads[language].bibliotech);
+                res.render("bibliotech", getLang(req).bibliotech);
 			}
 		)
 

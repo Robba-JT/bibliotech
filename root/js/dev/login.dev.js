@@ -82,7 +82,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
         document.getElementsByTagName("section")[0].style.display = "block";
         document.getElementsByTagName("div")[0].style.display = "none";
 
-        ebc("[type=text], [type=password]", "input propertychange", function () {
+        ebc("input", "input propertychange", function () {
             var n;
             this.setCustomValidity("");
             switch (this.name) {
@@ -104,7 +104,6 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
             razError();
             document.getElementsByTagName("div").fade(0.5);
             sr(document.querySelector("[h]").isv() ? "/new" : "/login", this.serialize(), function (s) {
-                console.debug("s", s);
                 if (!!s && !!s.success) { return window.location.reload(true); }
                 [].forEach.call(document.querySelectorAll("[type=email], [type=password], [type=text]"), function (el) { el.classList.add("e"); });
                 document.getElementsByTagName("div").fade(false);

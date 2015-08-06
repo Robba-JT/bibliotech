@@ -318,6 +318,7 @@ module.exports = mainIO = function (socket, db) {
     });
 
     socket.on("deleteUser", function (password) {
+        console.log("deleteUser", password);
         userAPI.validateLogin(thisUser._id, password)
             .then(function (response) {
                 bookAPI.removeUserData(thisUser._id);

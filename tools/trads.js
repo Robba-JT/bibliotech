@@ -110,7 +110,8 @@ module.exports = exports = {
             upload: "Télécharger une couverture",
             valid: "Valider",
             warning: "Attention",
-            waiting: "Veuillez patienter..."
+            waiting: "Veuillez patienter...",
+            welcome: "Bienvenu sur Biblio.tech!"
         }
     },
     en: {
@@ -223,7 +224,8 @@ module.exports = exports = {
             upload: "Upload a cover",
             valid: "Ok",
             warning: "Warning",
-            waiting: "Please wait..."
+            waiting: "Please wait...",
+            welcome: "Welcome to Biblio.tech!"
         }
     }
 };
