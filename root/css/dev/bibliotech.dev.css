@@ -1006,7 +1006,7 @@ button.remove {
 
 #contextMenu {
     position: fixed;
-    min-width: 200px !important;
+    width: 200px !important;
     max-width: 25% !important;
     z-index: 9 !important;
     background-color: black;
@@ -1014,57 +1014,32 @@ button.remove {
     color: whitesmoke;
     opacity: 0;
     border-radius: 5px;
-}
-
-.submenu {
-    text-decoration: underline;
-}
-
-.submenu > div {
-    position:absolute;
-    color: whitesmoke;
-    background-color: black;
-}
-
-#selection {
-    font-weight: bolder;
-    font-style: italic;
-    color: #FF8000;
-}
-
-.navgrid {
-    display: table;
-    width: 180px;
-    height: 180px;
-    margin:  10px 10px 0px 10px;
-}
-
-.navrow {
-    display: table-row;
-    width: 60px;
-}
-
-.navcell {
-    display: table-cell;
-    height: 60px;
     text-align: center;
 }
 
-.contextaction {
-    text-align: center
+.navgrid p {
+    height: 60px;
+    width: 100%;
+    text-align: center;
 }
 
-.contextaction div {
+.navgrid img {
+    vertical-align: middle;
+}
+
+.contextaction > div {
+    margin: 5px;
     cursor: pointer;
 }
 
-.contextaction > div:hover, .submenu > div > div:hover {
+.contextaction > div:hover {
     color: black;
     background-color: darkgoldenrod;
 }
 
 #footer {
     position: fixed;
+    cursor: pointer;
     cursor: pointer;
     right: 5px;
     bottom: 5px;

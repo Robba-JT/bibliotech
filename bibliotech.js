@@ -25,8 +25,7 @@ var express = require("express"),
     routes = require("./routes"),
     extconsole = require("extended-console"),
     logsApi = require("./tools/logs").LogsAPI(fs),
-    mainIO = require("./io/mainIO"),
-    requireServer = require("require/server");
+    mainIO = require("./io/mainIO");
 
 console.extended.timestampFormat = "DD-MM-YYYY hh:mm:ss";
 console.extended

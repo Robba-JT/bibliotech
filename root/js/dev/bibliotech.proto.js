@@ -72,14 +72,14 @@ HTMLElement.prototype.setAttributes = function (attrs) {
     if (_.isPlainObject(attrs)) { _.forEach(attrs, function (value, key) { self.setAttribute(key, value); }); }
     return this;
 };
-HTMLElement.prototype.setEvents = function (evts, listener, capt) {
+Window.prototype.setEvents = HTMLDocument.prototype.setEvents = HTMLElement.prototype.setEvents = function (evts, listener, capt) {
     var self = this;
     if (_.isPlainObject(evts)) { _.forEach(evts, function (value, key) { self.setEvents(key, value, capt); }); return self; }
     this.addEventListener(evts, listener, capt);
     return this;
 };
 HTMLElement.prototype.siblings = function (selector) {
-    return this.parentNode.all(selector);
+    return this.parentNode.alls(selector);
 };
 HTMLElement.prototype.text = function (code) {
     if (typeof code === "undefined") { return this.textContent; }
@@ -149,10 +149,10 @@ HTMLCollection.prototype.fade = NodeList.prototype.fade = function (display) {
     this.forEach(function () { p.push(this.fade(display)); });
     return Promise.all(p);
 };
-HTMLDocument.prototype.forEach = HTMLCollection.prototype.forEach = NodeList.prototype.forEach = function (fn) {
-    var self = this;
-    if (typeof self.length === "undefined" || self === window) { self = [self]; }
-    [].forEach.call(self, function (elt) { fn.call(elt); });
+/*HTMLDocument.prototype.forEach = */ HTMLCollection.prototype.forEach =NodeList.prototype.forEach = function (fn) {
+    //var self = this;
+    //if (typeof self.length === "undefined") { self = [self]; }
+    [].forEach.call(this, function (elt) { fn.call(elt); });
     return this;
 };
 HTMLCollection.prototype.html = NodeList.prototype.html = function (code) {
@@ -199,7 +199,7 @@ HTMLCollection.prototype.setAttributes = NodeList.prototype.setAttributes = func
     this.forEach(function () { this.setAttributes(attrs); });
     return this;
 };
-HTMLDocument.prototype.setEvents = HTMLCollection.prototype.setEvents = NodeList.prototype.setEvents = function (evts, listener, capt) {
+/*HTMLDocument.prototype.setEvents = */HTMLCollection.prototype.setEvents = NodeList.prototype.setEvents = function (evts, listener, capt) {
     var self = this;
     if (_.isPlainObject(evts)) { _.forEach(evts, function (value, key) { self.setEvents(key, value, capt); }); return self; }
     evts = evts.split(" ");

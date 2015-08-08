@@ -7,7 +7,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
         var start = new Date();
         console.debug("µ.ready", start.toLocaleString());
         var Bookcell = function (book, indice) {
-                var totalCells = Bookcells.cells.length + (typeof indice === "undefined" ? 1 : indice);
+                var totalCells = Bookcells.cells.length + (typeof indice === "undefined" ? 1 : indice), inCollect = µ.one("#collection").hasClass("active") || User.get().bookindex(book.id) !== -1;
                 this.id = book.id;
                 this.book = book;
                 this.cell = µ.one("#tempCell").cloneNode(true).removeAttributes("id").toggleClass("bookcell", true);
@@ -16,8 +16,8 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 this.cell.one(".previewable").toggle(!!book.access && book.access !== "NONE");
                 this.cell.one(".recommanded").toggle(!!book.from);
                 this.cell.one(".personnal").toggle(_.isEqual(book.id.user, User.get().id));
-                this.cell.one(".add").toggle(User.get().bookindex(book.id) === -1);
-                this.cell.one(".remove").toggle(User.get().bookindex(book.id) !== -1);
+                this.cell.one(".add").toggle(!inCollect);
+                this.cell.one(".remove").toggle(!!inCollect);
                 this.cell.col = totalCells % Dock.nbcols;
                 this.cell.row = Math.floor(totalCells / Dock.nbcols);
                 if (!!book.alternative || !!book.base64) { this.cell.one(".cover").src = book.alternative || book.base64; }
@@ -47,7 +47,6 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 },
                 display: function (cells, filter, from) {
                     var args = [filter, from];
-                    console.debug("display", args);
                     return new Promise(function (resolve) {
                         if (!cells && !!µ.one(".sortBy")) { resolve(Bookcells.sort.call(µ.one(".sortBy"), args)); } else {
                             cells = cells || _.sortBy(Bookcells.cells, function (cell) { return [ cell.row, cell.col ]; });
@@ -88,11 +87,13 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                         var newCells = [], indice = 0;
                         for (var jta = 0, lg = books.length; jta < lg; jta++) {
                             if (!!Bookcells.one(books[jta].id) || _.findIndex(newCells, _.matchesProperty("id", books[jta].id)) !== -1) { continue; }
-                            var newCell = new Bookcell(User.get().book(books[jta].id) || books[jta], jta);
                             newCells.push(new Bookcell(User.get().book(books[jta].id) || books[jta], jta));
                         }
                         Bookcells.add(newCells);
-                        if (!µ.one("#collection").hasClass("active") && !!Search.last) { Bookcells.books = _.flattenDeep(Bookcells.books.push(books)); }
+                        if (!µ.one("#collection").hasClass("active") && !!Search.last) {
+                            Bookcells.books.push(books);
+                            Bookcells.books = _.flatten(Bookcells.books);
+                        }
                         resolve(newCells);
                     });
                 },
@@ -123,7 +124,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     var self = this;
                     if (!!µ.one(".sortBy")) { Images.blur.call(µ.one(".sortBy").toggleClass("sortBy", false)); }
                     Images.hover.call(this).toggleClass("sortBy", true);
-                    Bookcells.display(_.sortByOrder(Bookcells.cells, function (cell) { return cell.book[self.getAttribute("by")] || null; }, self.getAttribute("sort") !== "desc"), args[0] || false, args[1] || false);
+                    Bookcells.display(_.sortByOrder(Bookcells.cells, ["book." + [self.getAttribute("by")]] , self.getAttribute("sort") !== "desc"), args[0] || false, args[1] || false);
                 }
             },
             checkValid = function () {
@@ -161,8 +162,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
             colorthief = new ColorThief(),
             Detail = {
                 action: function () {
-                    var bookid = Detail.data.book.id, index = User.get().bookindex(bookid), book, actclick = this.getAttribute("actclick");
-                    if (index !== -1) { book = User.get().books[index]; }
+                    var bookid = Detail.data.book.id, book = User.get().book(bookid), actclick = this.getAttribute("actclick");
                     this.add = function () {
                         if (!bookid) {
                             var newbook = µ.one("#formNew").formToJson(), error, inputs = µ.alls("#formNew input, #formNew textarea");
@@ -454,7 +454,6 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                                     this.toggleClass("new", true).setAttribute("mainColor", mainColor.hex);
                                     µ.one("#detailContent").css("background", "radial-gradient(whitesmoke 40%, " + mainColor.hex + ")");
                                 };
-                                console.debug(e.target.result);
                                 image.src = e.target.result;
                             };
                         })(µ.one("#detailCover"));
@@ -747,8 +746,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                         });
                     });
                 },
-                books: function (/*event*/) {
-                    //event.preventDefault();
+                books: function () {
                     var val = this.formToJson(), stored;
                     Search.last = { q: val.searchby + val.searchinput, langRestrict: val.langage };
                     µ.one("@filtre").value = µ.one("@last").value = "";
@@ -856,17 +854,18 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                             })
                             .on("books", Bookcells.show)
                             .on("collection", function (ret) {
-                                User.get().books = ret.books;
+                                //User.get().books = ret.books;
                                 Tags.init();
-                                µ.one("#collection").trigger("click");
-                                µ.one("#nbBooks").text(User.get().books.length);
-                                console.debug("User.get().books", new Date().toLocaleString(), User.get().books.length, (new Date() - start) / 1000);
+                                //µ.one("#collection").trigger("click");
+                                userActions.collection(ret.books);
+                                //µ.one("#nbBooks").text(User.get().books.length);
+                                console.debug("User.get().books", new Date().toLocaleString(), ret.books.length, (new Date() - start) / 1000);
                                 Notifs.show(ret.notifs);
                             })
                             .on("covers", function (covers) {
                                 for (var jta = 0, lg = covers.length; jta < lg; jta++) {
-                                    if (!covers[jta] || !covers[jta].index || !covers[jta].base64) { continue; }
-                                    var cover = covers[jta], book = User.get().books[cover.index], bookcell = Bookcells.cells[cover.index];
+                                    if (!covers[jta] || !covers[jta].id || !covers[jta].base64) { continue; }
+                                    var cover = covers[jta], bookcell = User.get().bookcell(cover.id), book = bookcell.book;
                                     book.base64 = cover.base64;
                                     if (!!bookcell && !!bookcell.cell) {
                                         var cell = bookcell.cell;
@@ -1047,9 +1046,13 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     this.collection.push(new Bookcell(book));
                     µ.one("#nbBooks").text(this.books.length);
                 };
-                User.prototype.book = function (bookid) { return _.find(this.books, _.matchesProperty("id", bookid)); };
+                User.prototype.bookcell = function (bookid) { return _.find(this.collection, _.matchesProperty("book.id", bookid)); };
+                User.prototype.book = function (bookid) {
+                    var bookcell = this.bookcell(bookid);
+                    return !!bookcell && !!bookcell.book ? bookcell.book : null;
+                };
                 User.prototype.bookindex = function (bookid) {
-                    return _.findIndex(this.books, _.matchesProperty("id", bookid));
+                    return _.findIndex(this.collection, _.matchesProperty("book.id", bookid));
                 };
                 User.prototype.removebook = function (bookid) {
                     _.remove(this.books, _.matchesProperty("id", bookid));
@@ -1062,16 +1065,18 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     Windows.close();
                 };
                 User.prototype.updatebook = function (book) {
-                    var index = this.bookindex(book.id);
+                    //var index = this.bookindex(book.id);
                     _.assign(book, book.update);
                     delete book.update;
-                    if (index !== -1) { _.assign(this.books[index], book); }
-                    var bookcell = Bookcells.one(book.id);
-                    if (!!bookcell && (!!book.title || !!book.authors || !!book.alternative)) {
-                        if (!!book.title) { bookcell.cell.one("header").text(book.title); }
-                        if (!!book.authors) { bookcell.cell.one("figcaption").text(book.authors.join(", ")); }
-                        if (!!book.alternative) { bookcell.cell.one(".cover").src = book.alternative; }
-                    }
+                    //if (index !== -1) { _.assign(this.collection[index].book, book); }
+                    var bookcell = this.bookcell(book.id);
+                    _.assign(bookcell.book, book);
+                    //var bookcell = Bookcells.one(book.id);
+                    //if (!!bookcell && (!!book.title || !!book.authors || !!book.alternative)) {
+                    if (!!book.title) { bookcell.cell.one("header").text(book.title); }
+                    if (!!book.authors) { bookcell.cell.one("figcaption").text(book.authors.join(", ")); }
+                    if (!!book.alternative) { bookcell.cell.one(".cover").src = book.alternative; }
+                    //}
                 };
 
                 return {
@@ -1088,30 +1093,46 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 addbook: function (book) {
                     return User.get().addbook(book);
                 },
-                collection: function () {
+                collection: function (books) {
                     Windows.close();
                     µ.one("@filtre").value = µ.one("@last").value = µ.one("#selectedTag").innerHTML = "";
                     if (!µ.one("#collection").hasClass("active")) {
+                        var isSort = µ.one(".sortBy");
+                        if (isSort) { Images.blur.call(isSort.toggleClass("sortBy", false)); }
+                        Images.hover.call(µ.one("#sort div")).toggleClass("sortBy", true);
                         Bookcells.destroy();
                         Waiting.anim(true);
                         Waiting.toggle(true, true).then(function () {
                             µ.one("#nvb").toggleClass("inactive", true);
                             Images.active.call(µ.one("#collection"));
-                            if (!!User.get().books.length) {
+/*                            if (!!books && !!books.length) {
                                 if (!User.get().collection) { Bookcells.show(User.get().books).then(function (ret) {
                                     if (!!Bookcells.cells.length) { User.get().collection = Bookcells.cells; }
                                     Search.endRequest(ret);
                                 }); }
                                 else {
                                     Bookcells.cells = User.get().collection;
-                                    var isSort = µ.one(".sortBy");
-                                    if (isSort) { Images.blur.call(isSort.toggleClass("sortBy", false)); }
-                                    Images.hover.call(µ.one("#sort div")).toggleClass("sortBy", true);
                                     Bookcells.display(false, false, true).then(
                                         Search.endRequest
                                     );
                                 }
-                            } else { Search.endRequest(); }
+                            } else { Search.endRequest(); }*/
+                            if (!!User.get().collection && User.get().collection.length) {
+                                Bookcells.cells = User.get().collection;
+                                Bookcells.display(false, false, true).then(
+                                    Search.endRequest
+                                );
+                            } else if (!!books && !!books.length) {
+                                Bookcells.show(books).then(function (ret) {
+                                    if (!!Bookcells.cells.length) {
+                                        User.get().collection = Bookcells.cells;
+                                    }
+                                    µ.one("#nbBooks").text(ret);
+                                    Search.endRequest(ret);
+                                });
+                            } else {
+                                Search.endRequest();
+                            }
                         });
                     } else {
                         window.scroll(0, 0);
@@ -1402,7 +1423,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
         µ.one("#recommand4u").setEvents("click", Search.recommand);
         µ.alls("#importNow, #exportNow").setEvents("click", Search.gtrans);
         µ.alls("@tag").setEvents("input propertychange", Tags.list);
-        µ.alls("html").setEvents({ "contextmenu": Menu.context, "resize": Dock.resize, "click": Menu.close, "selectstart": Menu.selectstart });
+        window.setEvents({ "contextmenu": Menu.context, "resize": Dock.resize, "click": Menu.close, "selectstart": Menu.selectstart });
         µ.alls("[nav]").setEvents("click", Menu.nav);
         (function (search) {
             if (!!search) {

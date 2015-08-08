@@ -19,7 +19,7 @@
     "async": "^1.4.0",
     "bcrypt-nodejs": "*",
     "body-parser": "^1.13.3",
-    "bson": "^0.2.21",
+    "bson": "^0.2.22",
     "commander": "^2.8.0",
     "compression": "^1.5.2",
     "connect-mongo": "^0.7.0",

@@ -241,7 +241,7 @@
                 <img actclick="recommand" source="share-icon" blur="white" hover="black" width="48" height="48" title="{{torecommand}}" >
             </header>
             <article id="detailContent">
-                <div class="detailCover">
+                <div class="detailCover" dir="rtl">
                     <img id="detailCover" />
                     <p class="imgAction">
                         <img actclick="upload" source="upload-10-icon" blur="black" hover="alt" width="48" height="48" title="{{upload}}"/>
@@ -369,22 +369,15 @@
         </section>
 
         <section id="contextMenu" class="notdisplayed">
-            <div class="navgrid">
-                <div class="navrow">
-                    <div class="navcell"></div>
-                    <div class="navcell"><img nav="top" source="arrow-24-icon-top" blur="white" hover="alt" width="32" height="32"/></div>
-                    <div class="navcell"></div>
-                </div><div class="navrow">
-                    <div class="navcell"><img nav="left" source="arrow-24-icon-left" blur="white" hover="alt" width="32" height="32"/></div>
-                    <div class="navcell"></div>
-                    <div class="navcell"><img nav="right" source="arrow-24-icon-right" blur="white" hover="alt" width="32" height="32"/></div>
-                </div><div class="navrow">
-                    <div class="navcell"></div>
-                    <div class="navcell"><img nav="bottom" source="arrow-24-icon-bottom" blur="white" hover="alt" width="32" height="32"/></div>
-                    <div class="navcell"></div>
-                </div>
-            </div>
-            <div class="contextaction">
+            <p class="navgrid">
+                <p><img nav="top" source="arrow-24-icon-top" blur="white" hover="alt" width="32" height="32"/></p>
+                <p>
+                    <span><img nav="left" source="arrow-24-icon-left" blur="white" hover="alt" width="32" height="32"/></span>
+                    <span><img nav="right" source="arrow-24-icon-right" blur="white" hover="alt" width="32" height="32"/></span>
+                </p>
+                <p><img nav="bottom" source="arrow-24-icon-bottom" blur="white" hover="alt" width="32" height="32"/></p>
+            </p>
+            <p class="contextaction">
                 <div actclick="recommand">{{torecommand}}&nbsp;</div>
                 <div actclick="preview">{{preview}}&nbsp;</div>
                 <div actclick="associated">{{connex}}&nbsp;</div>
@@ -394,9 +387,8 @@
                 <!--<div actclick="fullscreen">{{fullscreen}}&nbsp;</div>-->
                 <div actclick="add">{{add}}&nbsp;</div>
                 <div actclick="update">{{save}}&nbsp;</div>
-                <hr />
                 <div class="closeWindow">{{close}}&nbsp;</div>
-            </div>
+            </p>
         </section>
 
         <div class="template notdisplayed">

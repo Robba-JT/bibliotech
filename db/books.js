@@ -113,7 +113,7 @@ module.exports.BooksAPI = BooksAPI = function (db) {
         loadCovers = function (filter, callback) {
             covers.find(filter).toArray(callback);
         },
-        loadBase64 = function (url, index) {
+        loadBase64 = function (url, bookid) {
             var defColor = Q.defer(), params = reqOption;
             if (!url) { defColor.reject(); }
             params.url = url;
@@ -122,7 +122,7 @@ module.exports.BooksAPI = BooksAPI = function (db) {
                 if (!!error || response.statusCode !== 200) {
                     defColor.reject(error || new Error("status: " + response.statusCode));
                 } else {
-                    defColor.resolve({ base64: "data:" + response.headers["content-type"] + ";base64," + new Buffer(body, "binary").toString("base64"), index: index });
+                    defColor.resolve({ base64: "data:" + response.headers["content-type"] + ";base64," + new Buffer(body, "binary").toString("base64"), id: bookid });
                 }
             });
             return defColor.promise;

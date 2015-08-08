@@ -89,12 +89,11 @@ module.exports = mainIO = function (socket, db) {
                         if (!!error) { console.error("searchLoop", error); }
                         if (!!response && !!response.items) {
                             var books = bookAPI.formatBooks(response.items), defCovers = [];
-                            _.forEach(books, function (book, index) { defCovers.push(bookAPI.loadBase64(book.cover, index)); });
+                            _.forEach(books, function (book) { defCovers.push(bookAPI.loadBase64(book.cover, book.id)); });
                             Q.allSettled(defCovers).then(function (results) {
                                 results.forEach(function (result) {
                                     if (result.state === "fulfilled") {
-                                        books[result.value.index].cover = true;
-                                        books[result.value.index].base64 = result.value.base64;
+                                        _.assign(_.find(books, _.matchesProperty("id", result.value.id)), { base64: result.value.base64 });
                                     }
                                 });
                                 listBooks.push(books);
@@ -208,10 +207,12 @@ module.exports = mainIO = function (socket, db) {
                                 books[book].from = _.result(infos, "from");
                                 books[book].comments = comment;
                                 books[book].alt = _.result(infos, "cover");
+                                books[book].userNote = 0;
+                                books[book].userComment = books[book].userDate = "";
                                 if (!!userComment.length) {
-                                    books[book].userComment = userComment[0].comment || "";
-                                    books[book].userNote = userComment[0].note || "";
-                                    books[book].userDate = userComment[0].date || "";
+                                    books[book].userComment = userComment[0].comment;
+                                    books[book].userNote = userComment[0].note;
+                                    books[book].userDate = userComment[0].date;
                                 }
                                 if (!!cover) {
                                     if (!!books[book].cover) { bookAPI.removeCovers({ _id: { user: thisUser._id , book: books[book].id }}); } else {
@@ -219,7 +220,7 @@ module.exports = mainIO = function (socket, db) {
                                         books[book].mainColor = cover.color;
                                     }
                                 } else if (!!books[book].cover) {
-                                    def64.push(bookAPI.loadBase64(books[book].cover, book));
+                                    def64.push(bookAPI.loadBase64(books[book].cover, books[book].id));
                                     books[book].cover = true;
                                 }
                             }
@@ -265,7 +266,10 @@ module.exports = mainIO = function (socket, db) {
 
     socket.on("addBook", function (bookid) {
         addBook(bookid)
-            .then(function (book) { socket.emit("returnAdd", book); })
+            .then(function (book) {
+                socket.emit("returnAdd", book);
+                if (book.base64) { socket.emit("returnAdd", book); }
+            })
             .catch(function (error) { console.error("addBook", error); });
     });
 
@@ -318,7 +322,6 @@ module.exports = mainIO = function (socket, db) {
     });
 
     socket.on("deleteUser", function (password) {
-        console.log("deleteUser", password);
         userAPI.validateLogin(thisUser._id, password)
             .then(function (response) {
                 bookAPI.removeUserData(thisUser._id);
