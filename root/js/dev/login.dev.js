@@ -1,39 +1,31 @@
 if (!window.FileReader || !window.Promise || !("formNoValidate" in document.createElement("input"))) {
-    document.getElementsByTagName("div")[0].style.display = "none";
-    document.getElementsByTagName("form")[0].style.display = "none";
+    document.one("div").toggleClass("notdisplayed");
     alert("Votre navigateur n'est pas compatible!!!");
 } else {
-    Element.prototype.isv = function () { return this.offsetWidth > 0 && this.offsetHeight > 0; };
-    Element.prototype.serialize = function () {
-        var s = {};
-        [].forEach.call(this.getElementsByTagName("input"), function(elt) { if (!!elt.name && !!elt.value) { s[elt.name] = elt.value; }});
-        return s;
-    };
-    Object.prototype.l = function (attribut) {
-        [].forEach.call(this, function (elt) { elt.value = elt.getAttribute(!!attribut ? "k" : "j"); });
-        return this;
-    };
-    Object.prototype.fade = function (display, callback) {
-        var p = [];
-        if (typeof display === "function" && !callback) { callback = display; display = undefined; }
-        [].forEach.call(this, function (elt) {
-            var eltd = typeof display === "undefined" ? !elt.isv() : display, op = elt.style.opacity;
-            p.push(new Promise(function (resolve) {
-                if (!!eltd) { elt.style.display = "block"; op = 0; }
-                var timer = setInterval(function () {
-                    if (!!eltd) {
-                        if (op >= (eltd || 1)) { clearInterval(timer); resolve(elt); } else { elt.style.opacity = (op += 0.1).toFixed(1); }
-                    } else {
-                        if (op <= 0) { clearInterval(timer); elt.style.display = "none"; resolve(elt); } else { elt.style.opacity = (op -= 0.1).toFixed(1); }
-                    }
-                }, 10);
-            }));
-        });
-        Promise.all(p).then(callback);
-        return this;
-    };
-
-    var gp = function () {
+    var µ = document,
+        checkValid = function () {
+            var n;
+            this.setCustomValidity("");
+            switch (this.name) {
+                case "b":
+                    n = this.isVisible() && this.value.length < 4;
+                    break;
+                case "c":
+                    n = this.value.length < 4 || this.value.length > 12;
+                    break;
+                case "d":
+                    n = this.isVisible() && this.value !== µ.one("[name=c]").value;
+                    break;
+            }
+            if (!!n) { this.setCustomValidity(this.getAttribute("m")); }
+            return;
+        },
+        getLabel = function (isv) {
+            µ.alls("[type=button]").forEach(function () {
+                this.value = this.getAttribute(isv ? "k" : "j");
+            });
+        },
+        googleApi = function () {
             gapi.signin.render("f", {
                 clientid: "216469168993-dqhiqllodmfovgtrmjdf2ps5kj0h1gg9.apps.googleusercontent.com",
                 cookiepolicy: "none",
@@ -42,17 +34,19 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 redirecturi: "postmessage",
                 accesstype: "offline",
                 callback: function (response) {
-                    console.debug("google response", response);
                     if (!response.code) { return; }
-                    sr("/googleAuth", { c: response.code }, function (s) {
+                    sendRequest("/googleAuth", { c: response.code }, function (s) {
                         if (!!s && !!s.success) { return window.location.reload(true); }
                         return false;
                     });
                 }
             });
         },
-        ebc = function (c, e, f) { [].forEach.call(document.querySelectorAll(c), function (el) { el.addEventListener(e, f, false); }); },
-        sr = function (u, d, c) {
+        razError = function () {
+            µ.alls(".g, .m").toggle(false);
+            µ.one(".g").html("");
+        },
+        sendRequest = function (u, d, c) {
             var r = new XMLHttpRequest();
             r.open("POST", u, true);
             r.setRequestHeader("Content-Type", "application/json");
@@ -62,76 +56,51 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 return false;
             };
             r.send(JSON.stringify(d));
-        },
-        razError = function () {
-            document.querySelectorAll(".g, .m").fade(false);
-            document.querySelector(".g").innerHTML = "";
         };
 
     (function() {
-        var po = document.createElement("script");
+        var po = µ.createElement("script");
         po.type = "text/javascript";
         po.async = true;
-        po.src = "https://apis.google.com/js/client:plusone.js?onload=gp";
-        var s = document.getElementsByTagName("script")[0];
+        po.src = "https://apis.google.com/js/client:plusone.js?onload=googleApi";
+        var s = µ.one("script");
         s.parentNode.insertBefore(po, s);
     })();
 
-    document.addEventListener("DOMContentLoaded", function (event) {
+    µ.addEventListener("DOMContentLoaded", function (event) {
         "use strict";
-        document.getElementsByTagName("section")[0].style.display = "block";
-        document.getElementsByTagName("div")[0].style.display = "none";
-
-        ebc("input", "input propertychange", function () {
-            var n;
-            this.setCustomValidity("");
-            switch (this.name) {
-                case "b":
-                    n = (this.value.length < 4);
-                    break;
-                case "c":
-                    n = (this.value.length < 4 || this.value.length > 12);
-                    break;
-                case "d":
-                    n = (this.value !== document.querySelector("[name=c]").value);
-                    break;
-            }
-            if (!!n) { this.setCustomValidity(this.getAttribute("m")); }
-            return;
-        });
-        ebc("form", "submit", function (e) {
+        µ.one("section").toggle(true);
+        µ.one("div").toggle(false);
+        µ.alls("input").setEvents("input propertychange", checkValid);
+        µ.one("form").setEvents("submit", function (e) {
             e.preventDefault();
             razError();
-            document.getElementsByTagName("div").fade(0.5);
-            sr(document.querySelector("[h]").isv() ? "/new" : "/login", this.serialize(), function (s) {
+            µ.one("div").fade(0.5);
+            sendRequest(µ.one("[h]").isVisible() ? "/new" : "/login", this.formToJson(), function (s) {
                 if (!!s && !!s.success) { return window.location.reload(true); }
-                [].forEach.call(document.querySelectorAll("[type=email], [type=password], [type=text]"), function (el) { el.classList.add("e"); });
-                document.getElementsByTagName("div").fade(false);
-                document.querySelector("[name=a]").focus();
-                document.querySelector(".g").innerHTML = s.error;
-                document.querySelectorAll(".g, .m").fade(true);
+                µ.alls("[type=email], [type=password], [type=text]").toggleClass("e", true);
+                µ.one("div").fade(false);
+                µ.one("[type=email]").focus();
+                µ.one(".g").html(s.error);
+                µ.alls(".g, .m").fade(true);
                 return false;
             });
             return false;
         });
-        ebc("[type=email],[type=password]", "change", razError);
-        ebc("[type=button]", "click", function () {
+        µ.alls("[type=email],[type=password]").setEvents("change", razError);
+        µ.alls("[type=button]").setEvents("click", function () {
             razError();
-            var v = !document.querySelector("[h]").isv();
-            document.querySelectorAll("[j]").l(v);
-            document.querySelectorAll("[h]").fade(function (elts) {
-                for (var i = 0, lg = elts.length; i < lg; i++) {
-                    elts[i].setAttribute("required", v);
-                    elts[i].value = "";
-                }
-            });
-            document.querySelector("[type=email]").focus();
+            var v = !µ.one("[h]").isVisible();
+            getLabel(v);
+            µ.alls("[h]").setAttributes({ "required": v, "value": "" });
+            µ.alls("[h]").fade();
+            µ.one("[type=email]").focus();
         });
-        ebc(".m", "click", function () {
+        µ.one(".m").setEvents("click", function () {
             var that = this;
             that.setAttribute("disabled", true);
             that.classList.add("l");
-            sr("/mail", document.querySelector("form").serialize(), function (s) {
+            sendRequest("/mail", µ.one("form").formToJson(), function (s) {
                 that.classList.remove("l");
                 return false;
             });

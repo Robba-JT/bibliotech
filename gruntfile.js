@@ -27,8 +27,8 @@ module.exports = function (grunt) {
             }
         },
         jshint: {
-            login: ["root/js/dev/login.dev.js"],
-            bibliotech: ["root/js/dev/bibliotech.proto.js", "root/js/dev/bibliotech.dev.js"],
+            login: [ "root/js/dev/bibliotech.proto.js", "root/js/dev/login.dev.js"],
+            bibliotech: [ "root/js/dev/bibliotech.proto.js", "root/js/dev/bibliotech.dev.js"],
             server: [
                 "bibliotech.js",
                 "io/mainIO.js",
@@ -48,11 +48,12 @@ module.exports = function (grunt) {
             },
             loginlib: {
                 files: { "root/js/login.lib.js": [
+                    "root/lib/lodash.js",
                     "root/lib/Promise.min.js"
                 ]}
             },
             login: {
-                files: { "root/js/login.js": [ "root/js/dev/login.dev.js" ]}
+                files: { "root/js/login.js": [ "root/js/dev/bibliotech.proto.js", "root/js/dev/login.dev.js" ]}
             },
             bibliotechlib: {
                 files: {
@@ -139,7 +140,7 @@ module.exports = function (grunt) {
                 options: { spawn: false }
             },
             jslogin: {
-                files: [ "root/js/dev/login.dev.js" ],
+                files: [ "root/js/dev/bibliotech.proto.js", "root/js/dev/login.dev.js" ],
                 tasks: [ "jshint:login", "uglify:login" ],
                 options: { spawn: false }
             },

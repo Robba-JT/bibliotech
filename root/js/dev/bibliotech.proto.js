@@ -1,3 +1,7 @@
+Array.prototype.assign = function (tab) {
+    this.push.apply(this, Array.isArray(tab) ? tab : [tab]);
+    return this;
+};
 Array.prototype.noSpace = function () {
     for (var jta=0, lg = this.length; jta < lg; jta++) { if (typeof this[jta] === "string") { this[jta] = this[jta].noSpace(); }}
     return this;
@@ -26,7 +30,7 @@ HTMLElement.prototype.fade = function (display) {
             } else {
                 if (op <= 0) { clearInterval(timer); elt.toggle(false); resolve(elt); } else { elt.style.opacity = (op -= 0.05).toFixed(2); }
             }
-        }, 10);
+        }, 5);
     });
 };
 HTMLElement.prototype.formToJson = function () {
@@ -75,8 +79,8 @@ HTMLElement.prototype.setAttributes = function (attrs) {
 Window.prototype.setEvents = HTMLDocument.prototype.setEvents = HTMLElement.prototype.setEvents = function (evts, listener, capt) {
     var self = this;
     if (_.isPlainObject(evts)) { _.forEach(evts, function (value, key) { self.setEvents(key, value, capt); }); return self; }
-    this.addEventListener(evts, listener, capt);
-    return this;
+    self.addEventListener(evts, listener, capt);
+    return self;
 };
 HTMLElement.prototype.siblings = function (selector) {
     return this.parentNode.alls(selector);
@@ -149,9 +153,7 @@ HTMLCollection.prototype.fade = NodeList.prototype.fade = function (display) {
     this.forEach(function () { p.push(this.fade(display)); });
     return Promise.all(p);
 };
-/*HTMLDocument.prototype.forEach = */ HTMLCollection.prototype.forEach =NodeList.prototype.forEach = function (fn) {
-    //var self = this;
-    //if (typeof self.length === "undefined") { self = [self]; }
+HTMLCollection.prototype.forEach = NodeList.prototype.forEach = function (fn) {
     [].forEach.call(this, function (elt) { fn.call(elt); });
     return this;
 };
@@ -199,7 +201,7 @@ HTMLCollection.prototype.setAttributes = NodeList.prototype.setAttributes = func
     this.forEach(function () { this.setAttributes(attrs); });
     return this;
 };
-/*HTMLDocument.prototype.setEvents = */HTMLCollection.prototype.setEvents = NodeList.prototype.setEvents = function (evts, listener, capt) {
+HTMLCollection.prototype.setEvents = NodeList.prototype.setEvents = function (evts, listener, capt) {
     var self = this;
     if (_.isPlainObject(evts)) { _.forEach(evts, function (value, key) { self.setEvents(key, value, capt); }); return self; }
     evts = evts.split(" ");
@@ -239,5 +241,5 @@ String.prototype.multiSelect = function () {
     return this.indexOf(" ") !== -1 || this.indexOf(",") !== -1 || this.indexOf(".") !== -1 || this.indexOf("#") !== -1 || this.indexOf(":") !== -1 || this.indexOf("]") !== -1;
 };
 String.prototype.noSpace = function () {
-    return this.replace(/^\s+/g,"").replace(/\s+$/g,"");
+    return this.replace(/^\s+/g,"").replace(/\s+$/g,"").replace(/\s{2,}/g, " ");
 };

@@ -750,6 +750,12 @@ button.remove {
     margin: 5%;
 }
 
+#contactsWindow > img {
+    float: right;
+    margin-bottom: 2px;
+    margin-right: 2px;
+}
+
 #detailWindow {
     margin: 1%;
     width: 98%;
@@ -1027,12 +1033,22 @@ button.remove {
     vertical-align: middle;
 }
 
-.contextaction > div {
+[nav=left] {
+    position: relative;
+    right: 32px;
+}
+
+[nav=right] {
+    position: relative;
+    left: 32px;
+}
+
+#contextMenu [actclick], #contextMenu .closeWindow {
     margin: 5px;
     cursor: pointer;
 }
 
-.contextaction > div:hover {
+#contextMenu [actclick]:hover, #contextMenu .closeWindow:hover {
     color: black;
     background-color: darkgoldenrod;
 }

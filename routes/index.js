@@ -10,6 +10,7 @@ var UsersAPI = require("../db/users").UsersAPI,
     ),
     gOptions = { timeout: 5000, auth: oauth2Client };
 
+if (require("ip").address() === "128.1.236.11") { gOptions.proxy = "http://CGDM-EMEA\jtassin:password_4@isp-ceg.emea.cegedim.grp:3128/"; }
 google.options(gOptions);
 
 module.exports = exports = function (app, db) {
@@ -31,21 +32,17 @@ module.exports = exports = function (app, db) {
 	//Display pages
 		.get("/",
 			function (req, res, next) {
-                //var language = (!!trads[req.acceptsLanguages()[0]]) ? req.acceptsLanguages()[0] : "fr";
 				if (!!req.session.user || (!!req.session.token && req.session.token.credentials.expiry_date > new Date())) {
                     next();
 				} else {
                     req.session.destroy(function (err) {
                         oauth2Client.revokeCredentials(function (err) {
-                            //res.render("login", trads[language].login);
                             res.render("login", getLang(req).login);
                         });
                     });
 				}
 			},
 			function (req, res) {
-                //var language = (!!trads[req.acceptsLanguages()[0]]) ? req.acceptsLanguages()[0] : "fr";
-				//res.render("bibliotech", trads[language].bibliotech);
                 res.render("bibliotech", getLang(req).bibliotech);
 			}
 		)
@@ -53,10 +50,9 @@ module.exports = exports = function (app, db) {
     //Logout
 		.get("/logout", function (req, res) {
             res.clearCookie("_bsession");
-            req.session.destroy(function (err) {
-                oauth2Client.revokeCredentials(function (err) {
-                    //res.redirect("/");
-                    setTimeout(function () { res.redirect("/"); }, 1000);
+            oauth2Client.revokeCredentials(function (err) {
+                req.session.destroy(function (err) {
+                    res.status(205).redirect("/");
                 });
 			 });
 		})
@@ -72,19 +68,20 @@ module.exports = exports = function (app, db) {
                     if (!!!!req.body.o) { req.session.cookie.maxAge = null; }
                     res.jsonp({ success: !!user });
                 })
-                .catch(function (err) { res.jsonp({ error: err.message || "Invalid credentials!!!" }); });
+                //.catch(function (err) { res.jsonp({ error: err.message || getLang(req).error.invalidCredential }); });
+                .catch(function (err) { res.jsonp({ "error": getLang(req).error.invalidCredential }); });
 		})
 
 	//Login
 		.post("/new", function (req, res) {
 			users.addUser(req.body.a, req.body.c, req.body.b)
                 .then(function (user) { req.session.user = user._id; res.jsonp({ success: !!user }); })
-                .catch(function (err) { res.jsonp({ error: err.message || "Creation error!!!" }); });
+                //.catch(function (err) { res.jsonp({ error: err.message || getLang(req).error.alreadyExist }); });
+                .catch(function (err) { res.jsonp({ "error": getLang(req).error.alreadyExist }); });
 		})
 
 	//Mot de passe oublié
 		.post("/mail", function (req, res) {
-            //console.log(req.body.a, req.body.b);
             mails.sendPassword(req.body.a, req.body.b, function (error, response) {
                 console.error(error);
                 res.jsonp({ success: !error });

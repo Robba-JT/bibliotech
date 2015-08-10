@@ -2,6 +2,10 @@ var express = require("express"),
     compression = require("compression"),
     json = require("express-json"),
     fs = require("fs"),
+    options = {
+      key: fs.readFileSync("./biblio.tech.pkey"),
+      cert: fs.readFileSync("./biblio.tech.crt")
+    },
     app = express(),
     config = JSON.parse(fs.readFileSync("config.json"))[app.settings.env],
     port = config.port,
@@ -14,7 +18,9 @@ var express = require("express"),
     favicon = require("serve-favicon"),
     serveStatic = require("serve-static"),
     http = require("http"),
-    server = http.Server(app).listen(port),
+    https = require("https"),
+    //server = http.Server(app).listen(port),
+    server = https.Server(options, app).listen(port),
     io = require("socket.io")(server),
     path = require("path"),
     cons = require("consolidate"),
@@ -47,11 +53,11 @@ MongoClient.connect(mongoUrl, function (err, db) {
     "use strict";
     if (err) { console.error(err); throw err; }
     console.info("Mongo server listening on " + mongoUrl);
-    var sessionStore = new MongoStore({
-        url: mongoUrl,
-        autoRemove: "native",
-        touchAfter: 24 * 3600
-    });
+    var mongoStore = new MongoStore({
+            url: mongoUrl,
+            autoRemove: "native",
+            touchAfter: 24 * 3600
+        });
 
     app.engine("html", cons.swig)
         .set("view engine", "html")
@@ -68,12 +74,13 @@ MongoClient.connect(mongoUrl, function (err, db) {
 		.use(session({
 			key: "_bsession",
 			secret: "robba1979",
-			resave: true,
+			resave: false,
             unset: "destroy",
 			saveUninitialized: false,
-			store: sessionStore,
+			store: mongoStore,
             cookie: {
-                maxAge: config.maxAge
+                maxAge: config.maxAge,
+                secure: true
             }
 		}));
 
@@ -86,7 +93,7 @@ MongoClient.connect(mongoUrl, function (err, db) {
 				next(new Error("Cookie invalide!!!"));
 			} else {
 				connData.handshake.sessionId = cookieParser.signedCookie(cookies._bsession, "robba1979");
-                sessionStore.get(connData.handshake.sessionId, function (error, data) {
+                mongoStore.get(connData.handshake.sessionId, function (error, data) {
                     if (!!error) { next(new Error("Session inexistante!!!")); }
                     if (!data && !data.user && !data.token && !data.token.credentials) { next(new Error("Session invalide!!!")); }
                     connData.handshake.session = new session.Session(connData.handshake, data);
@@ -97,7 +104,7 @@ MongoClient.connect(mongoUrl, function (err, db) {
 	}).on("connection", function (socket) { mainIO(socket, db); });
 
     routes(app, db);
-    console.info("Express server listening on " + ip.address() + ":" + port);
+    console.info("Express server listening on https://" + ip.address() + ":" + port);
 
     require("./db/books").BooksAPI(db).mainUpdate();
 });

@@ -12,6 +12,10 @@ body {
     font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
 }
 
+.notdisplayed {
+    display: none !important;
+}
+
 section {
     background: url("../../images/black_patch.jpg");
     width: 600px;
@@ -21,7 +25,6 @@ section {
     border-radius: 10px;
     position: relative;
     opacity: .9;
-    display: none;
 }
 
 form input {
@@ -66,7 +69,7 @@ label, [type=checkbox] {
 }
 
 [h] {
-    display: none;
+    opacity: 0;
 }
 
 .e {
@@ -80,7 +83,7 @@ label, [type=checkbox] {
 .g {
     width: 100%;
     text-align: right;
-    display: none;
+    opacity: 0;
     font-weight: bold;
     color: red;
     padding: 5px;
@@ -116,7 +119,7 @@ div {
 
 .m {
     float: right;
-    display: none;
+    opacity: 0;
     background-color: darkorange;
     color: white;
     font-weight: bold;

@@ -1,23 +1,5 @@
 module.exports = exports = {
     fr: {
-        login: {
-            lang: "fr",
-            active: "Garder la session active",
-            cancel: "Annuler",
-            confirmed: "Confirmez votre mot de passe",
-            connection: "Connexion",
-            create: "Créer Compte",
-            email: "exemple@mail.com",
-            errConfirmed: "Les mots de passe ne sont pas identiques!",
-            errName: "Le nom doit contenir au moins 4 caractères!",
-            errPwd: "Le mot de passe doit contenir entre 4 et 12 caractères!",
-            forgetPassword: "Mot de passe oublié!",
-            lang: "fr",
-            name: "Nom",
-            password: "Mot de passe",
-            title: "Bibliotech Login",
-            valid: "Valider"
-        },
         bibliotech: {
             lang: "fr",
             add: "Ajouter",
@@ -112,26 +94,32 @@ module.exports = exports = {
             warning: "Attention",
             waiting: "Veuillez patienter...",
             welcome: "Bienvenu sur Biblio.tech!"
+        },
+        error: {
+            invalidCredential: "Identifiants incorrects!",
+            alreadyExist: "Utilisateur déjà créé!"
+        },
+        login: {
+            lang: "fr",
+            active: "Garder la session active",
+            cancel: "Annuler",
+            confirmed: "Confirmez votre mot de passe",
+            connection: "Connexion",
+            create: "Créer Compte",
+            email: "exemple@mail.com",
+            errConfirmed: "Les mots de passe ne sont pas identiques!",
+            errName: "Le nom doit contenir au moins 4 caractères!",
+            errPwd: "Le mot de passe doit contenir entre 4 et 12 caractères!",
+            forgetPassword: "Mot de passe oublié!",
+            incorrectCredentials: "Identifiants incorrects",
+            lang: "fr",
+            name: "Nom",
+            password: "Mot de passe",
+            title: "Bibliotech Login",
+            valid: "Valider"
         }
     },
     en: {
-        login: {
-            lang: "en",
-            title: "Bibliotech Login",
-            email: "someone@mail.com",
-            name: "Name",
-            password: "Password",
-            confirmed: "Confirm password",
-            active: "Stay connected",
-            create: "New Account",
-            connection: "Connection",
-            valid: "Valid",
-            cancel: "Cancel",
-            errName: "Name field must contain at least 4 characters!",
-            errPwd: "Password field must contain between 4 and 12 characters!",
-            errConfirmed: "Password fields are not identical!",
-            forgetPassword: "Forget Password"
-        },
         bibliotech: {
             lang: "en",
             add: "Add",
@@ -226,6 +214,29 @@ module.exports = exports = {
             warning: "Warning",
             waiting: "Please wait...",
             welcome: "Welcome to Biblio.tech!"
+        },
+        error: {
+            invalidCredential: "Invalid credentials!",
+            alreadyExist: "User already exist!"
+        },
+        login: {
+            lang: "en",
+            active: "Stay connected",
+            cancel: "Cancel",
+            confirmed: "Confirm password",
+            connection: "Connection",
+            create: "New Account",
+            email: "someone@mail.com",
+            errConfirmed: "Password fields are not identical!",
+            errName: "Name field must contain at least 4 characters!",
+            errPwd: "Password field must contain between 4 and 12 characters!",
+            forgetPassword: "Forget Password",
+            incorrectCredentials: "Incorrect credentials",
+            lang: "fr",
+            name: "Name",
+            password: "Password",
+            title: "Bibliotech Login",
+            valid: "Valid"
         }
     }
 };

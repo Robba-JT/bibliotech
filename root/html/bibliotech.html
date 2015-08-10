@@ -8,6 +8,7 @@
         <meta charset="utf-8">
         <meta http-equiv="Content-type" content="text/html">
         <link rel="stylesheet" href="../css/bibliotech.css"/>
+        <script src="js/images.js"></script>
     </head>
 
     <body error="{{navigatorError}}">
@@ -114,7 +115,7 @@
                 <img source="sort-2-icon" blur="white" hover="black" width="32" height="32" title="{{sorts}}" />
             </div>
             <div class="action filtre">
-                <form id="formFilter" role="form">
+                <form id="formFilter" role="form" autocomplete="off">
                     <input type="search" error="{{errFilter}}" name="filtre" autocomplete="off" placeholder="{{filter}}" />
                     <input type="hidden" name="last"/>
                 </form>
@@ -163,7 +164,7 @@
             <header class="windowheader">&nbsp;{{search}}
                 <img class="closeWindow" source="x-mark-icon" blur="white" hover="black" width="48" height="48" title="{{close}}">
             </header>
-            <form role="form" id="formSearch">
+            <form role="form" id="formSearch" autocomplete="off">
                 <div>
                     <input name="searchinput" error="{{errSearch}}" type="search" autocomplete="on" required placeholder="{{search}}" autofocus/>
                     <input type="submit" value="{{searchGo}}" />
@@ -193,7 +194,7 @@
             <header class="windowheader">&nbsp;{{profile}}
                 <img class="closeWindow" source="x-mark-icon" blur="white" hover="black" width="48" height="48" title="{{close}}">
             </header>
-            <form role="form" id="formProfil">
+            <form role="form" id="formProfil" autocomplete="off">
                 <div>
                     <input type="email" name="mail" disabled />
                     <input type="submit" value="{{valid}}"/>
@@ -250,7 +251,7 @@
                     <p id="uploadHidden" class="notdisplayed"><input type="file" accept="image/*"/></p>
                 </div>
                 <div class="detailBook">
-                    <form role="form" id="formNew">
+                    <form role="form" id="formNew" autocomplete="off">
                         <div class="volumeInfo">
                             <button class="title" tabindex="-1">{{title}}:</button>
                             <span class="direct link" searchby=2 field="title"></span>&nbsp;<span class="direct link" searchby=2 field="subtitle"></span>
@@ -297,7 +298,7 @@
                         <span class="direct" field="from"></span>
                     </div>
                     <div class="inCollection">
-                        <form role="form" id="formTag">
+                        <form role="form" id="formTag" autocomplete="off">
                             <input name="tag" type="text" placeholder="{{newTag}}" maxlength="20" autofocus required size="20" maxlength="20"/>
                             <datalist id="tagsList" disabled="disabled"></datalist>
                             <button type="submit">+</button>
@@ -335,7 +336,7 @@
             <header class="windowheader">&nbsp;{{recommand}}
                 <img actclick="close" source="x-mark-icon" blur="white" hover="black" width="48" height="48" title="{{close}}">
             </header>
-            <form role="form" id="formRecommand">
+            <form role="form" id="formRecommand" autocomplete="off">
                 <div>
                     <input name="recommand" error="{{errRecommand}}" type="email" required placeholder="{{recommandMail}}" autofocus/>
                     <input type="submit" value="{{recommandSend}}" />
@@ -351,10 +352,11 @@
             <article>
                 <img source="google-plus-4-icon" blur="black" hover="alt" url="https://plus.google.com/b/114643486374102176955/114643486374102176955/about" width="64" height="64" title="Google +"/>
                 <img source="facebook-4-icon" blur="black" hover="alt" url="https://www.facebook.com/julien.tas1" width="64" height="64" title="Facebook"/>
-                <img source="github-icon" blur="black" hover="alt" url="https://github.com/Robba-JT/bibliotech" width="64" height="64" title="Github"/>
+                <img source="github-icon" blur="black" hover="alt" url="https://www.github.com/Robba-JT/bibliotech" width="64" height="64" title="Github"/>
                 <img source="email-12-icon" blur="black" hover="alt" mail="biblio.tech@gmail.com?subject=Bibliotech" width="64" height="64" title="Mail"/>
                 <img source="help-icon" id="help" blur="black" hover="alt" width="64" height="64" title="Help"/>
             </article>
+            <img source="gandi-secure" blur="white" hover="black" title="Secure by" url="https://www.gandi.net/ssl/secured/www.biblio.tech/194723/cdfd118361"/>
         </section>
 
         <section id="confirmWindow" class="window notdisplayed">
@@ -372,12 +374,12 @@
             <p class="navgrid">
                 <p><img nav="top" source="arrow-24-icon-top" blur="white" hover="alt" width="32" height="32"/></p>
                 <p>
-                    <span><img nav="left" source="arrow-24-icon-left" blur="white" hover="alt" width="32" height="32"/></span>
-                    <span><img nav="right" source="arrow-24-icon-right" blur="white" hover="alt" width="32" height="32"/></span>
+                    <img nav="left" source="arrow-24-icon-left" blur="white" hover="alt" width="32" height="32"/>
+                    <img nav="right" source="arrow-24-icon-right" blur="white" hover="alt" width="32" height="32"/>
                 </p>
                 <p><img nav="bottom" source="arrow-24-icon-bottom" blur="white" hover="alt" width="32" height="32"/></p>
             </p>
-            <p class="contextaction">
+            <p>
                 <div actclick="recommand">{{torecommand}}&nbsp;</div>
                 <div actclick="preview">{{preview}}&nbsp;</div>
                 <div actclick="associated">{{connex}}&nbsp;</div>
@@ -444,10 +446,9 @@
             <span>{{waiting}}</span>
         </div>
 
-        <script src="js/images.js"></script>
         <script src="js/bibliotech.lib.js"></script>
-        <!--<script src="js/bibliotech.js"></script>-->
-        <script src="js/dev/bibliotech.proto.js"></script>
-        <script src="js/dev/bibliotech.dev.js"></script>
+        <script src="js/bibliotech.js"></script>
+        <!--<script src="js/dev/bibliotech.proto.js"></script>
+        <script src="js/dev/bibliotech.dev.js"></script>-->
     </body>
 </html>

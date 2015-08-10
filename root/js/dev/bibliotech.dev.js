@@ -7,7 +7,9 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
         var start = new Date();
         console.debug("µ.ready", start.toLocaleString());
         var Bookcell = function (book, indice) {
-                var totalCells = Bookcells.cells.length + (typeof indice === "undefined" ? 1 : indice), inCollect = µ.one("#collection").hasClass("active") || User.get().bookindex(book.id) !== -1;
+                var totalCells = Bookcells.cells.length + (typeof indice === "undefined" ? 1 : indice),
+                    inCollect = µ.one("#collection").hasClass("active") || User.get().bookindex(book.id) !== -1;
+
                 this.id = book.id;
                 this.book = book;
                 this.cell = µ.one("#tempCell").cloneNode(true).removeAttributes("id").toggleClass("bookcell", true);
@@ -25,9 +27,6 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 return this;
             },
             Bookcells = {
-                add: function (cells) {
-                    Bookcells.cells = _.union(Bookcells.cells, _.isArray(cells) ? cells : [cells] );
-                },
                 books: [],
                 bytags: function (tag) {
                     if (!µ.one("#collection").hasClass("active")) { return; }
@@ -43,7 +42,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 },
                 cells: [],
                 destroy: function () {
-                    Dock.remove(); Bookcells.cells = [];
+                    Dock.remove(); Bookcells.books = []; Bookcells.cells = [];
                 },
                 display: function (cells, filter, from) {
                     var args = [filter, from];
@@ -56,7 +55,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                                 if (!!from) { cell.toggleClass("tohide tofilter", false); }
                                 if (!!cell.hasClass("tohide") || !!cell.hasClass("tofilter")) { Dock.get().one("section.notdisplayed").appendChild(cell); } else {
                                     cell.toggleClass("toshow", true);
-                                    $dock.one("[colid='"+ ((!!filter) ? cell.col : indice % Dock.nbcols) +"']").appendChild(cell);
+                                    $dock.one("[colid=\""+ ((!!filter) ? cell.col : indice % Dock.nbcols) +"\"]").appendChild(cell);
                                     indice++;
                                 }
                             }
@@ -89,7 +88,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                             if (!!Bookcells.one(books[jta].id) || _.findIndex(newCells, _.matchesProperty("id", books[jta].id)) !== -1) { continue; }
                             newCells.push(new Bookcell(User.get().book(books[jta].id) || books[jta], jta));
                         }
-                        Bookcells.add(newCells);
+                        Bookcells.cells.assign(newCells);
                         if (!µ.one("#collection").hasClass("active") && !!Search.last) {
                             Bookcells.books.push(books);
                             Bookcells.books = _.flatten(Bookcells.books);
@@ -168,13 +167,14 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                             var newbook = µ.one("#formNew").formToJson(), error, inputs = µ.alls("#formNew input, #formNew textarea");
                             for (var jta = 0, lg = inputs.length; jta < lg; jta++) { if (!inputs[jta].reportValidity()) { error = true; break; }}
                             newbook.authors = !!newbook.authors ? newbook.authors.split(",") : [];
-                            for (jta = 0, lg = newbook.authors.length; jta < lg; jta++) { newbook.authors[jta] = newbook.authors[jta].noSpace(); }
+                            //for (jta = 0, lg = newbook.authors.length; jta < lg; jta++) { newbook.authors[jta] = newbook.authors[jta].noSpace(); }
+                            newbook.authors.noSpace();
                             if (!!error) { return false; }
                             Waiting.over();
                             socket.emit("newbook", newbook);
                         } else {
                             socket.emit("addDetail");
-                            µ.alls("[actclick='upload']").toggle(!Detail.data.book.cover);
+                            µ.alls("[actclick=\"upload\"]").toggle(!Detail.data.book.cover);
                             Detail.newCell();
                         }
                     };
@@ -312,18 +312,18 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     µ.alls("[actclick=add], [actclick=update], #upload, .inCollection").toggle();
                     var cell = Bookcells.one(Detail.data.book.id);
                     if (µ.one("#collection").hasClass("active") && !cell) {
-                        var col = User.get().books.length % Dock.nbcols,
-                            row = µ.alls("[colid='" + User.get().books.length % Dock.nbcols + "'] .bookcell").length;
+                        var lg = User.get().collection.length,
+                            col = lg % Dock.nbcols,
+                            row = µ.alls("[colid=\"" + lg % Dock.nbcols + "\"] .bookcell").length;
 
                         cell = new Bookcell(Detail.data.book);
-                        Bookcells.add(cell);
+                        Bookcells.cells.push(cell);
                         Bookcells.display();
                     }
                     if (!!cell && !!cell.cell) { cell.cell.alls("button").fade(); }
                     User.get().addbook(Detail.data.book);
                 },
-                sendNotif: function (/*event*/) {
-                    //event.preventDefault();
+                sendNotif: function () {
                     var notif = this.formToJson();
                     notif.book = Detail.data.book.id;
                     notif.title = Detail.data.book.title;
@@ -392,7 +392,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                                 for (var tag = 0, lgt = value.length; tag < lgt; tag++) { userTags.appendChild(Tags.new(value[tag])); }
                                 break;
                             case "userNote":
-                                if (!!value) { Detail.clickNote.call(µ.one("[note='" + value + "']")); }
+                                if (!!value) { Detail.clickNote.call(µ.one("[note=\"" + value + "\"]")); }
                                 break;
                             case "userComment":
                                 µ.one("#userComment").value = value;
@@ -443,7 +443,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     var image = this.files;
                     if (!!image[0]) {
                         if (!image[0].type.match(/image.*/) || image[0].size > 500000) {
-                            Windows.confirm("error", "Veuillez sélectionner un fichier de type 'image' inférieure à 500KB.");
+                            Windows.confirm("error", "Veuillez sélectionner un fichier de type \"image\" inférieure à 500KB.");
                             return false;
                         }
                         var reader = new FileReader();
@@ -658,8 +658,8 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                             row++;
                             break;
                     }
-                    if (µ.one("[colid='" + col + "']").childNodes[row]) {
-                        µ.one("[colid='" + col + "']").childNodes[row].one("header").trigger("click");
+                    if (µ.one("[colid=\"" + col + "\"]").childNodes[row]) {
+                        µ.one("[colid=\"" + col + "\"]").childNodes[row].one("header").trigger("click");
                     }
                     return false;
                 },
@@ -834,7 +834,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
             },
             socket = (function (conn) {
                 var connect = function () {
-                        var connection = conn.connect("localhost:5678", { "secure": true, "multiplex": false });
+                        var connection = conn.connect("https://localhost:9876", { "secure": true, "multiplex": false });
                         connection.once("connect", function () {
                             this.once("disconnect", function (data) {
                                 console.debug("socket.disconnect", this.id, new Object(this), new Date().toLocaleString(), data);
@@ -1024,6 +1024,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 var instance, User = function () {};
                 User.prototype.init = function (data) {
                     _.assign(this, data);
+                    this.collection = [];
                     if (!!this.picture && !!this.link) {
                         µ.one("#picture").toggle(true)
                             .newElement("img", { src: this.picture, title: "Google+" })
@@ -1032,19 +1033,22 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     µ.alls(".gSignIn").toggle(!!this.googleSignIn);
                     µ.alls(".noSignIn").toggle(!this.googleSignIn);
                     µ.one(".noSignIn input").setAttributes("required", !this.googleSignIn);
-                    if (this.first) { Windows.help(true); }
+                    if (!this.connex) { Windows.help(true); }
                     console.debug("User.get().initialize", new Date().toLocaleString());
                     return this;
                 };
                 User.prototype.addbook = function (book) {
-                    if (this.bookindex(book.id) === -1) {
+                    /*if (this.bookindex(book.id) === -1) {
                         this.books.push(book);
                         this.books = _.sortBy(this.books, "title");
                     }
                     var cell = Bookcells.one(book.id);
-                    if (!!cell) { cell.book = book; }
-                    this.collection.push(new Bookcell(book));
-                    µ.one("#nbBooks").text(this.books.length);
+                    if (!!cell) { cell.book = book; }*/
+                    var newcell = new Bookcell(book);
+                    this.collection.push(newcell);
+                    newcell.cell.one(".add").toggle(false);
+                    newcell.cell.one(".remove").toggle(true);
+                    µ.one("#nbBooks").text(this.collection.length);
                 };
                 User.prototype.bookcell = function (bookid) { return _.find(this.collection, _.matchesProperty("book.id", bookid)); };
                 User.prototype.book = function (bookid) {
@@ -1055,9 +1059,8 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     return _.findIndex(this.collection, _.matchesProperty("book.id", bookid));
                 };
                 User.prototype.removebook = function (bookid) {
-                    _.remove(this.books, _.matchesProperty("id", bookid));
                     _.remove(this.collection, _.matchesProperty("id", bookid));
-                    return this.books.length;
+                    µ.one("#nbBooks").text(this.collection.length);
                 };
                 User.prototype.updated = function (values) {
                     this.name = values.name;
@@ -1304,7 +1307,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                             });
                         }
                         socket.emit("removeBook", self.id);
-                        µ.one("#nbBooks").text(User.get().removebook(self.id));
+                        User.get().removebook(self.id);
                         if (!!self.book.tags && !!self.book.tags.length) { Tags.init(); }
                     }
                 },
@@ -1387,7 +1390,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
             Idb.setDetail(book);
         };
 
-        µ.setEvents({ "keyup keydown": shortCuts, "scroll": Bookcells.loadcovers });
+        µ.setEvents({ "keypress": shortCuts, "keydown": shortCuts, "scroll": Bookcells.loadcovers });
         µ.alls("input").setEvents("input propertychange", checkValid);
         µ.one("#logout").setEvents("click", logout);
         µ.alls("#h button, #help").setEvents({ "click": Windows.help });
@@ -1395,7 +1398,6 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
         µ.one("#formProfil").setEvents("submit", userActions.update);
         µ.one("#formRecommand").setEvents("submit", Detail.sendNotif);
         µ.one("#formTag").setEvents("submit", Tags.add);
-        //µ.alls("#formNew, #formFilter, #formProfil").setEvents("submit", function (event) { event.preventDefault(); });
         µ.alls("form").setEvents("submit", function (event) { event.preventDefault(); });
         µ.alls("#formNew button").setEvents("click", Detail.modify);
         µ.one("#changePwd").setEvents("click", Windows.togglePwd);
@@ -1403,13 +1405,13 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
         µ.one("#tris").setEvents("click", Menu.sort);
         µ.one("#notifications").setEvents("click", Menu.notif);
         µ.alls("#sort > div").setEvents("click", Bookcells.sort);
-        µ.alls("img[actclick]").setEvents({ mouseenter: Images.hover, mouseleave: Images.blur});
+        µ.alls("img[actclick]").setEvents({ "mouseenter": Images.hover, "mouseleave": Images.blur});
         µ.alls("[actclick]").setEvents("click", Detail.action);
         µ.alls(".closeWindow").setEvents("click", Windows.close);
         µ.one("#footer").setEvents("click", Menu.top);
         µ.alls("#uploadHidden [type=file]").setEvents("change", Detail.uploadCover);
-        µ.alls("#userNote > img").setEvents({ mouseenter: Detail.mouseNote, mouseleave: Detail.userNote, click: Detail.clickNote });
-        µ.alls(".nvb > div:not(#picture):not(.filtre), img.closeWindow, #footer, [by], .imgAction img, #cloud img, #contactsWindow img, [nav]").setEvents({ mouseenter: Images.hover, mouseleave: Images.blur });
+        µ.alls("#userNote > img").setEvents({ "mouseenter": Detail.mouseNote, "mouseleave": Detail.userNote, "click": Detail.clickNote });
+        µ.alls(".nvb > div:not(#picture):not(.filtre), img.closeWindow, #footer, [by], .imgAction img, #cloud img, #contactsWindow img, [nav]").setEvents({ "mouseenter": Images.hover, "mouseleave": Images.blur });
         (function (toblur) { for (var jta = 0, lg = toblur.length; jta < lg; jta++) { Images.blur.call(toblur[jta]); } })(µ.alls("[blur]"));
         µ.alls("img").setAttributes({ "draggable": false });
         µ.one("#nvb").toggleClass("notdisplayed", false);

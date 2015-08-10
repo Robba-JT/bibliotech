@@ -1,7 +1,7 @@
 {
     "development": {
         "host": "localhost",
-        "port": 5678,
+        "port": 9876,
         "mongoHost": "localhost",
         "mongoPort": 29017,
         "mongoDB": "bibliotech",
