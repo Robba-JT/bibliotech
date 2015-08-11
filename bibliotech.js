@@ -28,6 +28,7 @@ var express = require("express"),
     ip = require("ip"),
     mongoUrl = "mongodb://" + config.mongoHost + ":" + config.mongoPort + "/" + config.mongoDB,
     MongoStore = require("connect-mongo")(session),
+    device = require("express-device"),
     routes = require("./routes"),
     extconsole = require("extended-console"),
     logsApi = require("./tools/logs").LogsAPI(fs),
@@ -71,6 +72,7 @@ MongoClient.connect(mongoUrl, function (err, db) {
         .use(errorhandler(config.errorHandlerOptions))
         .use(bodyParser.urlencoded({ extended: false }))
 		.use(bodyParser.json())
+        .use(device.capture())
 		.use(session({
 			key: "_bsession",
 			secret: "robba1979",
@@ -83,6 +85,8 @@ MongoClient.connect(mongoUrl, function (err, db) {
                 secure: true
             }
 		}));
+
+    device.enableDeviceHelpers(app);
 
     io.of("/").use(function (connData, next) {
 		if (!connData.handshake.headers.cookie) {

@@ -82,6 +82,10 @@ Window.prototype.setEvents = HTMLDocument.prototype.setEvents = HTMLElement.prot
     self.addEventListener(evts, listener, capt);
     return self;
 };
+HTMLElement.prototype.setValue = function (value) {
+    this.value = value;
+    return this;
+};
 HTMLElement.prototype.siblings = function (selector) {
     return this.parentNode.alls(selector);
 };
@@ -210,6 +214,10 @@ HTMLCollection.prototype.setEvents = NodeList.prototype.setEvents = function (ev
         evts.forEach(function (evt) { el.addEventListener(evt, listener, capt); });
     });
     return self;
+};
+HTMLCollection.prototype.setValue = NodeList.prototype.setValue = function (value) {
+    this.forEach(function () { this.setValue(value); });
+    return this;
 };
 HTMLCollection.prototype.text = NodeList.prototype.text = function (code) {
     if (typeof code === "undefined") { return this; }

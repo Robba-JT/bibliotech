@@ -92,7 +92,12 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
             razError();
             var v = !µ.one("[h]").isVisible();
             getLabel(v);
-            µ.alls("[h]").setAttributes({ "required": v, "value": "" });
+            µ.alls("[h]").setValue("");
+            if (!!v) {
+                µ.alls("[h]").setAttributes({ "required": true });
+            } else {
+                µ.alls("[h]").removeAttributes("required");
+            }
             µ.alls("[h]").fade();
             µ.one("[type=email]").focus();
         });

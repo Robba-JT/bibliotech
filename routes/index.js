@@ -10,7 +10,6 @@ var UsersAPI = require("../db/users").UsersAPI,
     ),
     gOptions = { timeout: 5000, auth: oauth2Client };
 
-if (require("ip").address() === "128.1.236.11") { gOptions.proxy = "http://CGDM-EMEA\jtassin:password_4@isp-ceg.emea.cegedim.grp:3128/"; }
 google.options(gOptions);
 
 module.exports = exports = function (app, db) {
@@ -37,13 +36,13 @@ module.exports = exports = function (app, db) {
 				} else {
                     req.session.destroy(function (err) {
                         oauth2Client.revokeCredentials(function (err) {
-                            res.render("login", getLang(req).login);
+                            res.status(404).render(res.locals.is_mobile? "mlogin" : "login", getLang(req).login);
                         });
                     });
 				}
 			},
 			function (req, res) {
-                res.render("bibliotech", getLang(req).bibliotech);
+                res.render(res.locals.is_mobile? "mbibliotech" : "bibliotech", getLang(req).bibliotech);
 			}
 		)
 

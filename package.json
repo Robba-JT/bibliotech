@@ -29,6 +29,7 @@
     "ent": "^2.2.0",
     "errorhandler": "^1.4.1",
     "express": "^4.13.3",
+    "express-device": "^0.3.11",
     "express-json": "^1.0.0",
     "express-session": "^1.11.3",
     "extended-console": "*",

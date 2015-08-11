@@ -482,7 +482,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     if ($dock.alls(".col").length !== Dock.nbcols) {
                         $dock.alls(".col").removeAll();
                         for (var i = 0; i < Dock.nbcols; i++) { $dock.newElement("div", { "class": "col", "colid": i }).css({ "width": colWidth, "max-width": colWidth }); }
-                        $dock.css({ "padding-top" : µ.one("#nvb").isVisible() ? µ.one("#nvb").clientHeight : 0 });
+                        //$dock.css({ "padding-top" : µ.one("#nvb").isVisible() ? µ.one("#nvb").clientHeight : 0 });
                         µ.alls(".col").setEvents({
                             dragenter: function(event) { event.preventDefault(); },
                             dragover: function(event) { event.preventDefault(); },
@@ -505,15 +505,15 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     }
                     return $dock;
                 },
-                nbcols: ~~(window.innerWidth / 256),
+                nbcols: ~~(window.innerWidth / 192),
                 remove: function () {
                     if (!!µ.one("#d")) { µ.one("#d").removeAll(); window.scroll(0, 0); }
                 },
                 resize: function() {
-                    if (Dock.nbcols !== ~~(window.innerWidth / 256)) {
+                    if (Dock.nbcols !== ~~(window.innerWidth / 192)) {
                         Tags.close().then(Tags.destroy);
                         µ.alls(".deroulant").fade(false);
-                        Dock.nbcols = ~~(window.innerWidth / 256);
+                        Dock.nbcols = ~~(window.innerWidth / 192);
                         Dock.remove();
                         Bookcells.display();
                     } else {
@@ -687,7 +687,9 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 },
                 toggle: function () {
                     µ.alls(".nvb").fade().then(function () {
-                        if (!!µ.one("#d")) { µ.one("#d").css({ "padding-top": µ.one("#nvb").isVisible() ? µ.one("#nvb").clientHeight : 0 }); }
+                        var isv = µ.one("#nvb").isVisible();
+                        µ.one("html").toggleClass("overflown", !!µ.one("#nvb").isVisible());
+                        //if (!!µ.one("#d")) { µ.one("#d").css({ "padding-top": isv ? µ.one("#nvb").clientHeight : 0 }); }
                     });
                 },
                 toggleFooter: function () {
@@ -770,7 +772,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     Images.active.call(µ.one("#recherche"));
                     µ.one("#formFilter").reset();
                     if (µ.one(".sortBy")) { Images.blur.call(µ.one(".sortBy").toggleClass("sortBy", false)); }
-                    µ.one("#selectedTag").text("");
+                    //µ.one("#selectedTag").text("");
                 },
                 endRequest: function (nb) {
                     µ.one("#nvb").toggleClass("inactive", false);
@@ -1026,9 +1028,11 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     _.assign(this, data);
                     this.collection = [];
                     if (!!this.picture && !!this.link) {
-                        µ.one("#picture").toggle(true)
-                            .newElement("img", { src: this.picture, title: "Google+" })
-                                .setEvents("click", function () { window.open(instance.link); });
+                        µ.one("#picture")
+                            .setEvents("click", function () { window.open(instance.link); })
+                            .toggle(true).newElement("img", { src: this.picture, title: "Google+" });
+                        µ.one("#picture").newElement("span").html(this.name);
+                        µ.one("#picture").newElement("hr");
                     }
                     µ.alls(".gSignIn").toggle(!!this.googleSignIn);
                     µ.alls(".noSignIn").toggle(!this.googleSignIn);
@@ -1098,7 +1102,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 },
                 collection: function (books) {
                     Windows.close();
-                    µ.one("@filtre").value = µ.one("@last").value = µ.one("#selectedTag").innerHTML = "";
+                    µ.one("@filtre").value = µ.one("@last").value/* = µ.one("#selectedTag").innerHTML*/ = "";
                     if (!µ.one("#collection").hasClass("active")) {
                         var isSort = µ.one(".sortBy");
                         if (isSort) { Images.blur.call(isSort.toggleClass("sortBy", false)); }
@@ -1213,7 +1217,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     return new Promise(function (resolve) {
                         var win = µ.alls(".window:not(.notdisplayed)"), forms = µ.alls("form:not(#formFilter)");
                         Waiting.over(false);
-                        if (µ.one("#h").isVisible()) { Windows.help(false); }
+                        /*if (µ.one("#h").isVisible()) { Windows.help(false); }*/
                         µ.removeEventListener("keyup", shortCuts);
                         if (!win.length) { resolve(); } else {
                             for (var jta = 0, lg = forms.length; jta < lg; jta++) { forms[jta].reset(); }
@@ -1257,7 +1261,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     return new Promise(function (resolve, reject) {
                         var wid = (typeof self === "string") ? self : self.getAttribute("window"), win = µ.one("#" + wid);
                         if (!!Windows.on && Windows.on === wid) { Windows.close().then(resolve); } else {
-                            if (µ.one("#h").isVisible()) { Windows.help(false); }
+                            /*if (µ.one("#h").isVisible()) { Windows.help(false); }*/
                             Tags.close().then(function () {
                                 if (µ.one("#wa").isVisible()) { resolve(); }
                                 if (!_.includes(["previewWindow", "recommandWindow"], wid)) { µ.alls(".window:not(.notdisplayed)").fade(false); }
@@ -1390,7 +1394,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
             Idb.setDetail(book);
         };
 
-        µ.setEvents({ "keypress": shortCuts, "keydown": shortCuts, "scroll": Bookcells.loadcovers });
+        µ.setEvents({/* "keypress": shortCuts, "keydown": shortCuts, */"scroll": Bookcells.loadcovers });
         µ.alls("input").setEvents("input propertychange", checkValid);
         µ.one("#logout").setEvents("click", logout);
         µ.alls("#h button, #help").setEvents({ "click": Windows.help });
@@ -1411,15 +1415,15 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
         µ.one("#footer").setEvents("click", Menu.top);
         µ.alls("#uploadHidden [type=file]").setEvents("change", Detail.uploadCover);
         µ.alls("#userNote > img").setEvents({ "mouseenter": Detail.mouseNote, "mouseleave": Detail.userNote, "click": Detail.clickNote });
-        µ.alls(".nvb > div:not(#picture):not(.filtre), img.closeWindow, #footer, [by], .imgAction img, #cloud img, #contactsWindow img, [nav]").setEvents({ "mouseenter": Images.hover, "mouseleave": Images.blur });
+        /*µ.alls(".nvb > div:not(#picture):not(.filtre), img.closeWindow, #footer, [by], .imgAction img, #cloud img, #contactsWindow img, [nav]").setEvents({ "mouseenter": Images.hover, "mouseleave": Images.blur });*/
         (function (toblur) { for (var jta = 0, lg = toblur.length; jta < lg; jta++) { Images.blur.call(toblur[jta]); } })(µ.alls("[blur]"));
         µ.alls("img").setAttributes({ "draggable": false });
-        µ.one("#nvb").toggleClass("notdisplayed", false);
+        //µ.one("#nvb").toggleClass("notdisplayed", false);
         µ.one("#collection").setEvents("click", userActions.collection);
         µ.alls("#tags, #cloud > img").setEvents("click", Tags.show);
         µ.alls("#recherche, #profil, #contact").setEvents("click", Windows.open);
         µ.one("#newbook").setEvents("click", Detail.new);
-        µ.alls(".tnv").setEvents("click", Menu.toggle);
+        µ.alls(".tnv, .action").setEvents("click", Menu.toggle);
         µ.alls("[url]").setEvents("click", Menu.link);
         µ.alls("[mail]").setEvents("click", Menu.mail);
         µ.one("#recommand4u").setEvents("click", Search.recommand);
