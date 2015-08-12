@@ -33,7 +33,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     window.scroll(0, 0);
                     µ.one("#formFilter").reset();
                     µ.alls(".bookcell").toggleClass("tofilter", false);
-                    µ.one("#selectedTag").html(tag);
+                    //µ.one("#selectedTag").html(tag);
                     for (var jta = 0, lg = Bookcells.cells.length; jta < lg; jta++) {
                         var bcell = Bookcells.cells[jta];
                         bcell.cell.toggleClass("tohide", !_.includes(bcell.book.tags, tag));
@@ -67,6 +67,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 },
                 filter: function () {
                     var filtre = this.value.toLowerCase(), last = µ.one("@last");
+                    µ.one(".tnv").trigger("click");
                     if (!!this.checkValidity() && filtre !== last.value) {
                         last.value = filtre;
                         for (var jta = 0, lg = Bookcells.cells.length; jta < lg; jta++) {
@@ -186,9 +187,9 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                             values = { id: bookid },
                             tags = _.map(µ.alls("#userTags > div").toArray(), function (tag) { return tag.one(".libelle").text(); }),
                             note = µ.one("#userNote").value,
-                            comment = µ.one("#userComment").value,
-                            mainColor = µ.one("#detailCover").getAttribute("mainColor"),
-                            alternative = µ.one("#detailCover").getAttribute("src") !== images["book-4-icon"].black ? µ.one("#detailCover").getAttribute("src") : null;
+                            comment = µ.one("#userComment").value;
+                            //mainColor = µ.one("#detailCover").getAttribute("mainColor"),
+                            //alternative = µ.one("#detailCover").getAttribute("src") !== images["book-4-icon"].black ? µ.one("#detailCover").getAttribute("src") : null;
 
                         if (_.isObject(bookid) && bookid.user === User.get().id) {
                             var formValues = µ.one("#formNew").formToJson();
@@ -211,11 +212,11 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                             update = "tags";
                             values.tags = tags;
                         }
-                        if (!!mainColor && book.alternative !== alternative) {
+                        /*if (!!mainColor && book.alternative !== alternative) {
                             update = true;
                             values.alternative = alternative;
                             values.mainColor = mainColor;
-                        }
+                        }*/
                         if (!!update) {
                             values.userDate = new Date().toJSON();
                             socket.emit("updateBook", values);
@@ -338,29 +339,31 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     µ.one("#formRecommand").reset();
                     win.alls("#formNew input, #formNew textarea").toggle(false);
                     win.alls("#formNew button:not(.categories)").toggleClass("hide", false).toggleClass("modify", !!book.id && _.isEqual(book.id.user, User.get().id));
-                    win.one("#detailWindow [type=file]").value = "";
+                    //win.one("#detailWindow [type=file]").value = "";
                     µ.one("#comments").children.removeAll();
                     µ.one("#userComment").value = "";
-                    win.css({ "background": "whitesmoke", "max-height": ~~(window.innerHeight * 0.95) });
+                    //win.css({ "background": "whitesmoke"/*, "max-height": ~~(window.innerHeight * 0.95)*/ });
                     for (var jta = 0, lg = µ.alls("[note]").length; jta < lg; jta++) { Images.blur.call(µ.alls("[note]")[jta]); }
                     µ.one("#userNote").value = book.note;
                     win.alls(".new").toggleClass("new", false);
-                    win.alls(".inCollection").toggle(!!inCollection);
+                    win.alls(".inCollection").toggle(!!inCollection).css({ "background": "whitesmoke" });
                     Tags.list();
-                    if (!!book.mainColor) {
-                        win.css({ "background": "radial-gradient(whitesmoke 40%, " + book.mainColor + ")" });
-                    } else {
-                        µ.one("#detailCover").onload = function () {
+                    µ.one("#background").toggle(!!book.alternative || !!book.base64);
+                    //if (!!book.mainColor) {
+                    //    µ.one("#background").css({ "background": "radial-gradient(whitesmoke 40%, " + book.mainColor + ")" });
+                    //} else {
+                        //µ.one("#detailCover").onload = function () {
                             if (!!book.alternative || !!book.base64) {
-                                book.mainColor = Detail.mainColor(this).hex;
-                                win.css({ "background": "radial-gradient(whitesmoke 40%, " + book.mainColor + ")"});
+                                //book.mainColor = Detail.mainColor(this).hex;
+                                //win.css({ "background": "radial-gradient(whitesmoke 40%, " + book.mainColor + ")"});
+                                µ.one("#background").css({ "background-image": "url(" + (book.alternative || book.base64).toString() + ")" });
                             }
-                        };
-                    }
-                    µ.one("#detailCover").setAttributes("mainColor", null).src = book.alternative || book.base64|| images["book-4-icon"].black;
+                        //};
+                    //}
+                    //µ.one("#detailCover").setAttributes("mainColor", null).src = book.alternative || book.base64|| images["book-4-icon"].black;
                     win.alls(".direct").text("");
                     win.alls("#userTags > div").removeAll();
-                    win.one("#detailWindow .windowheader span").text(book.title || µ.one("#detailWindow .windowheader span").getAttribute("label"));
+                    //win.one("#detailWindow .windowheader span").text(book.title || µ.one("#detailWindow .windowheader span").getAttribute("label"));
                     µ.alls("[actclick=add]").toggle(!inCollection);
                     µ.alls("[actclick=update], [actclick=recommand]").toggle(!!inCollection);
                     µ.alls("[actclick=associated]").toggle(!!book.id && !_.isObject(book.id));
@@ -373,7 +376,10 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     win.alls(".volumeInfo.nonEditable").toggle(false);
                     win.alls(".volumeInfo:not(.nonEditable)").toggle(!!book.id && _.isEqual(book.id.user, User.get().id));
                     Detail.userNote();
-                    if (!!win.hasClass("notdisplayed")) { Windows.open.call("detailWindow"); }
+                    if (!!win.hasClass("notdisplayed")) { Windows.open.call("detailWindow").then(function () {
+                        µ.one("#detailContent").css({ "height": win.clientHeight - win.one("header").clientHeight });
+                        µ.one(".detailBook").scrollTop = 0;
+                    }); }
                     _.forEach(book, function (value, jta) {
                         var field = win.one("[field=" + jta + "]"), input = win.one("input[name=" + jta + "], textarea[name=" + jta + "]");
                         if (!!field && jta !== "subtitle") {
@@ -592,7 +598,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                         Images.blur.call(isactive);
                     }
                     this.toggleClass("active", true);
-                    µ.one("#tags").toggle(this.id === "collection" && !!Tags.cloud.length);
+                    µ.one("#tags").toggle(this.id === "collection" && !!Tags.cloud && !!Tags.cloud.length);
                     if (!!thisImg) { thisImg.src = images[thisImg.getAttribute("source")][thisImg.getAttribute("active")]; }
                     return this;
                 },
@@ -622,10 +628,10 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
             Menu = {
                 close: function (event) {
                     var closact = event.target.closest("action");
-                    if (µ.one("#contextMenu").isVisible() && !event.target.getAttribute("nav")) { µ.one("#contextMenu").fade(false); }
+                    //if (µ.one("#contextMenu").isVisible() && !event.target.getAttribute("nav")) { µ.one("#contextMenu").fade(false); }
                     if (!closact || !_.includes(["notifications", "tris"], closact.getAttribute("id"))) { µ.alls(".deroulant").fade(false); }
                 },
-                context: function (event) {
+                /*context: function (event) {
                     event.preventDefault();
                     var ctx = µ.one("#contextMenu");
                     if (µ.one("#detailWindow").isVisible() && !µ.one("#w").hasClass("over") && !_.isEmpty(Detail.data.book)) {
@@ -635,10 +641,10 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                         }).fade(true);
                     }
                     return false;
-                },
+                },*/
                 link: function () { window.open(this.getAttribute("url")); },
                 mail: function () { µ.location.href = "mailto:" + this.getAttribute("mail"); },
-                nav: function () {
+/*                nav: function () {
                     if (!Detail.data.cell) { return false; }
                     var cell = Detail.data.cell, row = cell.index(), col = parseInt(cell.parentNode.getAttribute("colid"), 10);
                     switch (this.getAttribute("nav")) {
@@ -662,12 +668,12 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                         µ.one("[colid=\"" + col + "\"]").childNodes[row].one("header").trigger("click");
                     }
                     return false;
-                },
+                },*/
                 notif: function (state) {
                     var notifs = µ.one("#notifs");
-                    if (!!state) { µ.one("#sort").fade(false); }
+                    /*if (!!state) { µ.one("#sort").fade(false); }*/
                     if (notifs.isVisible()) { notifs.fade(false); } else {
-                        notifs.css({ top: µ.one("#nvb").clientHeight + 5, left: µ.one("#notifications").offsetLeft }).fade(0.95);
+                        notifs/*.css({ top: µ.one("#nvb").clientHeight + 5, left: µ.one("#notifications").offsetLeft })*/.fade(0.95);
                     }
                 },
                 selectstart: function (event) {
@@ -680,17 +686,18 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 },
                 sort: function (state) {
                     var sorts = µ.one("#sort");
-                    if (!!state) { µ.one("#notifs").fade(false); }
+                    //if (!!state) { µ.one("#notifs").fade(false); }
+                    /*µ.one(".tnv").trigger("click");*/
                     if (sorts.isVisible()) { sorts.fade(false); } else {
-                        sorts.css({ top: µ.one("#nvb").clientHeight + 5, left: µ.one("#tris").offsetLeft }).fade(0.95);
+                        sorts/*.css({ top: µ.one("#nvb").clientHeight, left: µ.one("#tris").offsetLeft })*/.fade(0.95);
                     }
                 },
                 toggle: function () {
-                    µ.alls(".nvb").fade().then(function () {
-                        var isv = µ.one("#nvb").isVisible();
-                        µ.one("html").toggleClass("overflown", !!µ.one("#nvb").isVisible());
-                        //if (!!µ.one("#d")) { µ.one("#d").css({ "padding-top": isv ? µ.one("#nvb").clientHeight : 0 }); }
-                    });
+                    var isv = !!µ.one("#nvb").isVisible();
+                    /*µ.one("html").toggleClass("overflown", !isv);*/
+                    /*µ.one("#nvb").fade(!isv ? 0.9 : !isv);*/
+                    µ.one("#nvb").toLeft(!isv);
+                    µ.one(".nvb:not(#nvb)").fade(isv);
                 },
                 toggleFooter: function () {
                     µ.one("#footer").toggle(!!xcroll().top);
@@ -812,7 +819,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     });
                 }
             },
-            shortCuts = function (event) {
+            /*shortCuts = function (event) {
                 event = event || window.event;
                 if (!event.altKey) {
                     if (!event.ctrlKey) { if (event.keyCode === 27) { Windows.close(); Tags.close(); µ.one("#contextMenu").fade(false); }} else {
@@ -833,10 +840,10 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                         }
                     }
                 }
-            },
+            },*/
             socket = (function (conn) {
                 var connect = function () {
-                        var connection = conn.connect("https://192.168.9.27:9876", { "secure": true, "multiplex": false });
+                        var connection = conn.connect("https://192.168.9.27", { "secure": true, "multiplex": false });
                         connection.once("connect", function () {
                             this.once("disconnect", function (data) {
                                 console.debug("socket.disconnect", this.id, new Object(this), new Date().toLocaleString(), data);
@@ -857,9 +864,9 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                             .on("books", Bookcells.show)
                             .on("collection", function (ret) {
                                 //User.get().books = ret.books;
-                                Tags.init();
+                                //Tags.init();
                                 //µ.one("#collection").trigger("click");
-                                userActions.collection(ret.books);
+                                userActions.collection(ret.books).then(Tags.init);
                                 //µ.one("#nbBooks").text(User.get().books.length);
                                 console.debug("User.get().books", new Date().toLocaleString(), ret.books.length, (new Date() - start) / 1000);
                                 Notifs.show(ret.notifs);
@@ -959,7 +966,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     Tags.destroy();
                     for (var jta = 0, lg = Tags.cloud.length; jta < lg; jta++) {
                         var tag = Tags.cloud[jta],
-                            µtag = cloud.newElement("span", { "title": tag.weight, "class": "tag tag" + Math.min(~~(tag.weight / 5) + 1, 10) }).html(tag.text),
+                            µtag = cloud.newElement("span", { "class": "tag tag" + Math.min(~~(tag.weight / 5) + 1, 10) }).html(tag.text),
                             top = height - (µtag.clientHeight / 2),
                             left = width - (µtag.clientWidth / 2),
                             radius = 0,
@@ -978,7 +985,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     cloud.alls("span").setEvents("click", click);
                 },
                 init: function () {
-                    var tags = _.countBy(_.flatten(_.compact(_.pluck(User.get().books, "tags")), true).sort());
+                    var tags = _.countBy(_.flatten(_.compact(_.pluck(User.get().collection, "book.tags")), true).sort());
                     Tags.cloud = [];
                     Tags.destroy();
                     if (!!tags) {
@@ -989,6 +996,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                         });
                         µ.one("#tagsList").html(tagOptions);
                         Tags.cloud = _.sortBy(Tags.cloud, "weight").reverse();
+                        if (µ.one("#collection").hasClass("active")) { µ.one("#tags").toggle(!_.isEmpty(tags)); }
                     }
                 },
                 list: function () { µ.one("@tag").setAttributes({ "list": !!this.value ? "tagsList" : "none" });},
@@ -1101,52 +1109,57 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     return User.get().addbook(book);
                 },
                 collection: function (books) {
-                    Windows.close();
-                    µ.one("@filtre").value = µ.one("@last").value/* = µ.one("#selectedTag").innerHTML*/ = "";
-                    if (!µ.one("#collection").hasClass("active")) {
-                        var isSort = µ.one(".sortBy");
-                        if (isSort) { Images.blur.call(isSort.toggleClass("sortBy", false)); }
-                        Images.hover.call(µ.one("#sort div")).toggleClass("sortBy", true);
-                        Bookcells.destroy();
-                        Waiting.anim(true);
-                        Waiting.toggle(true, true).then(function () {
-                            µ.one("#nvb").toggleClass("inactive", true);
-                            Images.active.call(µ.one("#collection"));
-/*                            if (!!books && !!books.length) {
-                                if (!User.get().collection) { Bookcells.show(User.get().books).then(function (ret) {
-                                    if (!!Bookcells.cells.length) { User.get().collection = Bookcells.cells; }
-                                    Search.endRequest(ret);
-                                }); }
-                                else {
-                                    Bookcells.cells = User.get().collection;
-                                    Bookcells.display(false, false, true).then(
-                                        Search.endRequest
-                                    );
-                                }
-                            } else { Search.endRequest(); }*/
-                            if (!!User.get().collection && User.get().collection.length) {
-                                Bookcells.cells = User.get().collection;
-                                Bookcells.display(false, false, true).then(
-                                    Search.endRequest
-                                );
-                            } else if (!!books && !!books.length) {
-                                Bookcells.show(books).then(function (ret) {
-                                    if (!!Bookcells.cells.length) {
-                                        User.get().collection = Bookcells.cells;
+                    return new Promise(function (resolve) {
+                        Windows.close();
+                        µ.one("@filtre").value = µ.one("@last").value/* = µ.one("#selectedTag").innerHTML*/ = "";
+                        if (!µ.one("#collection").hasClass("active")) {
+                            var isSort = µ.one(".sortBy");
+                            if (isSort) { Images.blur.call(isSort.toggleClass("sortBy", false)); }
+                            Images.hover.call(µ.one("#sort div")).toggleClass("sortBy", true);
+                            Bookcells.destroy();
+                            Waiting.anim(true);
+                            Waiting.toggle(true, true).then(function () {
+                                µ.one("#nvb").toggleClass("inactive", true);
+                                Images.active.call(µ.one("#collection"));
+    /*                            if (!!books && !!books.length) {
+                                    if (!User.get().collection) { Bookcells.show(User.get().books).then(function (ret) {
+                                        if (!!Bookcells.cells.length) { User.get().collection = Bookcells.cells; }
+                                        Search.endRequest(ret);
+                                    }); }
+                                    else {
+                                        Bookcells.cells = User.get().collection;
+                                        Bookcells.display(false, false, true).then(
+                                            Search.endRequest
+                                        );
                                     }
-                                    µ.one("#nbBooks").text(ret);
-                                    Search.endRequest(ret);
-                                });
-                            } else {
-                                Search.endRequest();
-                            }
-                        });
-                    } else {
-                        window.scroll(0, 0);
-                        µ.alls(".bookcell").toggleClass("tofilter tohide", false);
-                        µ.one("#sort [by]").trigger("click");
-                    }
-                    return false;
+                                } else { Search.endRequest(); }*/
+                                if (!!User.get().collection && User.get().collection.length) {
+                                    Bookcells.cells = User.get().collection;
+                                    Bookcells.display(false, false, true).then(function (nb) {
+                                        Search.endRequest(nb);
+                                        resolve();
+                                    });
+                                } else if (!!books && !!books.length) {
+                                    Bookcells.show(books).then(function (ret) {
+                                        if (!!Bookcells.cells.length) {
+                                            User.get().collection = Bookcells.cells;
+                                        }
+                                        µ.one("#nbBooks").text(ret);
+                                        Search.endRequest(ret);
+                                        resolve();
+                                    });
+                                } else {
+                                    Search.endRequest();
+                                    resolve();
+                                }
+                            });
+                        } else {
+                            window.scroll(0, 0);
+                            µ.alls(".bookcell").toggleClass("tofilter tohide", false);
+                            µ.one("#sort [by]").trigger("click");
+                            resolve();
+                        }
+                    });
                 },
                 delete: function () {
                     µ.one("#errPwd").toggle(false);
@@ -1218,7 +1231,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                         var win = µ.alls(".window:not(.notdisplayed)"), forms = µ.alls("form:not(#formFilter)");
                         Waiting.over(false);
                         /*if (µ.one("#h").isVisible()) { Windows.help(false); }*/
-                        µ.removeEventListener("keyup", shortCuts);
+                        //µ.removeEventListener("keyup", shortCuts);
                         if (!win.length) { resolve(); } else {
                             for (var jta = 0, lg = forms.length; jta < lg; jta++) { forms[jta].reset(); }
                             win.fade(false).then(function () {
@@ -1242,8 +1255,8 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                         });
                     });
                 },
-                esc: function (event) { if (event.keyCode === 27) { Windows.close(); } },
-                help: function (toShow) {
+                /*esc: function (event) { if (event.keyCode === 27) { Windows.close(); } },*/
+                /*help: function (toShow) {
                     if (toShow === µ.one("#h").isVisible()) { return; }
                     if (typeof toShow !== "boolean") { toShow = !µ.one("#h").isVisible(); }
                     if (!!toShow) {
@@ -1255,7 +1268,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                         µ.one("html").toggleClass("overflown", false);
                         µ.one("#h").toggle(false);
                     }
-                },
+                },*/
                 open: function () {
                     var self = this;
                     return new Promise(function (resolve, reject) {
@@ -1264,7 +1277,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                             /*if (µ.one("#h").isVisible()) { Windows.help(false); }*/
                             Tags.close().then(function () {
                                 if (µ.one("#wa").isVisible()) { resolve(); }
-                                if (!_.includes(["previewWindow", "recommandWindow"], wid)) { µ.alls(".window:not(.notdisplayed)").fade(false); }
+                                if (!_.includes(["previewWindow", "recommandWindow"], wid)) {µ.alls(".window:not(.notdisplayed)").fade(false); } else { Waiting.over(true); }
                                 if (wid === "profileWindow") {
                                     µ.one("@mail").value = User.get().id;
                                     µ.one("@name").value = User.get().name;
@@ -1278,7 +1291,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                                 }
                                 Waiting.toggle(true).then(function () {
                                     Windows.on = wid;
-                                    win.css({ "top": xcroll().top + 10 }).fade(true);
+                                    win.css({ "top": xcroll().top /*+ 10*/ }).fade(true);
                                     if (win.one("[autofocus]")) { win.one("[autofocus]").focus(); }
                                     resolve();
                                 });
@@ -1409,7 +1422,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
         µ.one("#tris").setEvents("click", Menu.sort);
         µ.one("#notifications").setEvents("click", Menu.notif);
         µ.alls("#sort > div").setEvents("click", Bookcells.sort);
-        µ.alls("img[actclick]").setEvents({ "mouseenter": Images.hover, "mouseleave": Images.blur});
+        //µ.alls("img[actclick]").setEvents({ "mouseenter": Images.hover, "mouseleave": Images.blur});
         µ.alls("[actclick]").setEvents("click", Detail.action);
         µ.alls(".closeWindow").setEvents("click", Windows.close);
         µ.one("#footer").setEvents("click", Menu.top);
@@ -1429,7 +1442,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
         µ.one("#recommand4u").setEvents("click", Search.recommand);
         µ.alls("#importNow, #exportNow").setEvents("click", Search.gtrans);
         µ.alls("@tag").setEvents("input propertychange", Tags.list);
-        window.setEvents({ "contextmenu": Menu.context, "resize": Dock.resize, "click": Menu.close, "selectstart": Menu.selectstart });
+        window.setEvents({/* "contextmenu": Menu.context, */"resize": Dock.resize, "click": Menu.close, "selectstart": Menu.selectstart });
         µ.alls("[nav]").setEvents("click", Menu.nav);
         (function (search) {
             if (!!search) {

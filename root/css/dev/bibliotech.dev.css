@@ -1085,11 +1085,12 @@ button.remove {
 }
 
 .ri {
-	width:	30%;
+	width:	16%;
     height: auto;
 	position: fixed;
-	top	: 30%;
-    left: 35%;
+	top	: 42%;
+    left: 42%;
+    vertical-align: middle;
     cursor: wait;
 	-moz-animation: fullRotation 5s inFinite;
 	-webkit-animation: fullRotation 5s inFinite;

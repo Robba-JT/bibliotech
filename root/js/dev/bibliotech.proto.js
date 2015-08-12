@@ -61,7 +61,7 @@ HTMLElement.prototype.newElement = function (type, attributes) {
     this.appendChild(elt);
     return elt;
 };
-HTMLElement.prototype.removeAll = function () {
+StyleSheetList.prototype.removeAll = HTMLElement.prototype.removeAll = function () {
     if (this.remove) { this.remove(); } else { this.parentNode.removeChild(this); }
     return this;
 };
@@ -93,6 +93,19 @@ HTMLElement.prototype.text = function (code) {
     if (typeof code === "undefined") { return this.textContent; }
     this.textContent = code;
     return this;
+};
+HTMLElement.prototype.toLeft = function (display) {
+    var elt = this, eltd = typeof display === "undefined" ? elt.offsetLeft < 0 : display, width = elt.clientWidth, step = 5;
+    return new Promise(function (resolve) {
+        if (!!eltd) { elt.toggle(true); }
+        var timer = setInterval(function () {
+            if (!!eltd) {
+                if (elt.offsetLeft > width) { clearInterval(timer); resolve(elt); } else { elt.css({ "left": elt.offsetLeft + step }); }
+            } else {
+                if (elt.offsetLeft < -width) { clearInterval(timer); elt.toggle(false); resolve(elt); } else { elt.css({ "left": elt.offsetLeft - step }); }
+            }
+        }, 5);
+    });
 };
 HTMLElement.prototype.toggle = function (display) {
     if (typeof display === "undefined" || display === null) { display = !this.isVisible(); }

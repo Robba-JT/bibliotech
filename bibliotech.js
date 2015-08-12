@@ -9,6 +9,7 @@ var express = require("express"),
     app = express(),
     config = JSON.parse(fs.readFileSync("config.json"))[app.settings.env],
     port = config.port,
+    sPort = config.sPort,
     cors = require("cors"),
     errorhandler = require("errorhandler"),
     bodyParser = require("body-parser"),
@@ -19,9 +20,9 @@ var express = require("express"),
     serveStatic = require("serve-static"),
     http = require("http"),
     https = require("https"),
-    //server = http.Server(app).listen(port),
-    server = https.Server(options, app).listen(port),
-    io = require("socket.io")(server),
+    server = http.Server(app).listen(port),
+    sServer = https.Server(options, app).listen(sPort),
+    io = require("socket.io")(sServer),
     path = require("path"),
     cons = require("consolidate"),
     MongoClient = require("mongodb").MongoClient,
@@ -108,7 +109,8 @@ MongoClient.connect(mongoUrl, function (err, db) {
 	}).on("connection", function (socket) { mainIO(socket, db); });
 
     routes(app, db);
-    console.info("Express server listening on https://" + ip.address() + ":" + port);
+    console.info("Express server listening on http://" + ip.address() + ":" + port);
+    console.info("Express server listening on https://" + ip.address() + ":" + sPort);
 
     require("./db/books").BooksAPI(db).mainUpdate();
 });

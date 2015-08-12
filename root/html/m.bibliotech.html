@@ -24,81 +24,29 @@
             <div id="five"></div>
         </div>
 
-<!--        <div id="h" class="notdisplayed">
-            <header>{{welcome}}</header>
-            <hr />
-            <section>
-                <p>
-                    <img source="menu-2-icon" blur="white" width="32" height="32"/>
-                    <span>{{mask}}&nbsp;/&nbsp;{{affich}}&nbsp;-&nbsp;Ctrl&nbsp;+&nbsp;M</span>
-                </p>
-                <p>
-                    <img source="eject-icon" blur="white" width="32" height="32"/>
-                    <span>{{logout}}&nbsp;-&nbsp;Ctrl&nbsp;+&nbsp;L</span>
-                </p>
-                <p>
-                    <img source="magnifier-5-icon" blur="white" width="32" height="32"/>
-                    <span>{{search}}&nbsp;-&nbsp;Ctrl&nbsp;+&nbsp;R</span>
-                </p>
-                <p>
-                    <img source="user-icon" blur="white" width="32" height="32"/>
-                    <span>{{profile}}&nbsp;-&nbsp;Ctrl&nbsp;+&nbsp;P</span>
-                </p>
-                <p>
-                    <img source="layer-20-icon" blur="white" width="32" height="32"/>
-                    <span>{{collection}}&nbsp;-&nbsp;Ctrl&nbsp;+&nbsp;B</span>
-                </p>
-                <p>
-                    <img source="tags-6-icon" blur="white" width="32" height="32" />
-                    <span>{{tags}}&nbsp;-&nbsp;Ctrl&nbsp;+&nbsp;E</span>
-                </p>
-                <p>
-                    <img source="info-7-icon" blur="white" width="32" height="32" />
-                    <span>{{notifications}}</span>
-                </p>
-                <p>
-                    <img source="note-25" blur="white" width="32" height="32" />
-                    <span>{{addbook}}</span>
-                </p>
-                <p>
-                    <img source="email-11-icon" blur="white" width="32" height="32"/>
-                    <span>{{contacts}}&nbsp;-&nbsp;Ctrl&nbsp;+&nbsp;I</span>
-                </p>
-                <p>
-                    <img source="help-icon" blur="white" width="32" height="32"/>
-                    <span>Help&nbsp;-&nbsp;Ctrl&nbsp;+&nbsp;H</span>
-                </p>
-            </section>
-            <footer>
-                <button class="notdisplayed">{{previous}}</button>
-                <button>{{close}}</button>
-                <button class="notdisplayed">{{next}}</button>
-            </footer>
-        </div>-->
-
-        <nav class="mnv nvb"><img class="tnv" source="menu-2-icon" blur="alt" width="32" height="32" title="{{affich}}" /></nav>
+        <nav class="mnv nvb notdisplayed" style="right: 0;"><img class="tnv" source="menu-2-icon" blur="alt" width="32" height="32"/></nav>
 
 <!--        <nav id="maskedorder" class="mnv notdisplayed nvb">
             <div id="maskedOrder" class="notdisplayed saveorder">
-                <img source="save-9-icon" blur="alt" width="32" height="32" title="{{disposition}}" />
+                <img source="save-9-icon" blur="alt" width="32" height="32" />
             </div>
         </nav>-->
 
-        <nav id="nvb" class="nvb notdisplayed inactive">
-            <img class="tnv" source="menu-2-icon" blur="white" width="32" height="32" title="{{affich}}" />
+        <nav id="nvb" class="nvb inactive">
+            <img class="tnv" source="menu-2-icon" blur="white" width="32" height="32" />
             <div id="logout"><img source="eject-icon" blur="white"/><span>{{logout}}</span></div>
             <hr />
             <div id="picture" class="notdisplayed"></div>
             <div id="profil" class="action" window="profileWindow"><img source="user-icon" blur="white"/><span>{{profile}}</span></div>
-            <div id="contact" window="contactsWindow"><img source="email-11-icon" blur="white"/><span>{{contacts}}</span></div>
+            <div id="contact" class="action" window="contactsWindow"><img source="email-11-icon" blur="white"/><span>{{contacts}}</span></div>
             <hr />
-            <div id="recherche" class="action" window="searchWindow"><img source="magnifier-5-icon" blur="white" active="alt"/><span>{{search}}</span></div>
             <div id="collection" class="action"><img source="layer-20-icon" blur="white" active="alt"/><span>{{collection}}</span></div>
+            <div id="recherche" class="action" window="searchWindow"><img source="magnifier-5-icon" blur="white" active="alt"/><span>{{search}}</span></div>
             <div id="tags" class="action notdisplayed"><img source="tags-6-icon" blur="white"/><span>{{tags}}</span></div>
             <div id="notifications" class="action notdisplayed"><img source="info-7-icon" blur="white"/><span>{{notifications}}</span><span id="notifNumber"></span></div>
             <div id="newbook" class="action" window="newWindow"><img source="note-25" blur="white"/><span>{{addbook}}</span></div>
             <hr />
-            <div class="action filtre">
+            <div class="filtre">
                 <form id="formFilter" role="form" autocomplete="off">
                     <input type="search" error="{{errFilter}}" name="filtre" autocomplete="off" placeholder="{{filter}}" />
                     <input type="hidden" name="last"/>
@@ -107,48 +55,46 @@
             <div id="tris" class="action"><img source="sort-2-icon" blur="white"/><span>{{sorts}}</span></div>
             <!--<div class="filtre"><span id="selectedTag"></span></div>-->
 <!--            <div id="affichOrder" class="saveorder notdisplayed">
-                <img source="save-9-icon" blur="white" width="32" height="32"  title="{{disposition}}"/>
+                <img source="save-9-icon" blur="white" width="32" height="32"/>
             </div>-->
         </nav>
 
         <div id="sort" class="deroulant notdisplayed">
             <div class="sortBy" by="title">{{title}}&nbsp;
-                <img source="sort-24-icon-asc" blur="black" width="16" height="16"/>
+                <img source="sort-24-icon-asc" blur="black" hover="alt" width="16" height="16"/>
             </div>
             <div by="title" sort="desc">{{title}}&nbsp;
-                <img source="sort-23-icon-desc" blur="black" width="16" height="16"/>
+                <img source="sort-23-icon-desc" blur="black" hover="alt" width="16" height="16"/>
             </div>
             <div by="authors">{{authors}}&nbsp;
-                <img source="sort-24-icon-asc" blur="black" width="16" height="16"/>
+                <img source="sort-24-icon-asc" blur="black" hover="alt" width="16" height="16"/>
             </div>
             <div by="authors" sort="desc">{{authors}}&nbsp;
-                <img source="sort-23-icon-desc" blur="black" width="16" height="16"/>
+                <img source="sort-23-icon-desc" blur="black" hover="alt" width="16" height="16"/>
             </div>
             <div by="userNote" sort="desc">{{note}}&nbsp;
-                <img source="sort-24-icon-asc" blur="black" width="16" height="16"/>
+                <img source="sort-24-icon-asc" blur="black" hover="alt" width="16" height="16"/>
             </div>
             <div by="userNote">{{note}}&nbsp;
-                <img source="sort-23-icon-desc" blur="black" width="16" height="16"/>
+                <img source="sort-23-icon-desc" blur="black" hover="alt" width="16" height="16"/>
             </div>
         </div>
 
         <div id="notifs" class="deroulant notdisplayed"></div>
 
         <div id="cloud" class="notdisplayed">
-            <img source="x-mark-3-icon" blur="alt" width="64" height="64" title="{{close}}"/>
+            <img source="x-mark-3-icon" blur="alt" width="64" height="64"/>
         </div>
 
 		<section id="searchWindow" class="window notdisplayed">
-            <header class="windowheader">&nbsp;{{search}}
-                <img class="closeWindow" source="x-mark-icon" blur="white" width="48" height="48" title="{{close}}">
+            <header class="windowheader">&nbsp;
+                <img source="magnifier-5-icon" blur="white" width="32" height="32"/>
+                <img class="closeWindow" source="x-mark-icon" blur="black" width="32" height="32">
             </header>
             <form role="form" id="formSearch" autocomplete="off">
                 <div>
-                    <input name="searchinput" error="{{errSearch}}" type="search" autocomplete="on" required placeholder="{{search}}" autofocus/>
-                    <input type="submit" value="{{searchGo}}" />
-                </div>
-                <div id="recommand4u" class="notdisplayed gSignIn">
-                    <input type="button" value="{{recommand4u}}"/>
+                    <input style="display: inline-block;" name="searchinput" error="{{errSearch}}" type="search" autocomplete="on" required placeholder="{{search}}" autofocus/>
+                    <input style="display: inline-block;" type="submit" value="{{searchGo}}" />
                 </div>
                 <div>
                     <div class="radio">{{searchby}}:</div>
@@ -164,19 +110,19 @@
                     <label>&nbsp;{{english}}<input type="radio" name="langage" value="en"/></label>
                     <label>&nbsp;{{french}}<input type="radio" name="langage" value="fr" checked/></label>
                 </div>
+                <div id="recommand4u" class="notdisplayed gSignIn"><input type="button" value="{{recommand4u}}"/></div>
             </form>
-            <img source="google-poweredby" blur="alt" title="Powered by Google"/>
+            <img source="google-poweredby" blur="alt"/>
 		</section>
 
         <section id="profileWindow" class="window notdisplayed">
             <header class="windowheader">&nbsp;
                 <img source="user-icon" blur="white" width="32" height="32"/>
-                <img class="closeWindow" source="x-mark-icon" blur="white" width="32" height="32" title="{{close}}">
+                <img class="closeWindow" source="x-mark-icon" blur="black" width="32" height="32">
             </header>
             <form role="form" id="formProfil" autocomplete="off">
                 <div>
                     <input type="email" name="mail" disabled />
-                    <input type="submit" value="{{valid}}"/>
                 </div>
                 <div>
                     <input type="text" name="name" error="{{errName}}" autocomplete="off" placeholder="{{name}}" autofocus />
@@ -197,7 +143,6 @@
                 </div>
                 <div class="noSignIn">
                     <input type="button" id="changePwd" value="{{modPwd}}" />
-                    <input type="button" id="delete" value="{{deleteAccount}}" confirm="{{deleteConfirm}}" />
                 </div>
                 <div class="changePwd notdisplayed">
                     <input type="password" name="newPwd" error="{{errPwd}}" placeholder="{{newPwd}}"/>
@@ -205,30 +150,27 @@
                 <div class="changePwd notdisplayed">
                     <input type="password" name="confirmPwd" error="{{errConfirm}}" placeholder="{{confirmPwd}}" />
                 </div>
+                <div>
+                    <input type="button" id="delete" value="{{deleteAccount}}" confirm="{{deleteConfirm}}" class="noSignIn"/>
+                    <input type="submit" value="{{valid}}"/>
+                </div>
             </form>
             <!--<div>Nombre&nbsp;de&nbsp;connexion:&nbsp;<span id="nbConnect"></span></div>-->
             <div>{{nbBooks}}:&nbsp;<span id="nbBooks"></span></div>
 		</section>
 
         <section id="detailWindow" class="window notdisplayed">
-            <header class="windowheader">&nbsp;<span class="direct" label="{{newBook}}"></span>
-                <img class="closeWindow" source="x-mark-icon" blur="white" width="48" height="48" title="{{close}}" >
-                <img actclick="update" source="check-mark-icon" blur="white" width="48" height="48" title="{{save}}" >
-                <img actclick="add" source="plus-icon" blur="white" width="48" height="48" title="{{add}}" >
-                <img actclick="google" source="google-plus-icon" blur="white" width="48" height="48" title="{{gbooks}}" >
-                <img actclick="associated" source="share-3-icon" blur="white" width="48" height="48" title="{{connex}}" >
-                <img actclick="preview" source="book-22-icon" blur="white" width="48" height="48" title="{{preview}}" >
-                <img actclick="recommand" source="share-icon" blur="white" width="48" height="48" title="{{torecommand}}" >
+            <header class="windowheader">&nbsp;<!--<span class="direct" label="{{newBook}}"></span>-->
+                <img actclick="recommand" source="share-icon" blur="black" width="32" height="32" />
+                <img actclick="preview" source="book-22-icon" blur="black" width="32" height="32" />
+                <img actclick="associated" source="share-3-icon" blur="black" width="32" height="32" />
+                <img actclick="google" source="google-plus-icon" blur="black" width="32" height="32" />
+                <img actclick="add" source="plus-icon" blur="black" width="32" height="32" />
+                <img actclick="update" source="check-mark-icon" blur="black" width="32" height="32" />
+                <img class="closeWindow" source="x-mark-icon" blur="black" width="32" height="32" />
             </header>
             <article id="detailContent">
-                <div class="detailCover" dir="rtl">
-                    <img id="detailCover" />
-                    <p class="imgAction">
-                        <img actclick="upload" source="upload-10-icon" blur="black" width="48" height="48" title="{{upload}}"/>
-                        <img id="fullscreen" source="fullscreen-6-icon" blur="black" style="display: none;" width="48" height="48" title="{{fullscreen}}"/>
-                    </p>
-                    <p id="uploadHidden" class="notdisplayed"><input type="file" accept="image/*"/></p>
-                </div>
+                <div id="background"></div>
                 <div class="detailBook">
                     <form role="form" id="formNew" autocomplete="off">
                         <div class="volumeInfo">
@@ -306,14 +248,15 @@
         </section>
 
         <section id="previewWindow" class="window notdisplayed">
-            <img actclick="close" source="x-mark-3-icon" blur="alt" width="48" height="48" title="{{close}}">
-            <img source="google-preview" blur="alt" title="Google Preview" actclick="google"/>
+            <img actclick="close" source="x-mark-3-icon" blur="alt" width="48" height="48"/>
+            <img source="google-preview" blur="alt"/>
             <iframe id="iPreview" name="iPreview" seamless=true></iframe>
         </section>
 
         <section id="recommandWindow" class="window notdisplayed">
-            <header class="windowheader">&nbsp;{{recommand}}
-                <img actclick="close" source="x-mark-icon" blur="white" width="48" height="48" title="{{close}}">
+            <header class="windowheader">&nbsp;
+                <img source="share-icon" blur="white" width="32" height="32"/>
+                <img class="closeWindow" source="x-mark-icon" blur="black" width="32" height="32"/>
             </header>
             <form role="form" id="formRecommand" autocomplete="off">
                 <div>
@@ -325,51 +268,29 @@
         </section>
 
         <section id="contactsWindow" class="window notdisplayed">
-            <header class="windowheader">&nbsp;{{contacts}}
-                <img class="closeWindow" source="x-mark-icon" blur="white" width="48" height="48" title="{{close}}">
+            <header class="windowheader">&nbsp;
+                <img source="email-11-icon" blur="white" width="32" height="32"/>
+                <img class="closeWindow" source="x-mark-icon" blur="black" width="32" height="32"/>
             </header>
             <article>
-                <img source="google-plus-4-icon" blur="black" url="https://plus.google.com/b/114643486374102176955/114643486374102176955/about" width="64" height="64" title="Google +"/>
-                <img source="facebook-4-icon" blur="black" url="https://www.facebook.com/my.biblio.tech" width="64" height="64" title="Facebook"/>
-                <img source="github-icon" blur="black" url="https://www.github.com/Robba-JT/bibliotech" width="64" height="64" title="Github"/>
-                <img source="email-12-icon" blur="black" mail="admin@biblio.tech?subject=Bibliotech" width="64" height="64" title="Mail"/>
-                <img source="help-icon" id="help" blur="black" width="64" height="64" title="Help"/>
+                <img source="google-plus-4-icon" blur="black" url="https://plus.google.com/b/114643486374102176955/114643486374102176955/about" width="64" height="64"/>
+                <img source="facebook-4-icon" blur="black" url="https://www.facebook.com/my.biblio.tech" width="64" height="64"/>
+                <!--<img source="github-icon" blur="black" url="https://www.github.com/Robba-JT/bibliotech" width="64" height="64"/>-->
+                <img source="email-12-icon" blur="black" mail="admin@biblio.tech?subject=Bibliotech" width="64" height="64"/>
+                <!--<img source="help-icon" id="help" blur="black" width="64" height="64"/>-->
             </article>
-            <img source="gandi-secure" blur="white" title="Secure by" url="https://www.gandi.net/ssl/secured/www.biblio.tech/194723/cdfd118361"/>
+            <img source="gandi-secure" blur="white" url="https://www.gandi.net/ssl/secured/www.biblio.tech/194723/cdfd118361"/>
         </section>
 
         <section id="confirmWindow" class="window notdisplayed">
             <header class="windowheader">&nbsp;<span error="{{error}}" warning="{{warning}}" info="{{info}}"></span>
-                <img class="closeWindow" source="x-mark-icon" blur="white" width="48" height="48" title="{{close}}">
+                <img class="closeWindow" source="x-mark-icon" blur="white" width="48" height="48"/>
             </header>
             <article>
                 <span id="confirm"></span><BR>
                 <button class="valid">{{valid}}</button>
                 <button class="cancel">{{cancel}}</button>
             </article>
-        </section>
-
-        <section id="contextMenu" class="notdisplayed">
-            <p class="navgrid">
-                <p><img nav="top" source="arrow-24-icon-top" blur="white" width="32" height="32"/></p>
-                <p>
-                    <img nav="left" source="arrow-24-icon-left" blur="white" width="32" height="32"/>
-                    <img nav="right" source="arrow-24-icon-right" blur="white" width="32" height="32"/>
-                </p>
-                <p><img nav="bottom" source="arrow-24-icon-bottom" blur="white" width="32" height="32"/></p>
-            </p>
-            <p>
-                <div actclick="recommand">{{torecommand}}&nbsp;</div>
-                <div actclick="preview">{{preview}}&nbsp;</div>
-                <div actclick="associated">{{connex}}&nbsp;</div>
-                <div actclick="google">{{gbooks}}&nbsp;</div>
-                <div actclick="upload">{{upload}}&nbsp;</div>
-                <hr />
-                <!--<div actclick="fullscreen">{{fullscreen}}&nbsp;</div>-->
-                <div actclick="add">{{add}}&nbsp;</div>
-                <div actclick="update">{{save}}&nbsp;</div>
-                <div class="closeWindow">{{close}}&nbsp;</div>
-            </p>
         </section>
 
         <div class="template notdisplayed">
@@ -391,8 +312,8 @@
             </section>
 
             <div id="tempTag">
-                <button class="libelle" title="{{filter}}"></button>
-                <button title="{{remove}}"><b>x</b></button>
+                <button class="libelle"></button>
+                <button><b>x</b></button>
             </div>
 
             <div id="tempComment">
@@ -417,7 +338,7 @@
         </div>
 
         <footer id="footer" class="notdisplayed">
-            <img source="arrow-31-top" blur="alt" width="32" height="32" title="Top"/>
+            <img source="arrow-31-top" blur="alt" width="32" height="32"/>
         </footer>
 
         <div id="noConnect" class="notdisplayed">

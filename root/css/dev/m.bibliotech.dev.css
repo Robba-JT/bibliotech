@@ -90,9 +90,9 @@ img {
     color: whitesmoke;
 }
 
-#h > footer button:hover {
+/*#h > footer button:hover {
     background-color: orange;
-}
+}*/
 
 #w {
     cursor: wait;
@@ -115,13 +115,13 @@ img {
     white-space: nowrap;
     overflow-y: auto;
     padding: 5px;
-    right: 0;
+    max-height: 100%;
+    /*right: 0;*/
 }
 
 #nvb {
-    width: 100%;
+    max-width: 100%;
     background-color: darkgoldenrod;
-    bottom: 0;
 }
 
 #nvb > div {
@@ -184,11 +184,11 @@ img {
     height: 100%;
 }*/
 
-#nvb > div:hover:not(.active):not(.filtre):not(#picture) {
+/*#nvb > div:hover:not(.active):not(.filtre):not(#picture) {
     background-color: white;
     color: black;
     transition: box-shadow linear .2s, background-color linear .2s;
-}
+}*/
 
 .inactive {
     pointer-events: none;
@@ -224,11 +224,13 @@ img {
 #sort, #notifs {
     background-color: white;
     border-bottom-right-radius: 5px;
-    border-bottom-left-radius: 5px;
     z-index: 4;
     position: fixed;
+    top: 0;
+    left: 0;
     text-align: left;
     min-width: 10%;
+    max-width: 100%;
     opacity: 0;
 }
 
@@ -238,11 +240,11 @@ img {
     white-space: nowrap;
 }
 
-#sort > div:not(.sortBy):hover,  #notifs > div:hover {
+/*#sort > div:not(.sortBy):hover,  #notifs > div:hover {
     color: darkgoldenrod;
     text-decoration: underline;
     font-style: italic;
-}
+}*/
 
 .sortBy {
     font-weight: bold;
@@ -254,9 +256,9 @@ img {
 }
 
 #notifNumber {
-    position:absolute;
-    top: -1px;
-    right: 6px;
+    position: relative;
+    top: -5px;
+    right: -5px;
     padding: 3px 6px 3px 6px;
     background-color: red;
     color: white;
@@ -318,11 +320,11 @@ img {
     z-index: 2;
 }
 
-.bookcell:hover {
+/*.bookcell:hover {
     color: black;
     background-color: goldenrod;
     transition: box-shadow linear .2s, background-color linear .2s;
-}
+}*/
 .bookcell header, .bookcell figcaption, .bookcell img {
     cursor: pointer;
 }
@@ -350,9 +352,9 @@ img {
     overflow: hidden;
 }
 
-.bookcell:hover > header {
+/*.bookcell:hover > header {
     color: goldenrod;
-}
+}*/
 
 .bookcell article {
     position: relative;
@@ -388,10 +390,10 @@ img {
     cursor: pointer;
 }
 
-.bookcell button:hover {
+/*.bookcell button:hover {
     opacity: 1;
     font-weight: bolder;
-}
+}*/
 
 .bookcell footer {
     position: absolute;
@@ -468,17 +470,17 @@ button.remove {
     cursor: pointer;
 }
 
-.modify:hover {
+/*.modify:hover {
     background-color: green !important;
-}
+}*/
 
 .hide {
     background-color: darkred !important;
 }
 
-.hide:hover {
+/*.hide:hover {
     background-color: red !important;
-}
+}*/
 
 #formNew time:before, #formNew [type=date]:before {
     content: "le ";
@@ -515,52 +517,52 @@ button.remove {
 #cloud span.tag {
     cursor: pointer;
     position: fixed;
-    padding: 2px;
+    padding: 1px;
 }
-#cloud span.tag:hover {
+/*#cloud span.tag:hover {
     text-decoration: underline;
     color: whitesmoke;
     font-weight: bolder;
-}
+}*/
 #cloud span.tag10 {
     color: #B8860B;
-    font-size: 6em;
+    font-size: 4em;
 }
 #cloud span.tag9 {
     color: #FF8C00;
-    font-size: 5em;
+    font-size: 3em;
 }
 #cloud span.tag8 {
     color: #FFA500;
-    font-size: 4.5em;
+    font-size: 2.5em;
 }
 #cloud span.tag7 {
     color: #8B4513;
-    font-size: 4em;
+    font-size: 2.25em;
 }
 #cloud span.tag6 {
     color: #D2691E;
-    font-size: 3.5em;
+    font-size: 2em;
 }
 #cloud span.tag5 {
     color: #CD853F;
-    font-size: 3em;
+    font-size: 1.75em;
 }
 #cloud span.tag4 {
     color: #DAA520;
-    font-size: 2.5em;
+    font-size: 1.5em;
 }
 #cloud span.tag3 {
     color: #F4A460;
-    font-size: 2em;
+    font-size: 1.25em;
 }
 #cloud span.tag2 {
     color: #D2B48C;
-    font-size: 1.5em;
+    font-size: 1em;
 }
 #cloud span.tag1 {
     color: #DEB887;
-    font-size: 1em;
+    font-size: 0.75em;
 }
 
 .window {
@@ -572,6 +574,7 @@ button.remove {
     /*max-width: 96%;*/
     position: absolute;
     top: 0;
+    left: 0;
     /*border-bottom-right-radius: 10px;
     border-bottom-left-radius: 10px;*/
     opacity: 0;
@@ -589,6 +592,10 @@ button.remove {
 .windowheader > img {
     margin: 5px;
     vertical-align: middle;
+}
+
+.windowheader .closeWindow {
+    float: right;
 }
 
 .window input {
@@ -627,9 +634,9 @@ button.remove {
     cursor: pointer;
 }
 
-.window input[type=submit] {
+/*.window input[type=submit] {
     float: right;
-}
+}*/
 
 .window .valid {
     float: right;
@@ -642,13 +649,13 @@ button.remove {
     background: darkred;
 }
 
-.window input[type=submit]:hover, .window input[type=button]:hover, .window .valid:hover {
+/*.window input[type=submit]:hover, .window input[type=button]:hover, .window .valid:hover {
     background: limegreen;
-}
+}*/
 
-.window .cancel:hover {
+/*.window .cancel:hover {
     background: red;
-}
+}*/
 
 .window [type=search], .window [type=text], .window [type=password], .window [type=email], .window [type=number], .window textarea {
     font-size: 15px;
@@ -678,13 +685,13 @@ button.remove {
 }
 
 .window #delete {
-    float: right;
+    /*float: right;*/
     background: darkred;
 }
 
-.window #delete:hover {
+/*.window #delete:hover {
     background: red;
-}
+}*/
 
 #searchWindow [type=radio], #searchWindow label {
     cursor: pointer;
@@ -693,6 +700,10 @@ button.remove {
 #searchWindow > img {
     float: right;
     cursor: default;
+}
+
+#formProfil [type=submit] {
+    float: right;
 }
 
 #wa {
@@ -767,7 +778,7 @@ button.remove {
 }
 
 #contactsWindow {
-    width: 400px !important;
+    /*width: 400px !important;*/
 }
 
 #contactsWindow > article {
@@ -775,6 +786,7 @@ button.remove {
 }
 
 #contactsWindow > article > img {
+    display: inline-block;
     margin: 5%;
 }
 
@@ -785,29 +797,48 @@ button.remove {
 }
 
 #detailWindow {
-    margin: 1%;
-    width: 98%;
-    height: 95%;
+    width: 100%;
+    height: 100%;
+    max-height: 100%;
     overflow: hidden;
 }
 
+#detailWindow > header {
+    text-align: right;
+}
+
 #detailContent {
-    height: 95%;
+    position: relative;
+/*    height: auto;
+    overflow-y: auto;*/
+}
+
+#detailContent #background {
+    background-size: auto 100%;
+    background-repeat: no-repeat;
+    background-position: center top;
+    opacity: 0.25;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    position: absolute;
+    z-index: -1;
 }
 
 #detailContent > div {
     display: inline-block;
     vertical-align: top;
-    height: 95%;
     overflow-y: auto;
 }
 
 .userComment {
-    width: 80% !important;
+    width: 90% !important;
 }
 
 #detailContent textarea {
     width: 100%;
+    opacity: .8;
 }
 
 .userComment #userDate {
@@ -838,10 +869,9 @@ button.remove {
 .detailBook {
     overflow-x: hidden;
     overflow-y: auto;
-    min-width: 66%;
-    width: 80%;
-    height: auto;
-    max-height: 98%;
+    width: 100%;
+    height: 100%;
+    max-height: 100%;
     font-size: 16px;
 }
 
@@ -888,10 +918,10 @@ button.remove {
   content: "";
 }
 
-.detailBook .link:hover {
+/*.detailBook .link:hover {
     color: midnightblue;
     font-style: italic;
-}
+}*/
 
 #formTag input[type=text] {
     width: 200px;
@@ -919,10 +949,10 @@ button.remove {
     height: 24px;
 }
 
-#formTag button:hover {
+/*#formTag button:hover {
     background: limegreen;
     border-color: limegreen;
-}
+}*/
 
 #userTags > div {
     display: inline-block;
@@ -953,15 +983,15 @@ button.remove {
     border-color: darkgreen;
 }
 
-#userTags button.libelle:hover {
+/*#userTags button.libelle:hover {
     background: #696969;
     border-color: #696969;
-}
+}*/
 
-#userTags button.libelle.new:hover {
+/*#userTags button.libelle.new:hover {
     background: green;
     border-color: green;
-}
+}*/
 
 #userTags button:not(.libelle) {
     margin-left: -1px;
@@ -974,10 +1004,10 @@ button.remove {
     border-color: #800000;
 }
 
-#userTags button:not(.libelle):hover {
+/*#userTags button:not(.libelle):hover {
     background: #A52A2A;
     border-color: #A52A2A;
-}
+}*/
 
 #userDate {
     float: right;
@@ -995,10 +1025,8 @@ button.remove {
 
 #previewWindow {
     z-index: 8;
-    height: 800%;
-    max-height: 90%;
-    width: 800px;
-    max-width: 80%;
+    height: 100%;
+    width: 100%;
     border-color: black;
 }
 
@@ -1076,10 +1104,12 @@ button.remove {
     cursor: pointer;
 }
 
+/*
 #contextMenu [actclick]:hover, #contextMenu .closeWindow:hover {
     color: black;
     background-color: darkgoldenrod;
 }
+*/
 
 #footer {
     position: fixed;
