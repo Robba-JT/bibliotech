@@ -244,7 +244,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                         Windows.open.call("recommandWindow");
                     };
                     this.close = function () {
-                        this.closest("window").fade(false).then(function () { Waiting.over(false); });
+                        this.closest("window").fade(false).then(function () { delete Windows.on; Waiting.over(false); });
                     };
                     this[actclick].call(this);
                 },
@@ -311,18 +311,17 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 },
                 newCell: function () {
                     µ.alls("[actclick=add], [actclick=update], #upload, .inCollection").toggle();
-                    var cell = Bookcells.one(Detail.data.book.id);
+                    var cell = Bookcells.one(Detail.data.book.id), add = User.get().addbook(Detail.data.book);
                     if (µ.one("#collection").hasClass("active") && !cell) {
-                        var lg = User.get().collection.length,
+                        /*var lg = User.get().collection.length,
                             col = lg % Dock.nbcols,
-                            row = µ.alls("[colid=\"" + lg % Dock.nbcols + "\"] .bookcell").length;
+                            row = µ.alls("[colid=\"" + lg % Dock.nbcols + "\"] .bookcell").length;*/
 
-                        cell = new Bookcell(Detail.data.book);
-                        Bookcells.cells.push(cell);
+                        Bookcells.cells.push(add);
                         Bookcells.display();
                     }
                     if (!!cell && !!cell.cell) { cell.cell.alls("button").fade(); }
-                    User.get().addbook(Detail.data.book);
+                    //User.get().addbook(Detail.data.book);
                 },
                 sendNotif: function () {
                     var notif = this.formToJson();
@@ -330,7 +329,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     notif.title = Detail.data.book.title;
                     if (!!Detail.data.book.alt) { notif.alt = Detail.data.book.alt; }
                     socket.emit("sendNotif", notif);
-                    µ.one("#recommandWindow img").trigger("click");
+                    µ.one("#recommandWindow .closeWindow").trigger("click");
                     return false;
                 },
                 show: function (inCollection) {
@@ -340,12 +339,12 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     win.alls("#formNew input, #formNew textarea").toggle(false);
                     win.alls("#formNew button:not(.categories)").toggleClass("hide", false).toggleClass("modify", !!book.id && _.isEqual(book.id.user, User.get().id));
                     //win.one("#detailWindow [type=file]").value = "";
-                    µ.one("#comments").children.removeAll();
+                    //µ.one("#comments").children.removeAll();
+                    µ.alls("#comments *").removeAll();
                     µ.one("#userComment").value = "";
                     //win.css({ "background": "whitesmoke"/*, "max-height": ~~(window.innerHeight * 0.95)*/ });
                     for (var jta = 0, lg = µ.alls("[note]").length; jta < lg; jta++) { Images.blur.call(µ.alls("[note]")[jta]); }
                     µ.one("#userNote").value = book.note;
-                    win.alls(".new").toggleClass("new", false);
                     win.alls(".inCollection").toggle(!!inCollection).css({ "background": "whitesmoke" });
                     Tags.list();
                     µ.one("#background").toggle(!!book.alternative || !!book.base64);
@@ -379,6 +378,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     if (!!win.hasClass("notdisplayed")) { Windows.open.call("detailWindow").then(function () {
                         µ.one("#detailContent").css({ "height": win.clientHeight - win.one("header").clientHeight });
                         µ.one(".detailBook").scrollTop = 0;
+                        µ.alls(".new").toggleClass("new", false);
                     }); }
                     _.forEach(book, function (value, jta) {
                         var field = win.one("[field=" + jta + "]"), input = win.one("input[name=" + jta + "], textarea[name=" + jta + "]");
@@ -526,7 +526,8 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                         µ.alls(".col").css({ "width": ~~(window.innerWidth / Dock.nbcols), "max-width": ~~(window.innerWidth / Dock.nbcols) });
                     }
                     if (µ.one("#detailWindow").isVisible()) {
-                        µ.one("#detailWindow").css({ "height": ~~(window.innerHeight * 0.95), "max-height": ~~(window.innerHeight * 0.95) });
+                        µ.one("#detailWindow").css({ "height": window.innerHeight, top: 0 });
+                        µ.one("#detailContent").css({ "height": window.innerHeight - µ.one("#detailWindow header").clientHeight });
                     }
                     return;
                 }
@@ -629,7 +630,9 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 close: function (event) {
                     var closact = event.target.closest("action");
                     //if (µ.one("#contextMenu").isVisible() && !event.target.getAttribute("nav")) { µ.one("#contextMenu").fade(false); }
-                    if (!closact || !_.includes(["notifications", "tris"], closact.getAttribute("id"))) { µ.alls(".deroulant").fade(false); }
+                    if ((!closact && (!event.target || !event.target.getAttribute("by"))) || (!!closact && !_.includes(["notifications", "tris"], closact.getAttribute("id")))) {
+                        µ.alls(".deroulant").fade(false);
+                    }
                 },
                 /*context: function (event) {
                     event.preventDefault();
@@ -693,11 +696,8 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     }
                 },
                 toggle: function () {
-                    var isv = !!µ.one("#nvb").isVisible();
-                    /*µ.one("html").toggleClass("overflown", !isv);*/
-                    /*µ.one("#nvb").fade(!isv ? 0.9 : !isv);*/
-                    µ.one("#nvb").toLeft(!isv);
-                    µ.one(".nvb:not(#nvb)").fade(isv);
+                    µ.one("#nvb").toLeft(µ.one(".nvb:not(#nvb)").isVisible());
+                    µ.one(".nvb:not(#nvb)").fade();
                 },
                 toggleFooter: function () {
                     µ.one("#footer").toggle(!!xcroll().top);
@@ -853,7 +853,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                                     Waiting.toggle(true, true);
                                     Waiting.connection(true);
                                     µ.alls(".deroulant").toggle(false);
-                                    if (!!µ.one("#picture img")) { µ.one("#picture img").removeAll(); }
+                                    if (!!µ.one("#picture *")) { µ.alls("#picture *").removeAll(); }
                                     µ.alls("#notifications, #tags").toggle(false);
                                     Images.blur.call(µ.one(".active").toggleClass("active", false));
                                     var forms = µ.alls("form");
@@ -1061,6 +1061,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     newcell.cell.one(".add").toggle(false);
                     newcell.cell.one(".remove").toggle(true);
                     µ.one("#nbBooks").text(this.collection.length);
+                    return newcell;
                 };
                 User.prototype.bookcell = function (bookid) { return _.find(this.collection, _.matchesProperty("book.id", bookid)); };
                 User.prototype.book = function (bookid) {
@@ -1228,11 +1229,17 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
             Windows = {
                 close: function (notTog) {
                     return new Promise(function (resolve) {
-                        var win = µ.alls(".window:not(.notdisplayed)"), forms = µ.alls("form:not(#formFilter)");
+                        var win, forms = µ.alls("form:not(#formFilter)");
+                        if  (!!µ.one("#recommandWindow:not(.notdisplayed)")) {
+                            win = µ.one("#recommandWindow:not(.notdisplayed)");
+                            notTog = true;
+                        } else {
+                            win = µ.alls(".window:not(.notdisplayed)");
+                        }
                         Waiting.over(false);
                         /*if (µ.one("#h").isVisible()) { Windows.help(false); }*/
                         //µ.removeEventListener("keyup", shortCuts);
-                        if (!win.length) { resolve(); } else {
+                        if (!win) { resolve(); } else {
                             for (var jta = 0, lg = forms.length; jta < lg; jta++) { forms[jta].reset(); }
                             win.fade(false).then(function () {
                                 delete Windows.on;
@@ -1291,9 +1298,9 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                                 }
                                 Waiting.toggle(true).then(function () {
                                     Windows.on = wid;
-                                    win.css({ "top": xcroll().top /*+ 10*/ }).fade(true);
                                     if (win.one("[autofocus]")) { win.one("[autofocus]").focus(); }
-                                    resolve();
+                                    win.css({ "top": xcroll().top /*+ 10*/ }).fade(true).then(resolve);
+                                    //resolve();
                                 });
                                 µ.alls(".errMsg").toggle(false);
                             });
@@ -1385,7 +1392,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     var cover = self.cell.one(".cover");
                     if (!!cover && window.innerHeight + xcroll().top > self.cell.offsetTop) {
                         self.cell.toggleClass("toshow", false);
-                        self.cell.setEvents({ dragstart: dragstart, dragend: dragend });
+                        self.cell.setEvents({ "touchmove touchstart": dragstart, "touchend": dragend });
                         if (!!self.book.alternative || !!self.book.base64) { cover.src = self.book.alternative || self.book.base64; }
                         self.cell.one("footer").css({ "bottom": self.cell.one("figcaption").clientHeight + 5 });
                     }
@@ -1394,7 +1401,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
 
             this.cell.alls("header, figure").setEvents("click", detail);
             this.cell.alls("button").setEvents("click", action);
-            this.cell.setEvents({ "mouseenter mouseleave": description, dragstart: dragstart, dragend: dragend });
+            this.cell.setEvents({ "mouseenter mouseleave": description, "touchmove touchstart": dragstart, "touchend": dragend });
             this.cell.one("footer").css({ "bottom": this.cell.one("figcaption").clientHeight + 5 });
             this.actived = true;
             this.loadcover = loadcover;
@@ -1442,7 +1449,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
         µ.one("#recommand4u").setEvents("click", Search.recommand);
         µ.alls("#importNow, #exportNow").setEvents("click", Search.gtrans);
         µ.alls("@tag").setEvents("input propertychange", Tags.list);
-        window.setEvents({/* "contextmenu": Menu.context, */"resize": Dock.resize, "click": Menu.close, "selectstart": Menu.selectstart });
+        window.setEvents({/* "contextmenu": Menu.context, */"resize": Dock.resize, "click": Menu.close/*, "selectstart": Menu.selectstart*/ });
         µ.alls("[nav]").setEvents("click", Menu.nav);
         (function (search) {
             if (!!search) {

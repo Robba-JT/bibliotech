@@ -33,7 +33,15 @@ var express = require("express"),
     routes = require("./routes"),
     extconsole = require("extended-console"),
     logsApi = require("./tools/logs").LogsAPI(fs),
-    mainIO = require("./io/mainIO");
+    mainIO = require("./io/mainIO"),
+    xmlrpc = require("xmlrpc"),
+    rpc = xmlrpc.createSecureClient({
+        host: "rpc.gandi.net",
+        port: "443",
+        path: "/xmlrpc/"
+    }),
+    rpckey = "YugWvVNDcEioZPKDzUmpsr7a",
+    domain = "biblio.tech";
 
 console.extended.timestampFormat = "DD-MM-YYYY hh:mm:ss";
 console.extended
@@ -60,6 +68,11 @@ MongoClient.connect(mongoUrl, function (err, db) {
             autoRemove: "native",
             touchAfter: 24 * 3600
         });
+
+/*    rpc.methodCall("version.info", [rpckey], function (error, response) {
+        console.error("rpc error", error);
+        console.log("rpc response", response);
+    });*/
 
     app.engine("html", cons.swig)
         .set("view engine", "html")

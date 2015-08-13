@@ -95,14 +95,14 @@ HTMLElement.prototype.text = function (code) {
     return this;
 };
 HTMLElement.prototype.toLeft = function (display) {
-    var elt = this, eltd = typeof display === "undefined" ? elt.offsetLeft < 0 : display, width = elt.clientWidth, step = 5;
+    var elt = this, eltd = typeof display === "undefined" ? elt.offsetLeft < 0 : display, width = elt.clientWidth, step = ~~(width / 20);
+    elt.scrollTop = 0;
     return new Promise(function (resolve) {
-        if (!!eltd) { elt.toggle(true); }
         var timer = setInterval(function () {
             if (!!eltd) {
-                if (elt.offsetLeft > width) { clearInterval(timer); resolve(elt); } else { elt.css({ "left": elt.offsetLeft + step }); }
+                if (elt.offsetLeft >= 0) { clearInterval(timer); resolve(elt); } else { elt.css({ "left": elt.offsetLeft + step }); }
             } else {
-                if (elt.offsetLeft < -width) { clearInterval(timer); elt.toggle(false); resolve(elt); } else { elt.css({ "left": elt.offsetLeft - step }); }
+                if (elt.offsetLeft <= -width) { clearInterval(timer); resolve(elt); } else { elt.css({ "left": elt.offsetLeft - step }); }
             }
         }, 5);
     });

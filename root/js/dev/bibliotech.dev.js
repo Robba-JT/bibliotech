@@ -230,7 +230,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     };
                     this.preview = function () {
                         µ.one("@previewid").value = bookid;
-                        Waiting.over();
+                        Waiting.over(true);
                         Windows.open.call("previewWindow").then(function (event) {
                             µ.one("#preview").submit();
                         });
@@ -243,7 +243,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                         Windows.open.call("recommandWindow");
                     };
                     this.close = function () {
-                        this.closest("window").fade(false).then(function () { Waiting.over(false); });
+                        this.closest("window").fade(false).then(function () { delete Windows.on; Waiting.over(false); });
                     };
                     this[actclick].call(this);
                 },
@@ -312,16 +312,16 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     µ.alls("[actclick=add], [actclick=update], #upload, .inCollection").toggle();
                     var cell = Bookcells.one(Detail.data.book.id);
                     if (µ.one("#collection").hasClass("active") && !cell) {
-                        var lg = User.get().collection.length,
+                        /*var lg = User.get().collection.length,
                             col = lg % Dock.nbcols,
                             row = µ.alls("[colid=\"" + lg % Dock.nbcols + "\"] .bookcell").length;
 
-                        cell = new Bookcell(Detail.data.book);
-                        Bookcells.cells.push(cell);
+                        cell = new Bookcell(Detail.data.book);*/
+                        Bookcells.cells.push(User.get().addbook(Detail.data.book));
                         Bookcells.display();
                     }
                     if (!!cell && !!cell.cell) { cell.cell.alls("button").fade(); }
-                    User.get().addbook(Detail.data.book);
+                    //User.get().addbook(Detail.data.book);
                 },
                 sendNotif: function () {
                     var notif = this.formToJson();
@@ -339,12 +339,12 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     win.alls("#formNew input, #formNew textarea").toggle(false);
                     win.alls("#formNew button:not(.categories)").toggleClass("hide", false).toggleClass("modify", !!book.id && _.isEqual(book.id.user, User.get().id));
                     win.one("#detailWindow [type=file]").value = "";
-                    µ.one("#comments").children.removeAll();
+                    //µ.one("#comments").children.removeAll();
+                    µ.alls("#comments *").removeAll();
                     µ.one("#userComment").value = "";
                     win.css({ "background": "whitesmoke", "max-height": ~~(window.innerHeight * 0.95) });
                     for (var jta = 0, lg = µ.alls("[note]").length; jta < lg; jta++) { Images.blur.call(µ.alls("[note]")[jta]); }
                     µ.one("#userNote").value = book.note;
-                    win.alls(".new").toggleClass("new", false);
                     win.alls(".inCollection").toggle(!!inCollection);
                     Tags.list();
                     if (!!book.mainColor) {
@@ -376,6 +376,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     if (!!win.hasClass("notdisplayed")) { Windows.open.call("detailWindow").then(function () {
                         µ.one("#detailContent").css({ "height": win.clientHeight - win.one("header").clientHeight });
                         µ.one(".detailBook").scrollTop = 0;
+                        µ.alls(".new").toggleClass("new", false);
                     }); }
                     _.forEach(book, function (value, jta) {
                         var field = win.one("[field=" + jta + "]"), input = win.one("input[name=" + jta + "], textarea[name=" + jta + "]");
@@ -990,7 +991,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                         });
                         µ.one("#tagsList").html(tagOptions);
                         Tags.cloud = _.sortBy(Tags.cloud, "weight").reverse();
-                        if (µ.one("#collection").hasClass("active")) { µ.one("#tags").toggle(true); }
+                        if (µ.one("#collection").hasClass("active")) { µ.one("#tags").toggle(!_.isEmpty(tags)); }
                     }
                 },
                 list: function () { µ.one("@tag").setAttributes({ "list": !!this.value ? "tagsList" : "none" });},
@@ -1053,6 +1054,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     newcell.cell.one(".add").toggle(false);
                     newcell.cell.one(".remove").toggle(true);
                     µ.one("#nbBooks").text(this.collection.length);
+                    return newcell;
                 };
                 User.prototype.bookcell = function (bookid) { return _.find(this.collection, _.matchesProperty("book.id", bookid)); };
                 User.prototype.book = function (bookid) {
@@ -1283,9 +1285,8 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                                 }
                                 Waiting.toggle(true).then(function () {
                                     Windows.on = wid;
-                                    win.css({ "top": xcroll().top + 10 }).fade(true);
                                     if (win.one("[autofocus]")) { win.one("[autofocus]").focus(); }
-                                    resolve();
+                                    win.css({ "top": xcroll().top + 10 }).fade(true).then(resolve);
                                 });
                                 µ.alls(".errMsg").toggle(false);
                             });
