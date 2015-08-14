@@ -1,10 +1,9 @@
 if (!window.FileReader || !window.Promise || !("formNoValidate" in document.createElement("input"))) {
     alert(document.body.getAttribute("error"));
 } else {
-    var µ = document, current;
-    µ.setEvents("DOMContentLoaded", function () {
+    document.setEvents("DOMContentLoaded", function () {
         "use strict";
-        var start = new Date();
+        var µ = document, start = new Date();
         console.debug("µ.ready", start.toLocaleString());
         var Bookcell = function (book, indice) {
                 var totalCells = Bookcells.cells.length + (typeof indice === "undefined" ? 1 : indice),
@@ -182,6 +181,28 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     this.associated = function () {
                         Search.associated(bookid);
                     };
+                    this.close = function () {
+                        this.closest("window").fade(false).then(function (elt) {
+                            delete Windows.on; Waiting.over(false);
+                            if (elt.one("iframe") && !!window.frames.iPreview && window.frames.iPreview.document.getElementById("viewer")) {
+                                window.frames.iPreview.document.getElementById("viewer").innerHTML = "";
+                            }
+                        });
+                    };
+                    this.google = function () {
+                        window.open(this.getAttribute("link"));
+                    };
+                    this.preview = function () {
+                        µ.one("@previewid").value = bookid;
+                        Waiting.over();
+                        Windows.open.call("previewWindow").then(function (event) {
+                            µ.one("#preview").submit();
+                        });
+                    };
+                    this.recommand = function () {
+                        Waiting.over();
+                        Windows.open.call("recommandWindow");
+                    };
                     this.update = function () {
                         var update = false,
                             values = { id: bookid },
@@ -228,23 +249,6 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     };
                     this.upload = function () {
                         µ.one("#uploadHidden [type=file]").trigger("click");
-                    };
-                    this.preview = function () {
-                        µ.one("@previewid").value = bookid;
-                        Waiting.over();
-                        Windows.open.call("previewWindow").then(function (event) {
-                            µ.one("#preview").submit();
-                        });
-                    };
-                    this.google = function () {
-                        window.open(this.getAttribute("link"));
-                    };
-                    this.recommand = function () {
-                        Waiting.over();
-                        Windows.open.call("recommandWindow");
-                    };
-                    this.close = function () {
-                        this.closest("window").fade(false).then(function () { delete Windows.on; Waiting.over(false); });
                     };
                     this[actclick].call(this);
                 },
@@ -843,7 +847,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
             },*/
             socket = (function (conn) {
                 var connect = function () {
-                        var connection = conn.connect("https://192.168.9.27", { "secure": true, "multiplex": false });
+                        var connection = conn.connect("/", { "secure": true, "multiplex": false });
                         connection.once("connect", function () {
                             this.once("disconnect", function (data) {
                                 console.debug("socket.disconnect", this.id, new Object(this), new Date().toLocaleString(), data);
@@ -905,7 +909,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                             .on("updateOk", userActions.updated)
                             .on("user", function (ret) {
                                 Menu.show();
-                                current = User.get().init(ret);
+                                User.get().init(ret);
                                 if (!Idb.db) { Idb.init(); }
                             }).emit("isConnected");
                             console.debug("socket.connect", this.id, new Object(this), new Date().toLocaleString());
@@ -1018,7 +1022,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     return new Promise(function (resolve) {
                         if (µ.one("#wa").isVisible() || !µ.one("#collection").hasClass("active")) { resolve(); } else {
                             Windows.close().then(function () {
-                                µ.one("html").toggleClass("overflown", !vis);
+                                µ.alls("html, body").toggleClass("overflown", !vis);
                                 if (!!vis) { cloud.fade(false).then(resolve); } else {
                                     cloud.fade(0.9).then(function () {
                                         if (!cloud.alls("span").length) { Tags.generate(); }
@@ -1194,11 +1198,11 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                             Waiting.on = true;
                             µ.alls(".description").removeAll();
                             if (!!visible) {
-                                µ.one("html").toggleClass("overflown", true);
+                                µ.alls("html, body").toggleClass("overflown", true);
                                 wait.fade(0.5).then(resolve);
                             } else {
                                 wait.fade(false).then(function () {
-                                    µ.one("html").toggleClass("overflown", false);
+                                    µ.alls("html, body").toggleClass("overflown", false);
                                     Waiting.over(false);
                                     Waiting.connection(false);
                                     resolve();

@@ -36,7 +36,7 @@ module.exports = exports = function (app, db) {
 				} else {
                     req.session.destroy(function (err) {
                         oauth2Client.revokeCredentials(function (err) {
-                            res.status(404).render(res.locals.is_mobile? "mlogin" : "login", getLang(req).login);
+                            res.render(res.locals.is_mobile? "mlogin" : "login", getLang(req).login);
                         });
                     });
 				}

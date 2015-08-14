@@ -3,7 +3,7 @@ var express = require("express"),
     json = require("express-json"),
     fs = require("fs"),
     options = {
-      key: fs.readFileSync("./biblio.tech.pkey"),
+      key: fs.readFileSync("./biblio.tech.key"),
       cert: fs.readFileSync("./biblio.tech.crt")
     },
     app = express(),
@@ -98,7 +98,11 @@ MongoClient.connect(mongoUrl, function (err, db) {
                 maxAge: config.maxAge,
                 secure: true
             }
-		}));
+		}))
+        .use(function (req, res, next) { if (req.secure) { next(); } else {
+            console.log("req.headers", req.headers);
+            res.redirect("https://" + req.headers.host + req.url);
+        }});
 
     device.enableDeviceHelpers(app);
 

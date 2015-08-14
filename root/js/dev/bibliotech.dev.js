@@ -1,10 +1,9 @@
 if (!window.FileReader || !window.Promise || !("formNoValidate" in document.createElement("input"))) {
     alert(document.body.getAttribute("error"));
 } else {
-    var µ = document, current;
-    µ.setEvents("DOMContentLoaded", function () {
+    document.setEvents("DOMContentLoaded", function () {
         "use strict";
-        var start = new Date();
+        var µ = document, start = new Date();
         console.debug("µ.ready", start.toLocaleString());
         var Bookcell = function (book, indice) {
                 var totalCells = Bookcells.cells.length + (typeof indice === "undefined" ? 1 : indice),
@@ -243,7 +242,12 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                         Windows.open.call("recommandWindow");
                     };
                     this.close = function () {
-                        this.closest("window").fade(false).then(function () { delete Windows.on; Waiting.over(false); });
+                        this.closest("window").fade(false).then(function (elt) {
+                            delete Windows.on; Waiting.over(false);
+                            if (elt.one("iframe") && !!window.frames.iPreview && !!window.frames.iPreview.document.getElementById("viewer")) {
+                                window.frames.iPreview.document.getElementById("viewer").innerHTML = "";
+                            }
+                        });
                     };
                     this[actclick].call(this);
                 },
@@ -838,7 +842,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
             },
             socket = (function (conn) {
                 var connect = function () {
-                        var connection = conn.connect("https://192.168.9.27", { "secure": true, "multiplex": false });
+                        var connection = conn.connect("/", { "secure": true, "multiplex": false });
                         connection.once("connect", function () {
                             this.once("disconnect", function (data) {
                                 console.debug("socket.disconnect", this.id, new Object(this), new Date().toLocaleString(), data);
@@ -900,7 +904,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                             .on("updateOk", userActions.updated)
                             .on("user", function (ret) {
                                 Menu.show();
-                                current = User.get().init(ret);
+                                User.get().init(ret);
                                 if (!Idb.db) { Idb.init(); }
                             }).emit("isConnected");
                             console.debug("socket.connect", this.id, new Object(this), new Date().toLocaleString());
