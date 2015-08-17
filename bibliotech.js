@@ -34,6 +34,7 @@ var express = require("express"),
     extconsole = require("extended-console"),
     logsApi = require("./tools/logs").LogsAPI(fs),
     mainIO = require("./io/mainIO"),
+    ms = require("ms"),
     xmlrpc = require("xmlrpc"),
     rpc = xmlrpc.createSecureClient({
         host: "rpc.gandi.net",
@@ -69,19 +70,21 @@ MongoClient.connect(mongoUrl, function (err, db) {
             touchAfter: 24 * 3600
         });
 
-/*    rpc.methodCall("version.info", [rpckey], function (error, response) {
-        console.error("rpc error", error);
-        console.log("rpc response", response);
-    });*/
+    rpc.methodCall("version.info", [rpckey], function (error, response) {
+        if (!!error) { console.error("rpc error", error); }
+        if (!!response) { console.log("rpc response", response); }
+        return;
+    });
 
     app.engine("html", cons.swig)
         .set("view engine", "html")
+        .set("json spaces", 1)
         .set("views", path.join(__dirname + "/views"))
-        .set("etag", "strong")
+        .enable("etag").set("etag", "strong")
         .use(compression({ level : 9 }))
         .use(cors())
         .use(json())
-        .use(serveStatic(path.join(__dirname, "root"), { maxAge: 864000000 }))
+        .use(serveStatic(path.join(__dirname, "root"), { maxAge: ms("10 days") }))
         .use(favicon(path.join(__dirname, "root/images/bold-icon-24.png")))
         .use(errorhandler(config.errorHandlerOptions))
         .use(bodyParser.urlencoded({ extended: false }))
@@ -117,7 +120,7 @@ MongoClient.connect(mongoUrl, function (err, db) {
 				connData.handshake.sessionId = cookieParser.signedCookie(cookies._bsession, "robba1979");
                 mongoStore.get(connData.handshake.sessionId, function (error, data) {
                     if (!!error) { next(new Error("Session inexistante!!!")); }
-                    if (!data && !data.user && !data.token && !data.token.credentials) { next(new Error("Session invalide!!!")); }
+                    if (!data || (!data.user && !data.token) || (!!data.token && !data.token.credentials)) { next(new Error("Session invalide!!!")); }
                     connData.handshake.session = new session.Session(connData.handshake, data);
                     next();
                 });

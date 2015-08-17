@@ -71,6 +71,10 @@ HTMLElement.prototype.removeAttributes = function (attrs) {
     if (_.isArray(attrs)) { attrs.forEach(function (attr) { self.removeAttribute(attr); }); }
     return this;
 };
+HTMLElement.prototype.removeEvent = function (evt, fn) {
+    this.removeEventListener(evt, fn);
+    return this;
+};
 HTMLElement.prototype.setAttributes = function (attrs) {
     var self = this;
     if (_.isPlainObject(attrs)) { _.forEach(attrs, function (value, key) { self.setAttribute(key, value); }); }
@@ -212,6 +216,10 @@ HTMLCollection.prototype.removeAll = NodeList.prototype.removeAll = function () 
 HTMLCollection.prototype.removeAttributes = NodeList.prototype.removeAttributes = function (list) {
     if (typeof attrs === "string") { list = [list]; }
     this.forEach(function () { this.removeAttributes(list); });
+    return this;
+};
+HTMLCollection.prototype.removeEvent = NodeList.prototype.removeEvent = function (evt, fn) {
+    this.forEach(function () { this.removeEvent(evt, fn); });
     return this;
 };
 HTMLCollection.prototype.setAttributes = NodeList.prototype.setAttributes = function (attrs) {

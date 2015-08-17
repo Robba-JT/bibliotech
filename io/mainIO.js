@@ -20,8 +20,7 @@ google.options(gOptions);
 module.exports = mainIO = function (socket, db) {
     "use strict";
 
-    var /*sessionStore = socket.handshake.sessionStore,*/
-        sessionId = socket.handshake.sessionId,
+    var sessionId = socket.handshake.sessionId,
         session = socket.handshake.session,
         userAPI = new UsersAPI(db),
         bookAPI = new BooksAPI(db),
@@ -29,26 +28,6 @@ module.exports = mainIO = function (socket, db) {
         thisUser, thisBooks = [], lastSearch = {}, lastDetail = {},
         currUser = function () {
             var defGet = Q.defer();
-/*            sessionStore.get(sessionId, function (err, session) {
-                if (!!err || !session) { defGet.reject(err || new Error("No session!!!")); } else {
-                    if (!session.user && !session.token && !session.token.credentials) { defGet.reject(new Error("Invalid session!!!")); } else {
-                        if (!!session.user) { defGet.resolve({ username: session.user }); } else {
-                            gAuth.userinfo.v2.me.get(session.token.credentials, function (err, infos) {
-                                if (!!err || !infos) { defGet.reject(err || new Error("gAuth - No info")); } else {
-                                    defGet.resolve({
-                                        username: infos.email,
-                                        name: infos.name,
-                                        googleSignIn: true,
-                                        link: infos.link,
-                                        picture: infos.picture,
-                                        token: session.token.credentials
-                                    });
-                                }
-                            });
-                        }
-                    }
-                }
-            });*/
             if (!!session.user) { defGet.resolve({ username: session.user }); } else {
                 gAuth.userinfo.v2.me.get(session.token.credentials, function (err, infos) {
                     if (!!err || !infos) { defGet.reject(err || new Error("gAuth - No info")); } else {
@@ -188,6 +167,8 @@ module.exports = mainIO = function (socket, db) {
                             defBooks("loadComments", { "_id.book" : { $in : booksList }})
                         ]).spread(function (Notifs, Books, Covers, Comments) {
                             var def64 = [],
+                                indice = 0,
+                                toSend = [],
                                 notifs = Notifs.value || [],
                                 books = Books.value || [],
                                 covers = Covers.value || [],
@@ -223,12 +204,18 @@ module.exports = mainIO = function (socket, db) {
                                     def64.push(bookAPI.loadBase64(books[book].cover, books[book].id));
                                     books[book].cover = true;
                                 }
+                                toSend.push(books[book]);
+                                if (toSend.length % 40 === 0) {
+                                    socket.emit("initCollect", toSend);
+                                    toSend = [];
+                                }
                             }
-                            socket.emit("collection", {
+                            socket.emit("endCollect", {
                                 tags: _.countBy(_.flatten(_.map(userData.books, "tags")).sort()),
                                 orders: thisUser.orders,
                                 notifs: notifs,
-                                books: books
+                                //books: books
+                                books: toSend
                             });
                             thisBooks = books;
                             Q.allSettled(def64).then(function (results) {
@@ -266,10 +253,7 @@ module.exports = mainIO = function (socket, db) {
 
     socket.on("addBook", function (bookid) {
         addBook(bookid)
-            .then(function (book) {
-                socket.emit("returnAdd", book);
-                //if (book.base64) { socket.emit("returnAdd", book); }
-            })
+            .then(function (book) { socket.emit("returnAdd", book); })
             .catch(function (error) { console.error("addBook", error); });
     });
 
@@ -302,7 +286,6 @@ module.exports = mainIO = function (socket, db) {
             defBooks("removeOne", { id: bookid });
         } else if (!!thisUser.googleSync && !bookid.user) {
             defBooks("googleRemove", _.assign({ volumeId: bookid }, thisUser.token))
-                //.then(function (response) { console.log(response); })
                 .catch(function (error) { console.error("googleRemove", error); });
         }
     });

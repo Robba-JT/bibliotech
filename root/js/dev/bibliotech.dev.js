@@ -41,7 +41,10 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 },
                 cells: [],
                 destroy: function () {
-                    Dock.remove(); Bookcells.books = []; Bookcells.cells = [];
+                    Dock.remove();
+                    Bookcells.books = [];
+                    if (!µ.one("#collection").hasClass("active")) { for (var jta = 0, lg = Bookcells.cells.length; jta < lg; jta++) { Bookcells.cells[jta].destroy(); }}
+                    Bookcells.cells = [];
                 },
                 display: function (cells, filter, from) {
                     var args = [filter, from];
@@ -160,7 +163,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
             colorthief = new ColorThief(),
             Detail = {
                 action: function () {
-                    var bookid = Detail.data.book.id, book = User.get().book(bookid), actclick = this.getAttribute("actclick");
+                    var bookid = Detail.data.book.id, book = User.get().book(bookid) || Detail.data.book, actclick = this.getAttribute("actclick");
                     this.add = function () {
                         if (!bookid) {
                             var newbook = µ.one("#formNew").formToJson(), error, inputs = µ.alls("#formNew input, #formNew textarea");
@@ -480,6 +483,23 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 }
             },
             Dock = {
+                dragenter: function (event) { event.preventDefault(); },
+                dragover: function (event) { event.preventDefault(); },
+                drop: function (event) {
+                    event.preventDefault();
+                    var cell = Bookcells.one(JSON.parse(event.dataTransfer.getData("text"))).cell, target = event.target.closest("bookcell");
+                    if (!!target) {
+                        if (cell !== target) {
+                            target.closest("col").insertBefore(cell, target);
+                            Bookcells.loadcovers();
+                            if (µ.one(".sortBy")) { Images.blur.call(µ.one(".sortBy").toggleClass("sortBy", false)); }
+                        }
+                    } else {
+                        this.appendChild(cell);
+                        if (µ.one(".sortBy")) { Images.blur.call(µ.one(".sortBy").toggleClass("sortBy", false)); }
+                    }
+                    return false;
+                },
                 get: function () {
                     var $dock = µ.one("#d"), colWidth;
                     if (!$dock) {
@@ -491,30 +511,15 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                         $dock.alls(".col").removeAll();
                         for (var i = 0; i < Dock.nbcols; i++) { $dock.newElement("div", { "class": "col", "colid": i }).css({ "width": colWidth, "max-width": colWidth }); }
                         $dock.css({ "padding-top" : µ.one("#nvb").isVisible() ? µ.one("#nvb").clientHeight : 0 });
-                        µ.alls(".col").setEvents({
-                            dragenter: function(event) { event.preventDefault(); },
-                            dragover: function(event) { event.preventDefault(); },
-                            drop: function (event) {
-                                event.preventDefault();
-                                var cell = Bookcells.one(JSON.parse(event.dataTransfer.getData("text"))).cell, target = event.target.closest("bookcell");
-                                if (!!target) {
-                                    if (cell !== target) {
-                                        target.closest("col").insertBefore(cell, target);
-                                        Bookcells.loadcovers();
-                                        if (µ.one(".sortBy")) { Images.blur.call(µ.one(".sortBy").toggleClass("sortBy", false)); }
-                                    }
-                                } else {
-                                    this.appendChild(cell);
-                                    if (µ.one(".sortBy")) { Images.blur.call(µ.one(".sortBy").toggleClass("sortBy", false)); }
-                                }
-                                return false;
-                            }
-                        });
+                        µ.alls(".col").setEvents({ dragenter: Dock.dragenter, dragover: Dock.dragover, drop: Dock.drop });
                     }
                     return $dock;
                 },
                 nbcols: ~~(window.innerWidth / 256),
                 remove: function () {
+                    if (!!µ.alls(".col")) {
+                        µ.alls(".col").removeEvent("dragenter", Dock.dragenter).removeEvent("dragover", Dock.dragover).removeEvent("drop", Dock.drop);
+                    }
                     if (!!µ.one("#d")) { µ.one("#d").removeAll(); window.scroll(0, 0); }
                 },
                 resize: function() {
@@ -861,14 +866,27 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                                 });
                             })
                             .on("books", Bookcells.show)
-                            .on("collection", function (ret) {
+                            .on("initCollect", function (part) {
                                 //User.get().books = ret.books;
                                 //Tags.init();
                                 //µ.one("#collection").trigger("click");
-                                userActions.collection(ret.books).then(Tags.init);
+                                userActions.initCollect(part)/*.then(Tags.init)*/;
                                 //µ.one("#nbBooks").text(User.get().books.length);
-                                console.debug("User.get().books", new Date().toLocaleString(), ret.books.length, (new Date() - start) / 1000);
-                                Notifs.show(ret.notifs);
+                                //console.debug("User.get().books", new Date().toLocaleString(), part, (new Date() - start) / 1000);
+                            })
+                            .on("endCollect", function (ret) {
+                                //User.get().books = ret.books;
+                                //Tags.init();
+                                //µ.one("#collection").trigger("click");
+                                userActions.initCollect(ret.books).then(function () {
+                                    User.get().collection = Bookcells.cells;
+                                    µ.one("#sort [by]").trigger("click");
+                                    Tags.init();
+                                    Notifs.show(ret.notifs);
+                                    Search.endRequest(Bookcells.cells.length);
+                                    µ.one("#nbBooks").text(User.get().collection.length);
+                                });
+                                console.debug("User.get().books", new Date().toLocaleString(), User.get().collection.length, (new Date() - start) / 1000);
                             })
                             .on("covers", function (covers) {
                                 for (var jta = 0, lg = covers.length; jta < lg; jta++) {
@@ -906,6 +924,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                                 Menu.show();
                                 User.get().init(ret);
                                 if (!Idb.db) { Idb.init(); }
+                                Waiting.toggle(false);
                             }).emit("isConnected");
                             console.debug("socket.connect", this.id, new Object(this), new Date().toLocaleString());
 
@@ -1106,10 +1125,21 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 addbook: function (book) {
                     return User.get().addbook(book);
                 },
+                initCollect: function (part) {
+                    if (!µ.one("#collection").hasClass("active")) {
+                        //µ.one("#collection").toggleClass("active", true);
+                        //Images.active.call(µ.one("#collection"));
+                        Images.active.call(µ.one("#collection").toggleClass("active", true));
+                    }
+                    return new Promise(function (resolve) {
+                        Waiting.anim(true);
+                        Bookcells.show(part).then(resolve);
+                    });
+                },
                 collection: function (books) {
                     return new Promise(function (resolve) {
                         Windows.close();
-                        µ.one("@filtre").value = µ.one("@last").value/* = µ.one("#selectedTag").innerHTML*/ = "";
+                        µ.one("@filtre").value = µ.one("@last").value = µ.one("#selectedTag").innerHTML = "";
                         if (!µ.one("#collection").hasClass("active")) {
                             var isSort = µ.one(".sortBy");
                             if (isSort) { Images.blur.call(isSort.toggleClass("sortBy", false)); }
@@ -1119,25 +1149,13 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                             Waiting.toggle(true, true).then(function () {
                                 µ.one("#nvb").toggleClass("inactive", true);
                                 Images.active.call(µ.one("#collection"));
-    /*                            if (!!books && !!books.length) {
-                                    if (!User.get().collection) { Bookcells.show(User.get().books).then(function (ret) {
-                                        if (!!Bookcells.cells.length) { User.get().collection = Bookcells.cells; }
-                                        Search.endRequest(ret);
-                                    }); }
-                                    else {
-                                        Bookcells.cells = User.get().collection;
-                                        Bookcells.display(false, false, true).then(
-                                            Search.endRequest
-                                        );
-                                    }
-                                } else { Search.endRequest(); }*/
-                                if (!!User.get().collection && User.get().collection.length) {
+                                //if (!!User.get().collection && User.get().collection.length) {
                                     Bookcells.cells = User.get().collection;
                                     Bookcells.display(false, false, true).then(function (nb) {
                                         Search.endRequest(nb);
                                         resolve();
                                     });
-                                } else if (!!books && !!books.length) {
+                                /*} else if (!!books && !!books.length) {
                                     Bookcells.show(books).then(function (ret) {
                                         if (!!Bookcells.cells.length) {
                                             User.get().collection = Bookcells.cells;
@@ -1149,7 +1167,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                                 } else {
                                     Search.endRequest();
                                     resolve();
-                                }
+                                }*/
                             });
                         } else {
                             window.scroll(0, 0);
@@ -1162,7 +1180,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 delete: function () {
                     µ.one("#errPwd").toggle(false);
                     if (!µ.one("@pwd").reportValidity()) { return; }
-                    Windows.confirm("warning", µ.one("#delete").getAttribute("confirm")).then(function () { console.debug("pwd", µ.one("@pwd"), µ.one("@pwd").value); socket.emit("deleteUser", µ.one("@pwd").value); });
+                    Windows.confirm("warning", µ.one("#delete").getAttribute("confirm")).then(function () { socket.emit("deleteUser", µ.one("@pwd").value); });
                     return false;
                 },
                 nokdated: function () {
@@ -1170,7 +1188,6 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     return false;
                 },
                 update: function () {
-                    console.debug("update", this, this.formToJson());
                     µ.one("#errPwd").fade(false);
                     socket.emit("updateUser", this.formToJson());
                     return false;
@@ -1178,7 +1195,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
             },
             Waiting = {
                 anim: function (toShow) {
-                    µ.one("#wa").fade(toShow);
+                    if (µ.one("#wa").isVisible() !== toShow) { µ.one("#wa").fade(toShow); }
                 },
                 over: function (toShow) {
                     µ.one("#w").toggleClass("over", toShow);
@@ -1287,12 +1304,14 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                                     }
                                     if (!µ.one(".changePwd.notdisplayed")) { Windows.togglePwd(); }
                                 }
+                                µ.alls(".errMsg").toggle(false);
                                 Waiting.toggle(true).then(function () {
                                     Windows.on = wid;
-                                    if (win.one("[autofocus]")) { win.one("[autofocus]").focus(); }
-                                    win.css({ "top": xcroll().top + 10 }).fade(true).then(resolve);
+                                    win.css({ "top": xcroll().top + 10 }).fade(true).then(function () {
+                                        if (win.one("[autofocus]")) { win.one("[autofocus]").focus(); }
+                                        resolve();
+                                    });
                                 });
-                                µ.alls(".errMsg").toggle(false);
                             });
                         }
                     });
@@ -1350,6 +1369,11 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                         setTimeout(function () { description.setEvents("mouseleave", leave).fade(0.9); }, 1000);
                     }
                 },
+                destroy = function () {
+                    self.cell.alls("button").removeEvent("click", action);
+                    self.cell.alls("header, figure").removeEvent("click", detail);
+                    self.cell.removeEvent("mouseenter mouseleave", description).removeEvent("dragstart", dragstart).removeEvent("dragend", dragend).removeAll();
+                },
                 detail = function () {
                     if (User.get().bookindex(self.id) !== -1 || !!self.opened) {
                         Detail.data = self;
@@ -1394,6 +1418,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
             this.cell.setEvents({ "mouseenter mouseleave": description, dragstart: dragstart, dragend: dragend });
             this.cell.one("footer").css({ "bottom": this.cell.one("figcaption").clientHeight + 5 });
             this.actived = true;
+            this.destroy = destroy;
             this.loadcover = loadcover;
         };
         Bookcell.prototype.returned = function (book) {

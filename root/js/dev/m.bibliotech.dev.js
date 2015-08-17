@@ -41,7 +41,10 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 },
                 cells: [],
                 destroy: function () {
-                    Dock.remove(); Bookcells.books = []; Bookcells.cells = [];
+                    Dock.remove();
+                    Bookcells.books = [];
+                    if (!µ.one("#collection").hasClass("active")) { for (var jta = 0, lg = Bookcells.cells.length; jta < lg; jta++) { Bookcells.cells[jta].destroy(); }}
+                    Bookcells.cells = [];
                 },
                 display: function (cells, filter, from) {
                     var args = [filter, from];
@@ -866,14 +869,26 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                                 });
                             })
                             .on("books", Bookcells.show)
-                            .on("collection", function (ret) {
+                            .on("initCollect", function (part) {
                                 //User.get().books = ret.books;
                                 //Tags.init();
                                 //µ.one("#collection").trigger("click");
-                                userActions.collection(ret.books).then(Tags.init);
+                                userActions.initCollect(part)/*.then(Tags.init)*/;
                                 //µ.one("#nbBooks").text(User.get().books.length);
-                                console.debug("User.get().books", new Date().toLocaleString(), ret.books.length, (new Date() - start) / 1000);
-                                Notifs.show(ret.notifs);
+                                //console.debug("User.get().books", new Date().toLocaleString(), part, (new Date() - start) / 1000);
+                            })
+                            .on("endCollect", function (ret) {
+                                //User.get().books = ret.books;
+                                //Tags.init();
+                                //µ.one("#collection").trigger("click");
+                                userActions.initCollect(ret.books).then(function () {
+                                    User.get().collection = Bookcells.cells;
+                                    Tags.init();
+                                    Notifs.show(ret.notifs);
+                                    Search.endRequest(Bookcells.cells.length);
+                                    µ.one("#nbBooks").text(User.get().collection.length);
+                                });
+                                console.debug("User.get().books", new Date().toLocaleString(), User.get().collection.length, (new Date() - start) / 1000);
                             })
                             .on("covers", function (covers) {
                                 for (var jta = 0, lg = covers.length; jta < lg; jta++) {
@@ -1113,6 +1128,15 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 addbook: function (book) {
                     return User.get().addbook(book);
                 },
+                initCollect: function (part) {
+                    if (!µ.one("#collection").hasClass("active")) {
+                        Images.active.call(µ.one("#collection").toggleClass("active", true));
+                    }
+                    return new Promise(function (resolve) {
+                        Waiting.anim(true);
+                        Bookcells.show(part).then(resolve);
+                    });
+                },
                 collection: function (books) {
                     return new Promise(function (resolve) {
                         Windows.close();
@@ -1126,25 +1150,13 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                             Waiting.toggle(true, true).then(function () {
                                 µ.one("#nvb").toggleClass("inactive", true);
                                 Images.active.call(µ.one("#collection"));
-    /*                            if (!!books && !!books.length) {
-                                    if (!User.get().collection) { Bookcells.show(User.get().books).then(function (ret) {
-                                        if (!!Bookcells.cells.length) { User.get().collection = Bookcells.cells; }
-                                        Search.endRequest(ret);
-                                    }); }
-                                    else {
-                                        Bookcells.cells = User.get().collection;
-                                        Bookcells.display(false, false, true).then(
-                                            Search.endRequest
-                                        );
-                                    }
-                                } else { Search.endRequest(); }*/
-                                if (!!User.get().collection && User.get().collection.length) {
+                                //if (!!User.get().collection && User.get().collection.length) {
                                     Bookcells.cells = User.get().collection;
                                     Bookcells.display(false, false, true).then(function (nb) {
                                         Search.endRequest(nb);
                                         resolve();
                                     });
-                                } else if (!!books && !!books.length) {
+                                /*} else if (!!books && !!books.length) {
                                     Bookcells.show(books).then(function (ret) {
                                         if (!!Bookcells.cells.length) {
                                             User.get().collection = Bookcells.cells;
@@ -1156,7 +1168,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                                 } else {
                                     Search.endRequest();
                                     resolve();
-                                }
+                                }*/
                             });
                         } else {
                             window.scroll(0, 0);
@@ -1185,7 +1197,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
             },
             Waiting = {
                 anim: function (toShow) {
-                    µ.one("#wa").fade(toShow);
+                    if (µ.one("#wa").isVisible !== toShow) { µ.one("#wa").fade(toShow); }
                 },
                 over: function (toShow) {
                     µ.one("#w").toggleClass("over", toShow);
@@ -1300,13 +1312,14 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                                     }
                                     if (!µ.one(".changePwd.notdisplayed")) { Windows.togglePwd(); }
                                 }
+                                µ.alls(".errMsg").toggle(false);
                                 Waiting.toggle(true).then(function () {
                                     Windows.on = wid;
-                                    if (win.one("[autofocus]")) { win.one("[autofocus]").focus(); }
-                                    win.css({ "top": xcroll().top /*+ 10*/ }).fade(true).then(resolve);
-                                    //resolve();
+                                    win.css({ "top": xcroll().top }).fade(true).then(function () {
+                                        if (win.one("[autofocus]")) { win.one("[autofocus]").focus(); }
+                                        resolve();
+                                    });
                                 });
-                                µ.alls(".errMsg").toggle(false);
                             });
                         }
                     });
@@ -1364,6 +1377,11 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                         setTimeout(function () { description.setEvents("mouseleave", leave).fade(0.9); }, 1000);
                     }
                 },
+                destroy = function () {
+                    self.cell.alls("button").removeEvent("click", action);
+                    self.cell.alls("header, figure").removeEvent("click", detail);
+                    self.cell.removeEvent("mouseenter mouseleave", description).removeEvent("dragstart", dragstart).removeEvent("dragend", dragend).removeAll();
+                },
                 detail = function () {
                     if (User.get().bookindex(self.id) !== -1 || !!self.opened) {
                         Detail.data = self;
@@ -1408,6 +1426,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
             this.cell.setEvents({ "mouseenter mouseleave": description, "touchmove touchstart": dragstart, "touchend": dragend });
             this.cell.one("footer").css({ "bottom": this.cell.one("figcaption").clientHeight + 5 });
             this.actived = true;
+            this.destroy = destroy;
             this.loadcover = loadcover;
         };
         Bookcell.prototype.returned = function (book) {

@@ -8,12 +8,12 @@
         <meta charset="utf-8">
         <meta http-equiv="Content-type" content="text/html">
         <link rel="stylesheet" href="../css/bibliotech.css"/>
-        <script src="js/images.js"></script>
+        <script src="js/images.js" defer></script>
     </head>
 
     <body error="{{navigatorError}}">
 		<div id="w">
-            <img src="images/loading-12-icon.png" class="ri" />
+            <img src="images/loading-12-icon.png" width="256" class="ri" />
         </div>
 
         <div id="wa">
@@ -134,7 +134,7 @@
         </nav>
 
         <div id="sort" class="deroulant notdisplayed">
-            <div class="sortBy" by="title">{{title}}&nbsp;
+            <div by="title">{{title}}&nbsp;
                 <img source="sort-24-icon-asc" blur="black" hover="alt" width="16" height="16"/>
             </div>
             <div by="title" sort="desc">{{title}}&nbsp;
@@ -255,7 +255,7 @@
                         <div class="volumeInfo">
                             <button class="title" tabindex="-1">{{title}}:</button>
                             <span class="direct link" searchby=2 field="title"></span>&nbsp;<span class="direct link" searchby=2 field="subtitle"></span>
-                            <input type="text" placeholder="{{title}}" error="{{errTitle}}" name="title" required autofocus/>
+                            <input type="text" placeholder="{{title}}" error="{{errTitle}}" name="title" required/>
                             <input type="text" placeholder="{{subtitle}}" name="subtitle"/>
                         </div>
                         <div class="volumeInfo">

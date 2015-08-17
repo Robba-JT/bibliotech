@@ -4,7 +4,7 @@
 
 html {
     position: relative;
-    background-color: #575757;
+    background-color: #493D26;
     overflow-x : hidden;
     overflow-y : auto;
     background-image: url("../../images/background_main.png");
@@ -17,6 +17,9 @@ html {
 
 .overflown {
     overflow: hidden;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+    height: 100%;
 }
 
 img {
@@ -1085,7 +1088,8 @@ button.remove {
 }
 
 .ri {
-	width:	16%;
+	/*width:	16%;*/
+    max-width: 16%;
     height: auto;
 	position: fixed;
 	top	: 42%;
