@@ -852,6 +852,8 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 var connect = function () {
                         var connection = conn.connect("/", { "secure": true, "multiplex": false });
                         connection.once("connect", function () {
+                            console.debug("socket.connect", new Date().toLocaleString(), (new Date() - start) / 1000);
+                            start = new Date();
                             this.once("disconnect", function (data) {
                                 console.debug("socket.disconnect", this.id, new Object(this), new Date().toLocaleString(), data);
                                 reconnect(this);
@@ -873,6 +875,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                                 //User.get().books = ret.books;
                                 //Tags.init();
                                 //µ.one("#collection").trigger("click");
+                                User.get().collection.assign(part);
                                 userActions.initCollect(part)/*.then(Tags.init)*/;
                                 //µ.one("#nbBooks").text(User.get().books.length);
                                 //console.debug("User.get().books", new Date().toLocaleString(), part, (new Date() - start) / 1000);
@@ -881,6 +884,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                                 //User.get().books = ret.books;
                                 //Tags.init();
                                 //µ.one("#collection").trigger("click");
+                                User.get().collection.assign(ret.books);
                                 userActions.initCollect(ret.books).then(function () {
                                     User.get().collection = Bookcells.cells;
                                     Tags.init();
@@ -898,10 +902,12 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                                     if (!!bookcell && !!bookcell.cell) {
                                         var cell = bookcell.cell;
                                         if (!cell.hasClass("toshow")) { cell.one(".cover").src = cover.base64; }
-                                        if (!!Detail.data.book && Detail.data.book.id === book.id) { µ.one("#detailCover").src = cover.base64; }
+                                        if (!!Detail.data.book && Detail.data.book.id === book.id) {
+                                            µ.one("#background").css({ "background-image": "url(" + cover.base64.toString() + ")" }).toggle(true);
+                                        }
                                     }
                                 }
-                                console.debug("socket.covers", new Date().toLocaleString(), (new Date() - start) / 1000);
+                                console.debug("covers", new Date().toLocaleString(), covers.length, (new Date() - start) / 1000);
                             })
                             .on("endRequest", Search.endRequest)
                             .on("error", function (error) { console.warn(error); })
@@ -927,7 +933,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                                 User.get().init(ret);
                                 if (!Idb.db) { Idb.init(); }
                             }).emit("isConnected");
-                            console.debug("socket.connect", this.id, new Object(this), new Date().toLocaleString());
+                            console.debug("socket.connect", new Date().toLocaleString(), (new Date() - start) / 1000);
 
                         });
                         return connection;
@@ -1088,7 +1094,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     return !!bookcell && !!bookcell.book ? bookcell.book : null;
                 };
                 User.prototype.bookindex = function (bookid) {
-                    return _.findIndex(this.collection, _.matchesProperty("book.id", bookid));
+                    return _.findIndex(this.collection, _.matchesProperty("id", bookid));
                 };
                 User.prototype.removebook = function (bookid) {
                     _.remove(this.collection, _.matchesProperty("id", bookid));
@@ -1299,27 +1305,30 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                         if (!!Windows.on && Windows.on === wid) { Windows.close().then(resolve); } else {
                             /*if (µ.one("#h").isVisible()) { Windows.help(false); }*/
                             Tags.close().then(function () {
-                                if (µ.one("#wa").isVisible()) { resolve(); }
-                                if (!_.includes(["previewWindow", "recommandWindow"], wid)) {µ.alls(".window:not(.notdisplayed)").fade(false); } else { Waiting.over(true); }
-                                if (wid === "profileWindow") {
-                                    µ.one("@mail").value = User.get().id;
-                                    µ.one("@name").value = User.get().name;
-                                    if (!!User.get().googleSignIn) {
-                                        µ.one("@googleSignIn").setAttribute("checked", true);
-                                        if (!!User.get().googleSync) { µ.one("@googleSync").setAttribute("checked", true); }
-                                    } else {
-                                        µ.one("@pwd").setAttribute("required", true);
+                                /*if (µ.one("#wa").isVisible()) { resolve(); } else {*/
+                                    if (!_.includes(["previewWindow", "recommandWindow"], wid)) {
+                                        µ.alls(".window:not(.notdisplayed)").fade(false);
+                                    } else { Waiting.over(true); }
+                                    if (wid === "profileWindow") {
+                                        µ.one("@mail").value = User.get().id;
+                                        µ.one("@name").value = User.get().name;
+                                        if (!!User.get().googleSignIn) {
+                                            µ.one("@googleSignIn").setAttribute("checked", true);
+                                            if (!!User.get().googleSync) { µ.one("@googleSync").setAttribute("checked", true); }
+                                        } else {
+                                            µ.one("@pwd").setAttribute("required", true);
+                                        }
+                                        if (!µ.one(".changePwd.notdisplayed")) { Windows.togglePwd(); }
                                     }
-                                    if (!µ.one(".changePwd.notdisplayed")) { Windows.togglePwd(); }
-                                }
-                                µ.alls(".errMsg").toggle(false);
-                                Waiting.toggle(true).then(function () {
-                                    Windows.on = wid;
-                                    win.css({ "top": xcroll().top }).fade(true).then(function () {
-                                        if (win.one("[autofocus]")) { win.one("[autofocus]").focus(); }
-                                        resolve();
+                                    µ.alls(".errMsg").toggle(false);
+                                    Waiting.toggle(true).then(function () {
+                                        Windows.on = wid;
+                                        win.css({ "top": xcroll().top }).fade(true).then(function () {
+                                            if (win.one("[autofocus]")) { win.one("[autofocus]").focus(); }
+                                            resolve();
+                                        });
                                     });
-                                });
+                                /*}*/
                             });
                         }
                     });

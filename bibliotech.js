@@ -41,7 +41,7 @@ var express = require("express"),
         port: "443",
         path: "/xmlrpc/"
     }),
-    rpckey = "YugWvVNDcEioZPKDzUmpsr7a",
+    rpckey = "E3rWXfx3qEwmMBIFJpjKTdQv",
     domain = "biblio.tech";
 
 console.extended.timestampFormat = "DD-MM-YYYY hh:mm:ss";
@@ -78,10 +78,12 @@ MongoClient.connect(mongoUrl, function (err, db) {
 
     app.engine("html", cons.swig)
         .set("view engine", "html")
-        .set("json spaces", 1)
         .set("views", path.join(__dirname + "/views"))
+        .set("view cache", true)
+        .set("json spaces", 1)
+        .set("x-powered-by", true)
         .enable("etag").set("etag", "strong")
-        .use(compression({ level : 9 }))
+        .use(compression())
         .use(cors())
         .use(json())
         .use(serveStatic(path.join(__dirname, "root"), { maxAge: ms("10 days") }))
@@ -102,10 +104,7 @@ MongoClient.connect(mongoUrl, function (err, db) {
                 secure: true
             }
 		}))
-        .use(function (req, res, next) { if (req.secure) { next(); } else {
-            console.log("req.headers", req.headers);
-            res.redirect("https://" + req.headers.host + req.url);
-        }});
+        .use(function (req, res, next) { if (req.secure) { next(); } else { res.redirect("https://" + req.headers.host + req.url); }});
 
     device.enableDeviceHelpers(app);
 

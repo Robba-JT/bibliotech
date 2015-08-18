@@ -6,7 +6,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
         var µ = document, start = new Date();
         console.debug("µ.ready", start.toLocaleString());
         var Bookcell = function (book, indice) {
-                var totalCells = Bookcells.cells.length + (typeof indice === "undefined" ? 1 : indice),
+                var totalCells = Bookcells.cells.length + (typeof indice === "undefined" ? 0 : indice),
                     inCollect = µ.one("#collection").hasClass("active") || User.get().bookindex(book.id) !== -1;
 
                 this.id = book.id;
@@ -61,7 +61,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                                     indice++;
                                 }
                             }
-                            Waiting.toggle(false);
+                            if (!!µ.one("#detailWindow.notdisplayed")) { Waiting.toggle(false); }
                             Bookcells.loadcovers();
                             resolve(Bookcells.cells.length);
                         }
@@ -169,7 +169,6 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                             var newbook = µ.one("#formNew").formToJson(), error, inputs = µ.alls("#formNew input, #formNew textarea");
                             for (var jta = 0, lg = inputs.length; jta < lg; jta++) { if (!inputs[jta].reportValidity()) { error = true; break; }}
                             newbook.authors = !!newbook.authors ? newbook.authors.split(",") : [];
-                            //for (jta = 0, lg = newbook.authors.length; jta < lg; jta++) { newbook.authors[jta] = newbook.authors[jta].noSpace(); }
                             newbook.authors.noSpace();
                             if (!!error) { return false; }
                             Waiting.over();
@@ -245,9 +244,10 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                         Windows.open.call("recommandWindow");
                     };
                     this.close = function () {
+                        Waiting.over(false);
                         this.closest("window").fade(false).then(function (elt) {
-                            delete Windows.on; Waiting.over(false);
-                            if (elt.one("iframe") && !!window.frames.iPreview && !!window.frames.iPreview.document.getElementById("viewer")) {
+                            delete Windows.on;
+                            if (!!elt && !!elt.one("iframe") && !!window.frames.iPreview && !!window.frames.iPreview.document.getElementById("viewer")) {
                                 window.frames.iPreview.document.getElementById("viewer").innerHTML = "";
                             }
                         });
@@ -318,17 +318,8 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 newCell: function () {
                     µ.alls("[actclick=add], [actclick=update], #upload, .inCollection").toggle();
                     var cell = Bookcells.one(Detail.data.book.id);
-                    if (µ.one("#collection").hasClass("active") && !cell) {
-                        /*var lg = User.get().collection.length,
-                            col = lg % Dock.nbcols,
-                            row = µ.alls("[colid=\"" + lg % Dock.nbcols + "\"] .bookcell").length;
-
-                        cell = new Bookcell(Detail.data.book);*/
-                        Bookcells.cells.push(User.get().addbook(Detail.data.book));
-                        Bookcells.display();
-                    }
-                    if (!!cell && !!cell.cell) { cell.cell.alls("button").fade(); }
-                    //User.get().addbook(Detail.data.book);
+                    if (!cell) { User.get().addbook(Detail.data.book); } else if (!!cell.cell) { cell.cell.alls("button").fade(); }
+                    if (µ.one("#collection").hasClass("active")) { Bookcells.display(); }
                 },
                 sendNotif: function () {
                     var notif = this.formToJson();
@@ -346,7 +337,6 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     win.alls("#formNew input, #formNew textarea").toggle(false);
                     win.alls("#formNew button:not(.categories)").toggleClass("hide", false).toggleClass("modify", !!book.id && _.isEqual(book.id.user, User.get().id));
                     win.one("#detailWindow [type=file]").value = "";
-                    //µ.one("#comments").children.removeAll();
                     µ.alls("#comments *").removeAll();
                     µ.one("#userComment").value = "";
                     win.css({ "background": "whitesmoke", "max-height": ~~(window.innerHeight * 0.95) });
@@ -453,8 +443,8 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 uploadCover: function () {
                     var image = this.files;
                     if (!!image[0]) {
-                        if (!image[0].type.match(/image.*/) || image[0].size > 500000) {
-                            Windows.confirm("error", "Veuillez sélectionner un fichier de type \"image\" inférieure à 500KB.");
+                        if (!image[0].type.match(/image.*/) || image[0].size > 100000) {
+                            Windows.confirm("error", "Veuillez sélectionner un fichier de type \"image\" inférieure à 100KB.");
                             return false;
                         }
                         var reader = new FileReader();
@@ -748,15 +738,14 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     Search.clear();
                     Search.last = { "associated": bookid };
                     Windows.close(true).then(function () {
-                        Waiting.toggle(true, true).then(function () {
-                            Idb.getQuery(Search.last)
-                                .then(Bookcells.show, function () {
-                                    µ.one("#nvb").toggleClass("inactive", true);
-                                    Waiting.anim(true);
-                                    socket.emit("associated", bookid);
-                                })
-                                .catch(function (error) { console.error(error); });
-                        });
+                        Waiting.toggle(true, true);
+                        Idb.getQuery(Search.last)
+                            .then(Bookcells.show, function () {
+                                µ.one("#nvb").toggleClass("inactive", true);
+                                Waiting.anim(true);
+                                socket.emit("associated", bookid);
+                            })
+                            .catch(function (error) { console.error(error); });
                     });
                 },
                 books: function () {
@@ -765,15 +754,14 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     µ.one("@filtre").value = µ.one("@last").value = "";
                     Search.clear();
                     Windows.close(true).then(function () {
-                        Waiting.toggle(true, true).then(function () {
-                            Idb.getQuery(Search.last)
-                                .then(Bookcells.show)
-                                .catch(function () {
-                                    µ.one("#nvb").toggleClass("inactive", true);
-                                    Waiting.anim(true);
-                                    socket.emit("searchBooks", Search.last);
-                                });
-                        });
+                        Waiting.toggle(true, true);
+                        Idb.getQuery(Search.last)
+                            .then(Bookcells.show)
+                            .catch(function () {
+                                µ.one("#nvb").toggleClass("inactive", true);
+                                Waiting.anim(true);
+                                socket.emit("searchBooks", Search.last);
+                            });
                     });
                     return false;
                 },
@@ -811,15 +799,14 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     Search.clear();
                     Search.last = { "recommand": User.get().id };
                     Windows.close(true).then(function () {
-                        Waiting.toggle(true, true).then(function () {
-                            Idb.getQuery(Search.last)
-                                .then(Bookcells.show)
-                                .catch(function () {
-                                    µ.one("#nvb").toggleClass("inactive", true);
-                                    Waiting.anim(true);
-                                    socket.emit("recommanded");
-                                });
-                        });
+                        Waiting.toggle(true, true);
+                        Idb.getQuery(Search.last)
+                            .then(Bookcells.show)
+                            .catch(function () {
+                                µ.one("#nvb").toggleClass("inactive", true);
+                                Waiting.anim(true);
+                                socket.emit("recommanded");
+                            });
                     });
                 }
             },
@@ -828,15 +815,17 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 if (!event.altKey) {
                     if (!event.ctrlKey) { if (event.keyCode === 27) { Windows.close(); Tags.close(); µ.one("#contextMenu").fade(false); }} else {
                         var action;
-                        switch (event.keyCode) {
-                            case 77: Menu.toggle(); action = true; break;
-                            case 76: logout(); action = true; break;
-                            case 82: µ.one("#recherche").trigger("click"); action = true; break;
-                            case 80: µ.one("#profil").trigger("click"); action = true; break;
-                            case 66: µ.one("#collection").trigger("click"); action = true; break;
-                            case 69: µ.one("#tags").trigger("click"); action = true; break;
-                            case 73: µ.one("#contact").trigger("click"); action = true; break;
-                            case 72: µ.one("#help").trigger("click"); action = true; break;
+                        if ([77, 76, 82, 80, 66, 69, 73, 72].indexOf(event.keyCode) !== -1 && µ.one("#wa").isVisible()) { action = true; } else {
+                            switch (event.keyCode) {
+                                case 77: Menu.toggle(); action = true; break;
+                                case 76: logout(); action = true; break;
+                                case 82: µ.one("#recherche").trigger("click"); action = true; break;
+                                case 80: µ.one("#profil").trigger("click"); action = true; break;
+                                case 66: µ.one("#collection").trigger("click"); action = true; break;
+                                case 69: µ.one("#tags").trigger("click"); action = true; break;
+                                case 73: µ.one("#contact").trigger("click"); action = true; break;
+                                case 72: µ.one("#help").trigger("click"); action = true; break;
+                            }
                         }
                         if (action) {
                             event.preventDefault();
@@ -849,6 +838,8 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 var connect = function () {
                         var connection = conn.connect("/", { "secure": true, "multiplex": false });
                         connection.once("connect", function () {
+                            console.debug("socket.connect", new Date().toLocaleString(), (new Date() - start) / 1000);
+                            start = new Date();
                             this.once("disconnect", function (data) {
                                 console.debug("socket.disconnect", this.id, new Object(this), new Date().toLocaleString(), data);
                                 reconnect(this);
@@ -867,17 +858,11 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                             })
                             .on("books", Bookcells.show)
                             .on("initCollect", function (part) {
-                                //User.get().books = ret.books;
-                                //Tags.init();
-                                //µ.one("#collection").trigger("click");
-                                userActions.initCollect(part)/*.then(Tags.init)*/;
-                                //µ.one("#nbBooks").text(User.get().books.length);
-                                //console.debug("User.get().books", new Date().toLocaleString(), part, (new Date() - start) / 1000);
+                                User.get().collection.assign(part);
+                                userActions.initCollect(part);
                             })
                             .on("endCollect", function (ret) {
-                                //User.get().books = ret.books;
-                                //Tags.init();
-                                //µ.one("#collection").trigger("click");
+                                User.get().collection.assign(ret.books);
                                 userActions.initCollect(ret.books).then(function () {
                                     User.get().collection = Bookcells.cells;
                                     µ.one("#sort [by]").trigger("click");
@@ -890,19 +875,25 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                             })
                             .on("covers", function (covers) {
                                 for (var jta = 0, lg = covers.length; jta < lg; jta++) {
-                                    if (!covers[jta] || !covers[jta].id || !covers[jta].base64) { continue; }
-                                    var cover = covers[jta], bookcell = User.get().bookcell(cover.id), book = bookcell.book;
-                                    book.base64 = cover.base64;
-                                    if (!!bookcell && !!bookcell.cell) {
-                                        var cell = bookcell.cell;
-                                        if (!cell.hasClass("toshow")) { cell.one(".cover").src = cover.base64; }
-                                        if (!!Detail.data.book && Detail.data.book.id === book.id) { µ.one("#detailCover").src = cover.base64; }
+                                    if (!covers[jta] || !covers[jta].id || (!covers[jta].base64 && !covers[jta].alternative)) { continue; }
+                                    var cover = covers[jta], bookcell = User.get().bookcell(cover.id);
+                                    if (!bookcell) { continue; }
+                                    if (!bookcell.book) {
+                                        if (!!cover.base64) { bookcell.base64 = cover.base64; }
+                                        if (!!cover.alternative) { bookcell.alternative = cover.alternative; }
+                                    } else {
+                                        if (!!cover.base64) { bookcell.book.base64 = cover.base64; }
+                                        if (!!cover.alternative) { bookcell.book.alternative = cover.alternative; }
+                                        if (!!bookcell.cell) {
+                                            if (!bookcell.cell.hasClass("toshow")) { bookcell.cell.one(".cover").src = cover.base64 || cover.alternative; }
+                                            if (!!Detail.data.book && Detail.data.book.id === cover.id) { µ.one("#detailCover").src = cover.base64 || cover.alternative; }
+                                        }
                                     }
                                 }
                                 console.debug("socket.covers", new Date().toLocaleString(), (new Date() - start) / 1000);
                             })
                             .on("endRequest", Search.endRequest)
-                            .on("error", function (error) { console.warn(error); })
+                            .on("error", function (error) { console.warn(error); logout(); })
                             .on("logout", logout)
                             .on("newbook", function (data) {
                                 Detail.bookid = data.id;
@@ -926,7 +917,6 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                                 if (!Idb.db) { Idb.init(); }
                                 Waiting.toggle(false);
                             }).emit("isConnected");
-                            console.debug("socket.connect", this.id, new Object(this), new Date().toLocaleString());
 
                         });
                         return connection;
@@ -938,15 +928,14 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                                 clearInterval(connectTimeInterval);
                                 socket = connect();
                             }
-                            try { cur.connect(); } catch(error) { /*console.error(error);*/ }
+                            try { cur.connect(); } catch(error) { }
                         }, 3000);
                     };
 
                 return connect();
             })(io),
             Tags = {
-                add: function (/*event*/) {
-                    //event.preventDefault();
+                add: function () {
                     var tag = this.formToJson().tag.toLowerCase(),
                         tags = µ.alls("#userTags > div").toArray(),
                         exist = _.find(tags, function (elt) { return elt.one(".libelle").html() === tag; });
@@ -1037,12 +1026,9 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                         if (µ.one("#wa").isVisible() || !µ.one("#collection").hasClass("active")) { resolve(); } else {
                             Windows.close().then(function () {
                                 µ.one("html").toggleClass("overflown", !vis);
-                                if (!!vis) { cloud.fade(false).then(resolve); } else {
-                                    cloud.fade(0.9).then(function () {
-                                        if (!cloud.alls("span").length) { Tags.generate(); }
-                                        resolve();
-                                    });
-                                }
+                                cloud.toggle(!vis);
+                                resolve();
+                                if (!vis && !cloud.alls("span").length) { Tags.generate(); }
                             });
                         }
                     });
@@ -1062,16 +1048,10 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     µ.alls(".noSignIn").toggle(!this.googleSignIn);
                     µ.one(".noSignIn input").setAttributes("required", !this.googleSignIn);
                     if (!this.connex) { Windows.help(true); }
-                    console.debug("User.get().initialize", new Date().toLocaleString());
+                    console.debug("User.get().initialize", new Date().toLocaleString(), (new Date() - start) / 1000);
                     return this;
                 };
                 User.prototype.addbook = function (book) {
-                    /*if (this.bookindex(book.id) === -1) {
-                        this.books.push(book);
-                        this.books = _.sortBy(this.books, "title");
-                    }
-                    var cell = Bookcells.one(book.id);
-                    if (!!cell) { cell.book = book; }*/
                     var newcell = new Bookcell(book);
                     this.collection.push(newcell);
                     newcell.cell.one(".add").toggle(false);
@@ -1079,13 +1059,13 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     µ.one("#nbBooks").text(this.collection.length);
                     return newcell;
                 };
-                User.prototype.bookcell = function (bookid) { return _.find(this.collection, _.matchesProperty("book.id", bookid)); };
+                User.prototype.bookcell = function (bookid) { return _.find(this.collection, _.matchesProperty("id", bookid)); };
                 User.prototype.book = function (bookid) {
                     var bookcell = this.bookcell(bookid);
                     return !!bookcell && !!bookcell.book ? bookcell.book : null;
                 };
                 User.prototype.bookindex = function (bookid) {
-                    return _.findIndex(this.collection, _.matchesProperty("book.id", bookid));
+                    return _.findIndex(this.collection, _.matchesProperty("id", bookid));
                 };
                 User.prototype.removebook = function (bookid) {
                     _.remove(this.collection, _.matchesProperty("id", bookid));
@@ -1097,18 +1077,13 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     Windows.close();
                 };
                 User.prototype.updatebook = function (book) {
-                    //var index = this.bookindex(book.id);
                     _.assign(book, book.update);
                     delete book.update;
-                    //if (index !== -1) { _.assign(this.collection[index].book, book); }
                     var bookcell = this.bookcell(book.id);
                     _.assign(bookcell.book, book);
-                    //var bookcell = Bookcells.one(book.id);
-                    //if (!!bookcell && (!!book.title || !!book.authors || !!book.alternative)) {
                     if (!!book.title) { bookcell.cell.one("header").text(book.title); }
                     if (!!book.authors) { bookcell.cell.one("figcaption").text(book.authors.join(", ")); }
                     if (!!book.alternative) { bookcell.cell.one(".cover").src = book.alternative; }
-                    //}
                 };
 
                 return {
@@ -1127,13 +1102,11 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 },
                 initCollect: function (part) {
                     if (!µ.one("#collection").hasClass("active")) {
-                        //µ.one("#collection").toggleClass("active", true);
-                        //Images.active.call(µ.one("#collection"));
                         Images.active.call(µ.one("#collection").toggleClass("active", true));
                     }
                     return new Promise(function (resolve) {
                         Waiting.anim(true);
-                        Bookcells.show(part).then(resolve);
+                        if (!part || !part.length) { resolve(); } else { Bookcells.show(part).then(resolve); }
                     });
                 },
                 collection: function (books) {
@@ -1146,28 +1119,13 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                             Images.hover.call(µ.one("#sort div")).toggleClass("sortBy", true);
                             Bookcells.destroy();
                             Waiting.anim(true);
-                            Waiting.toggle(true, true).then(function () {
-                                µ.one("#nvb").toggleClass("inactive", true);
-                                Images.active.call(µ.one("#collection"));
-                                //if (!!User.get().collection && User.get().collection.length) {
-                                    Bookcells.cells = User.get().collection;
-                                    Bookcells.display(false, false, true).then(function (nb) {
-                                        Search.endRequest(nb);
-                                        resolve();
-                                    });
-                                /*} else if (!!books && !!books.length) {
-                                    Bookcells.show(books).then(function (ret) {
-                                        if (!!Bookcells.cells.length) {
-                                            User.get().collection = Bookcells.cells;
-                                        }
-                                        µ.one("#nbBooks").text(ret);
-                                        Search.endRequest(ret);
-                                        resolve();
-                                    });
-                                } else {
-                                    Search.endRequest();
-                                    resolve();
-                                }*/
+                            Waiting.toggle(true, true);
+                            µ.one("#nvb").toggleClass("inactive", true);
+                            Images.active.call(µ.one("#collection"));
+                            Bookcells.cells = User.get().collection;
+                            Bookcells.display(false, false, true).then(function (nb) {
+                                Search.endRequest(nb);
+                                resolve();
                             });
                         } else {
                             window.scroll(0, 0);
@@ -1201,29 +1159,21 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     µ.one("#w").toggleClass("over", toShow);
                 },
                 toggle: function (visible, withIcon) {
-                    Waiting.p = new Promise(function (resolve) {
-                        var wait = µ.one("#w");
-                        wait.one("img").toggle(!!withIcon);
-                        if (wait.isVisible() === visible || !!Windows.on || !!Waiting.on) { resolve(); } else {
-                            Waiting.on = true;
-                            µ.alls(".description").removeAll();
-                            if (!!visible) {
-                                µ.one("html").toggleClass("overflown", true);
-                                wait.fade(0.5).then(resolve);
-                            } else {
-                                wait.fade(false).then(function () {
-                                    µ.one("html").toggleClass("overflown", false);
-                                    Waiting.over(false);
-                                    Waiting.connection(false);
-                                    resolve();
-                                });
-                            }
+                    var wait = µ.one("#w");
+                    wait.one("img").toggle(!!withIcon);
+                    if (wait.isVisible() !== visible/* && !Windows.on && !Waiting.on*/) {
+                        µ.alls(".description").removeAll();
+                        if (!!visible) {
+                            µ.one("html").toggleClass("overflown", true);
+                            wait.toggle(true);
+                        } else {
+                            wait.toggle(false);
+                            µ.one("html").toggleClass("overflown", false);
+                            Waiting.over(false);
+                            Waiting.connection(false);
                         }
-                    });
-                    Waiting.p.then(function () {
-                        delete Waiting.on;
-                    });
-                    return Waiting.p;
+                    }
+                    return;
                 },
                 connection: function (toShow) {
                     var noConnect = µ.one("#noConnect"),
@@ -1246,13 +1196,10 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                         var win = µ.alls(".window:not(.notdisplayed)"), forms = µ.alls("form:not(#formFilter)");
                         Waiting.over(false);
                         if (µ.one("#h").isVisible()) { Windows.help(false); }
-                        µ.removeEventListener("keyup", shortCuts);
                         if (!win.length) { resolve(); } else {
+                            if (notTog === true) { resolve(); } else { Waiting.toggle()/*.then(resolve)*/; resolve(); }
+                            win.fade(false).then(function () { delete Windows.on; });
                             for (var jta = 0, lg = forms.length; jta < lg; jta++) { forms[jta].reset(); }
-                            win.fade(false).then(function () {
-                                delete Windows.on;
-                                if (notTog === true) { resolve(); } else { Waiting.toggle().then(resolve); }
-                            });
                         }
                     });
                 },
@@ -1261,13 +1208,11 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                         Waiting.over();
                         µ.one("#confirmWindow header span").text(µ.one("#confirmWindow header span").getAttribute(type));
                         µ.one("#confirmWindow #confirm").text(msg);
-                        //µ.alls("#confirmWindow button").setEvents("click", Windows.close);
                         µ.one("#confirmWindow .valid").setEvents("click", function () { resolve(); });
                         µ.one("#confirmWindow .cancel").toggle(type === "warning").setEvents("click", function () { reject(); });
-                        Waiting.toggle(true).then(function () {
-                            µ.one("#confirmWindow").css({ "top": xcroll().top + 10, "left": "25%" }).fade(true);
-                            µ.setEvents({ "keyup keydown" : Window.esc });
-                        });
+                        Waiting.toggle(true);
+                        µ.one("#confirmWindow").css({ "top": xcroll().top + 10, "left": "25%" }).fade(true);
+                        µ.setEvents({ "keyup keydown" : Window.esc });
                     });
                 },
                 esc: function (event) { if (event.keyCode === 27) { Windows.close(); } },
@@ -1291,8 +1236,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                         if (!!Windows.on && Windows.on === wid) { Windows.close().then(resolve); } else {
                             if (µ.one("#h").isVisible()) { Windows.help(false); }
                             Tags.close().then(function () {
-                                if (µ.one("#wa").isVisible()) { resolve(); }
-                                if (!_.includes(["previewWindow", "recommandWindow"], wid)) {µ.alls(".window:not(.notdisplayed)").fade(false); } else { Waiting.over(true); }
+                                if (!_.includes(["previewWindow", "recommandWindow"], wid)) { µ.alls(".window:not(.notdisplayed)").fade(false); } else { Waiting.over(true); }
                                 if (wid === "profileWindow") {
                                     µ.one("@mail").value = User.get().id;
                                     µ.one("@name").value = User.get().name;
@@ -1305,12 +1249,11 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                                     if (!µ.one(".changePwd.notdisplayed")) { Windows.togglePwd(); }
                                 }
                                 µ.alls(".errMsg").toggle(false);
-                                Waiting.toggle(true).then(function () {
-                                    Windows.on = wid;
-                                    win.css({ "top": xcroll().top + 10 }).fade(true).then(function () {
-                                        if (win.one("[autofocus]")) { win.one("[autofocus]").focus(); }
-                                        resolve();
-                                    });
+                                Waiting.toggle(true);
+                                Windows.on = wid;
+                                win.css({ "top": xcroll().top + 10 }).fade(true).then(function () {
+                                    if (win.one("[autofocus]")) { win.one("[autofocus]").focus(); }
+                                    resolve();
                                 });
                             });
                         }
@@ -1375,9 +1318,10 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     self.cell.removeEvent("mouseenter mouseleave", description).removeEvent("dragstart", dragstart).removeEvent("dragend", dragend).removeAll();
                 },
                 detail = function () {
-                    if (User.get().bookindex(self.id) !== -1 || !!self.opened) {
+                    var isCollect = User.get().bookindex(self.id) !== -1;
+                    if (!!isCollect || !!self.opened) {
                         Detail.data = self;
-                        Detail.show(User.get().bookindex(self.id) !== -1);
+                        Detail.show(!!isCollect);
                     } else {
                         Idb.getDetail(self.id).then(function (result) {
                             if (!!result) {

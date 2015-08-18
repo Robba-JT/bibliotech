@@ -21,16 +21,15 @@ HTMLElement.prototype.css = function (style) {
     return this;
 };
 HTMLElement.prototype.fade = function (display) {
-    var elt = this, eltd = typeof display === "undefined" ? !elt.isVisible() : display, op = elt.style.opacity;
+    display = typeof display === "undefined" ? !elt.isVisible() : display;
+    var elt = this, cls = !!display ? "fadein" : "fadeout";
     return new Promise(function (resolve) {
-        if (!!eltd) { elt.toggle(true); op = 0; }
-        var timer = setInterval(function () {
-            if (!!eltd) {
-                if (op >= (eltd || 1)) { clearInterval(timer); resolve(elt); } else { elt.style.opacity = (op += 0.05).toFixed(2); }
-            } else {
-                if (op <= 0) { clearInterval(timer); elt.toggle(false); resolve(elt); } else { elt.style.opacity = (op -= 0.05).toFixed(2); }
-            }
-        }, 5);
+        if (!!display) { elt.toggleClass("notdisplayed", false); }
+        elt.setEvents({ "animationend": function end(event) {
+            elt.removeEvent("animationend", end).toggleClass(cls, false);
+            if (!display) { elt.toggleClass("notdisplayed", true); }
+            resolve(elt);
+        }}).toggleClass(cls, true);
     });
 };
 HTMLElement.prototype.formToJson = function () {

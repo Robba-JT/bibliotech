@@ -28,7 +28,7 @@ module.exports.BooksAPI = BooksAPI = function (db) {
             "searchOne": {
                 "fields": "id, etag, accessInfo(accessViewStatus), volumeInfo(title, subtitle, authors, publisher, publishedDate, description, industryIdentifiers, pageCount, categories, imageLinks, canonicalVolumeLink)",
                 "projection": "full",
-                "key": "AIzaSyA0t8hJ9KrKfTBKVBBZq5gXIbg7vuh5yHk"
+                "key": "AIzaSyBw0Wgo4DDJ48-dd7pC8DpryvOm_z8515A"
             },
             "search": {
                 "maxResults": 40,
@@ -36,7 +36,7 @@ module.exports.BooksAPI = BooksAPI = function (db) {
                 "projection": "lite",
                 "order": "relevance",
                 "printType": "books",
-                "key": "AIzaSyA0t8hJ9KrKfTBKVBBZq5gXIbg7vuh5yHk"
+                "key": "AIzaSyBw0Wgo4DDJ48-dd7pC8DpryvOm_z8515A"
             },
             "import": {
                 "maxResults": 40,
@@ -44,7 +44,7 @@ module.exports.BooksAPI = BooksAPI = function (db) {
                 "fields": "items(id)",
                 "projection": "lite",
                 "printType": "books",
-                "key": "AIzaSyA0t8hJ9KrKfTBKVBBZq5gXIbg7vuh5yHk"
+                "key": "AIzaSyBw0Wgo4DDJ48-dd7pC8DpryvOm_z8515A"
             }
         },
         formatOne = function (book) {

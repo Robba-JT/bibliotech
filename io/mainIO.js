@@ -169,6 +169,7 @@ module.exports = mainIO = function (socket, db) {
                             var def64 = [],
                                 indice = 0,
                                 toSend = [],
+                                sendCovers = [],
                                 notifs = Notifs.value || [],
                                 books = Books.value || [],
                                 covers = Covers.value || [],
@@ -197,7 +198,7 @@ module.exports = mainIO = function (socket, db) {
                                 }
                                 if (!!cover) {
                                     if (!!books[book].cover) { bookAPI.removeCovers({ _id: { user: thisUser._id , book: books[book].id }}); } else {
-                                        books[book].alternative = cover.cover;
+                                        sendCovers.push({ "id": books[book].id, "alternative": cover.cover });
                                         books[book].mainColor = cover.color;
                                     }
                                 } else if (!!books[book].cover) {
@@ -214,13 +215,12 @@ module.exports = mainIO = function (socket, db) {
                                 tags: _.countBy(_.flatten(_.map(userData.books, "tags")).sort()),
                                 orders: thisUser.orders,
                                 notifs: notifs,
-                                //books: books
                                 books: toSend
                             });
                             thisBooks = books;
                             Q.allSettled(def64).then(function (results) {
-                                var covers = _.map(results, "value"), retCovers = [];
-                                socket.emit("covers", covers);
+                                if (!!results.length) { sendCovers.push(_.map(results, "value")); }
+                                socket.emit("covers", _.flatten(sendCovers));
                             }).catch(function (error) { console.error("isConnected - Q.allSettled(def64)", error); });
                         });
                     });
