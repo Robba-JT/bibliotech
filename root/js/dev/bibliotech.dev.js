@@ -5,13 +5,19 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
         "use strict";
         var µ = document, start = new Date();
         console.debug("µ.ready", start.toLocaleString());
-        var Bookcell = function (book, indice) {
+        var arraymove = function (arr, fromIndex, toIndex) {
+                var element = arr[fromIndex];
+                arr.splice(fromIndex, 1);
+                arr.splice(toIndex, 0, element);
+            },
+            Bookcell = function (book, indice) {
                 var totalCells = Bookcells.cells.length + (typeof indice === "undefined" ? 0 : indice),
                     inCollect = µ.one("#collection").hasClass("active") || User.get().bookindex(book.id) !== -1;
 
                 this.id = book.id;
                 this.book = book;
                 this.cell = µ.one("#tempCell").cloneNode(true).removeAttributes("id").toggleClass("bookcell", true);
+                this.cell.setAttribute("bookid", JSON.stringify(book.id));
                 this.cell.one("header").text(book.title);
                 this.cell.one("figcaption").text(!!book.authors ? book.authors.join(", ") : "");
                 this.cell.one(".previewable").toggle(!!book.access && book.access !== "NONE");
@@ -32,19 +38,22 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     window.scroll(0, 0);
                     µ.one("#formFilter").reset();
                     µ.alls(".bookcell").toggleClass("tofilter", false);
-                    µ.one("#selectedTag").html(tag);
+                    µ.one("#selectedTag").html(tag).parentNode.toggle(true);
+                    Bookcells.order(tag);
                     for (var jta = 0, lg = Bookcells.cells.length; jta < lg; jta++) {
                         var bcell = Bookcells.cells[jta];
                         bcell.cell.toggleClass("tohide", !_.includes(bcell.book.tags, tag));
                     }
-                    Bookcells.display();
+                    Bookcells.display(Bookcells.cells);
                 },
                 cells: [],
                 destroy: function () {
                     Dock.remove();
-                    Bookcells.books = [];
                     if (!µ.one("#collection").hasClass("active")) { for (var jta = 0, lg = Bookcells.cells.length; jta < lg; jta++) { Bookcells.cells[jta].destroy(); }}
+                    delete Bookcells.cells;
+                    delete Bookcells.books;
                     Bookcells.cells = [];
+                    Bookcells.books = [];
                 },
                 display: function (cells, filter, from) {
                     var args = [filter, from];
@@ -61,7 +70,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                                     indice++;
                                 }
                             }
-                            if (!!µ.one("#detailWindow.notdisplayed")) { Waiting.toggle(false); }
+                            if (!µ.one(".window:not(.notdisplayed)")) { Waiting.toggle(false); }
                             Bookcells.loadcovers();
                             resolve(Bookcells.cells.length);
                         }
@@ -69,6 +78,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 },
                 filter: function () {
                     var filtre = this.value.toLowerCase(), last = µ.one("@last");
+                    µ.one("#saveorder").toggle(false);
                     if (!!this.checkValidity() && filtre !== last.value) {
                         last.value = filtre;
                         for (var jta = 0, lg = Bookcells.cells.length; jta < lg; jta++) {
@@ -104,7 +114,31 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     return;
                 },
                 one: function (bookid) { return _.find(Bookcells.cells, _.matchesProperty("id", bookid)); },
+                order: function (collection) {
+                    var one = _.find(User.get().orders, _.matchesProperty("id", collection));
+                    if (!!one && !!one.order) {
+                        if (!!µ.one(".sortBy")) { Images.blur.call(µ.one(".sortBy").toggleClass("sortBy", false)); }
+                        for (var jta = 0, lg = one.order.length; jta < lg; jta++) {
+                            var index = _.findIndex(Bookcells.cells, _.matchesProperty("id", one.order[jta]));
+                            arraymove(Bookcells.cells, index, jta);
+                        }
+                    }
+                    return !!one;
+                },
                 returned: function (book) { Bookcells.one(book.id).returned(book); },
+                save: function () {
+                    µ.one("#saveorder").toggle();
+                    var id = µ.one("#selectedTag").html() || "µ.alls",
+                        order = _.map(_.sortBy(µ.alls(".col .bookcell"), function (cell) { return cell.index(); }), function (cell) { return JSON.parse(cell.getAttribute("bookid")); }),
+                        curr = _.find(User.get().orders, _.matchesProperty("id", id));
+
+                    console.debug("order", order);
+                    if (!curr || !_.isEqual(curr.order, order)) {
+                        socket.emit("orders", { "new": !!curr, data: { "id": id, "order": order }});
+                        if (!curr) { User.get().orders.push({ "id": id, "order": order }); } else { curr.order = order; }
+                    }
+                    return;
+                },
                 show: function (books) {
                     var bArray = _.chunk(books, 40), chain,
                         gen = function (books) {
@@ -332,6 +366,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 },
                 show: function (inCollection) {
                     var book = Detail.data.book, win = µ.one("#detailWindow");
+                    console.debug(Detail.data.book);
                     µ.one("#formNew").reset();
                     µ.one("#formRecommand").reset();
                     win.alls("#formNew input, #formNew textarea").toggle(false);
@@ -478,15 +513,18 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 drop: function (event) {
                     event.preventDefault();
                     var cell = Bookcells.one(JSON.parse(event.dataTransfer.getData("text"))).cell, target = event.target.closest("bookcell");
+                    if (!!µ.one(".description")) { µ.one(".description").removeAll(); }
                     if (!!target) {
                         if (cell !== target) {
                             target.closest("col").insertBefore(cell, target);
                             Bookcells.loadcovers();
+                            if (µ.one("#collection").hasClass("active") && !!µ.one("#selectedTag").html() && !µ.one("@filtre").value) { µ.one("#saveorder").toggle(true); }
                             if (µ.one(".sortBy")) { Images.blur.call(µ.one(".sortBy").toggleClass("sortBy", false)); }
                         }
                     } else {
                         this.appendChild(cell);
                         if (µ.one(".sortBy")) { Images.blur.call(µ.one(".sortBy").toggleClass("sortBy", false)); }
+                        if (µ.one("#collection").hasClass("active") && !µ.one("@filtre").value) { µ.one("#saveorder").toggle(true); }
                     }
                     return false;
                 },
@@ -670,7 +708,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     var notifs = µ.one("#notifs");
                     if (!!state) { µ.one("#sort").fade(false); }
                     if (notifs.isVisible()) { notifs.fade(false); } else {
-                        notifs.css({ top: µ.one("#nvb").clientHeight + 5, left: µ.one("#notifications").offsetLeft }).fade(0.95);
+                        notifs.css({ top: µ.one("#nvb").clientHeight + 5, left: µ.one("#notifications").offsetLeft }).fade(true);
                     }
                 },
                 selectstart: function (event) {
@@ -685,7 +723,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     var sorts = µ.one("#sort");
                     if (!!state) { µ.one("#notifs").fade(false); }
                     if (sorts.isVisible()) { sorts.fade(false); } else {
-                        sorts.css({ top: µ.one("#nvb").clientHeight + 5, left: µ.one("#tris").offsetLeft }).fade(0.95);
+                        sorts.css({ top: µ.one("#nvb").clientHeight + 5, left: µ.one("#tris").offsetLeft }).fade(true);
                     }
                 },
                 toggle: function () {
@@ -741,7 +779,6 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                         Waiting.toggle(true, true);
                         Idb.getQuery(Search.last)
                             .then(Bookcells.show, function () {
-                                µ.one("#nvb").toggleClass("inactive", true);
                                 Waiting.anim(true);
                                 socket.emit("associated", bookid);
                             })
@@ -758,7 +795,6 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                         Idb.getQuery(Search.last)
                             .then(Bookcells.show)
                             .catch(function () {
-                                µ.one("#nvb").toggleClass("inactive", true);
                                 Waiting.anim(true);
                                 socket.emit("searchBooks", Search.last);
                             });
@@ -771,10 +807,10 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     Images.active.call(µ.one("#recherche"));
                     µ.one("#formFilter").reset();
                     if (µ.one(".sortBy")) { Images.blur.call(µ.one(".sortBy").toggleClass("sortBy", false)); }
-                    µ.one("#selectedTag").text("");
+                    µ.one("#selectedTag").text("").parentNode.toggle(false);
+                    µ.one("#saveorder").toggle(false);
                 },
                 endRequest: function (nb) {
-                    µ.one("#nvb").toggleClass("inactive", false);
                     Waiting.anim(false);
                     if (!nb) { Waiting.toggle(false); }
                     if (!µ.one("#collection").hasClass("active") && !!Search.last) { Idb.setQuery(Search.last, Bookcells.books); }
@@ -787,7 +823,6 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                             if (action === "exportNow") { return socket.emit("exportNow"); }
                             Bookcells.destroy();
                             Images.active.call(µ.one("#collection"));
-                            µ.one("#nvb").toggleClass("inactive", true);
                             Waiting.anim(true);
                             Windows.close(true).then(function () {
                                 Waiting.toggle(true, true);
@@ -803,7 +838,6 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                         Idb.getQuery(Search.last)
                             .then(Bookcells.show)
                             .catch(function () {
-                                µ.one("#nvb").toggleClass("inactive", true);
                                 Waiting.anim(true);
                                 socket.emit("recommanded");
                             });
@@ -836,7 +870,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
             },
             socket = (function (conn) {
                 var connect = function () {
-                        var connection = conn.connect("/", { "secure": true, "multiplex": false });
+                        var connection = conn.connect("https://biblio.tech", { "secure": true, "multiplex": false });
                         connection.once("connect", function () {
                             console.debug("socket.connect", new Date().toLocaleString(), (new Date() - start) / 1000);
                             start = new Date();
@@ -847,6 +881,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                                 Windows.close().then(function () {
                                     Waiting.toggle(true, true);
                                     Waiting.connection(true);
+                                    µ.one("#selectedTag").html("").parentNode.toggle(false);
                                     µ.alls(".deroulant").toggle(false);
                                     if (!!µ.one("#picture img")) { µ.one("#picture img").removeAll(); }
                                     µ.alls("#notifications, #tags").toggle(false);
@@ -858,6 +893,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                             })
                             .on("books", Bookcells.show)
                             .on("initCollect", function (part) {
+                                console.debug("part", part);
                                 User.get().collection.assign(part);
                                 userActions.initCollect(part);
                             })
@@ -865,7 +901,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                                 User.get().collection.assign(ret.books);
                                 userActions.initCollect(ret.books).then(function () {
                                     User.get().collection = Bookcells.cells;
-                                    µ.one("#sort [by]").trigger("click");
+                                    //µ.one("#sort [by]").trigger("click");
                                     Tags.init();
                                     Notifs.show(ret.notifs);
                                     Search.endRequest(Bookcells.cells.length);
@@ -874,23 +910,28 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                                 console.debug("User.get().books", new Date().toLocaleString(), User.get().collection.length, (new Date() - start) / 1000);
                             })
                             .on("covers", function (covers) {
-                                for (var jta = 0, lg = covers.length; jta < lg; jta++) {
-                                    if (!covers[jta] || !covers[jta].id || (!covers[jta].base64 && !covers[jta].alternative)) { continue; }
-                                    var cover = covers[jta], bookcell = User.get().bookcell(cover.id);
-                                    if (!bookcell) { continue; }
-                                    if (!bookcell.book) {
-                                        if (!!cover.base64) { bookcell.base64 = cover.base64; }
-                                        if (!!cover.alternative) { bookcell.alternative = cover.alternative; }
-                                    } else {
-                                        if (!!cover.base64) { bookcell.book.base64 = cover.base64; }
-                                        if (!!cover.alternative) { bookcell.book.alternative = cover.alternative; }
-                                        if (!!bookcell.cell) {
-                                            if (!bookcell.cell.hasClass("toshow")) { bookcell.cell.one(".cover").src = cover.base64 || cover.alternative; }
-                                            if (!!Detail.data.book && Detail.data.book.id === cover.id) { µ.one("#detailCover").src = cover.base64 || cover.alternative; }
+                                var p = new Promise(function (resolve) {
+                                    for (var jta = 0, lg = covers.length; jta < lg; jta++) {
+                                        if (!covers[jta] || !covers[jta].id || (!covers[jta].base64 && !covers[jta].alternative)) { continue; }
+                                        var cover = covers[jta], bookcell = User.get().bookcell(cover.id);
+                                        if (!bookcell) { continue; }
+                                        if (!bookcell.book) {
+                                            if (!!cover.base64) { bookcell.base64 = cover.base64; }
+                                            if (!!cover.alternative) { bookcell.alternative = cover.alternative; }
+                                        } else {
+                                            if (!!cover.base64) { bookcell.book.base64 = cover.base64; }
+                                            if (!!cover.alternative) { bookcell.book.alternative = cover.alternative; }
+                                            if (!!bookcell.cell) {
+                                                if (!bookcell.cell.hasClass("toshow")) { bookcell.cell.one(".cover").src = cover.base64 || cover.alternative; }
+                                                if (!!Detail.data.book && Detail.data.book.id === cover.id) { µ.one("#detailCover").src = cover.base64 || cover.alternative; }
+                                            }
                                         }
                                     }
-                                }
-                                console.debug("socket.covers", new Date().toLocaleString(), (new Date() - start) / 1000);
+                                    resolve();
+                                }).then(function () {
+                                    console.debug("socket.covers", new Date().toLocaleString(), (new Date() - start) / 1000);
+                                });
+                                return p;
                             })
                             .on("endRequest", Search.endRequest)
                             .on("error", function (error) { console.warn(error); logout(); })
@@ -956,7 +997,6 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 destroy: function () { µ.alls("#cloud span").removeAll(); },
                 generate: function () {
                     var cloud = µ.one("#cloud"),
-                        click = function () { Tags.show(); Bookcells.bytags(this.text()); Waiting.toggle(false); },
                         height = ~~(cloud.clientHeight / 2),
                         width = ~~(cloud.clientWidth / 2),
                         ratio = width / height,
@@ -968,6 +1008,12 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                             };
                             for(var i = 0, lg = others.length; i < lg; i++) { if (overlap(elem, others[i])) { return true; }}
                             return false;
+                        },
+                        click = function () {
+                            Tags.show();
+                            µ.one("#saveorder").toggle(false);
+                            Bookcells.bytags(this.text());
+                            Waiting.toggle(false);
                         };
 
                     Tags.destroy();
@@ -1113,24 +1159,34 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     return new Promise(function (resolve) {
                         Windows.close();
                         µ.one("@filtre").value = µ.one("@last").value = µ.one("#selectedTag").innerHTML = "";
+                        µ.one("#selectedTag").parentNode.toggle(false);
+                        µ.one("#saveorder").toggle(false);
                         if (!µ.one("#collection").hasClass("active")) {
-                            var isSort = µ.one(".sortBy");
-                            if (isSort) { Images.blur.call(isSort.toggleClass("sortBy", false)); }
-                            Images.hover.call(µ.one("#sort div")).toggleClass("sortBy", true);
+                            var isSort = µ.one(".sortBy"), cells;
                             Bookcells.destroy();
+                            Bookcells.cells = User.get().collection;
+                            if (isSort) { Images.blur.call(isSort.toggleClass("sortBy", false)); }
+                            if (!Bookcells.order("µ.alls")) {
+                                Images.hover.call(µ.one("#sort div")).toggleClass("sortBy", true);
+                                cells = false;
+                            } else {
+                                cells = Bookcells.cells;
+                            }
                             Waiting.anim(true);
                             Waiting.toggle(true, true);
-                            µ.one("#nvb").toggleClass("inactive", true);
                             Images.active.call(µ.one("#collection"));
-                            Bookcells.cells = User.get().collection;
-                            Bookcells.display(false, false, true).then(function (nb) {
+                            Bookcells.display(cells, false, true).then(function (nb) {
                                 Search.endRequest(nb);
                                 resolve();
                             });
                         } else {
                             window.scroll(0, 0);
                             µ.alls(".bookcell").toggleClass("tofilter tohide", false);
-                            µ.one("#sort [by]").trigger("click");
+                            if (!!Bookcells.order("µ.alls")) {
+                                Bookcells.display(Bookcells.cells);
+                            } else {
+                                µ.one("#sort [by]").trigger("click");
+                            }
                             resolve();
                         }
                     });
@@ -1153,7 +1209,10 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
             },
             Waiting = {
                 anim: function (toShow) {
-                    if (µ.one("#wa").isVisible() !== toShow) { µ.one("#wa").fade(toShow); }
+                    if (µ.one("#wa").isVisible() !== toShow) {
+                        µ.one("#wa").fade(toShow);
+                        µ.one("#nvb").toggleClass("inactive", toShow);
+                    }
                 },
                 over: function (toShow) {
                     µ.one("#w").toggleClass("over", toShow);
@@ -1161,7 +1220,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 toggle: function (visible, withIcon) {
                     var wait = µ.one("#w");
                     wait.one("img").toggle(!!withIcon);
-                    if (wait.isVisible() !== visible/* && !Windows.on && !Waiting.on*/) {
+                    if (wait.isVisible() !== visible) {
                         µ.alls(".description").removeAll();
                         if (!!visible) {
                             µ.one("html").toggleClass("overflown", true);
@@ -1196,9 +1255,12 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                         var win = µ.alls(".window:not(.notdisplayed)"), forms = µ.alls("form:not(#formFilter)");
                         Waiting.over(false);
                         if (µ.one("#h").isVisible()) { Windows.help(false); }
-                        if (!win.length) { resolve(); } else {
-                            if (notTog === true) { resolve(); } else { Waiting.toggle()/*.then(resolve)*/; resolve(); }
-                            win.fade(false).then(function () { delete Windows.on; });
+                        if (!win) { resolve(); } else {
+                            win.fade(false).then(function () {
+                                delete Windows.on;
+                                resolve();
+                            });
+                            if (notTog !== true) { Waiting.toggle(); }
                             for (var jta = 0, lg = forms.length; jta < lg; jta++) { forms[jta].reset(); }
                         }
                     });
@@ -1309,7 +1371,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                             position.top =  top;
                         }
                         description.css(position);
-                        setTimeout(function () { description.setEvents("mouseleave", leave).fade(0.9); }, 1000);
+                        setTimeout(function () { description.setEvents("mouseleave", leave).fade(true); }, 1000);
                     }
                 },
                 destroy = function () {
@@ -1359,7 +1421,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
 
             this.cell.alls("header, figure").setEvents("click", detail);
             this.cell.alls("button").setEvents("click", action);
-            this.cell.setEvents({ "mouseenter mouseleave": description, dragstart: dragstart, dragend: dragend });
+            this.cell.setEvents({ "mouseenter": description, "mouseleave": description, "dragstart": dragstart, "dragend": dragend });
             this.cell.one("footer").css({ "bottom": this.cell.one("figcaption").clientHeight + 5 });
             this.actived = true;
             this.destroy = destroy;
@@ -1408,6 +1470,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
         µ.one("#recommand4u").setEvents("click", Search.recommand);
         µ.alls("#importNow, #exportNow").setEvents("click", Search.gtrans);
         µ.alls("@tag").setEvents("input propertychange", Tags.list);
+        µ.one("#saveorder").setEvents("click", Bookcells.save);
         window.setEvents({ "contextmenu": Menu.context, "resize": Dock.resize, "click": Menu.close, "selectstart": Menu.selectstart });
         µ.alls("[nav]").setEvents("click", Menu.nav);
         (function (search) {

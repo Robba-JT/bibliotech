@@ -108,8 +108,13 @@ module.exports = mainIO = function (socket, db) {
             if (!!book.from) { update.$addToSet.books.from = book.from; }
             if (!!book.alt) { update.$addToSet.books.cover = new ObjectID(book.alt); }
             userAPI.updateUser({ _id: thisUser._id }, update);
-            if (!!book.isNew) { defBooks("updateBook", book); }
             thisBooks.push(book);
+            if (!!book.isNew) { defBooks("updateBook", book); }
+        },
+        arraymove = function (arr, fromIndex, toIndex) {
+            var element = arr[fromIndex];
+            arr.splice(fromIndex, 1);
+            arr.splice(toIndex, 0, element);
         },
         onEvent = socket.onevent;
 
@@ -143,7 +148,8 @@ module.exports = mainIO = function (socket, db) {
                         thisUser = userData;
                         var booksList = _.pluck(userData.books, "book"),
                             tagsList = _.countBy(_.flatten(_.compact(_.pluck(userData.books, "tags")), true).sort()),
-                            coverList = _.compact(_.pluck(userData.books, "cover"));
+                            coverList = _.compact(_.pluck(userData.books, "cover")),
+                            order = _.find(userData.orders, _.matchesProperty("id", "µ.alls"));
 
                         thisUser.googleSignIn = !!userInfos.googleSignIn;
                         thisUser.token = userInfos.token;
@@ -158,7 +164,8 @@ module.exports = mainIO = function (socket, db) {
                             name: thisUser.name,
                             picture: userInfos.picture,
                             tags: tagsList,
-                            session: sessionId
+                            session: sessionId,
+                            orders: userData.orders
                         });
                         Q.allSettled([
                             defBooks("loadNotifs", { "_id.to": thisUser._id, isNew: true }),
@@ -178,6 +185,13 @@ module.exports = mainIO = function (socket, db) {
                                 returnComments = function (elt) { return elt._id.user !== thisUser._id; },
                                 returnUserComments = function (elt) { return elt._id.user === thisUser._id; },
                                 returnCover = function (cover) { return _.isEqual(cover._id.book, books[book].id); };
+
+                            if (!!order && !!order.order) {
+                                for (var jta = 0, lg = order.order.length; jta < lg; jta++) {
+                                    var ind = _.findIndex(books, _.matchesProperty("id", order.order[jta]));
+                                    if (ind !== -1) { arraymove(books, ind, jta); }
+                                }
+                            }
 
                             for (var book in books) {
                                 var infos = _.find(userData.books, returnInfo),
@@ -213,7 +227,6 @@ module.exports = mainIO = function (socket, db) {
                             }
                             socket.emit("endCollect", {
                                 tags: _.countBy(_.flatten(_.map(userData.books, "tags")).sort()),
-                                orders: thisUser.orders,
                                 notifs: notifs,
                                 books: toSend
                             });
@@ -403,5 +416,16 @@ module.exports = mainIO = function (socket, db) {
         var newbook = _.assign({ id: { user: thisUser._id, book: thisUser.userbooks }, isNew: true }, data);
         addBookToUser(newbook);
         return socket.emit("newbook", newbook);
+    });
+
+    socket.on("orders", function (order) {
+        var query = { _id: thisUser._id }, update = {};
+        if (order.new) {
+            query['orders.id'] = order.data.id;
+            update.$set = { "orders.$.order": order.data.order };
+        } else {
+            update.$addToSet = { "orders": order.data };
+        }
+        userAPI.updateUser(query, update);
     });
 };

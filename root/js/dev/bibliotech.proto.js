@@ -21,7 +21,7 @@ HTMLElement.prototype.css = function (style) {
     return this;
 };
 HTMLElement.prototype.fade = function (display) {
-    display = typeof display === "undefined" ? !elt.isVisible() : display;
+    display = typeof display === "undefined" ? !this.isVisible() : display;
     var elt = this, cls = !!display ? "fadein" : "fadeout";
     return new Promise(function (resolve) {
         if (!!display) { elt.toggleClass("notdisplayed", false); }
@@ -98,16 +98,15 @@ HTMLElement.prototype.text = function (code) {
     return this;
 };
 HTMLElement.prototype.toLeft = function (display) {
-    var elt = this, eltd = typeof display === "undefined" ? elt.offsetLeft < 0 : display, width = elt.clientWidth, step = ~~(width / 20);
-    elt.scrollTop = 0;
+    display = typeof display === "undefined" ? !this.isVisible() : display;
+    var elt = this, cls = !!display ? "leftin" : "leftout";
     return new Promise(function (resolve) {
-        var timer = setInterval(function () {
-            if (!!eltd) {
-                if (elt.offsetLeft >= 0) { clearInterval(timer); resolve(elt); } else { elt.css({ "left": elt.offsetLeft + step }); }
-            } else {
-                if (elt.offsetLeft <= -width) { clearInterval(timer); resolve(elt); } else { elt.css({ "left": elt.offsetLeft - step }); }
-            }
-        }, 5);
+        if (!!display) { elt.toggleClass("notdisplayed", false); }
+        elt.setEvents({ "animationend": function end(event) {
+            elt.removeEvent("animationend", end).toggleClass(cls, false);
+            if (!display) { elt.toggleClass("notdisplayed", true); }
+            resolve(elt);
+        }}).toggleClass(cls, true);
     });
 };
 HTMLElement.prototype.toggle = function (display) {

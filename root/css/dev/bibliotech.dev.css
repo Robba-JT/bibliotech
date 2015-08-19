@@ -237,11 +237,6 @@ img {
     cursor: pointer;
 }
 
-.saveorder {
-    float: right;
-    cursor: pointer;
-}
-
 #d {
     margin-left .5%;
     width: 99%;
@@ -283,13 +278,13 @@ img {
 }
 
 .toDelete {
-    /*opacity: .9;*/
+    opacity: .9;
 }
 
 .isDrag {
     background-color: silver !important;
     cursor: move;
-    /*opacity: .75;*/
+    opacity: .75;
 }
 
 .bookcell header {
@@ -327,7 +322,7 @@ img {
 
 .bookcell button {
     font-size: 125%;
-    /*opacity: .9;*/
+    opacity: .9;
     display: inline-block;
     width: 40%;
     z-index: 3;
@@ -338,7 +333,7 @@ img {
 }
 
 .bookcell button:hover {
-    /*opacity: 1;*/
+    opacity: 1;
     font-weight: bolder;
 }
 
@@ -375,7 +370,7 @@ button.remove {
     background-color: black;
     color: gold;
     z-index: 3;
-    /*opacity: .8;*/
+    opacity: .8;
     border: 2px solid darkgoldenrod;
     border-radius: 5px;
     padding: 5px;

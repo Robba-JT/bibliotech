@@ -173,10 +173,9 @@ module.exports.BooksAPI = BooksAPI = function (db) {
             });
         },
         updateBook = function (newbook, callback) {
-            var book = Object.create(newbook);
-            delete book.isNew;
-            delete book.base64;
-            books.update({ id: book.id }, { $set: book }, { upsert: true }, callback);
+            delete newbook.isNew;
+            delete newbook.base64;
+            books.update({ id: newbook.id }, { $set: newbook }, { upsert: true }, callback);
         },
         booksEqual = function (a, b) {
             var aII = Object.create(a), bII = Object.create(b);

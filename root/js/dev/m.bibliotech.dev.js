@@ -61,7 +61,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                                     indice++;
                                 }
                             }
-                            Waiting.toggle(false);
+                            if (!µ.one(".window:not(.notdisplayed)")) { Waiting.toggle(false); }
                             Bookcells.loadcovers();
                             resolve(Bookcells.cells.length);
                         }
@@ -636,55 +636,16 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
             Menu = {
                 close: function (event) {
                     var closact = event.target.closest("action");
-                    //if (µ.one("#contextMenu").isVisible() && !event.target.getAttribute("nav")) { µ.one("#contextMenu").fade(false); }
                     if ((!closact && (!event.target || !event.target.getAttribute("by"))) || (!!closact && !_.includes(["notifications", "tris"], closact.getAttribute("id")))) {
                         µ.alls(".deroulant").fade(false);
                     }
                 },
-                /*context: function (event) {
-                    event.preventDefault();
-                    var ctx = µ.one("#contextMenu");
-                    if (µ.one("#detailWindow").isVisible() && !µ.one("#w").hasClass("over") && !_.isEmpty(Detail.data.book)) {
-                        ctx.css({
-                            top: ((event.clientY + ctx.clientHeight > window.innerHeight) ? event.clientY - ctx.clientHeight : event.clientY),
-                            left: ((event.clientX + ctx.clientWidth > window.innerWidth) ? event.clientX - ctx.clientWidth : event.clientX)
-                        }).fade(true);
-                    }
-                    return false;
-                },*/
                 link: function () { window.open(this.getAttribute("url")); },
                 mail: function () { µ.location.href = "mailto:" + this.getAttribute("mail"); },
-/*                nav: function () {
-                    if (!Detail.data.cell) { return false; }
-                    var cell = Detail.data.cell, row = cell.index(), col = parseInt(cell.parentNode.getAttribute("colid"), 10);
-                    switch (this.getAttribute("nav")) {
-                        case "top":
-                            if (!row) { return false; }
-                            row--;
-                            break;
-                        case "right":
-                            col++;
-                            if (col === Dock.nbcols) { col = 0; row++; }
-                            break;
-                        case "left":
-                            if (!col) { col = Dock.nbcols; row--; }
-                            col--;
-                            break;
-                        case "bottom":
-                            row++;
-                            break;
-                    }
-                    if (µ.one("[colid=\"" + col + "\"]").childNodes[row]) {
-                        µ.one("[colid=\"" + col + "\"]").childNodes[row].one("header").trigger("click");
-                    }
-                    return false;
-                },*/
+
                 notif: function (state) {
                     var notifs = µ.one("#notifs");
-                    /*if (!!state) { µ.one("#sort").fade(false); }*/
-                    if (notifs.isVisible()) { notifs.fade(false); } else {
-                        notifs/*.css({ top: µ.one("#nvb").clientHeight + 5, left: µ.one("#notifications").offsetLeft })*/.fade(0.95);
-                    }
+                    notifs.fade(!notifs.isVisible());
                 },
                 selectstart: function (event) {
                     event.preventDefault();
@@ -696,11 +657,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 },
                 sort: function (state) {
                     var sorts = µ.one("#sort");
-                    //if (!!state) { µ.one("#notifs").fade(false); }
-                    /*µ.one(".tnv").trigger("click");*/
-                    if (sorts.isVisible()) { sorts.fade(false); } else {
-                        sorts/*.css({ top: µ.one("#nvb").clientHeight, left: µ.one("#tris").offsetLeft })*/.fade(0.95);
-                    }
+                    sorts.fade(!sorts.isVisible());
                 },
                 toggle: function () {
                     µ.one("#nvb").toLeft(µ.one(".nvb:not(#nvb)").isVisible());
@@ -751,15 +708,14 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     Search.clear();
                     Search.last = { "associated": bookid };
                     Windows.close(true).then(function () {
-                        Waiting.toggle(true, true).then(function () {
-                            Idb.getQuery(Search.last)
-                                .then(Bookcells.show, function () {
-                                    µ.one("#nvb").toggleClass("inactive", true);
-                                    Waiting.anim(true);
-                                    socket.emit("associated", bookid);
-                                })
-                                .catch(function (error) { console.error(error); });
-                        });
+                        Waiting.toggle(true, true);
+                        Idb.getQuery(Search.last)
+                            .then(Bookcells.show, function () {
+                                µ.one("#nvb").toggleClass("inactive", true);
+                                Waiting.anim(true);
+                                socket.emit("associated", bookid);
+                            })
+                            .catch(function (error) { console.error(error); });
                     });
                 },
                 books: function () {
@@ -768,15 +724,14 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     µ.one("@filtre").value = µ.one("@last").value = "";
                     Search.clear();
                     Windows.close(true).then(function () {
-                        Waiting.toggle(true, true).then(function () {
-                            Idb.getQuery(Search.last)
-                                .then(Bookcells.show)
-                                .catch(function () {
-                                    µ.one("#nvb").toggleClass("inactive", true);
-                                    Waiting.anim(true);
-                                    socket.emit("searchBooks", Search.last);
-                                });
-                        });
+                        Waiting.toggle(true, true);
+                        Idb.getQuery(Search.last)
+                            .then(Bookcells.show)
+                            .catch(function () {
+                                µ.one("#nvb").toggleClass("inactive", true);
+                                Waiting.anim(true);
+                                socket.emit("searchBooks", Search.last);
+                            });
                     });
                     return false;
                 },
@@ -814,43 +769,20 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     Search.clear();
                     Search.last = { "recommand": User.get().id };
                     Windows.close(true).then(function () {
-                        Waiting.toggle(true, true).then(function () {
-                            Idb.getQuery(Search.last)
-                                .then(Bookcells.show)
-                                .catch(function () {
-                                    µ.one("#nvb").toggleClass("inactive", true);
-                                    Waiting.anim(true);
-                                    socket.emit("recommanded");
-                                });
-                        });
+                        Waiting.toggle(true, true);
+                        Idb.getQuery(Search.last)
+                            .then(Bookcells.show)
+                            .catch(function () {
+                                µ.one("#nvb").toggleClass("inactive", true);
+                                Waiting.anim(true);
+                                socket.emit("recommanded");
+                            });
                     });
                 }
             },
-            /*shortCuts = function (event) {
-                event = event || window.event;
-                if (!event.altKey) {
-                    if (!event.ctrlKey) { if (event.keyCode === 27) { Windows.close(); Tags.close(); µ.one("#contextMenu").fade(false); }} else {
-                        var action;
-                        switch (event.keyCode) {
-                            case 77: Menu.toggle(); action = true; break;
-                            case 76: logout(); action = true; break;
-                            case 82: µ.one("#recherche").trigger("click"); action = true; break;
-                            case 80: µ.one("#profil").trigger("click"); action = true; break;
-                            case 66: µ.one("#collection").trigger("click"); action = true; break;
-                            case 69: µ.one("#tags").trigger("click"); action = true; break;
-                            case 73: µ.one("#contact").trigger("click"); action = true; break;
-                            case 72: µ.one("#help").trigger("click"); action = true; break;
-                        }
-                        if (action) {
-                            event.preventDefault();
-                            return false;
-                        }
-                    }
-                }
-            },*/
             socket = (function (conn) {
                 var connect = function () {
-                        var connection = conn.connect("/", { "secure": true, "multiplex": false });
+                        var connection = conn.connect("https://biblio.tech", { "secure": true, "multiplex": false });
                         connection.once("connect", function () {
                             console.debug("socket.connect", new Date().toLocaleString(), (new Date() - start) / 1000);
                             start = new Date();
@@ -872,18 +804,10 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                             })
                             .on("books", Bookcells.show)
                             .on("initCollect", function (part) {
-                                //User.get().books = ret.books;
-                                //Tags.init();
-                                //µ.one("#collection").trigger("click");
                                 User.get().collection.assign(part);
-                                userActions.initCollect(part)/*.then(Tags.init)*/;
-                                //µ.one("#nbBooks").text(User.get().books.length);
-                                //console.debug("User.get().books", new Date().toLocaleString(), part, (new Date() - start) / 1000);
+                                userActions.initCollect(part);
                             })
                             .on("endCollect", function (ret) {
-                                //User.get().books = ret.books;
-                                //Tags.init();
-                                //µ.one("#collection").trigger("click");
                                 User.get().collection.assign(ret.books);
                                 userActions.initCollect(ret.books).then(function () {
                                     User.get().collection = Bookcells.cells;
@@ -896,18 +820,24 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                             })
                             .on("covers", function (covers) {
                                 for (var jta = 0, lg = covers.length; jta < lg; jta++) {
-                                    if (!covers[jta] || !covers[jta].id || !covers[jta].base64) { continue; }
-                                    var cover = covers[jta], bookcell = User.get().bookcell(cover.id), book = bookcell.book;
-                                    book.base64 = cover.base64;
-                                    if (!!bookcell && !!bookcell.cell) {
-                                        var cell = bookcell.cell;
-                                        if (!cell.hasClass("toshow")) { cell.one(".cover").src = cover.base64; }
-                                        if (!!Detail.data.book && Detail.data.book.id === book.id) {
-                                            µ.one("#background").css({ "background-image": "url(" + cover.base64.toString() + ")" }).toggle(true);
+                                    if (!covers[jta] || !covers[jta].id || (!covers[jta].base64 && !covers[jta].alternative)) { continue; }
+                                    var cover = covers[jta], bookcell = User.get().bookcell(cover.id);
+                                    if (!bookcell) { continue; }
+                                    if (!bookcell.book) {
+                                        if (!!cover.base64) { bookcell.base64 = cover.base64; }
+                                        if (!!cover.alternative) { bookcell.alternative = cover.alternative; }
+                                    } else {
+                                        if (!!cover.base64) { bookcell.book.base64 = cover.base64; }
+                                        if (!!cover.alternative) { bookcell.book.alternative = cover.alternative; }
+                                        if (!!bookcell.cell) {
+                                            if (!bookcell.cell.hasClass("toshow")) { bookcell.cell.one(".cover").src = cover.base64 || cover.alternative; }
+                                            if (!!Detail.data.book && Detail.data.book.id === cover.id) {
+                                                µ.one("#background").toggle().css({ "background-image": "url(" + (cover.base64 || cover.alternative).toString() + ")" });
+                                            }
                                         }
                                     }
                                 }
-                                console.debug("covers", new Date().toLocaleString(), covers.length, (new Date() - start) / 1000);
+                                console.debug("socket.covers", new Date().toLocaleString(), (new Date() - start) / 1000);
                             })
                             .on("endRequest", Search.endRequest)
                             .on("error", function (error) { console.warn(error); })
@@ -945,7 +875,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                                 clearInterval(connectTimeInterval);
                                 socket = connect();
                             }
-                            try { cur.connect(); } catch(error) { /*console.error(error);*/ }
+                            try { cur.connect(); } catch(error) {  }
                         }, 3000);
                     };
 
@@ -1045,7 +975,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                             Windows.close().then(function () {
                                 µ.alls("html, body").toggleClass("overflown", !vis);
                                 if (!!vis) { cloud.fade(false).then(resolve); } else {
-                                    cloud.fade(0.9).then(function () {
+                                    cloud.fade(true).then(function () {
                                         if (!cloud.alls("span").length) { Tags.generate(); }
                                         resolve();
                                     });
@@ -1146,35 +1076,20 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 collection: function (books) {
                     return new Promise(function (resolve) {
                         Windows.close();
-                        µ.one("@filtre").value = µ.one("@last").value/* = µ.one("#selectedTag").innerHTML*/ = "";
+                        µ.one("@filtre").value = µ.one("@last").value = "";
                         if (!µ.one("#collection").hasClass("active")) {
                             var isSort = µ.one(".sortBy");
                             if (isSort) { Images.blur.call(isSort.toggleClass("sortBy", false)); }
                             Images.hover.call(µ.one("#sort div")).toggleClass("sortBy", true);
                             Bookcells.destroy();
                             Waiting.anim(true);
-                            Waiting.toggle(true, true).then(function () {
-                                µ.one("#nvb").toggleClass("inactive", true);
-                                Images.active.call(µ.one("#collection"));
-                                //if (!!User.get().collection && User.get().collection.length) {
-                                    Bookcells.cells = User.get().collection;
-                                    Bookcells.display(false, false, true).then(function (nb) {
-                                        Search.endRequest(nb);
-                                        resolve();
-                                    });
-                                /*} else if (!!books && !!books.length) {
-                                    Bookcells.show(books).then(function (ret) {
-                                        if (!!Bookcells.cells.length) {
-                                            User.get().collection = Bookcells.cells;
-                                        }
-                                        µ.one("#nbBooks").text(ret);
-                                        Search.endRequest(ret);
-                                        resolve();
-                                    });
-                                } else {
-                                    Search.endRequest();
-                                    resolve();
-                                }*/
+                            Waiting.toggle(true, true);
+                            µ.one("#nvb").toggleClass("inactive", true);
+                            Images.active.call(µ.one("#collection"));
+                            Bookcells.cells = User.get().collection;
+                            Bookcells.display(false, false, true).then(function (nb) {
+                                Search.endRequest(nb);
+                                resolve();
                             });
                         } else {
                             window.scroll(0, 0);
@@ -1209,29 +1124,20 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     µ.one("#w").toggleClass("over", toShow);
                 },
                 toggle: function (visible, withIcon) {
-                    Waiting.p = new Promise(function (resolve) {
-                        var wait = µ.one("#w");
-                        wait.one("img").toggle(!!withIcon);
-                        if (wait.isVisible() === visible || !!Windows.on || !!Waiting.on) { resolve(); } else {
-                            Waiting.on = true;
-                            µ.alls(".description").removeAll();
-                            if (!!visible) {
-                                µ.alls("html, body").toggleClass("overflown", true);
-                                wait.fade(0.5).then(resolve);
-                            } else {
-                                wait.fade(false).then(function () {
-                                    µ.alls("html, body").toggleClass("overflown", false);
-                                    Waiting.over(false);
-                                    Waiting.connection(false);
-                                    resolve();
-                                });
-                            }
+                    var wait = µ.one("#w");
+                    wait.one("img").toggle(!!withIcon);
+                    if (wait.isVisible() !== visible) {
+                        if (!!visible) {
+                            µ.one("html").toggleClass("overflown", true);
+                            wait.toggle(true);
+                        } else {
+                            wait.toggle(false);
+                            µ.one("html").toggleClass("overflown", false);
+                            Waiting.over(false);
+                            Waiting.connection(false);
                         }
-                    });
-                    Waiting.p.then(function () {
-                        delete Waiting.on;
-                    });
-                    return Waiting.p;
+                    }
+                    return;
                 },
                 connection: function (toShow) {
                     var noConnect = µ.one("#noConnect"),
@@ -1259,14 +1165,13 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                             win = µ.alls(".window:not(.notdisplayed)");
                         }
                         Waiting.over(false);
-                        /*if (µ.one("#h").isVisible()) { Windows.help(false); }*/
-                        //µ.removeEventListener("keyup", shortCuts);
                         if (!win) { resolve(); } else {
-                            for (var jta = 0, lg = forms.length; jta < lg; jta++) { forms[jta].reset(); }
                             win.fade(false).then(function () {
                                 delete Windows.on;
-                                if (notTog === true) { resolve(); } else { Waiting.toggle().then(resolve); }
+                                resolve();
                             });
+                            for (var jta = 0, lg = forms.length; jta < lg; jta++) { forms[jta].reset(); }
+                            if (notTog !== true) { Waiting.toggle(); }
                         }
                     });
                 },
@@ -1275,60 +1180,40 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                         Waiting.over();
                         µ.one("#confirmWindow header span").text(µ.one("#confirmWindow header span").getAttribute(type));
                         µ.one("#confirmWindow #confirm").text(msg);
-                        //µ.alls("#confirmWindow button").setEvents("click", Windows.close);
                         µ.one("#confirmWindow .valid").setEvents("click", function () { resolve(); });
                         µ.one("#confirmWindow .cancel").toggle(type === "warning").setEvents("click", function () { reject(); });
-                        Waiting.toggle(true).then(function () {
-                            µ.one("#confirmWindow").css({ "top": xcroll().top + 10, "left": "25%" }).fade(true);
-                            µ.setEvents({ "keyup keydown" : Window.esc });
-                        });
+                        Waiting.toggle(true);
+                        µ.one("#confirmWindow").css({ "top": xcroll().top + 10, "left": "25%" }).fade(true);
+                        µ.setEvents({ "keyup keydown" : Window.esc });
                     });
                 },
-                /*esc: function (event) { if (event.keyCode === 27) { Windows.close(); } },*/
-                /*help: function (toShow) {
-                    if (toShow === µ.one("#h").isVisible()) { return; }
-                    if (typeof toShow !== "boolean") { toShow = !µ.one("#h").isVisible(); }
-                    if (!!toShow) {
-                        Windows.close().then(function () {
-                            µ.one("html").toggleClass("overflown", true);
-                            µ.one("#h").toggle(true);
-                        });
-                    } else {
-                        µ.one("html").toggleClass("overflown", false);
-                        µ.one("#h").toggle(false);
-                    }
-                },*/
                 open: function () {
                     var self = this;
                     return new Promise(function (resolve, reject) {
                         var wid = (typeof self === "string") ? self : self.getAttribute("window"), win = µ.one("#" + wid);
                         if (!!Windows.on && Windows.on === wid) { Windows.close().then(resolve); } else {
-                            /*if (µ.one("#h").isVisible()) { Windows.help(false); }*/
                             Tags.close().then(function () {
-                                /*if (µ.one("#wa").isVisible()) { resolve(); } else {*/
-                                    if (!_.includes(["previewWindow", "recommandWindow"], wid)) {
-                                        µ.alls(".window:not(.notdisplayed)").fade(false);
-                                    } else { Waiting.over(true); }
-                                    if (wid === "profileWindow") {
-                                        µ.one("@mail").value = User.get().id;
-                                        µ.one("@name").value = User.get().name;
-                                        if (!!User.get().googleSignIn) {
-                                            µ.one("@googleSignIn").setAttribute("checked", true);
-                                            if (!!User.get().googleSync) { µ.one("@googleSync").setAttribute("checked", true); }
-                                        } else {
-                                            µ.one("@pwd").setAttribute("required", true);
-                                        }
-                                        if (!µ.one(".changePwd.notdisplayed")) { Windows.togglePwd(); }
+                                if (!_.includes(["previewWindow", "recommandWindow"], wid)) {
+                                    µ.alls(".window:not(.notdisplayed)").fade(false);
+                                } else { Waiting.over(true); }
+                                if (wid === "profileWindow") {
+                                    µ.one("@mail").value = User.get().id;
+                                    µ.one("@name").value = User.get().name;
+                                    if (!!User.get().googleSignIn) {
+                                        µ.one("@googleSignIn").setAttribute("checked", true);
+                                        if (!!User.get().googleSync) { µ.one("@googleSync").setAttribute("checked", true); }
+                                    } else {
+                                        µ.one("@pwd").setAttribute("required", true);
                                     }
-                                    µ.alls(".errMsg").toggle(false);
-                                    Waiting.toggle(true).then(function () {
-                                        Windows.on = wid;
-                                        win.css({ "top": xcroll().top }).fade(true).then(function () {
-                                            if (win.one("[autofocus]")) { win.one("[autofocus]").focus(); }
-                                            resolve();
-                                        });
-                                    });
-                                /*}*/
+                                    if (!µ.one(".changePwd.notdisplayed")) { Windows.togglePwd(); }
+                                }
+                                µ.alls(".errMsg").toggle(false);
+                                Waiting.toggle(true);
+                                Windows.on = wid;
+                                win.css({ "top": xcroll().top }).fade(true).then(function () {
+                                    if (win.one("[autofocus]")) { win.one("[autofocus]").focus(); }
+                                    resolve();
+                                });
                             });
                         }
                     });
@@ -1361,35 +1246,10 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                         if (!!self.book.tags && !!self.book.tags.length) { Tags.init(); }
                     }
                 },
-                description = function (event) {
-                    if (!!event.relatedTarget && !event.relatedTarget.hasClass("description")) { µ.alls(".description").removeAll(); }
-                    if (event.type !== "mouseenter") { return; }
-                    if (!self.book.description) { return; } else {
-                        var index = self.book.description.indexOf(" ", 500),
-                            leave = function () { this.removeAll(); },
-                            position = {
-                                "max-height": window.innerHeight,
-                                left: (Math.min(this.xposition() + (this.clientWidth / 3), window.innerWidth - (this.clientWidth * 1.333))).toFixed(0)
-                            },
-                            top = (this.offsetTop + (this.clientHeight / 3)).toFixed(0),
-                            description = µ.body.newElement("div", { "width": this.clientWidth, "bookid": self.id, "class": "description notdisplayed" })
-                                .css({ "width": this.clientWidth })
-                                .setEvents("click", leave)
-                                .html("<span>" + self.book.title + "</span><BR>" + self.book.description.substr(0, Math.max(index, 500)) + ((index !== -1) ? "..." : ""));
-
-                        if (top + description.clientHeight > µ.clientHeight) {
-                            position.bottom = this.clientHeight * 0.333;
-                        } else {
-                            position.top =  top;
-                        }
-                        description.css(position);
-                        setTimeout(function () { description.setEvents("mouseleave", leave).fade(0.9); }, 1000);
-                    }
-                },
                 destroy = function () {
                     self.cell.alls("button").removeEvent("click", action);
                     self.cell.alls("header, figure").removeEvent("click", detail);
-                    self.cell.removeEvent("mouseenter mouseleave", description).removeEvent("dragstart", dragstart).removeEvent("dragend", dragend).removeAll();
+                    self.cell.removeEvent("dragstart", dragstart).removeEvent("dragend", dragend).removeAll();
                 },
                 detail = function () {
                     if (User.get().bookindex(self.id) !== -1 || !!self.opened) {
@@ -1432,7 +1292,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
 
             this.cell.alls("header, figure").setEvents("click", detail);
             this.cell.alls("button").setEvents("click", action);
-            this.cell.setEvents({ "mouseenter mouseleave": description, "touchmove touchstart": dragstart, "touchend": dragend });
+            this.cell.setEvents({ "touchmove touchstart": dragstart, "touchend": dragend });
             this.cell.one("footer").css({ "bottom": this.cell.one("figcaption").clientHeight + 5 });
             this.actived = true;
             this.destroy = destroy;
@@ -1446,7 +1306,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
             Idb.setDetail(book);
         };
 
-        µ.setEvents({/* "keypress": shortCuts, "keydown": shortCuts, */"scroll": Bookcells.loadcovers });
+        µ.setEvents({ "scroll": Bookcells.loadcovers });
         µ.alls("input").setEvents("input propertychange", checkValid);
         µ.one("#logout").setEvents("click", logout);
         µ.alls("#h button, #help").setEvents({ "click": Windows.help });
@@ -1461,16 +1321,13 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
         µ.one("#tris").setEvents("click", Menu.sort);
         µ.one("#notifications").setEvents("click", Menu.notif);
         µ.alls("#sort > div").setEvents("click", Bookcells.sort);
-        //µ.alls("img[actclick]").setEvents({ "mouseenter": Images.hover, "mouseleave": Images.blur});
         µ.alls("[actclick]").setEvents("click", Detail.action);
         µ.alls(".closeWindow").setEvents("click", Windows.close);
         µ.one("#footer").setEvents("click", Menu.top);
         µ.alls("#uploadHidden [type=file]").setEvents("change", Detail.uploadCover);
         µ.alls("#userNote > img").setEvents({ "mouseenter": Detail.mouseNote, "mouseleave": Detail.userNote, "click": Detail.clickNote });
-        /*µ.alls(".nvb > div:not(#picture):not(.filtre), img.closeWindow, #footer, [by], .imgAction img, #cloud img, #contactsWindow img, [nav]").setEvents({ "mouseenter": Images.hover, "mouseleave": Images.blur });*/
         (function (toblur) { for (var jta = 0, lg = toblur.length; jta < lg; jta++) { Images.blur.call(toblur[jta]); } })(µ.alls("[blur]"));
         µ.alls("img").setAttributes({ "draggable": false });
-        //µ.one("#nvb").toggleClass("notdisplayed", false);
         µ.one("#collection").setEvents("click", userActions.collection);
         µ.alls("#tags, #cloud > img").setEvents("click", Tags.show);
         µ.alls("#recherche, #profil, #contact").setEvents("click", Windows.open);
@@ -1481,7 +1338,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
         µ.one("#recommand4u").setEvents("click", Search.recommand);
         µ.alls("#importNow, #exportNow").setEvents("click", Search.gtrans);
         µ.alls("@tag").setEvents("input propertychange", Tags.list);
-        window.setEvents({/* "contextmenu": Menu.context, */"resize": Dock.resize, "click": Menu.close/*, "selectstart": Menu.selectstart*/ });
+        window.setEvents({ "resize": Dock.resize, "click": Menu.close });
         µ.alls("[nav]").setEvents("click", Menu.nav);
         (function (search) {
             if (!!search) {
