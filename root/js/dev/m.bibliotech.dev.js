@@ -5,7 +5,12 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
         "use strict";
         var µ = document, start = new Date();
         console.debug("µ.ready", start.toLocaleString());
-        var Bookcell = function (book, indice) {
+        var arraymove = function (arr, fromIndex, toIndex) {
+                var element = arr[fromIndex];
+                arr.splice(fromIndex, 1);
+                arr.splice(toIndex, 0, element);
+            },
+            Bookcell = function (book, indice) {
                 var totalCells = Bookcells.cells.length + (typeof indice === "undefined" ? 1 : indice),
                     inCollect = µ.one("#collection").hasClass("active") || User.get().bookindex(book.id) !== -1;
 
@@ -32,7 +37,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     window.scroll(0, 0);
                     µ.one("#formFilter").reset();
                     µ.alls(".bookcell").toggleClass("tofilter", false);
-                    //µ.one("#selectedTag").html(tag);
+                    Bookcells.order(tag);
                     for (var jta = 0, lg = Bookcells.cells.length; jta < lg; jta++) {
                         var bcell = Bookcells.cells[jta];
                         bcell.cell.toggleClass("tohide", !_.includes(bcell.book.tags, tag));
@@ -68,21 +73,28 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     });
                 },
                 filter: function () {
-                    var filtre = this.value.toLowerCase(), last = µ.one("@last");
-                    µ.one(".tnv").trigger("click");
-                    if (!!this.checkValidity() && filtre !== last.value) {
-                        last.value = filtre;
-                        for (var jta = 0, lg = Bookcells.cells.length; jta < lg; jta++) {
-                            var cell = Bookcells.cells[jta],
-                                title = cell.book.title.toLowerCase(),
-                                subtitle = (!!cell.book.subtitle) ? cell.book.subtitle.toLowerCase() : "",
-                                authors = (!!cell.book.authors) ? cell.book.authors.join(", ").toLowerCase() : "",
-                                description = cell.book.description.toLowerCase();
-
-                            cell.cell.toggleClass("tofilter", title.indexOf(filtre) === -1 && subtitle.indexOf(filtre) === -1 && authors.indexOf(filtre) === -1 && description.indexOf(filtre) === -1);
+                    var filtre = this.value.toLowerCase().noAccent().noSpace().split(" ").sort(), lgw = filtre.length, last = µ.one("@last");
+                    if (!this.checkValidity()) { return; }
+                    if (filtre === last.value.split(" ").sort()) { return; }
+                    last.value = this.value;
+                    for (var w = 0; w < lgw; w++) { filtre[w] = filtre[w].replace(/\+/g, " "); }
+                    for (var jta = 0, lg = Bookcells.cells.length; jta < lg; jta++) {
+                        var cell = Bookcells.cells[jta], string;
+                        cell.cell.toggleClass("tofilter", false);
+                        if (!_.isEqual(filtre, [""])) {
+                            string = (cell.book.title + " " +
+                                (!!cell.book.subtitle ? cell.book.subtitle : "") + " " +
+                                (!!cell.book.authors ? cell.book.authors.join(", ") : "") + " " +
+                                cell.book.description).toLowerCase().noAccent().noSpace();
+                            for (w = 0; w < lgw; w++) {
+                                if (string.indexOf(filtre[w]) === -1) {
+                                    cell.cell.toggleClass("tofilter", true);
+                                    break;
+                                }
+                            }
                         }
-                        Bookcells.display();
                     }
+                    Bookcells.display();
                 },
                 generate: function (books) {
                     return new Promise(function (resolve) {
@@ -105,6 +117,17 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     return;
                 },
                 one: function (bookid) { return _.find(Bookcells.cells, _.matchesProperty("id", bookid)); },
+                order: function (collection) {
+                    var one = _.find(User.get().orders, _.matchesProperty("id", collection));
+                    if (!!one && !!one.order) {
+                        if (!!µ.one(".sortBy")) { Images.blur.call(µ.one(".sortBy").toggleClass("sortBy", false)); }
+                        for (var jta = 0, lg = one.order.length; jta < lg; jta++) {
+                            var index = _.findIndex(Bookcells.cells, _.matchesProperty("id", one.order[jta]));
+                            arraymove(Bookcells.cells, index, jta);
+                        }
+                    }
+                    return !!one;
+                },
                 returned: function (book) { Bookcells.one(book.id).returned(book); },
                 show: function (books) {
                     var bArray = _.chunk(books, 40), chain,
@@ -782,7 +805,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
             },
             socket = (function (conn) {
                 var connect = function () {
-                        var connection = conn.connect("https://biblio.tech", { "secure": true, "multiplex": false });
+                        var connection = conn.connect("/", { "secure": true, "multiplex": false });
                         connection.once("connect", function () {
                             console.debug("socket.connect", new Date().toLocaleString(), (new Date() - start) / 1000);
                             start = new Date();

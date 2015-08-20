@@ -155,6 +155,9 @@ img {
 #nvb > div:hover:not(.active):not(.filtre):not(#picture) {
     background-color: white;
     color: black;
+    -webkit-transition: box-shadow linear .2s, background-color linear .2s;
+    -moz-transition: box-shadow linear .2s, background-color linear .2s;
+    -o-transition: box-shadow linear .2s, background-color linear .2s;
     transition: box-shadow linear .2s, background-color linear .2s;
 }
 
@@ -271,7 +274,9 @@ img {
 .bookcell:hover {
     color: black;
     background-color: goldenrod;
-    transition: box-shadow linear .2s, background-color linear .2s;
+    -webkit-transition: box-shadow linear .2s, background-color linear .2s;
+    -moz-transition: box-shadow linear .2s, background-color linear .2s;
+    -o-transition: box-shadow linear .2s, background-color linear .2s;
 }
 .bookcell header, .bookcell figcaption, .bookcell img {
     cursor: pointer;
@@ -1124,6 +1129,14 @@ button.remove {
     -moz-animation: fadein .5s ease;
     -o-animation: fadein .5s ease;
     animation: fadein .5s ease;
+}
+
+.toTop {
+    top: 0;
+    -webkit-transition: top .5s ease;
+    -moz-transition: top .5s ease;
+    -o-transition: top .5s ease;
+    transition: top .5s ease;
 }
 
 @-moz-keyframes fadein { from { opacity: 0; } to { opacity: 1; }}

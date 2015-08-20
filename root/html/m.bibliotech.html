@@ -26,12 +26,6 @@
 
         <nav class="mnv nvb notdisplayed" style="right: 0;"><img class="tnv" source="menu-2-icon" blur="alt" width="32" height="32"/></nav>
 
-<!--        <nav id="maskedorder" class="mnv notdisplayed nvb">
-            <div id="maskedOrder" class="notdisplayed saveorder">
-                <img source="save-9-icon" blur="alt" width="32" height="32" />
-            </div>
-        </nav>-->
-
         <nav id="nvb" class="nvb inactive">
             <img class="tnv" source="menu-2-icon" blur="white" width="32" height="32" />
             <div id="logout"><img source="eject-icon" blur="white"/><span>{{logout}}</span></div>
@@ -53,10 +47,6 @@
                 </form>
             </div>
             <div id="tris" class="action"><img source="sort-2-icon" blur="white"/><span>{{sorts}}</span></div>
-            <!--<div class="filtre"><span id="selectedTag"></span></div>-->
-<!--            <div id="affichOrder" class="saveorder notdisplayed">
-                <img source="save-9-icon" blur="white" width="32" height="32"/>
-            </div>-->
         </nav>
 
         <div id="sort" class="deroulant notdisplayed">
@@ -155,12 +145,11 @@
                     <input type="submit" value="{{valid}}"/>
                 </div>
             </form>
-            <!--<div>Nombre&nbsp;de&nbsp;connexion:&nbsp;<span id="nbConnect"></span></div>-->
             <div>{{nbBooks}}:&nbsp;<span id="nbBooks"></span></div>
 		</section>
 
         <section id="detailWindow" class="window notdisplayed">
-            <header class="windowheader">&nbsp;<!--<span class="direct" label="{{newBook}}"></span>-->
+            <header class="windowheader">&nbsp;
                 <img actclick="recommand" source="share-icon" blur="black" width="32" height="32" />
                 <img actclick="preview" source="book-22-icon" blur="black" width="32" height="32" />
                 <img actclick="associated" source="share-3-icon" blur="black" width="32" height="32" />
@@ -277,7 +266,6 @@
                 <img source="facebook-4-icon" blur="black" url="https://www.facebook.com/my.biblio.tech" width="64" height="64"/>
                 <!--<img source="github-icon" blur="black" url="https://www.github.com/Robba-JT/bibliotech" width="64" height="64"/>-->
                 <img source="email-12-icon" blur="black" mail="admin@biblio.tech?subject=Bibliotech" width="64" height="64"/>
-                <!--<img source="help-icon" id="help" blur="black" width="64" height="64"/>-->
             </article>
             <img source="gandi-secure" blur="white" url="https://www.gandi.net/ssl/secured/www.biblio.tech/194723/cdfd118361"/>
         </section>
@@ -347,8 +335,8 @@
         </div>
 
         <script src="js/bibliotech.lib.js"></script>
-        <!--<script src="js/m.bibliotech.js"></script>-->
-        <script src="js/dev/bibliotech.proto.js"></script>
-        <script src="js/dev/m.bibliotech.dev.js"></script>
+        <script src="js/m.bibliotech.js"></script>
+        <!--<script src="js/dev/bibliotech.proto.js"></script>
+        <script src="js/dev/m.bibliotech.dev.js"></script>-->
     </body>
 </html>

@@ -34,8 +34,8 @@ module.exports = exports = function (app, db) {
 				if (!!req.session.user || (!!req.session.token && req.session.token.credentials.expiry_date > new Date())) {
                     next();
 				} else {
-                    req.session.destroy(function (err) {
-                        oauth2Client.revokeCredentials(function (err) {
+                    oauth2Client.revokeCredentials(function (err) {
+                        req.session.destroy(function (err) {
                             res.render(res.locals.is_mobile? "mlogin" : "login", getLang(req).login);
                         });
                     });
@@ -67,7 +67,6 @@ module.exports = exports = function (app, db) {
                     if (!!!!req.body.o) { req.session.cookie.maxAge = null; }
                     res.jsonp({ success: !!user });
                 })
-                //.catch(function (err) { res.jsonp({ error: err.message || getLang(req).error.invalidCredential }); });
                 .catch(function (err) { res.jsonp({ "error": getLang(req).error.invalidCredential }); });
 		})
 
@@ -75,7 +74,6 @@ module.exports = exports = function (app, db) {
 		.post("/new", function (req, res) {
 			users.addUser(req.body.a, req.body.c, req.body.b)
                 .then(function (user) { req.session.user = user._id; res.jsonp({ success: !!user }); })
-                //.catch(function (err) { res.jsonp({ error: err.message || getLang(req).error.alreadyExist }); });
                 .catch(function (err) { res.jsonp({ "error": getLang(req).error.alreadyExist }); });
 		})
 

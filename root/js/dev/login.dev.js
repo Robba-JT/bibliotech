@@ -27,13 +27,13 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
         },
         googleApi = function () {
             gapi.signin.render("f", {
-                clientid: "216469168993-dqhiqllodmfovgtrmjdf2ps5kj0h1gg9.apps.googleusercontent.com",
-                cookiepolicy: "none",
-                scope: "https://www.googleapis.com/auth/plus.me https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/books",
-                width: "wide",
-                redirecturi: "postmessage",
-                accesstype: "offline",
-                callback: function (response) {
+                "clientid": "216469168993-dqhiqllodmfovgtrmjdf2ps5kj0h1gg9.apps.googleusercontent.com",
+                "cookiepolicy": "single_host_origin",
+                "scope": "https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/books",
+                "width": "wide",
+                "redirecturi": "postmessage",
+                "accesstype": "offline",
+                "callback": function (response) {
                     if (!response.code) { return; }
                     sendRequest("/googleAuth", { c: response.code }, function (s) {
                         if (!!s && !!s.success) { return window.location.reload(true); }

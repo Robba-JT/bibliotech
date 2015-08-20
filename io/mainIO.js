@@ -148,8 +148,7 @@ module.exports = mainIO = function (socket, db) {
                         thisUser = userData;
                         var booksList = _.pluck(userData.books, "book"),
                             tagsList = _.countBy(_.flatten(_.compact(_.pluck(userData.books, "tags")), true).sort()),
-                            coverList = _.compact(_.pluck(userData.books, "cover")),
-                            order = _.find(userData.orders, _.matchesProperty("id", "µ.alls"));
+                            coverList = _.compact(_.pluck(userData.books, "cover"));
 
                         thisUser.googleSignIn = !!userInfos.googleSignIn;
                         thisUser.token = userInfos.token;
@@ -185,13 +184,6 @@ module.exports = mainIO = function (socket, db) {
                                 returnComments = function (elt) { return elt._id.user !== thisUser._id; },
                                 returnUserComments = function (elt) { return elt._id.user === thisUser._id; },
                                 returnCover = function (cover) { return _.isEqual(cover._id.book, books[book].id); };
-
-                            if (!!order && !!order.order) {
-                                for (var jta = 0, lg = order.order.length; jta < lg; jta++) {
-                                    var ind = _.findIndex(books, _.matchesProperty("id", order.order[jta]));
-                                    if (ind !== -1) { arraymove(books, ind, jta); }
-                                }
-                            }
 
                             for (var book in books) {
                                 var infos = _.find(userData.books, returnInfo),
