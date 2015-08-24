@@ -7,13 +7,7 @@ var MailsAPI = require("../tools/mails").MailsAPI,
     BooksAPI = require("../db/books").BooksAPI,
     google = require("googleapis"),
     gOptions = { timeout: 5000 },
-    gAuth = google.oauth2({ version: "v2" }),
-    OAuth2Client = google.auth.OAuth2,
-    oauth2Client = new OAuth2Client(
-        "216469168993-dqhiqllodmfovgtrmjdf2ps5kj0h1gg9.apps.googleusercontent.com",
-        "lH-1TOOmmd2wNFaXOf2qY3dV",
-        "postmessage"
-    );
+    gAuth = google.oauth2({ version: "v2" });
 
 google.options(gOptions);
 

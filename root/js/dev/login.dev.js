@@ -26,20 +26,21 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
             });
         },
         googleApi = function () {
-            gapi.signin.render("f", {
-                "clientid": "216469168993-dqhiqllodmfovgtrmjdf2ps5kj0h1gg9.apps.googleusercontent.com",
-                "cookiepolicy": "single_host_origin",
-                "scope": "https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/books",
-                "width": "wide",
-                "redirecturi": "postmessage",
-                "accesstype": "offline",
-                "callback": function (response) {
-                    if (!response.code) { return; }
-                    sendRequest("/googleAuth", { c: response.code }, function (s) {
-                        if (!!s && !!s.success) { return window.location.reload(true); }
-                        return false;
+            gapi.load("auth2", function() {
+                auth2 = gapi.auth2.init({
+                    "client_id": "216469168993-dqhiqllodmfovgtrmjdf2ps5kj0h1gg9.apps.googleusercontent.com",
+                    "scope": "https://www.googleapis.com/auth/books",
+                    "access_type": "online"
+                });
+                µ.one("#f").setEvents("click", function () {
+                    auth2.grantOfflineAccess({ "redirect_uri": "postmessage"}).then(function (response) {
+                        if (!response.code) { return; }
+                        sendRequest("/googleAuth", { c: response.code }, function (s) {
+                            if (!!s && !!s.success) { return window.location.reload(true); }
+                            return false;
+                        });
                     });
-                }
+                });
             });
         },
         razError = function () {
@@ -62,7 +63,8 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
         var po = µ.createElement("script");
         po.type = "text/javascript";
         po.async = true;
-        po.src = "https://apis.google.com/js/client:plusone.js?onload=googleApi";
+        //po.src = "https://apis.google.com/js/client:plusone.js?onload=googleApi";
+        po.src = "https://apis.google.com/js/client:platform.js?onload=googleApi";
         var s = µ.one("script");
         s.parentNode.insertBefore(po, s);
     })();
