@@ -1104,12 +1104,16 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     return this;
                 };
                 User.prototype.addbook = function (book) {
-                    var newcell = new Bookcell(book);
-                    this.collection.push(newcell);
-                    newcell.cell.one(".add").toggle(false);
-                    newcell.cell.one(".remove").toggle(true);
+                    var cell = Bookcells.one(book.id) || new Bookcell(book);
+                    this.collection.push(cell);
+                    cell.cell.one(".add").toggle(false);
+                    cell.cell.one(".remove").toggle(true);
                     µ.one("#nbBooks").text(this.collection.length);
-                    return newcell;
+                    if (cell.cell.isVisible()) {
+                        cell.book = book;
+                        if (book.base64) { cell.cell.one(".cover").src = book.base64; }
+                    }
+                    return cell;
                 };
                 User.prototype.bookcell = function (bookid) { return _.find(this.collection, _.matchesProperty("id", bookid)); };
                 User.prototype.book = function (bookid) {

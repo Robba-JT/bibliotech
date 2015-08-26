@@ -1,20 +1,20 @@
 var nodemailer = require("nodemailer"),
     smtpTransport = nodemailer.createTransport(require("nodemailer-smtp-transport")({
-        service: "Gmail",
-        auth: { user: "robba.jt@gmail.com", pass: "robba1979" },
-        debug : true
+        "service": "Gmail",
+        "auth": { "user": "robba.jt@gmail.com", "pass": "robba1979" },
+        "debug" : true
     })),
     mailLogin = {
-        from: "Bibliotech ✔ <robba.jt@gmail.com>",
-        subject: "Nouveau mot de passe ✔",
-        text: "Voici votre nouveau mot de passe: ",
-        html: "<b>Voici votre nouveau mot de passe:</b> "
+        "from": "Bibliotech ✔ <admin@biblio.tech>",
+        "subject": "Nouveau mot de passe ✔",
+        "text": "Voici votre nouveau mot de passe: ",
+        "html": "<b>Voici votre nouveau mot de passe:</b> "
     },
     mailFriend = {
-        from: "Bibliotech ✔ <bibliotech.web@gmail.com>",
-        subject: " vous recommande: ",
-        text: "",
-        html: ""
+        "from": "Bibliotech ✔ <admin@biblio.tech>",
+        "subject": " vous recommande: ",
+        "text": "",
+        "html": ""
     };
 
 module.exports.MailsAPI = MailsAPI = function () {
@@ -25,9 +25,7 @@ module.exports.MailsAPI = MailsAPI = function () {
         return new MailsAPI();
     }
 
-    var sendMail = function (options, callback) {
-            smtpTransport.sendMail(options, callback);
-        };
+    var sendMail = function (options, callback) { smtpTransport.sendMail(options, callback); };
 
     this.sendPassword = function (user, pwd, callback) {
         var sendOptions = mailLogin;

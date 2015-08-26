@@ -1,24 +1,13 @@
 var Q = require("q"),
     request = require("request"),
+    reqOption = { "gzip": true },
     ObjectID = require("mongodb").ObjectID,
-    google = require("googleapis"),
-    gBooks = google.books({ version: "v1" }),
-    _ = require("lodash"),
-    gOptions = {
-        "gzip": true,
-        "headers": {
-            "Accept-Encoding": "gzip"
-        },
-        "timeout": 5000
-    },
-    reqOption = { "gzip": true };
+    _ = require("lodash");
 
-google.options(gOptions);
-
-module.exports.BooksAPI = BooksAPI = function (db) {
+module.exports.BooksAPI = BooksAPI = function (db, gBooks) {
     "use strict";
 
-    if (!(this instanceof BooksAPI)) { return new BooksAPI(db); }
+    if (!(this instanceof BooksAPI)) { return new BooksAPI(db, gBooks); }
 
     var books = db.collection("books"),
         comments = db.collection("comments"),

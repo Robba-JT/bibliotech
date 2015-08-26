@@ -33,9 +33,7 @@ module.exports = function (grunt) {
                 "bibliotech.js",
                 "io/mainIO.js",
                 "db/books.js",
-                "db/sessions.js",
                 "db/users.js",
-                "routes/index.js",
                 "tools/logs.js",
                 "tools/mails.js"
             ]
@@ -48,7 +46,6 @@ module.exports = function (grunt) {
             },
             loginlib: {
                 files: { "root/js/login.lib.js": [
-                    /*"root/lib/lodash.js",*/
                     "node_modules/lodash/index.js",
                     "root/lib/Promise.min.js"
                 ]}
@@ -64,7 +61,6 @@ module.exports = function (grunt) {
                     "root/js/bibliotech.lib.js": [
                         "root/lib/Promise.min.js",
                         "root/lib/color-thief.js",
-                        /*"root/lib/lodash.js",*/
                         "node_modules/lodash/index.js",
                         "node_modules/socket.io-client/socket.io.js"
                     ]
@@ -138,7 +134,7 @@ module.exports = function (grunt) {
                 }
             },
             jsserver: {
-                files: [ "bibliotech.js", "io/mainIO.js", "db/*.js", "routes/index.js", "tools/*.js" ],
+                files: [ "bibliotech.js", "io/mainIO.js", "db/*.js", "tools/*.js" ],
                 tasks: [ "jshint:server" ],
                 options: { spawn: false }
             },

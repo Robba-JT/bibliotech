@@ -29,11 +29,11 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
             gapi.load("auth2", function() {
                 auth2 = gapi.auth2.init({
                     "client_id": "216469168993-dqhiqllodmfovgtrmjdf2ps5kj0h1gg9.apps.googleusercontent.com",
-                    "scope": "https://www.googleapis.com/auth/books",
-                    "access_type": "online"
+                    "scope": "email https://www.googleapis.com/auth/books",
+                    "fetch_basic_profile": false
                 });
                 µ.one("#f").setEvents("click", function () {
-                    auth2.grantOfflineAccess({ "redirect_uri": "postmessage"}).then(function (response) {
+                    auth2.grantOfflineAccess({ "redirect_uri": "postmessage" }).then(function (response) {
                         if (!response.code) { return; }
                         sendRequest("/googleAuth", { c: response.code }, function (s) {
                             if (!!s && !!s.success) { return window.location.reload(true); }
