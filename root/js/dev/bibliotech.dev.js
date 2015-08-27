@@ -664,6 +664,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 User.destroy();
                 if (!!Idb.indexedDB) { Idb.indexedDB.deleteDatabase(User.get().session); }
                 socket.destroy();
+                socket.close();
                 location.assign("/logout");
                 return false;
             },
@@ -826,15 +827,17 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 gtrans: function () {
                     var action = this.id;
                     Windows.confirm("warning", "Cette opération va importer/exporter vos EBooks depuis/vers votre bibliothèque Google.<BR>Etes vous sur de vouloir continuer?")
-                        .then(function () {
-                            if (action === "exportNow") { return socket.emit("exportNow"); }
-                            Bookcells.destroy();
-                            Images.active.call(µ.one("#collection"));
-                            Waiting.anim(true);
-                            Windows.close(true).then(function () {
-                                Waiting.toggle(true, true);
-                                socket.emit("importNow");
-                            });
+                        .then(function (status) {
+                            if (status) {
+                                if (action === "exportNow") { return socket.emit("exportNow"); }
+                                Bookcells.destroy();
+                                Images.active.call(µ.one("#collection"));
+                                Waiting.anim(true);
+                                Windows.close(true).then(function () {
+                                    Waiting.toggle(true, true);
+                                    socket.emit("importNow");
+                                });
+                            }
                         });
                 },
                 recommand: function () {
@@ -877,8 +880,10 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
             },
             socket = (function (conn) {
                 var connect = function () {
-                        var connection = conn.connect("/", { "secure": true, "multiplex": false });
-                        connection.once("connect", function () {
+                        var connection = conn.connect("/", { "secure": true, "multiplex": false, forceNew: true });
+                        connection
+                            .on("error", function (error) { console.error("error", error); logout(); })
+                            .once("connect", function () {
                             console.debug("socket.connect", new Date().toLocaleString(), (new Date() - start) / 1000);
                             start = new Date();
                             this.once("disconnect", function (data) {
@@ -892,7 +897,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                                     µ.alls(".deroulant").toggle(false);
                                     if (!!µ.one("#picture img")) { µ.one("#picture img").removeAll(); }
                                     µ.alls("#notifications, #tags").toggle(false);
-                                    Images.blur.call(µ.one(".active").toggleClass("active", false));
+                                    if (µ.one(".active")) { Images.blur.call(µ.one(".active").toggleClass("active", false)); }
                                     var forms = µ.alls("form");
                                     for (var jta = 0, lg = forms.length; jta < lg; jta++) { forms[jta].reset(); }
                                     Bookcells.destroy();
@@ -940,7 +945,6 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                                 return p;
                             })
                             .on("endRequest", Search.endRequest)
-                            .on("error", function (error) { console.warn(error); logout(); })
                             .on("logout", logout)
                             .on("newbook", function (data) {
                                 Detail.bookid = data.id;
@@ -969,7 +973,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                         return connection;
                     },
                     reconnect = function(cur) {
-                        cur.destroy();
+                        //cur.destroy();
                         var connectTimeInterval = setInterval(function () {
                             if (!!cur && !!cur.connected && cur.io.readyState === "open") {
                                 clearInterval(connectTimeInterval);
@@ -978,7 +982,6 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                             try { cur.connect(); } catch(error) { }
                         }, 3000);
                     };
-
                 return connect();
             })(io),
             Tags = {
@@ -1196,7 +1199,8 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 delete: function () {
                     µ.one("#errPwd").toggle(false);
                     if (!µ.one("@pwd").reportValidity()) { return; }
-                    Windows.confirm("warning", µ.one("#delete").getAttribute("confirm")).then(function () { socket.emit("deleteUser", µ.one("@pwd").value); });
+                    Windows.confirm("warning", µ.one("#delete").getAttribute("confirm"))
+                        .then(function (status) { if (status) { socket.emit("deleteUser", µ.one("@pwd").value); }});
                     return false;
                 },
                 nokdated: function () {
@@ -1222,6 +1226,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 toggle: function (visible, withIcon) {
                     var wait = µ.one("#w");
                     wait.one("img").toggle(!!withIcon);
+                    Waiting.connection(false);
                     if (wait.isVisible() !== visible) {
                         µ.alls(".description").removeAll();
                         if (!!visible) {
@@ -1231,7 +1236,6 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                             wait.toggle(false);
                             µ.one("html").toggleClass("overflown", false);
                             Waiting.over(false);
-                            Waiting.connection(false);
                         }
                     }
                     return;
@@ -1248,7 +1252,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     if (!!toShow) { µ.setEvents({ mousemove: mouseMove }); } else {
                         µ.removeEventListener("mousemove", mouseMove);
                     }
-                    noConnect.toggle(toShow);
+                    setTimeout(function () { noConnect.toggle(toShow); }, 2000);
                 }
             },
             Windows = {
@@ -1272,8 +1276,12 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                         Waiting.over();
                         µ.one("#confirmWindow header span").text(µ.one("#confirmWindow header span").getAttribute(type));
                         µ.one("#confirmWindow #confirm").text(msg);
-                        µ.one("#confirmWindow .valid").setEvents("click", function () { resolve(); });
-                        µ.one("#confirmWindow .cancel").toggle(type === "warning").setEvents("click", function () { reject(); });
+                        µ.one("#confirmWindow .valid").setEvents("click", function () { resolve(true); });
+                        µ.one("#confirmWindow .cancel").toggle(type === "warning").setEvents("click", function () {
+                            Waiting.over();
+                            µ.one("#confirmWindow").fade(false);
+                            resolve(false);
+                        });
                         Waiting.toggle(true);
                         µ.one("#confirmWindow").css({ "top": xcroll().top + 10, "left": "25%" }).fade(true);
                         µ.setEvents({ "keyup keydown" : Window.esc });

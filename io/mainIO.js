@@ -4,7 +4,7 @@ var Q = require("q"),
     fs = require("fs"),
     ObjectID = require("mongodb").ObjectID;
 
-module.exports = mainIO = function (socket, db, google, userAPI, bookAPI, mailAPI) {
+module.exports = mainIO = function (socket, db, userAPI, bookAPI, mailAPI) {
     "use strict";
 
     var sessionId = socket.request.sessionId,

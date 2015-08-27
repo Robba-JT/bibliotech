@@ -68,10 +68,6 @@ label, [type=checkbox] {
     float: right;
 }
 
-[h] {
-    opacity: 0;
-}
-
 .e {
     border: 4px #CB4747 solid;
 }
@@ -153,6 +149,32 @@ div {
     opacity: .5;
     color: grey;
 }
+
+.fadeout {
+    -webkit-animation: fadeout .25s ease;
+    -moz-animation: fadeout .25s ease;
+    -o-animation: fadeout .25s ease;
+    animation: fadeout .25s ease;
+}
+
+.fadein {
+    -webkit-animation: fadein .5s ease;
+    -moz-animation: fadein .5s ease;
+    -o-animation: fadein .5s ease;
+    animation: fadein .5s ease;
+}
+
+@-moz-keyframes fadein { from { opacity: 0; } to { opacity: 1; }}
+@-webkit-keyframes fadein { from { opacity: 0; } to { opacity: 1; }}
+@-o-keyframes fadein { from { opacity: 0; } to { opacity: 1; }}
+@-ms-keyframes fadein { from { opacity: 0; } to { opacity: 1; }}
+@keyframes fadein { from { opacity: 0; } to { opacity: 1; }}
+
+@-moz-keyframes fadeout { from { opacity: 1; } to { opacity: 0; }}
+@-webkit-keyframes fadeout { from { opacity: 1; } to { opacity: 0; }}
+@-o-keyframes fadeout { from { opacity: 1; } to { opacity: 0; }}
+@-ms-keyframes fadeout { from { opacity: 1; } to { opacity: 0; }}
+@keyframes fadeout { from { opacity: 1; } to { opacity: 0; }}
 
 @-moz-keyframes fullRotation {
 	from {

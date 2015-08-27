@@ -41,14 +41,15 @@ var express = require("express"),
     gAuth = google.oauth2("v2"),
     gOptions = {
         "timeout": 5000,
-        /*"auth": oauth2Client,*/
         "gzip": true,
         "headers": { "Accept-Encoding": "gzip" }
     },
     UsersAPI = require("./db/users").UsersAPI,
     BooksAPI = require("./db/books").BooksAPI,
     MailsAPI = require("./tools/mails").MailsAPI,
-    trads = require("./tools/trads");
+    trads = require("./tools/trads"),
+    Q = require("q"),
+    _ = require("lodash");
 
 google.options(gOptions);
 
@@ -88,26 +89,56 @@ MongoClient.connect(mongoUrl, function (err, db) {
         mailsAPI = new MailsAPI(),
         getLang = function (request) { return trads[(!!trads[request.acceptsLanguages()[0]]) ? request.acceptsLanguages()[0] : "fr"]; };
 
-    io.of("/").use(function (socket, next) {
+    io.use(function (socket, next) {
         if (!socket.request.headers.cookie) { return next(new Error("Cookie inexistant!!!")); }
         var cookies = cookie.parse(socket.request.headers.cookie);
 		if (!cookies._bsession) { return next(new Error("Cookie invalide!!!")); }
         socket.request.sessionId = cookieParser.signedCookie(cookies._bsession, "robba1979");
         mongoStore.get(socket.request.sessionId, function (error, data) {
             if (!!error || !data || (!data.user && !data.token)) { return next(new Error("Session invalide!!!")); }
-            if (!!data.token){
-                if (!Object.keys(oauth2Client.credentials).length) { oauth2Client.setCredentials(data.token); }
-                google._options.auth = oauth2Client;
-                socket.on("disconnect", function () { oauth2Client.revokeCredentials(function (error) { if (!!error) { console.error(error); }}); });
-            }
             if (!!data.user) { socket.request.user = data.user; return sessionMiddleware(socket.request, socket.request.res, next); }
-            gAuth.userinfo.v2.me.get(oauth2Client.credentials, function (err, infos) {
-                if (!!err || !infos) { return next(err || new Error("gAuth - No info")); }
-                socket.request.user = { username: infos.email, name: infos.name, googleSignIn: true, link: infos.link, picture: infos.picture };
-                sessionMiddleware(socket.request, socket.request.res, next);
-            });
+            if (!!data.token){
+                var manageToken = function () {
+                    var defRefresh = Q.defer();
+                    if (_.isEmpty(oauth2Client.credentials)) { oauth2Client.setCredentials(data.token); }
+                    if (oauth2Client.credentials.expiry_date < new Date()) {
+                        oauth2Client.refreshAccessToken(function (error, refresh) {
+                            defRefresh.resolve();
+                            if (!!error) { defRefresh.reject(error); } else {
+                                data.token = refresh;
+                                mongoStore.set(socket.request.sessionId, data);
+                            }
+                        });
+                    } else { defRefresh.resolve(); }
+                    return defRefresh.promise;
+                };
+                manageToken().then(function () {
+                    google._options.auth = oauth2Client;
+                    gAuth.userinfo.v2.me.get(oauth2Client.credentials, function (err, infos) {
+                        if (!!err || !infos) {
+                            return next(new Error("Token invalide!!!"));
+                        }
+                        socket.request.user = { username: infos.email, name: infos.name, googleSignIn: true, link: infos.link, picture: infos.picture };
+                        sessionMiddleware(socket.request, socket.request.res, next);
+                    });
+                }).catch(function (error) {
+                    next(error);
+                });
+            }
         });
-    }).on("connection", function (socket) { mainIO(socket, db, google, usersAPI, booksAPI, mailsAPI); });
+    }).on("connection", function (socket) {
+        var onEvent = socket.onevent;
+
+        console.log("remoteAddress", socket.request.connection.remoteAddress, "_peername", socket.request.connection._peername);
+
+        socket.onevent = function () {
+            var args = arguments;
+            mongoStore.get(socket.request.sessionId, function (error, sess) {
+                if (!!error || !sess) { socket.emit("logout"); } else { onEvent.apply(socket, args); }
+            });
+        };
+        mainIO(socket, db, usersAPI, booksAPI, mailsAPI);
+    });
 
     app.engine("html", cons.swig)
         .set("view engine", "html")
@@ -128,7 +159,6 @@ MongoClient.connect(mongoUrl, function (err, db) {
         .use(sessionMiddleware)
         .use(function (req, res, next) { if (req.secure) { next(); } else { res.redirect("https://" + req.headers.host + req.url); }});
 
-
     device.enableDeviceHelpers(app);
 
     //Errorhandler
@@ -139,17 +169,16 @@ MongoClient.connect(mongoUrl, function (err, db) {
 	//Display pages
 		.get("/",
 			function (req, res, next) {
-                if (!req.session.user && !req.session.token) {
-                    req.session.destroy(function (err) { res.render(res.locals.is_mobile? "mlogin" : "login", getLang(req).login); });
-                } else {
-                    next();
-                }
+                if (!req.session.user && !req.session.token) { res.render(res.locals.is_mobile? "mlogin" : "login", getLang(req).login); } else { next(); }
 			},
 			function (req, res) { res.render(res.locals.is_mobile? "mbibliotech" : "bibliotech", getLang(req).bibliotech); }
 		)
     //Logout
 		.get("/logout", function (req, res) {
-            req.session.destroy(function (err) { res.status(205).redirect("/"); });
+            oauth2Client.revokeCredentials(function (error) {
+                if (!!error) { console.error("revokeCredentials", error); }
+                req.session.destroy(function (err) { res.status(205).redirect("/"); });
+            });
 		})
 	//Erreur url
 		.get("*", function (req, res) { res.status(404).render("error", { error: "Error 404" });})

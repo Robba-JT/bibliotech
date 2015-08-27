@@ -63,7 +63,6 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
         var po = µ.createElement("script");
         po.type = "text/javascript";
         po.async = true;
-        //po.src = "https://apis.google.com/js/client:plusone.js?onload=googleApi";
         po.src = "https://apis.google.com/js/client:platform.js?onload=googleApi";
         var s = µ.one("script");
         s.parentNode.insertBefore(po, s);
@@ -95,11 +94,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
             var v = !µ.one("[h]").isVisible();
             getLabel(v);
             µ.alls("[h]").setValue("");
-            if (!!v) {
-                µ.alls("[h]").setAttributes({ "required": true });
-            } else {
-                µ.alls("[h]").removeAttributes("required");
-            }
+            if (!!v) { µ.alls("[h]").setAttributes({ "required": true }); } else { µ.alls("[h]").removeAttributes("required"); }
             µ.alls("[h]").fade();
             µ.one("[type=email]").focus();
         });
