@@ -4,7 +4,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
     document.setEvents("DOMContentLoaded", function () {
         "use strict";
         var µ = document, start = new Date();
-        console.debug("µ.ready", start.toLocaleString());
+        console.info("µ.ready", start.toLocaleString());
         var arraymove = function (arr, fromIndex, toIndex) {
                 var element = arr[fromIndex];
                 arr.splice(fromIndex, 1);
@@ -411,11 +411,11 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     win.alls("[field=authors] span").removeAll();
                     win.alls(".volumeInfo.nonEditable").toggle(false);
                     win.alls(".volumeInfo:not(.nonEditable)").toggle(!!book.id && _.isEqual(book.id.user, User.get().id));
+                    µ.alls("#detailWindow .new").toggleClass("new", false);
                     Detail.userNote();
                     if (!!win.hasClass("notdisplayed")) { Windows.open.call("detailWindow").then(function () {
                         µ.one("#detailContent").css({ "height": win.clientHeight - win.one("header").clientHeight });
                         µ.one(".detailBook").scrollTop = 0;
-                        µ.alls(".new").toggleClass("new", false);
                     }); }
                     _.forEach(book, function (value, jta) {
                         var field = win.one("[field=" + jta + "]"), input = win.one("input[name=" + jta + "], textarea[name=" + jta + "]");
@@ -610,7 +610,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                             var request = indexedDB.open(User.get().session, 1);
                             request.onerror = function () { reject(); };
                             request.onsuccess = function () {
-                                console.debug("DB Opened", new Date().toLocaleString());
+                                console.info("DB Opened", new Date().toLocaleString());
                                 Idb.db = this.result;
                                 resolve();
                             };
@@ -618,7 +618,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                                 var db = this.result;
                                 db.createObjectStore("queries", { keyPath: "query" }).createIndex("by_query", "query", { unique: true });
                                 db.createObjectStore("details", { keyPath: "id" }).createIndex("by_id", "id", { unique: true });
-                                console.debug("DB Updated", new Date().toLocaleString());
+                                console.info("DB Updated", new Date().toLocaleString());
                             };
                         }
                     });
@@ -822,7 +822,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     Waiting.anim(false);
                     if (!nb) { Waiting.toggle(false); }
                     if (!µ.one("#collection").hasClass("active") && !!Search.last) { Idb.setQuery(Search.last, Bookcells.books); }
-                    console.debug("Search.endRequest", new Date().toLocaleString(), Bookcells.cells.length);
+                    console.info("Search.endRequest", new Date().toLocaleString(), Bookcells.cells.length);
                 },
                 gtrans: function () {
                     var action = this.id;
@@ -884,10 +884,10 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                         connection
                             .on("error", function (error) { console.error("error", error); logout(); })
                             .once("connect", function () {
-                            console.debug("socket.connect", new Date().toLocaleString(), (new Date() - start) / 1000);
+                            console.info("socket.connect", new Date().toLocaleString(), (new Date() - start) / 1000);
                             start = new Date();
                             this.once("disconnect", function (data) {
-                                console.debug("socket.disconnect", this.id, new Object(this), new Date().toLocaleString(), data);
+                                console.info("socket.disconnect", this.id, new Object(this), new Date().toLocaleString(), data);
                                 reconnect(this);
                                 User.destroy();
                                 Windows.close().then(function () {
@@ -906,11 +906,12 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                             .on("books", Bookcells.show)
                             .on("initCollect", function (part) {
                                 User.get().collection.assign(part);
-                                userActions.initCollect(part);
+                                User.get().loading.push(userActions.initCollect(part));
                             })
                             .on("endCollect", function (ret) {
                                 User.get().collection.assign(ret.books);
-                                userActions.initCollect(ret.books).then(function () {
+                                User.get().loading.push(userActions.initCollect(ret.books));
+                                Promise.all(User.get().loading).then(function () {
                                     User.get().collection = Bookcells.cells;
                                     µ.one("#sort [by]").trigger("click");
                                     Tags.init();
@@ -918,7 +919,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                                     Search.endRequest(Bookcells.cells.length);
                                     µ.one("#nbBooks").text(User.get().collection.length);
                                 });
-                                console.debug("User.get().books", new Date().toLocaleString(), User.get().collection.length, (new Date() - start) / 1000);
+                                console.info("User.get().books", new Date().toLocaleString(), User.get().collection.length, (new Date() - start) / 1000);
                             })
                             .on("covers", function (covers) {
                                 var p = new Promise(function (resolve) {
@@ -940,7 +941,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                                     }
                                     resolve();
                                 }).then(function () {
-                                    console.debug("socket.covers", new Date().toLocaleString(), (new Date() - start) / 1000);
+                                    console.info("socket.covers", new Date().toLocaleString(), (new Date() - start) / 1000);
                                 });
                                 return p;
                             })
@@ -973,7 +974,6 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                         return connection;
                     },
                     reconnect = function(cur) {
-                        //cur.destroy();
                         var connectTimeInterval = setInterval(function () {
                             if (!!cur && !!cur.connected && cur.io.readyState === "open") {
                                 clearInterval(connectTimeInterval);
@@ -1093,7 +1093,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 var instance, User = function () {};
                 User.prototype.init = function (data) {
                     _.assign(this, data);
-                    this.collection = [];
+                    this.collection = this.loading = [];
                     if (!!this.picture && !!this.link) {
                         µ.one("#picture").toggle(true)
                             .newElement("img", { src: this.picture, title: "Google+" })
@@ -1103,7 +1103,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     µ.alls(".noSignIn").toggle(!this.googleSignIn);
                     µ.one(".noSignIn input").setAttributes("required", !this.googleSignIn);
                     if (!this.connex) { Windows.help(true); }
-                    console.debug("User.get().initialize", new Date().toLocaleString(), (new Date() - start) / 1000);
+                    console.info("User.get().initialize", new Date().toLocaleString(), (new Date() - start) / 1000);
                     return this;
                 };
                 User.prototype.addbook = function (book) {
@@ -1138,7 +1138,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 User.prototype.updatebook = function (book) {
                     _.assign(book, book.update);
                     delete book.update;
-                    var bookcell = this.bookcell(book.id);
+                    var bookcell = this.bookcell(book.id) || Bookcells.one(book.id);
                     _.assign(bookcell.book, book);
                     if (!!book.title) { bookcell.cell.one("header").text(book.title); }
                     if (!!book.authors) { bookcell.cell.one("figcaption").text(book.authors.join(", ")); }
@@ -1276,7 +1276,11 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                         Waiting.over();
                         µ.one("#confirmWindow header span").text(µ.one("#confirmWindow header span").getAttribute(type));
                         µ.one("#confirmWindow #confirm").text(msg);
-                        µ.one("#confirmWindow .valid").setEvents("click", function () { resolve(true); });
+                        µ.one("#confirmWindow .valid").setEvents("click", function () {
+                            Waiting.over();
+                            µ.one("#confirmWindow").fade(false);
+                            resolve(true);
+                        });
                         µ.one("#confirmWindow .cancel").toggle(type === "warning").setEvents("click", function () {
                             Waiting.over();
                             µ.one("#confirmWindow").fade(false);

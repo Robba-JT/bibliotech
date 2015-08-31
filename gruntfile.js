@@ -83,7 +83,8 @@ module.exports = function (grunt) {
                 files: {
                     "views/login.html": "root/html/login.html",
                     "views/mlogin.html": "root/html/m.login.html",
-                    "views/error.html": "root/html/error.html"
+                    "views/error.html": "root/html/error.html",
+                    "views/maintenance.html": "root/html/maintenance.html"
                 }
             },
             bibliotech: {

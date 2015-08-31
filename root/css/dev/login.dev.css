@@ -75,6 +75,7 @@ label, [type=checkbox] {
 p {
     margin: 0px;
     text-align: right;
+    padding-bottom: 5px;
 }
 
 #f {
@@ -88,15 +89,19 @@ p {
     border: none !important;
 }
 
+form span {
+    text-align: right;
+}
+
 .g {
     width: 100%;
     text-align: right;
-    opacity: 0;
     font-weight: bold;
     color: red;
     padding: 5px;
     font-size: 18px;
     float: right;
+    vertical-align: middle;
 }
 
 div {
@@ -126,8 +131,7 @@ div {
 }
 
 .m {
-    float: right;
-    opacity: 0;
+    /*float: right;*/
     background-color: darkorange;
     color: white;
     font-weight: bold;

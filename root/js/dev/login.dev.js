@@ -44,7 +44,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
             });
         },
         razError = function () {
-            µ.alls(".g, .m").toggle(false);
+            µ.one(".forget").toggle(false);
             µ.one(".g").html("");
         },
         sendRequest = function (u, d, c) {
@@ -83,7 +83,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 µ.one("div").fade(false);
                 µ.one("[type=email]").focus();
                 µ.one(".g").html(s.error);
-                µ.alls(".g, .m").fade(true);
+                µ.one(".forget").toggle(true);
                 return false;
             });
             return false;
@@ -98,12 +98,11 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
             µ.alls("[h]").fade();
             µ.one("[type=email]").focus();
         });
-        µ.one(".m").setEvents("click", function () {
+        µ.one("button.m").setEvents("click", function () {
             var that = this;
-            that.setAttribute("disabled", true);
-            that.classList.add("l");
+            µ.one("div").fade(true);
             sendRequest("/mail", µ.one("form").formToJson(), function (s) {
-                that.classList.remove("l");
+                µ.one("div").fade(false);
                 return false;
             });
         });

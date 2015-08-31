@@ -117,6 +117,9 @@ module.exports = exports = {
             password: "Mot de passe",
             title: "Bibliotech Login",
             valid: "Valider"
+        },
+        maintenance: {
+            message: "Le site est actuellement en cours de maintenance."
         }
     },
     en: {
@@ -237,6 +240,9 @@ module.exports = exports = {
             password: "Password",
             title: "Bibliotech Login",
             valid: "Valid"
+        },
+        maintenance: {
+            message: "Site under maintenance"
         }
     }
 };

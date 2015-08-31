@@ -885,6 +885,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                                 Menu.show();
                                 User.get().init(ret);
                                 if (!Idb.db) { Idb.init(); }
+                                Waiting.toggle(false);
                             }).emit("isConnected");
                             console.debug("socket.connect", new Date().toLocaleString(), (new Date() - start) / 1000);
 

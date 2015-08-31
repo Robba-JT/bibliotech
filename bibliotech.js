@@ -33,14 +33,10 @@ var express = require("express"),
     ms = require("ms"),
     google = require("googleapis"),
     OAuth2Client = google.auth.OAuth2,
-    oauth2Client = new OAuth2Client(
-        "216469168993-dqhiqllodmfovgtrmjdf2ps5kj0h1gg9.apps.googleusercontent.com",
-        "lH-1TOOmmd2wNFaXOf2qY3dV",
-        "postmessage"
-    ),
+    oauth2Client = new OAuth2Client("216469168993-dqhiqllodmfovgtrmjdf2ps5kj0h1gg9.apps.googleusercontent.com", "lH-1TOOmmd2wNFaXOf2qY3dV", "postmessage"),
     gAuth = google.oauth2("v2"),
     gOptions = {
-        "timeout": 5000,
+        //"timeout": 5000,
         "gzip": true,
         "headers": { "Accept-Encoding": "gzip" }
     },
@@ -90,13 +86,17 @@ MongoClient.connect(mongoUrl, function (err, db) {
         getLang = function (request) { return trads[(!!trads[request.acceptsLanguages()[0]]) ? request.acceptsLanguages()[0] : "fr"]; };
 
     io.use(function (socket, next) {
+        delete google._options.auth;
         if (!socket.request.headers.cookie) { return next(new Error("Cookie inexistant!!!")); }
         var cookies = cookie.parse(socket.request.headers.cookie);
 		if (!cookies._bsession) { return next(new Error("Cookie invalide!!!")); }
         socket.request.sessionId = cookieParser.signedCookie(cookies._bsession, "robba1979");
         mongoStore.get(socket.request.sessionId, function (error, data) {
             if (!!error || !data || (!data.user && !data.token)) { return next(new Error("Session invalide!!!")); }
-            if (!!data.user) { socket.request.user = data.user; return sessionMiddleware(socket.request, socket.request.res, next); }
+            if (!!data.user) {
+                socket.request.user = data.user;
+                return sessionMiddleware(socket.request, socket.request.res, next);
+            }
             if (!!data.token){
                 var manageToken = function () {
                     var defRefresh = Q.defer();
@@ -112,8 +112,8 @@ MongoClient.connect(mongoUrl, function (err, db) {
                     } else { defRefresh.resolve(); }
                     return defRefresh.promise;
                 };
+                google._options.auth = oauth2Client;
                 manageToken().then(function () {
-                    google._options.auth = oauth2Client;
                     gAuth.userinfo.v2.me.get(oauth2Client.credentials, function (err, infos) {
                         if (!!err || !infos) {
                             return next(new Error("Token invalide!!!"));
@@ -128,9 +128,6 @@ MongoClient.connect(mongoUrl, function (err, db) {
         });
     }).on("connection", function (socket) {
         var onEvent = socket.onevent;
-
-        console.log("remoteAddress", socket.request.connection.remoteAddress, "_peername", socket.request.connection._peername);
-
         socket.onevent = function () {
             var args = arguments;
             mongoStore.get(socket.request.sessionId, function (error, sess) {
@@ -166,6 +163,9 @@ MongoClient.connect(mongoUrl, function (err, db) {
 			console.error(err.message, err.stack);
 			res.status(500).render("error", { error: err });
         })
+	//Maintenance url
+		//.get("*", function (req, res) { res.status(503).render("maintenance", getLang(req).maintenance);})
+
 	//Display pages
 		.get("/",
 			function (req, res, next) {
