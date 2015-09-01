@@ -194,39 +194,38 @@
                 <img class="closeWindow" source="x-mark-icon" blur="white" hover="black" width="48" height="48" title="{{close}}">
             </header>
             <form role="form" id="formProfil" autocomplete="off">
-                <div>
+                <p>
                     <input type="email" name="mail" disabled />
                     <input type="submit" value="{{valid}}"/>
-                </div>
-                <div>
+                </p>
+                <p>
                     <input type="text" name="name" error="{{errName}}" autocomplete="off" placeholder="{{name}}" autofocus />
-                </div>
-                <div class="noSignIn">
+                </p>
+                <p class="noSignIn">
                     <input type="password" name="pwd" error="{{errPwd}}" wrongpwd="Invalid password" placeholder="{{password}}" />
-                </div>
-                <div id="errPwd" class="errMsg notdisplayed">{{msgPwd}}</div>
-                <div class="gSignIn notdisplayed">
+                </p>
+                <p id="errPwd" class="errMsg notdisplayed">{{msgPwd}}</p>
+                <p class="gSignIn notdisplayed">
                     <label><input type="checkbox" name="googleSignIn" disabled />&nbsp;{{gconnexion}}</label>
-                </div>
-                <div class="gSignIn notdisplayed">
+                </p>
+                <p class="gSignIn notdisplayed">
                     <label><input type="checkbox" name="googleSync"/>&nbsp;{{gsync}}</label>
-                </div>
-                <div class="gSignIn notdisplayed">
-                    <input type="button" value="{{gimport}}" id="importNow" />
+                </p>
+                <p class="gSignIn notdisplayed">
+                    <input type="button" value="{{gimport}}" id="importNow" message="{{goperation}}" />
                     <input type="button" value="{{gexport}}" id="exportNow" />
-                </div>
-                <div>
-                    <input type="button" id="changePwd" value="{{modPwd}}" class="noSignIn" />
+                </p>
+                <p>
+                    <input type="button" id="changePwd" value="{{modPwd}}" />
                     <input type="button" id="delete" value="{{deleteAccount}}" confirm="{{deleteConfirm}}" />
-                </div>
-                <div class="changePwd notdisplayed">
+                </p>
+                <p class="changePwd notdisplayed">
                     <input type="password" name="newPwd" error="{{errPwd}}" placeholder="{{newPwd}}"/>
-                </div>
-                <div class="changePwd notdisplayed">
+                </p>
+                <p class="changePwd notdisplayed">
                     <input type="password" name="confirmPwd" error="{{errConfirm}}" placeholder="{{confirmPwd}}" />
-                </div>
+                </p>
             </form>
-            <!--<div>Nombre&nbsp;de&nbsp;connexion:&nbsp;<span id="nbConnect"></span></div>-->
             <div>{{nbBooks}}:&nbsp;<span id="nbBooks">0</span></div>
 		</section>
 
@@ -360,7 +359,7 @@
 
         <section id="confirmWindow" class="window notdisplayed">
             <header class="windowheader">&nbsp;<span error="{{error}}" warning="{{warning}}" info="{{info}}"></span>
-                <img class="closeWindow" source="x-mark-icon" blur="white" hover="black" width="48" height="48" title="{{close}}">
+                <!--<img class="closeWindow" source="x-mark-icon" blur="white" hover="black" width="48" height="48" title="{{close}}">-->
             </header>
             <article>
                 <span id="confirm"></span><BR>

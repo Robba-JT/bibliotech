@@ -18,7 +18,7 @@ HTMLElement.prototype.css = function (style) {
         if (_.includes(["width", "max-width", "height", "max-height", "top", "left", "bottom", "padding-top"], key) && value.toString().indexOf("%") === -1) { value += "px"; }
         self.style[key] = value;
     });}
-    return this;
+    return self;
 };
 HTMLElement.prototype.fade = function (display) {
     display = typeof display === "undefined" ? !this.isVisible() : display;
@@ -26,9 +26,9 @@ HTMLElement.prototype.fade = function (display) {
     return new Promise(function (resolve) {
         if (!!display) { elt.toggleClass("notdisplayed", false); }
         elt.setEvents({ "animationend": function end(event) {
+            resolve(elt);
             elt.removeEvent("animationend", end).toggleClass(cls, false);
             if (!display) { elt.toggleClass("notdisplayed", true); }
-            resolve(elt);
         }}).toggleClass(cls, true);
     });
 };
@@ -68,7 +68,7 @@ HTMLElement.prototype.removeAttributes = function (attrs) {
     var self = this;
     if (typeof attrs === "string") { attrs = [attrs]; }
     if (_.isArray(attrs)) { attrs.forEach(function (attr) { self.removeAttribute(attr); }); }
-    return this;
+    return self;
 };
 HTMLElement.prototype.removeEvent = function (evt, fn) {
     this.removeEventListener(evt, fn);
@@ -77,7 +77,7 @@ HTMLElement.prototype.removeEvent = function (evt, fn) {
 HTMLElement.prototype.setAttributes = function (attrs) {
     var self = this;
     if (_.isPlainObject(attrs)) { _.forEach(attrs, function (value, key) { self.setAttribute(key, value); }); }
-    return this;
+    return self;
 };
 Window.prototype.setEvents = HTMLDocument.prototype.setEvents = HTMLElement.prototype.setEvents = function (evts, listener, capt) {
     var self = this;
@@ -103,9 +103,9 @@ HTMLElement.prototype.toLeft = function (display) {
     return new Promise(function (resolve) {
         if (!!display) { elt.toggleClass("notdisplayed", false); }
         elt.setEvents({ "animationend": function end(event) {
+            resolve(elt);
             elt.removeEvent("animationend", end).toggleClass(cls, false);
             if (!display) { elt.toggleClass("notdisplayed", true); }
-            resolve(elt);
         }}).toggleClass(cls, true);
     });
 };
@@ -120,7 +120,7 @@ HTMLElement.prototype.toggleClass = function (cls, bo) {
     var action = "toggle";
     if (typeof bo !== "undefined") { action = !!bo ? "add" : "remove"; }
     cls.forEach(function (cl) { el.classList[action](cl); });
-    return this;
+    return el;
 };
 HTMLElement.prototype.trigger = function (evt) {
     var event;
@@ -173,7 +173,7 @@ HTMLCollection.prototype.fade = NodeList.prototype.fade = function (display) {
     return Promise.all(p);
 };
 HTMLCollection.prototype.forEach = NodeList.prototype.forEach = function (fn) {
-    [].forEach.call(this, function (elt) { fn.call(elt); });
+    [].forEach.call(this, function (elt) { fn.apply(elt); });
     return this;
 };
 HTMLCollection.prototype.html = NodeList.prototype.html = function (code) {
@@ -244,15 +244,16 @@ HTMLCollection.prototype.text = NodeList.prototype.text = function (code) {
     return this;
 };
 HTMLCollection.prototype.toArray = NodeList.prototype.toArray = function () {
-    return [].slice.call(this);
+    return [].slice.apply(this);
 };
 HTMLCollection.prototype.toggle = NodeList.prototype.toggle = function (display, type) {
     this.forEach(function () { this.toggle(display, type); });
     return this;
 };
 HTMLCollection.prototype.toggleClass = NodeList.prototype.toggleClass = function (cls, bo) {
-    this.forEach(function () { this.toggleClass(cls, bo); });
-    return this;
+    var self = this;
+    self.forEach(function () { this.toggleClass(cls, bo); });
+    return self;
 };
 HTMLCollection.prototype.trigger = NodeList.prototype.trigger = function (evt) {
     this.forEach(function () { this.trigger(evt); });

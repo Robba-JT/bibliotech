@@ -545,6 +545,10 @@ button.remove {
     white-space: nowrap;
 }
 
+.window p {
+    margin: 0px !important;
+}
+
 .window .radio {
     font-style: italic;
     text-decoration: underline;

@@ -35,19 +35,13 @@ var express = require("express"),
     OAuth2Client = google.auth.OAuth2,
     oauth2Client = new OAuth2Client("216469168993-dqhiqllodmfovgtrmjdf2ps5kj0h1gg9.apps.googleusercontent.com", "lH-1TOOmmd2wNFaXOf2qY3dV", "postmessage"),
     gAuth = google.oauth2("v2"),
-    gOptions = {
-        //"timeout": 5000,
-        "gzip": true,
-        "headers": { "Accept-Encoding": "gzip" }
-    },
     UsersAPI = require("./db/users").UsersAPI,
     BooksAPI = require("./db/books").BooksAPI,
     MailsAPI = require("./tools/mails").MailsAPI,
     trads = require("./tools/trads"),
     Q = require("q"),
-    _ = require("lodash");
-
-google.options(gOptions);
+    _ = require("lodash"),
+    gOptions = { "gzip": true, "headers": { "Accept-Encoding": "gzip" }};
 
 console.extended.timestampFormat = "DD-MM-YYYY hh:mm:ss";
 console.extended.showLogLevel = true;
@@ -86,18 +80,19 @@ MongoClient.connect(mongoUrl, function (err, db) {
         getLang = function (request) { return trads[(!!trads[request.acceptsLanguages()[0]]) ? request.acceptsLanguages()[0] : "fr"]; };
 
     io.use(function (socket, next) {
-        delete google._options.auth;
         if (!socket.request.headers.cookie) { return next(new Error("Cookie inexistant!!!")); }
         var cookies = cookie.parse(socket.request.headers.cookie);
 		if (!cookies._bsession) { return next(new Error("Cookie invalide!!!")); }
         socket.request.sessionId = cookieParser.signedCookie(cookies._bsession, "robba1979");
         mongoStore.get(socket.request.sessionId, function (error, data) {
+            delete google._options;
             if (!!error || !data || (!data.user && !data.token)) { return next(new Error("Session invalide!!!")); }
             if (!!data.user) {
                 socket.request.user = data.user;
+                google.options(gOptions);
                 return sessionMiddleware(socket.request, socket.request.res, next);
             }
-            if (!!data.token){
+            if (!!data.token) {
                 var manageToken = function () {
                     var defRefresh = Q.defer();
                     if (_.isEmpty(oauth2Client.credentials)) { oauth2Client.setCredentials(data.token); }
@@ -112,8 +107,8 @@ MongoClient.connect(mongoUrl, function (err, db) {
                     } else { defRefresh.resolve(); }
                     return defRefresh.promise;
                 };
-                google._options.auth = oauth2Client;
                 manageToken().then(function () {
+                google.options(_.merge(gOptions, { "auth": oauth2Client }));
                     gAuth.userinfo.v2.me.get(oauth2Client.credentials, function (err, infos) {
                         if (!!err || !infos) {
                             return next(new Error("Token invalide!!!"));

@@ -148,17 +148,14 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     return;
                 },
                 show: function (books) {
-                    var bArray = _.chunk(books, 40), chain,
+                    var bArray = _.chunk(books, 40),
+                        chain = [],
                         gen = function (books) {
-                            return new Promise(function (resolve) {
-                                Bookcells.generate(books).then(function (cells) { Bookcells.display(cells, true); }).then(resolve);
-                            });
+                            return new Promise(function (resolve) { Bookcells.generate(books).then(function (cells) { Bookcells.display(cells, true); }).then(resolve); });
                         };
 
-                    for (var jta = 0, lg = bArray.length; jta < lg; jta++) {
-                        chain = !!chain ? chain.then(gen(bArray[jta])) : chain = gen(bArray[jta]);
-                    }
-                    return chain;
+                    for (var jta = 0, lg = bArray.length; jta < lg; jta++) { chain.push(gen(bArray[jta])); }
+                    return Promise.all(chain);
                 },
                 sort: function () {
                     var args = arguments[0] || [];
@@ -359,8 +356,9 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 },
                 newCell: function () {
                     µ.alls("[actclick=add], [actclick=update], #upload, .inCollection").toggle();
-                    var cell = Bookcells.one(Detail.data.book.id);
-                    if (!cell) { User.get().addbook(Detail.data.book); } else if (!!cell.cell) { cell.cell.alls("button").fade(); }
+                    //var cell = Bookcells.one(Detail.data.book.id);
+                    //if (!cell) { User.get().addbook(Detail.data.book); } else if (!!cell.cell) { cell.cell.alls("button").fade(); }
+                    User.get().addbook(Detail.data.book);
                     if (µ.one("#collection").hasClass("active")) { Bookcells.display(); }
                 },
                 sendNotif: function () {
@@ -411,7 +409,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     win.alls("[field=authors] span").removeAll();
                     win.alls(".volumeInfo.nonEditable").toggle(false);
                     win.alls(".volumeInfo:not(.nonEditable)").toggle(!!book.id && _.isEqual(book.id.user, User.get().id));
-                    µ.alls("#detailWindow .new").toggleClass("new", false);
+                    win.alls(".new").toggleClass("new", false);
                     Detail.userNote();
                     if (!!win.hasClass("notdisplayed")) { Windows.open.call("detailWindow").then(function () {
                         µ.one("#detailContent").css({ "height": win.clientHeight - win.one("header").clientHeight });
@@ -826,7 +824,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 },
                 gtrans: function () {
                     var action = this.id;
-                    Windows.confirm("warning", "Cette opération va importer/exporter vos EBooks depuis/vers votre bibliothèque Google.<BR>Etes vous sur de vouloir continuer?")
+                    Windows.confirm("warning", µ.one("#importNow").getAttribute("message"))
                         .then(function (status) {
                             if (status) {
                                 if (action === "exportNow") { return socket.emit("exportNow"); }
@@ -909,8 +907,10 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                                 User.get().loading.push(userActions.initCollect(part));
                             })
                             .on("endCollect", function (ret) {
-                                User.get().collection.assign(ret.books);
-                                User.get().loading.push(userActions.initCollect(ret.books));
+                                if (!!ret.books) {
+                                    User.get().collection.assign(ret.books);
+                                    User.get().loading.push(userActions.initCollect(ret.books));
+                                }
                                 Promise.all(User.get().loading).then(function () {
                                     User.get().collection = Bookcells.cells;
                                     µ.one("#sort [by]").trigger("click");
@@ -1101,22 +1101,27 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     }
                     µ.alls(".gSignIn").toggle(!!this.googleSignIn);
                     µ.alls(".noSignIn").toggle(!this.googleSignIn);
+                    µ.one("#changePwd").css({ "visibility": !this.googleSignIn ? "visible" : "hidden" });
                     µ.one(".noSignIn input").setAttributes("required", !this.googleSignIn);
                     if (!this.connex) { Windows.help(true); }
                     console.info("User.get().initialize", new Date().toLocaleString(), (new Date() - start) / 1000);
                     return this;
                 };
                 User.prototype.addbook = function (book) {
-                    var cell = Bookcells.one(book.id) || new Bookcell(book);
-                    this.collection.push(cell);
-                    cell.cell.one(".add").toggle(false);
-                    cell.cell.one(".remove").toggle(true);
+                    var newcell = new Bookcell(book), curcell = Bookcells.one(book.id);
+                    newcell.cell.one(".add").toggle(false);
+                    newcell.cell.one(".remove").toggle(true);
+                    this.collection.push(newcell);
                     µ.one("#nbBooks").text(this.collection.length);
-                    if (cell.cell.isVisible()) {
-                        cell.book = book;
-                        if (book.base64) { cell.cell.one(".cover").src = book.base64; }
+                    if (!!curcell) {
+                        curcell.cell.one(".add").toggle(false);
+                        curcell.cell.one(".remove").toggle(true);
+                        if (curcell.cell.isVisible()) {
+                            curcell.book = book;
+                            if (book.base64) { curcell.cell.one(".cover").src = book.base64; }
+                        }
                     }
-                    return cell;
+                    return curcell;
                 };
                 User.prototype.bookcell = function (bookid) { return _.find(this.collection, _.matchesProperty("id", bookid)); };
                 User.prototype.book = function (bookid) {
@@ -1129,11 +1134,6 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 User.prototype.removebook = function (bookid) {
                     _.remove(this.collection, _.matchesProperty("id", bookid));
                     µ.one("#nbBooks").text(this.collection.length);
-                };
-                User.prototype.updated = function (values) {
-                    this.name = values.name;
-                    this.googleSync = values.googleSync;
-                    Windows.close();
                 };
                 User.prototype.updatebook = function (book) {
                     _.assign(book, book.update);
@@ -1156,9 +1156,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 };
             })(),
             userActions = {
-                addbook: function (book) {
-                    return User.get().addbook(book);
-                },
+                addbook: function (book) { User.get().addbook(book); },
                 initCollect: function (part) {
                     if (!µ.one("#collection").hasClass("active")) {
                         Images.active.call(µ.one("#collection").toggleClass("active", true));
@@ -1211,6 +1209,11 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     µ.one("#errPwd").fade(false);
                     socket.emit("updateUser", this.formToJson());
                     return false;
+                },
+                updated: function (data) {
+                    User.get().name = data.name;
+                    User.get().googleSync = data.googleSync;
+                    Windows.close();
                 }
             },
             Waiting = {
@@ -1249,10 +1252,13 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                             });
                         };
 
-                    if (!!toShow) { µ.setEvents({ mousemove: mouseMove }); } else {
+                    if (!!toShow) {
+                        µ.setEvents({ mousemove: mouseMove });
+                        setTimeout(function () { noConnect.toggle(toShow); }, 2000);
+                    } else {
                         µ.removeEventListener("mousemove", mouseMove);
+                        noConnect.toggle(toShow);
                     }
-                    setTimeout(function () { noConnect.toggle(toShow); }, 2000);
                 }
             },
             Windows = {
@@ -1277,12 +1283,12 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                         µ.one("#confirmWindow header span").text(µ.one("#confirmWindow header span").getAttribute(type));
                         µ.one("#confirmWindow #confirm").text(msg);
                         µ.one("#confirmWindow .valid").setEvents("click", function () {
-                            Waiting.over();
+                            Waiting.over(false);
                             µ.one("#confirmWindow").fade(false);
                             resolve(true);
                         });
                         µ.one("#confirmWindow .cancel").toggle(type === "warning").setEvents("click", function () {
-                            Waiting.over();
+                            Waiting.over(false);
                             µ.one("#confirmWindow").fade(false);
                             resolve(false);
                         });
@@ -1317,8 +1323,8 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                                     µ.one("@mail").value = User.get().id;
                                     µ.one("@name").value = User.get().name;
                                     if (!!User.get().googleSignIn) {
-                                        µ.one("@googleSignIn").setAttribute("checked", true);
-                                        if (!!User.get().googleSync) { µ.one("@googleSync").setAttribute("checked", true); }
+                                        µ.one("@googleSignIn").checked = true;
+                                        µ.one("@googleSync").checked = !!User.get().googleSync;
                                     } else {
                                         µ.one("@pwd").setAttribute("required", true);
                                     }
@@ -1433,13 +1439,13 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 },
                 self = this;
 
-            this.cell.alls("header, figure").setEvents("click", detail);
-            this.cell.alls("button").setEvents("click", action);
-            this.cell.setEvents({ "mouseenter": description, "mouseleave": description, "dragstart": dragstart, "dragend": dragend });
             this.cell.one("footer").css({ "bottom": this.cell.one("figcaption").clientHeight + 5 });
             this.actived = true;
             this.destroy = destroy;
             this.loadcover = loadcover;
+            this.cell.alls("header, figure").setEvents("click", detail);
+            this.cell.alls("button").setEvents("click", action);
+            this.cell.setEvents({ "mouseenter": description, "mouseleave": description, "dragstart": dragstart, "dragend": dragend });
         };
         Bookcell.prototype.returned = function (book) {
             this.book = book;

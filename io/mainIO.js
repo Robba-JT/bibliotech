@@ -69,7 +69,7 @@ module.exports = mainIO = function (socket, db, userAPI, bookAPI, mailAPI) {
                 update.$inc = { "userbooks": 1 };
                 thisUser.userbooks++;
             } else {
-                if (!_.isObject(book.id) && !!thisUser.googleSync) { bookAPI.googleAdd(_.assign({ volumeId: book.id }, thisUser.token)); }
+                if (!_.isObject(book.id) && !!thisUser.googleSync) { bookAPI.googleAdd({ volumeId: book.id }); }
             }
             if (!!book.from) { update.$addToSet.books.from = book.from; }
             if (!!book.alt) { update.$addToSet.books.cover = new ObjectID(book.alt); }
@@ -88,15 +88,9 @@ module.exports = mainIO = function (socket, db, userAPI, bookAPI, mailAPI) {
             userAPI.findUser(userInfos.username)
                 .catch(function (error) {
                     if (!!userInfos.googleSignIn) {
-                        userAPI.addUser(userInfos.username, userInfos.username, userInfos.name, function (error) {
-                            if (!!error) {
-                                console.error("isConnected - userAPI.addUser", error);
-                                return socket.emit("logout", true);
-                            }
-                            return {
-                                _id: userInfos.username,
-                                name: userInfos.name
-                            };
+                        return Q.Promise(function (resolve) {
+                            userAPI.addUser(userInfos.username, userInfos.username, userInfos.name)
+                                .then(function (user) { resolve(user); }).catch(function (error) { console.error("isConnected - userAPI.addUser", error); resolve(false); });
                         });
                     } else {
                         console.error("isConnected - userAPI.findUser", error || new Error("No user Data"));
@@ -111,8 +105,7 @@ module.exports = mainIO = function (socket, db, userAPI, bookAPI, mailAPI) {
                         coverList = _.compact(_.pluck(userData.books, "cover"));
 
                     thisUser.googleSignIn = !!userInfos.googleSignIn;
-                    thisUser.token = userInfos.token;
-                    userAPI.updateUser({ _id: userData._id }, { "$set": { "last_connect": new Date() }, "$inc": { "connect_number": 1 }});
+                     userAPI.updateUser({ _id: userData._id }, { "$set": { "last_connect": new Date() }, "$inc": { "connect_number": 1 }});
                     socket.emit("user", {
                         connex: thisUser.connect_number,
                         first: !thisUser.connect_number,
@@ -250,8 +243,7 @@ module.exports = mainIO = function (socket, db, userAPI, bookAPI, mailAPI) {
         if (_.isEqual(bookid.user, thisUser._id)) {
             defBooks("removeOne", { id: bookid });
         } else if (!!thisUser.googleSync && !bookid.user) {
-            defBooks("googleRemove", _.assign({ volumeId: bookid }, thisUser.token))
-                .catch(function (error) { console.error("googleRemove", error); });
+            defBooks("googleRemove", { volumeId: bookid }).catch(function (error) { console.error("googleRemove", error); });
         }
     });
 
@@ -270,16 +262,21 @@ module.exports = mainIO = function (socket, db, userAPI, bookAPI, mailAPI) {
     });
 
     socket.on("deleteUser", function (password) {
-        userAPI.validateLogin(thisUser._id, password)
-            .then(function (response) {
-                bookAPI.removeUserData(thisUser._id);
-                userAPI.removeUser({ _id: thisUser._id });
-                socket.emit("logout");
-            })
-            .catch(function (error) {
-                console.error("deleteUser", error);
-                socket.emit("updateNok");
-            });
+        var isDeleted = function () {
+            bookAPI.removeUserData(thisUser._id);
+            userAPI.removeUser({ _id: thisUser._id });
+            socket.emit("logout");
+        };
+        if (!thisUser.googleSignIn) {
+            userAPI.validateLogin(thisUser._id, password)
+                .then(isDeleted)
+                .catch(function (error) {
+                    console.error("deleteUser", error);
+                    socket.emit("updateNok");
+                });
+        } else {
+            isDeleted();
+        }
     });
 
     socket.on("sendNotif", function (data) {
@@ -331,35 +328,30 @@ module.exports = mainIO = function (socket, db, userAPI, bookAPI, mailAPI) {
     });
 
     socket.on("recommanded", function () {
-        searchLoop("myGoogleBooks", _.assign({ search: true, shelf: 8 }, thisUser.token), function (books) { socket.emit("books", books); })
+        searchLoop("myGoogleBooks", { search: true, shelf: 8 }, function (books) { socket.emit("books", books); })
             .catch(function (error) { console.error("recommanded", error); })
             .done(function (books) { socket.emit("endRequest", (!!books) ? books.length : 0); });
     });
 
     socket.on("importNow", function () {
-        if (!thisUser.token) { return; }
-        var qAdd = [], params = _.assign(thisUser.token),
+        if (!thisUser.googleSignIn) { return; }
+        var qAdd = [],
             gestionImport = function (books) {
-                _.forEach(books, function (book) {
-                    if (_.findIndex(thisUser.books, { book: book.id}) === -1) {
-                        qAdd.push(addBook(book.id));
-                    }
-                });
-            };
+                _.forEach(books, function (book) { if (_.findIndex(thisUser.books, { book: book.id}) === -1) { qAdd.push(addBook(book.id)); }}); };
 
-        searchLoop("myGoogleBooks", params, gestionImport).done(function () {
+        searchLoop("myGoogleBooks", {}, gestionImport).done(function () {
             Q.allSettled(qAdd)
-                .then(function () { socket.emit("collection", { books: _.sortBy(thisBooks, "title") }); })
+                .then(function () { socket.emit("initCollect", thisBooks); })
                 .catch(function (error) { console.error("importNow", error); })
-                .done(function () { socket.emit("endRequest", thisBooks.length); });
+                .done(function () { socket.emit("endCollect", {}); });
         });
     });
 
     socket.on("exportNow", function () {
+        if (!thisUser.googleSignIn) { return; }
         var defExport = [];
-        if (!thisUser.token) { return; }
         for (var jta in thisUser.books) {
-            defExport.push(defBooks("googleAdd", _.assign({ volumeId: thisUser.books[jta].book }, thisUser.token)));
+            defExport.push(defBooks("googleAdd", { volumeId: thisUser.books[jta].book }));
         }
         Q.allSettled(defExport).catch(function (error) { console.error("exportNow", error); });
     });

@@ -50,7 +50,7 @@ module.exports.UsersAPI = UsersAPI = function (db) {
                 "userbooks": 0
             };
         insertUser(user, function (err, result) {
-            if (!!err) { defCreate.reject(new Error("Error Database")); } else { defCreate.resolve(user); }
+            if (!!err || !result) { defCreate.reject(err || new Error("Error Database")); } else { defCreate.resolve(user); }
         });
         return defCreate.promise;
     };
