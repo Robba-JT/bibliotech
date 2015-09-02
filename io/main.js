@@ -1,13 +1,15 @@
 var Q = require("q"),
-    ent = require("ent"),
     _ = require("lodash"),
-    fs = require("fs"),
-    ObjectID = require("mongodb").ObjectID;
+    ObjectID = require("mongodb").ObjectID,
+    db = require("../db/database"),
+    mailAPI = require("../tools/mails").MailsAPI;
 
-module.exports = mainIO = function (socket, db, userAPI, bookAPI, mailAPI) {
+module.exports = function main (socket) {
     "use strict";
 
-    var sessionId = socket.request.sessionId,
+    var userAPI = db.UsersAPI,
+        bookAPI = db.BooksAPI,
+        sessionId = socket.request.sessionId,
         userInfos = socket.request.user,
         thisUser, thisBooks = [], lastSearch = {}, lastDetail = {},
         defBooks = function (request, query) {

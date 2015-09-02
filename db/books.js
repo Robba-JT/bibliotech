@@ -2,12 +2,15 @@ var Q = require("q"),
     request = require("request"),
     reqOption = { "gzip": true },
     ObjectID = require("mongodb").ObjectID,
-    _ = require("lodash");
+    _ = require("lodash"),
+    gBooks = require("googleapis").books("v1");
 
-module.exports.BooksAPI = BooksAPI = function (db, gBooks) {
+if (require("ip").address() === "128.1.236.11") { reqOption.proxy = "http://CGDM-EMEA\jtassin:password_4@isp-ceg.emea.cegedim.grp:3128/"; }
+
+module.exports.BooksAPI = BooksAPI = function (db) {
     "use strict";
 
-    if (!(this instanceof BooksAPI)) { return new BooksAPI(db, gBooks); }
+    if (!(this instanceof BooksAPI)) { return new BooksAPI(db); }
 
     var books = db.collection("books"),
         comments = db.collection("comments"),
@@ -142,14 +145,12 @@ module.exports.BooksAPI = BooksAPI = function (db, gBooks) {
                                 if (!!error) {
                                     console.error("Error Update One", oldOne.id, error);
                                     if (error.code === 404 && error.message === "The volume ID could not be found.") {
-                                        console.log("deleted", oldOne.title);
                                         books.remove({ id: oldOne.id });
                                         removed++;
                                     }
                                 } else {
                                     var newOne = formatOne(response);
                                     if (!booksEqual(oldOne, newOne)) {
-                                        console.log("updated", newOne.title);
                                         updated++;
                                     }
                                     updateBook(newOne);
@@ -245,8 +246,5 @@ module.exports.BooksAPI = BooksAPI = function (db, gBooks) {
         });
     };
 
-    this.mainUpdate = function () {
-        unusedCovers();
-        updateAllBooks();
-    };
+    (function init() { unusedCovers(); updateAllBooks(); })();
 };

@@ -1,8 +1,8 @@
-var _ = require("lodash");
-module.exports.LogsAPI = LogsAPI = function (fs) {
-    "use strict";
+var _ = require("lodash"), fs = require("fs");
 
-    if (!(this instanceof LogsAPI)) { return new LogsAPI(fs); }
+module.exports = (function LogsAPI () {
+    "use strict";
+    if (!(this instanceof LogsAPI)) { return new LogsAPI(); }
 
     var formatCurrDate = function (horo) {
             var dtSeparator = "-",
@@ -42,4 +42,4 @@ module.exports.LogsAPI = LogsAPI = function (fs) {
 
     this.formatCurrDate = formatCurrDate;
     this.logsWrite = logsWrite;
-};
+})();
