@@ -13,11 +13,7 @@ module.exports.Oauth = Oauth = (function () {
         destroy = function (callback) {
             oauthClient.revokeCredentials(function (error) {
                 instance = null;
-                google.options({
-                    "gzip": true,
-                    "headers": { "Accept-Encoding": "gzip" },
-                    "proxy": "http://CGDM-EMEA\jtassin:password_4@isp-ceg.emea.cegedim.grp:3128/"
-                });
+                google.options({ "gzip": true, "headers": { "Accept-Encoding": "gzip" }});
                 callback(error);
             });
         };
