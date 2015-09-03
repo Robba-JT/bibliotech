@@ -5,8 +5,6 @@ var Q = require("q"),
     _ = require("lodash"),
     gBooks = require("googleapis").books("v1");
 
-if (require("ip").address() === "128.1.236.11") { reqOption.proxy = "http://CGDM-EMEA\jtassin:password_4@isp-ceg.emea.cegedim.grp:3128/"; }
-
 module.exports.BooksAPI = BooksAPI = function (db) {
     "use strict";
 
@@ -83,7 +81,7 @@ module.exports.BooksAPI = BooksAPI = function (db) {
             covers.remove(filter, callback);
         },
         searchOne = function (bookid, callback) {
-            var params = _.assign({ volumeId: bookid }, reqParams.searchOne);
+            var params = _.merge({ volumeId: bookid }, reqParams.searchOne);
             gBooks.volumes.get(params, function (error, response) {
                 if (!!error || !response) { callback(error || new Error("Bad Single Request!!!")); } else {
                     var book = formatOne(response);
@@ -139,7 +137,7 @@ module.exports.BooksAPI = BooksAPI = function (db) {
                 if (!!result) {
                     var updated = 0, removed = 0, requests = [];
                     result.forEach(function (oldOne) {
-                        var params = _.assign({ volumeId: oldOne.id }, reqParams.searchOne);
+                        var params = _.merge({ volumeId: oldOne.id }, reqParams.searchOne);
                         requests.push(new Promise(function () {
                             gBooks.volumes.get(params, function (error, response) {
                                 if (!!error) {
@@ -201,13 +199,14 @@ module.exports.BooksAPI = BooksAPI = function (db) {
     this.removeOne = removeOne;
     this.searchOne = searchOne;
     this.searchBooks = function (params, callback) {
-        gBooks.volumes.list(_.assign(params, reqParams.search), callback);
+        console.log(gBooks.google._options);
+        gBooks.volumes.list(_.merge(params, reqParams.search), callback);
     };
     this.associatedBooks = function (params, callback) {
-        gBooks.volumes.associated.list(_.assign(params, reqParams.search), callback);
+        gBooks.volumes.associated.list(_.merge(params, reqParams.search), callback);
     };
     this.myGoogleBooks = function (params, callback) {
-        gBooks.mylibrary.bookshelves.volumes.list((!!params.search) ? _.assign(params, reqParams.search) : _.assign(params, reqParams.import), callback);
+        gBooks.mylibrary.bookshelves.volumes.list((!!params.search) ? _.merge(params, reqParams.search) : _.merge(params, reqParams.import), callback);
     };
     this.googleAdd = function (params, callback) {
         params.shelf = 7;

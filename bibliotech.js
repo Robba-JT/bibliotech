@@ -1,5 +1,6 @@
 var express = require("express"),
     app = express(),
+    path = require("path"),
     fs = require("fs"),
     options = { "key": fs.readFileSync("./biblio.tech.key"), "cert": fs.readFileSync("./biblio.tech.crt") },
     config = JSON.parse(fs.readFileSync("config.json"))[app.settings.env],
@@ -11,7 +12,6 @@ var express = require("express"),
     https = require("https"),
     server = http.Server(app).listen(port),
     sServer = https.Server(options, app).listen(sPort),
-    path = require("path"),
     mongoUrl = "mongodb://" + config.mongoHost + ":" + config.mongoPort + "/" + config.mongoDB,
     device = require("express-device"),
     extconsole = require("extended-console"),
@@ -36,8 +36,7 @@ console.extended
 	});
 
 require("./db/database").init(mongoUrl, function (error) {
-    if (!!error) { console.error(error); throw error; }
-    console.info("Database server listening on " + mongoUrl);
+    if (!!error) { console.error("Database Error", error); throw error; }
 
     app.engine("html", require("consolidate").swig)
         .set("view engine", "html")
@@ -45,7 +44,7 @@ require("./db/database").init(mongoUrl, function (error) {
         //.set("view cache", true)
         .set("json spaces", 1)
         .set("x-powered-by", true)
-        .enable("etag").set("etag", "strong")
+        .enable("etag").set("etag", true)
         .use(require("compression")())
         .use(require("cors")())
         .use(require("express-json")())
@@ -56,7 +55,14 @@ require("./db/database").init(mongoUrl, function (error) {
 		.use(bodyParser.json())
         .use(device.capture())
         .use(session.middleware)
-        .use(function (req, res, next) { if (req.secure) { next(); } else { res.redirect("https://" + req.headers.host + req.url); }});
+        .use(function (req, res, next) { if (req.secure) { next(); } else { res.redirect("https://" + req.headers.host + req.url); }})
+        .use(function (req, res, next) {
+            res.setHeader("X-Frame-Options", "sameorigin");
+            res.setHeader("X-Content-Type-Options", "nosniff");
+            res.setHeader("X-XSS-Protection", "1;mode=block");
+            res.setHeader("Access-Control-Allow-Origin", "https://biblio.tech");
+            next();
+        });
 
     device.enableDeviceHelpers(app);
     require("./routes")(app);

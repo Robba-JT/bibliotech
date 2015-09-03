@@ -133,7 +133,10 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     }
                     return !!one;
                 },
-                returned: function (book) { Bookcells.one(book.id).returned(book); },
+                returned: function (book) {
+                    if (!book) { return Waiting.toggle(false); }
+                    Bookcells.one(book.id).returned(book);
+                },
                 save: function () {
                     µ.one("#saveorder").toggle();
                     var id = µ.one("#selectedTag").html(),
@@ -219,6 +222,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                         }
                     };
                     this.associated = function () {
+                        if (µ.one("#w").isVisible()) { return; }
                         Search.associated(bookid);
                     };
                     this.update = function () {
@@ -304,6 +308,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 },
                 data: {},
                 links: function () {
+                    if (µ.one("#w").isVisible()) { return; }
                     var sb = this.getAttribute("searchby"), txt = this.text();
                     if (!!sb && !!txt) {
                         µ.one("#formSearch [type=search]", "").value = txt;
@@ -878,7 +883,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
             },
             socket = (function (conn) {
                 var connect = function () {
-                        var connection = conn.connect("/", { "secure": true, "multiplex": false, forceNew: true });
+                        var connection = conn.connect({ "secure": true, "multiplex": false });
                         connection
                             .on("error", function (error) { console.error("error", error); logout(); })
                             .once("connect", function () {

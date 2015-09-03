@@ -33,10 +33,12 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     "fetch_basic_profile": false
                 });
                 µ.one("#f").setEvents("click", function () {
+                    µ.one("div").toggle(true);
                     auth2.grantOfflineAccess({ "redirect_uri": "postmessage" }).then(function (response) {
-                        if (!response.code) { return; }
+                        if (!response.code) { return µ.one("div").toggle(false); }
                         sendRequest("/googleAuth", { c: response.code }, function (s) {
                             if (!!s && !!s.success) { return window.location.reload(true); }
+                            µ.one("div").toggle(false);
                             return false;
                         });
                     });
@@ -76,11 +78,11 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
         µ.one("form").setEvents("submit", function (e) {
             e.preventDefault();
             razError();
-            µ.one("div").fade(0.5);
+            µ.one("div").toggle(true);
             sendRequest(µ.one("[h]").isVisible() ? "/new" : "/login", this.formToJson(), function (s) {
                 if (!!s && !!s.success) { return window.location.reload(true); }
                 µ.alls("[type=email], [type=password], [type=text]").toggleClass("e", true);
-                µ.one("div").fade(false);
+                µ.one("div").toggle(false);
                 µ.one("[type=email]").focus();
                 µ.one(".g").html(s.error);
                 µ.one(".forget").toggle(true);
@@ -100,9 +102,9 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
         });
         µ.one("button.m").setEvents("click", function () {
             var that = this;
-            µ.one("div").fade(true);
+            µ.one("div").toggle(true);
             sendRequest("/mail", µ.one("form").formToJson(), function (s) {
-                µ.one("div").fade(false);
+                µ.one("div").toggle(false);
                 return false;
             });
         });

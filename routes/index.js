@@ -1,7 +1,8 @@
-var oauth = require("../tools/oauth").Oauth,
+var oauth = require("../tools/oauth"),
     trads = require("../tools/trads"),
     mailsAPI = require("../tools/mails").MailsAPI,
     usersAPI = require("../db/database").UsersAPI;
+
 
 module.exports = exports = function (app) {
     "use strict";
@@ -44,7 +45,7 @@ module.exports = exports = function (app) {
 	//Login
 		.post("/new", function (req, res) {
 			usersAPI.addUser(req.body.a, req.body.c, req.body.b)
-                .then(function (user) { req.session.user = user._id; res.jsonp({ success: !!user }); })
+                .then(function (user) { req.session.user = { username: user._id }; res.jsonp({ success: !!user }); })
                 .catch(function (err) { res.jsonp({ "error": getLang(req).error.alreadyExist }); });
 		})
 	//Mot de passe oublié

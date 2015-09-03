@@ -1,7 +1,7 @@
 var cookie = require("express/node_modules/cookie"),
     cookieParser = require("cookie-parser"),
     mainIO = require("./main"),
-    oauth = require("../tools/oauth").Oauth.get();
+    getOauth = require("../tools/oauth").get();
 
 module.exports = function (io, session) {
     "use strict";
@@ -17,8 +17,8 @@ module.exports = function (io, session) {
                 return session.middleware(socket.request, socket.request.res, next);
             }
             if (!!data.token) {
-                oauth.setCredentials(data.token);
-                oauth.userInfos(function (err, infos) {
+                getOauth.setCredentials(data.token);
+                getOauth.userInfos(function (err, infos) {
                     if (!!err || !infos) { return next(err || new Error("Token invalide!!!")); }
                     socket.request.user = { username: infos.email, name: infos.name, googleSignIn: true, link: infos.link, picture: infos.picture };
                     session.middleware(socket.request, socket.request.res, next);

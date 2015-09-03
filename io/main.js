@@ -91,7 +91,7 @@ module.exports = function main (socket) {
                 .catch(function (error) {
                     if (!!userInfos.googleSignIn) {
                         return Q.Promise(function (resolve) {
-                            userAPI.addUser(userInfos.username, userInfos.username, userInfos.name)
+                            userAPI.addUser(userInfos.username, "", userInfos.name)
                                 .then(function (user) { resolve(user); }).catch(function (error) { console.error("isConnected - userAPI.addUser", error); resolve(false); });
                         });
                     } else {
@@ -205,9 +205,9 @@ module.exports = function main (socket) {
         searchDetail(bookid, function (error, response) {
             if (!!error) { console.error("searchDetail", error); }
             if (!!response) {
-                socket.emit("returnDetail", response);
                 lastDetail = response;
             }
+            socket.emit("returnDetail", response);
         });
     });
 
@@ -337,15 +337,28 @@ module.exports = function main (socket) {
 
     socket.on("importNow", function () {
         if (!thisUser.googleSignIn) { return; }
-        var qAdd = [],
+        var qAdd = [], qCover = [],
             gestionImport = function (books) {
-                _.forEach(books, function (book) { if (_.findIndex(thisUser.books, { book: book.id}) === -1) { qAdd.push(addBook(book.id)); }}); };
+                _.forEach(books, function (book) {
+                    if (_.findIndex(thisUser.books, { book: book.id}) === -1) {
+                        qAdd.push(addBook(book.id));
+                        console.log(book.title, !!book.cover, !book.base64);
+                        if (!!book.cover && !book.base64) {
+                            qCover.push(bookAPI.loadBase64(book.cover, book.id));
+                            book.cover = true;
+                        }
+                    }});
+            };
 
         searchLoop("myGoogleBooks", {}, gestionImport).done(function () {
             Q.allSettled(qAdd)
                 .then(function () { socket.emit("initCollect", thisBooks); })
                 .catch(function (error) { console.error("importNow", error); })
                 .done(function () { socket.emit("endCollect", {}); });
+            Q.allSettled(qCover).then(function (covers) {
+                console.log(covers.length);
+                if (!!covers.length) { socket.emit("covers", _.map(covers, "value")); }
+            });
         });
     });
 
