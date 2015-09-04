@@ -16,6 +16,10 @@ body {
     display: none !important;
 }
 
+h1 {
+    padding-left: 10px;
+}
+
 section {
     background: url("../../images/black_patch.jpg");
     width: 600px;
@@ -123,10 +127,10 @@ div {
 	position:	relative;
 	top	: 40%;
     cursor: wait;
-	-moz-animation: fullRotation 5s inFinite;
+	/*-moz-animation: fullRotation 5s inFinite;
 	-webkit-animation: fullRotation 5s inFinite;
 	-o-animation: fullRotation 5s inFinite;
-	-ms-animation: fullRotation 5s inFinite;
+	-ms-animation: fullRotation 5s inFinite;*/
 	animation: fullRotation 5s inFinite;
 }
 
@@ -155,32 +159,32 @@ div {
 }
 
 .fadeout {
-    -webkit-animation: fadeout .25s ease;
+    /*-webkit-animation: fadeout .25s ease;
     -moz-animation: fadeout .25s ease;
-    -o-animation: fadeout .25s ease;
+    -o-animation: fadeout .25s ease;*/
     animation: fadeout .25s ease;
 }
 
 .fadein {
-    -webkit-animation: fadein .5s ease;
+    /*-webkit-animation: fadein .5s ease;
     -moz-animation: fadein .5s ease;
-    -o-animation: fadein .5s ease;
+    -o-animation: fadein .5s ease;*/
     animation: fadein .5s ease;
 }
 
-@-moz-keyframes fadein { from { opacity: 0; } to { opacity: 1; }}
+/*@-moz-keyframes fadein { from { opacity: 0; } to { opacity: 1; }}
 @-webkit-keyframes fadein { from { opacity: 0; } to { opacity: 1; }}
 @-o-keyframes fadein { from { opacity: 0; } to { opacity: 1; }}
-@-ms-keyframes fadein { from { opacity: 0; } to { opacity: 1; }}
+@-ms-keyframes fadein { from { opacity: 0; } to { opacity: 1; }}*/
 @keyframes fadein { from { opacity: 0; } to { opacity: 1; }}
 
-@-moz-keyframes fadeout { from { opacity: 1; } to { opacity: 0; }}
+/*@-moz-keyframes fadeout { from { opacity: 1; } to { opacity: 0; }}
 @-webkit-keyframes fadeout { from { opacity: 1; } to { opacity: 0; }}
 @-o-keyframes fadeout { from { opacity: 1; } to { opacity: 0; }}
-@-ms-keyframes fadeout { from { opacity: 1; } to { opacity: 0; }}
+@-ms-keyframes fadeout { from { opacity: 1; } to { opacity: 0; }}*/
 @keyframes fadeout { from { opacity: 1; } to { opacity: 0; }}
 
-@-moz-keyframes fullRotation {
+/*@-moz-keyframes fullRotation {
 	from {
         -webkit-transform: rotate(0deg);
         transform: rotate(0deg);
@@ -211,6 +215,16 @@ div {
 }
 
 @-ms-keyframes fullRotation {
+	from {
+        -webkit-transform: rotate(0deg);
+        transform: rotate(0deg);
+    } to {
+        -webkit-transform: rotate(360deg);
+        transform: rotate(360deg);
+    }
+}*/
+
+@keyframes fullRotation {
 	from {
         -webkit-transform: rotate(0deg);
         transform: rotate(0deg);

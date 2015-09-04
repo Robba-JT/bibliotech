@@ -2,15 +2,17 @@ var Q = require("q"),
     request = require("request"),
     reqOption = { "gzip": true },
     ObjectID = require("mongodb").ObjectID,
-    _ = require("lodash"),
-    gBooks = require("googleapis").books("v1");
+    _ = require("lodash");
+
+if (require("ip").address() === "128.1.236.11") { reqOption.proxy = "http://CGDM-EMEA\jtassin:password_4@isp-ceg.emea.cegedim.grp:3128/"; }
 
 module.exports.BooksAPI = BooksAPI = function (db) {
     "use strict";
 
     if (!(this instanceof BooksAPI)) { return new BooksAPI(db); }
 
-    var books = db.collection("books"),
+    var gBooks = require("../tools/gapi").books,
+        books = db.collection("books"),
         comments = db.collection("comments"),
         notifs = db.collection("notifications"),
         covers = db.collection("covers"),
@@ -245,5 +247,5 @@ module.exports.BooksAPI = BooksAPI = function (db) {
         });
     };
 
-    (function init() { unusedCovers(); updateAllBooks(); })();
+    //(function init() { unusedCovers(); updateAllBooks(); })();
 };

@@ -1,7 +1,8 @@
-var oauth = require("../tools/oauth"),
+var gapi = require("../tools/gapi"),
     trads = require("../tools/trads"),
     mailsAPI = require("../tools/mails").MailsAPI,
-    usersAPI = require("../db/database").UsersAPI;
+    db = require("../db/database").client,
+    usersAPI = require("../db/users").UsersAPI(db);
 
 
 module.exports = exports = function (app) {
@@ -21,14 +22,13 @@ module.exports = exports = function (app) {
 			function (req, res, next) {
                 if (!req.session.user && !req.session.token) { res.render(res.locals.is_mobile? "mlogin" : "login", getLang(req).login); } else { next(); }
 			},
-			function (req, res) { res.render(res.locals.is_mobile? "mbibliotech" : "bibliotech", getLang(req).bibliotech); }
+			function (req, res) {
+                res.render(res.locals.is_mobile? "mbibliotech" : "bibliotech", getLang(req).bibliotech);
+            }
 		)
     //Logout
 		.get("/logout", function (req, res) {
-            oauth.destroy(function (error) {
-                if (!!error) { console.error("revokeCredentials", error); }
-                req.session.destroy(function (err) { res.status(205).redirect("/"); });
-            });
+            req.session.destroy(function (err) { res.status(205).redirect("/"); });
         })
 	//Erreur url
 		.get("*", function (req, res) { res.status(404).render("error", { error: "Error 404" });})
@@ -59,7 +59,7 @@ module.exports = exports = function (app) {
         .post("/preview", function (req, res, next) { res.render("preview", { bookid: req.body.previewid }); })
     // Google Login
         .post("/googleAuth", function (req, res) {
-            oauth.get().getToken(req.body.c, function (err, token) {
+            gapi.client.getToken(req.body.c, function (err, token) {
                 if (!!err || !token) { console.error(err || "googleAuth No token!!!"); } else {
                     req.session.token = token;
                 }

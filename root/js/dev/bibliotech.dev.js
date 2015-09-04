@@ -222,7 +222,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                         }
                     };
                     this.associated = function () {
-                        if (µ.one("#w").isVisible()) { return; }
+                        if (µ.one("#wa").isVisible()) { return; }
                         Search.associated(bookid);
                     };
                     this.update = function () {
@@ -308,7 +308,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 },
                 data: {},
                 links: function () {
-                    if (µ.one("#w").isVisible()) { return; }
+                    if (µ.one("#wa").isVisible()) { return; }
                     var sb = this.getAttribute("searchby"), txt = this.text();
                     if (!!sb && !!txt) {
                         µ.one("#formSearch [type=search]", "").value = txt;
@@ -666,8 +666,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 Waiting.toggle(true);
                 User.destroy();
                 if (!!Idb.indexedDB) { Idb.indexedDB.deleteDatabase(User.get().session); }
-                socket.destroy();
-                socket.close();
+                socket.emit("revoke");
                 location.assign("/logout");
                 return false;
             },

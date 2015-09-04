@@ -107,6 +107,7 @@ module.exports = exports = {
             confirmed: "Confirmez votre mot de passe",
             connection: "Connexion",
             create: "Créer Compte",
+            description: "Gérer votre bibliothèque: notez, commentez et faites partager votre expérience de lecture à vos amis. Connectez-vous avec votre compte Google et mettez à jour votre bibliothèque.",
             email: "exemple@mail.com",
             errConfirmed: "Les mots de passe ne sont pas identiques!",
             errName: "Le nom doit contenir au moins 4 caractères!",
@@ -117,7 +118,8 @@ module.exports = exports = {
             name: "Nom",
             password: "Mot de passe",
             title: "Bibliotech Login",
-            valid: "Valider"
+            valid: "Valider",
+            welcome: "Biblio.tech"
         },
         maintenance: {
             message: "Le site est actuellement en cours de maintenance."
@@ -231,17 +233,19 @@ module.exports = exports = {
             confirmed: "Confirm password",
             connection: "Connection",
             create: "New Account",
+            description: "Manage your library : note , comment , and please share your reading experience to your friends. Sign in with your Google Account and update your library.",
             email: "someone@mail.com",
             errConfirmed: "Password fields are not identical!",
             errName: "Name field must contain at least 4 characters!",
             errPwd: "Password field must contain between 4 and 12 characters!",
             forgetPassword: "Forget Password",
             incorrectCredentials: "Incorrect credentials",
-            lang: "fr",
+            lang: "en",
             name: "Name",
             password: "Password",
             title: "Bibliotech Login",
-            valid: "Valid"
+            valid: "Valid",
+            welcome: "Biblio.tech"
         },
         maintenance: {
             message: "Site under maintenance"

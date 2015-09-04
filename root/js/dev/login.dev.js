@@ -33,9 +33,9 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     "fetch_basic_profile": false
                 });
                 µ.one("#f").setEvents("click", function () {
-                    µ.one("div").toggle(true);
                     auth2.grantOfflineAccess({ "redirect_uri": "postmessage" }).then(function (response) {
-                        if (!response.code) { return µ.one("div").toggle(false); }
+                        if (!response.code) { return false; }
+                        µ.one("div").toggle(true);
                         sendRequest("/googleAuth", { c: response.code }, function (s) {
                             if (!!s && !!s.success) { return window.location.reload(true); }
                             µ.one("div").toggle(false);

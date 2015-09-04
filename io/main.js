@@ -1,14 +1,16 @@
 var Q = require("q"),
     _ = require("lodash"),
     ObjectID = require("mongodb").ObjectID,
-    db = require("../db/database"),
+    db = require("../db/database").client,
+    UsersAPI = require("../db/users").UsersAPI,
+    BooksAPI = require("../db/books").BooksAPI,
     mailAPI = require("../tools/mails").MailsAPI;
 
 module.exports = function main (socket) {
     "use strict";
 
-    var userAPI = db.UsersAPI,
-        bookAPI = db.BooksAPI,
+    var userAPI = new UsersAPI(db),
+        bookAPI = new BooksAPI(db),
         sessionId = socket.request.sessionId,
         userInfos = socket.request.user,
         thisUser, thisBooks = [], lastSearch = {}, lastDetail = {},

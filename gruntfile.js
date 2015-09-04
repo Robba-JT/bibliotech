@@ -31,11 +31,10 @@ module.exports = function (grunt) {
             bibliotech: [ "root/js/dev/bibliotech.proto.js", "root/js/dev/bibliotech.dev.js", "root/js/dev/m.bibliotech.dev.js"],
             server: [
                 "bibliotech.js",
-                "io/mainIO.js",
-                "db/books.js",
-                "db/users.js",
-                "tools/logs.js",
-                "tools/mails.js"
+                "db/*.js",
+                "io/*.js",
+                "tools/*.js",
+                "!tools/trads.js"
             ]
         },
         uglify: {
@@ -135,7 +134,7 @@ module.exports = function (grunt) {
                 }
             },
             jsserver: {
-                files: [ "bibliotech.js", "io/mainIO.js", "db/*.js", "tools/*.js" ],
+                files: [ "bibliotech.js", "io/*.js", "db/*.js", "tools/*.js" ],
                 tasks: [ "jshint:server" ],
                 options: { spawn: false }
             },
