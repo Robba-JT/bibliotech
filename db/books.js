@@ -1,18 +1,16 @@
 var Q = require("q"),
     request = require("request"),
-    reqOption = { "gzip": true },
+    reqOptions = { "gzip": true },
     ObjectID = require("mongodb").ObjectID,
-    _ = require("lodash");
+    _ = require("lodash"),
+    gBooks = require("googleapis").books("v1");
 
-if (require("ip").address() === "128.1.236.11") { reqOption.proxy = "http://CGDM-EMEA\jtassin:password_4@isp-ceg.emea.cegedim.grp:3128/"; }
-
-module.exports.BooksAPI = BooksAPI = function (db) {
+module.exports.BooksAPI = BooksAPI = function (db, authClient) {
     "use strict";
 
-    if (!(this instanceof BooksAPI)) { return new BooksAPI(db); }
+    if (!(this instanceof BooksAPI)) { return new BooksAPI(db, authClient); }
 
-    var gBooks = require("../tools/gapi").books,
-        books = db.collection("books"),
+    var books = db.collection("books"),
         comments = db.collection("comments"),
         notifs = db.collection("notifications"),
         covers = db.collection("covers"),
@@ -106,7 +104,7 @@ module.exports.BooksAPI = BooksAPI = function (db) {
             covers.find(filter).toArray(callback);
         },
         loadBase64 = function (url, bookid) {
-            var defColor = Q.defer(), params = reqOption;
+            var defColor = Q.defer(), params = reqOptions;
             if (!url) { defColor.reject(); }
             params.url = url;
             params.encoding = "binary";
@@ -176,6 +174,8 @@ module.exports.BooksAPI = BooksAPI = function (db) {
             return _.isEqual(aII, bII);
         };
 
+    if (!_.isEmpty(authClient.credentials)) { for (var param in reqParams) { reqParams[param].auth = authClient; }}
+
     this.updateBook = updateBook;
     this.formatBooks = function (books) {
         var retbooks = [];
@@ -201,7 +201,7 @@ module.exports.BooksAPI = BooksAPI = function (db) {
     this.removeOne = removeOne;
     this.searchOne = searchOne;
     this.searchBooks = function (params, callback) {
-        console.log(gBooks.google._options);
+        params = _.merge(params, reqOptions);
         gBooks.volumes.list(_.merge(params, reqParams.search), callback);
     };
     this.associatedBooks = function (params, callback) {
@@ -246,6 +246,4 @@ module.exports.BooksAPI = BooksAPI = function (db) {
             });
         });
     };
-
-    //(function init() { unusedCovers(); updateAllBooks(); })();
 };

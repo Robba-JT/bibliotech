@@ -11,6 +11,7 @@ module.exports = function Session (config) {
     this.store = mongoStore;
     this.middleware = session({
             "key": "_bsession",
+            "proxy": false,
             "resave": false,
             "unset": "destroy",
             "saveUninitialized": false,

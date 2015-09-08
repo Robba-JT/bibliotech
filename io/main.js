@@ -9,8 +9,9 @@ var Q = require("q"),
 module.exports = function main (socket) {
     "use strict";
 
-    var userAPI = new UsersAPI(db),
-        bookAPI = new BooksAPI(db),
+    var gAuth = socket.request.auth,
+        userAPI = new UsersAPI(db),
+        bookAPI = new BooksAPI(db, gAuth.client),
         sessionId = socket.request.sessionId,
         userInfos = socket.request.user,
         thisUser, thisBooks = [], lastSearch = {}, lastDetail = {},
@@ -87,6 +88,8 @@ module.exports = function main (socket) {
             arr.splice(toIndex, 0, element);
         };
 
+    socket.on("revoke", function () { gAuth.revokeCredentials(); });
+
     socket.on("isConnected", function () {
         if (!userInfos || !userInfos.username) { socket.emit("logout"); } else {
             userAPI.findUser(userInfos.username)
@@ -109,7 +112,7 @@ module.exports = function main (socket) {
                         coverList = _.compact(_.pluck(userData.books, "cover"));
 
                     thisUser.googleSignIn = !!userInfos.googleSignIn;
-                     userAPI.updateUser({ _id: userData._id }, { "$set": { "last_connect": new Date() }, "$inc": { "connect_number": 1 }});
+                    userAPI.updateUser({ _id: userData._id }, { "$set": { "last_connect": new Date() }, "$inc": { "connect_number": 1 }});
                     socket.emit("user", {
                         connex: thisUser.connect_number,
                         first: !thisUser.connect_number,

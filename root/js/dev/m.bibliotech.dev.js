@@ -293,7 +293,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     if (!!sb && !!txt) {
                         µ.one("#formSearch [type=search]", "").value = txt;
                         µ.alls("#formSearch [name=searchby]")[sb].checked = true;
-                        µ.one("#formSearch").trigger("submit");
+                        Search.books.call(µ.one("#formSearch"));
                     }
                 },
                 mainColor: function (image) {
@@ -311,7 +311,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                         this.toggleClass("hide");
                         this.siblings("[field]:not(.noValue), [name]").toggle(null);
                         var input = this.siblings("[name]")[0];
-                        input.focus();
+                        //input.focus();
                         if (input.tagName.toLowerCase() === "textarea") { input.scrollTop = 0; }
                     }
                     return;
@@ -986,7 +986,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                         if (event.target.hasClass("libelle")) {
                             Windows.close().then(Bookcells.bytags(event.target.text()));
                         } else {
-                            this.fade(false).then(function () { clone.removeAll(); µ.one("#detailWindow [autofocus]").focus(); });
+                            this.fade(false).then(function () { clone.removeAll();/* µ.one("#detailWindow [autofocus]").focus();*/ });
                         }
                     });
                     clone.one(".libelle").html(tag).toggleClass("new", !!isNew);
@@ -1233,7 +1233,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                                 Waiting.toggle(true);
                                 Windows.on = wid;
                                 win.css({ "top": xcroll().top }).fade(true).then(function () {
-                                    if (win.one("[autofocus]")) { win.one("[autofocus]").focus(); }
+                                    //if (win.one("[autofocus]")) { win.one("[autofocus]").focus(); }
                                     resolve();
                                 });
                             });

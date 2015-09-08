@@ -1,11 +1,9 @@
-var gapi = require("../tools/gapi"),
+var getToken = require("../tools/gapi").getToken,
     trads = require("../tools/trads"),
     mailsAPI = require("../tools/mails").MailsAPI,
-    db = require("../db/database").client,
-    usersAPI = require("../db/users").UsersAPI(db);
+    usersAPI = require("../db/users").UsersAPI(require("../db/database").client);
 
-
-module.exports = exports = function (app) {
+module.exports = exports = function (app, session) {
     "use strict";
     var getLang = function (request) { return trads[(!!trads[request.acceptsLanguages()[0]]) ? request.acceptsLanguages()[0] : "fr"]; };
 
@@ -15,14 +13,14 @@ module.exports = exports = function (app) {
 			res.status(500).render("error", { error: err });
         })
 	//Maintenance url
-		//.get("*", function (req, res) { res.status(503).render("maintenance", getLang(req).maintenance);})
+	//	.get("*", function (req, res) { res.status(503).render("maintenance", getLang(req).maintenance);})
 
 	//Display pages
 		.get("/",
-			function (req, res, next) {
+            function (req, res, next) {
                 if (!req.session.user && !req.session.token) { res.render(res.locals.is_mobile? "mlogin" : "login", getLang(req).login); } else { next(); }
-			},
-			function (req, res) {
+            },
+            function (req, res) {
                 res.render(res.locals.is_mobile? "mbibliotech" : "bibliotech", getLang(req).bibliotech);
             }
 		)
@@ -59,11 +57,9 @@ module.exports = exports = function (app) {
         .post("/preview", function (req, res, next) { res.render("preview", { bookid: req.body.previewid }); })
     // Google Login
         .post("/googleAuth", function (req, res) {
-            gapi.client.getToken(req.body.c, function (err, token) {
-                if (!!err || !token) { console.error(err || "googleAuth No token!!!"); } else {
-                    req.session.token = token;
-                }
+            getToken(req.body.c, function (err, token) {
+                if (!!err || !token) { console.error(err || "googleAuth No token!!!"); } else { req.session.token = token; }
 				res.jsonp({ success: !!token });
-            });
+            })
         });
 };

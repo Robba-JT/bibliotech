@@ -313,7 +313,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     if (!!sb && !!txt) {
                         µ.one("#formSearch [type=search]", "").value = txt;
                         µ.alls("#formSearch [name=searchby]")[sb].checked = true;
-                        µ.one("#formSearch").trigger("submit");
+                        Search.books.call(µ.one("#formSearch"));
                     }
                 },
                 mainColor: function (image) {

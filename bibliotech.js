@@ -61,10 +61,11 @@ require("./db/database").init(mongoUrl, function (error) {
             res.setHeader("X-Content-Type-Options", "nosniff");
             res.setHeader("X-XSS-Protection", "1;mode=block");
             res.setHeader("Access-Control-Allow-Origin", "https://biblio.tech");
+            res.setHeader("Access-Control-Allow-Methods", "GET,POST");
             next();
         });
 
     device.enableDeviceHelpers(app);
-    require("./routes")(app);
+    require("./routes")(app, session);
     require("./io/io")(io, session);
 });
