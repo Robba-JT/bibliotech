@@ -2,6 +2,8 @@ var Q = require("q"),
     request = require("request"),
     reqOptions = { "gzip": true },
     ObjectID = require("mongodb").ObjectID,
+    fs = require("fs"),
+    googleKey = JSON.parse(fs.readFileSync("google_client_config.json")).key,
     _ = require("lodash"),
     gBooks = require("googleapis").books("v1");
 
@@ -14,27 +16,25 @@ module.exports.BooksAPI = BooksAPI = function (db, authClient) {
         comments = db.collection("comments"),
         notifs = db.collection("notifications"),
         covers = db.collection("covers"),
+        addParam = _.isEmpty(authClient.credentials) ? { "key": googleKey } : { "auth": authClient },
         reqParams = {
             "searchOne": {
                 "fields": "id, etag, accessInfo(accessViewStatus), volumeInfo(title, subtitle, authors, publisher, publishedDate, description, industryIdentifiers, pageCount, categories, imageLinks, canonicalVolumeLink)",
-                "projection": "full",
-                "key": "AIzaSyBw0Wgo4DDJ48-dd7pC8DpryvOm_z8515A"
+                "projection": "full"
             },
             "search": {
                 "maxResults": 40,
                 "fields": "items(id, etag, accessInfo(accessViewStatus), volumeInfo(title, authors, description, imageLinks))",
                 "projection": "lite",
                 "order": "relevance",
-                "printType": "books",
-                "key": "AIzaSyBw0Wgo4DDJ48-dd7pC8DpryvOm_z8515A"
+                "printType": "books"
             },
             "import": {
                 "maxResults": 40,
                 "shelf": 7,
                 "fields": "items(id)",
                 "projection": "lite",
-                "printType": "books",
-                "key": "AIzaSyBw0Wgo4DDJ48-dd7pC8DpryvOm_z8515A"
+                "printType": "books"
             }
         },
         formatOne = function (book) {
@@ -160,9 +160,8 @@ module.exports.BooksAPI = BooksAPI = function (db, authClient) {
                 }
             });
         },
-        updateBook = function (newbook, callback) {
-            delete newbook.isNew;
-            delete newbook.base64;
+        updateBook = function (book, callback) {
+            var newbook = _.omit(book, "base64");
             books.update({ id: newbook.id }, { $set: newbook }, { upsert: true }, callback);
         },
         booksEqual = function (a, b) {
@@ -174,7 +173,7 @@ module.exports.BooksAPI = BooksAPI = function (db, authClient) {
             return _.isEqual(aII, bII);
         };
 
-    if (!_.isEmpty(authClient.credentials)) { for (var param in reqParams) { reqParams[param].auth = authClient; }}
+    for (var param in reqParams) { _.assign(reqParams[param], addParam); }
 
     this.updateBook = updateBook;
     this.formatBooks = function (books) {
@@ -212,10 +211,12 @@ module.exports.BooksAPI = BooksAPI = function (db, authClient) {
     };
     this.googleAdd = function (params, callback) {
         params.shelf = 7;
+        _.assign(params, addParam);
         gBooks.mylibrary.bookshelves.addVolume(params, callback);
     };
     this.googleRemove = function (params, callback) {
         params.shelf = 7;
+        _.assign(params, addParam);
         gBooks.mylibrary.bookshelves.removeVolume(params, callback);
     };
     this.updateNotif = function (data, callback) {

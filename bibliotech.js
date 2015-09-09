@@ -68,4 +68,6 @@ require("./db/database").init(mongoUrl, function (error) {
     device.enableDeviceHelpers(app);
     require("./routes")(app, session);
     require("./io/io")(io, session);
+
+    console.info("Server deployé sur les ports https: " + sPort + " / http: " + port);
 });

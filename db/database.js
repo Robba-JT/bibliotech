@@ -28,7 +28,7 @@ module.exports.init = function (mongoUrl, callback) {
                     "key": "AIzaSyBw0Wgo4DDJ48-dd7pC8DpryvOm_z8515A"
                 };
 
-            db.collection("covers").find({}, function (error, allCovers) {
+            /*db.collection("covers").find({}, function (error, allCovers) {
                 if (!!error) { return console.error("Covers removed", error); }
                 db.collection("users").find({}, { "books.cover": true }).toArray(function (error, userBooks) {
                     if (!!error) { return console.error(error); }
@@ -66,7 +66,7 @@ module.exports.init = function (mongoUrl, callback) {
                     });
                     Q.allSettled(requests).then(function () { console.info("Books updated", updated, "removed", removed); });
                 }
-            });
+            });*/
         }
     });
 };

@@ -666,7 +666,6 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 Waiting.toggle(true);
                 User.destroy();
                 if (!!Idb.indexedDB) { Idb.indexedDB.deleteDatabase(User.get().session); }
-                socket.emit("revoke");
                 location.assign("/logout");
                 return false;
             },
@@ -831,13 +830,17 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     Windows.confirm("warning", µ.one("#importNow").getAttribute("message"))
                         .then(function (status) {
                             if (status) {
-                                if (action === "exportNow") { return socket.emit("exportNow"); }
-                                Bookcells.destroy();
-                                Images.active.call(µ.one("#collection"));
-                                Waiting.anim(true);
                                 Windows.close(true).then(function () {
-                                    Waiting.toggle(true, true);
-                                    socket.emit("importNow");
+                                    if (action === "exportNow") {
+                                        socket.emit("exportNow");
+                                        Waiting.toggle(false);
+                                    } else {
+                                        socket.emit("importNow");
+                                        Bookcells.destroy();
+                                        Images.active.call(µ.one("#collection"));
+                                        Waiting.anim(true);
+                                        Waiting.toggle(true, true);
+                                    }
                                 });
                             }
                         });
@@ -1200,7 +1203,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 },
                 delete: function () {
                     µ.one("#errPwd").toggle(false);
-                    if (!µ.one("@pwd").reportValidity()) { return; }
+                    if (!User.get().googleSignIn && !µ.one("@pwd").reportValidity()) { return; }
                     Windows.confirm("warning", µ.one("#delete").getAttribute("confirm"))
                         .then(function (status) { if (status) { socket.emit("deleteUser", µ.one("@pwd").value); }});
                     return false;

@@ -1,4 +1,4 @@
-var getToken = require("../tools/gapi").getToken,
+var getToken = require("../tools/gAuth").getToken,
     trads = require("../tools/trads"),
     mailsAPI = require("../tools/mails").MailsAPI,
     usersAPI = require("../db/users").UsersAPI(require("../db/database").client);

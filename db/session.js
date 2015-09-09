@@ -18,4 +18,10 @@ module.exports = function Session (config) {
             "store": mongoStore,
             "secret": "robba1979",
             "cookie": { "maxAge": config.maxAge, "secure": true }});
+    this.unique = function (sessionId, user) {
+        console.log(sessionId, user);
+        console.info("session.MemoryStore", session.Store);
+    };
+
+
 };
