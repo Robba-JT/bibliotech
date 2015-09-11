@@ -1,7 +1,13 @@
-var getToken = require("../tools/gAuth").getToken,
+var gAuth = require("../tools/gAuth"),
+    getToken = gAuth.getToken,
     trads = require("../tools/trads"),
     mailsAPI = require("../tools/mails").MailsAPI,
-    usersAPI = require("../db/users").UsersAPI(require("../db/database").client);
+    db = require("../db/database").client,
+    usersAPI = require("../db/users").UsersAPI(db),
+    Q = require("q"),
+    fs = require("fs"),
+    admins = JSON.parse(fs.readFileSync("./tools/admins.json")).admins,
+    _ = require("lodash");
 
 module.exports = exports = function (app, session) {
     "use strict";
@@ -12,13 +18,31 @@ module.exports = exports = function (app, session) {
 			console.error(err.message, err.stack);
 			res.status(500).render("error", { error: err });
         })
+
 	//Maintenance url
 	//	.get("*", function (req, res) { res.status(503).render("maintenance", getLang(req).maintenance);})
 
 	//Display pages
 		.get("/",
             function (req, res, next) {
-                if (!req.session.user && !req.session.token) { res.render(res.locals.is_mobile? "mlogin" : "login", getLang(req).login); } else { next(); }
+                if (!req.session.token) {
+                    req.session.destroy(function () { res.render(res.locals.is_mobile? "mlogin" : "login", getLang(req).login); });
+                } else {
+                    if (!!req.session.token._id && admins.indexOf(req.session.token._id) !== -1) {
+                        var proms = [];
+                        db.collections(function (error, collection) {
+                            var list = _.pluck(_.filter(collection, function (collect) { return collect.s.name.indexOf("system") !== 0 }), "s.name");
+                            for (var jta = 0, lg = list.length; jta < lg; jta++) {
+                                proms.push(new Q.Promise(function (resolve) { db.collection(list[jta]).find().toArray(function (error, data) { resolve(data); }); }));
+                            }
+                            Q.allSettled(proms).then(function (values) {
+                                var results = {};
+                                for (jta = 0, lg = values.length; jta < lg; jta++) { results[list[jta]] = JSON.stringify(values[jta].value); }
+                                res.render("admin", results);
+                            });
+                        });
+                    } else { next(); }
+                }
             },
             function (req, res) {
                 res.render(res.locals.is_mobile? "mbibliotech" : "bibliotech", getLang(req).bibliotech);
@@ -34,8 +58,8 @@ module.exports = exports = function (app, session) {
 		.post("/login", function (req, res) {
 			usersAPI.validateLogin(req.body.a, req.body.c, false)
                 .then(function (user) {
-                    req.session.user = { username: user._id };
-                    if (!!!!req.body.o) { req.session.cookie.maxAge = null; }
+                    req.session.token = user;
+                    if (!!req.body.o) { req.session.cookie.maxAge = null; }
                     res.jsonp({ success: !!user });
                 })
                 .catch(function (err) { res.jsonp({ "error": getLang(req).error.invalidCredential }); });

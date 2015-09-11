@@ -388,7 +388,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     for (var jta = 0, lg = µ.alls("[note]").length; jta < lg; jta++) { Images.blur.call(µ.alls("[note]")[jta]); }
                     µ.one("#userNote").value = book.note;
                     win.alls(".inCollection").toggle(!!inCollection);
-                    Tags.list();
+                    //Tags.list();
                     if (!!book.mainColor) {
                         win.css({ "background": "radial-gradient(whitesmoke 40%, " + book.mainColor + ")" });
                     } else {
@@ -493,16 +493,17 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                             return false;
                         }
                         var reader = new FileReader();
-                        reader.onload = (function(image) {
+                        reader.onload = (function() {
+                            var img = new Image();
                             return function(e) {
                                 image.onload = function () {
-                                    var mainColor = Detail.mainColor(this);
-                                    this.toggleClass("new", true).setAttribute("mainColor", mainColor.hex);
-                                    µ.one("#detailContent").css("background", "radial-gradient(whitesmoke 40%, " + mainColor.hex + ")");
+                                    var mainColor = Detail.mainColor(img);
+                                    µ.one("#detailCover").toggleClass("new", true).setAttribute("mainColor", mainColor.hex);
+                                    µ.one("#detailWindow").css({ "background": "radial-gradient(whitesmoke 40%, " + mainColor.hex + ")" });
                                 };
-                                image.src = e.target.result;
+                                img.src = µ.one("#detailCover").src = e.target.result;
                             };
-                        })(µ.one("#detailCover"));
+                        })();
                         reader.readAsDataURL(this.files[0]);
                     }
                 },
@@ -975,7 +976,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                                 User.get().init(ret);
                                 if (!Idb.db) { Idb.init(); }
                                 Waiting.toggle(false);
-                            }).emit("isConnected");
+                            })/*.emit("isConnected")*/;
 
                         });
                         return connection;
@@ -1068,7 +1069,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                         if (µ.one("#collection").hasClass("active")) { µ.one("#tags").toggle(!_.isEmpty(tags)); }
                     }
                 },
-                list: function () { µ.one("@tag").setAttributes({ "list": !!this.value ? "tagsList" : "none" });},
+                list: function () { µ.one("@tag").setAttributes({ "list": !!this.value ? "tagsList" : "none" }); },
                 new: function (tag, isNew) {
                     var clone = µ.one("#tempTag").cloneNode(true);
                     clone.removeAttribute("id");
@@ -1496,7 +1497,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
         µ.alls("[mail]").setEvents("click", Menu.mail);
         µ.one("#recommand4u").setEvents("click", Search.recommand);
         µ.alls("#importNow, #exportNow").setEvents("click", Search.gtrans);
-        µ.alls("@tag").setEvents("input propertychange", Tags.list);
+        //µ.alls("@tag").setEvents("input propertychange", Tags.list);
         µ.one("#saveorder").setEvents("click", Bookcells.save);
         window.setEvents({ "contextmenu": Menu.context, "resize": Dock.resize, "click": Menu.close, "selectstart": Menu.selectstart });
         µ.alls("[nav]").setEvents("click", Menu.nav);

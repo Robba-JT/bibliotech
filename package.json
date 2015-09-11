@@ -16,6 +16,7 @@
     "url": "https://github.com/Robba-JT/bibliotech/issues"
   },
   "dependencies": {
+    "angular": "^1.4.5",
     "async": "^1.4.0",
     "bcrypt-nodejs": "*",
     "body-parser": "^1.13.3",
@@ -37,6 +38,7 @@
     "http-proxy": "^1.11.2",
     "https-server": "*",
     "ip": "^0.3.3",
+    "jsonwebtoken": "^5.0.5",
     "lodash": "^3.10.1",
     "mongodb": "^2.1.0-alpha",
     "ms": "^0.7.1",

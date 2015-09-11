@@ -8,7 +8,8 @@ var google = require("googleapis"),
         "headers": {
             "Accept-Encoding": "gzip",
             "Content-Type": "application/json"
-        }
+        },
+        "proxy": "http://CGDM-EMEA\jtassin:password_4@isp-ceg.emea.cegedim.grp:3128/"
     };
 
 google.options(gOptions);
@@ -18,12 +19,27 @@ var getToken = function (code, callback) {
     oauth2Client.getToken(code, callback);
 };
 
-var Auth = function (token) {
-    if (!(this instanceof Auth)) { return new Auth(token); }
+var Auth = function () {
+    if (!(this instanceof Auth)) { return new Auth(); }
     var client = new OAuth2Client(googleConfig.client_id, googleConfig.client_secret, "postmessage");
-    if (!!token) { client.setCredentials(token); }
     this.client = client;
-    this.getUserInfos = function (callback) { google.oauth2("v2").userinfo.get(client.credentials, callback); };
+    this.getUserInfos = function (token, callback) {
+        google.oauth2("v2").userinfo.get(token, function (error, infos) {
+            if (!!error || !infos) { return callback(error || new Error("No userInfos")); }
+            client.setCredentials(token);
+            callback(null, infos);
+        });
+    };
+    this.revokeCredentials = function () { client.revokeCredentials(function (error) { if (!!error) { console.error("revokeCredentials error", error); }}); };
+    this.refreshToken = function (callback) {
+        console.log(client.credentials);
+        client.refreshAccessToken(function (error, token) {
+            if (!!error || !token) { return callback(error || new Error("No refresh token!!!")); }
+            console.log("token", token);
+            console.log("client.credentials", client.credentials);
+            callback();
+        });
+    };
     return this;
 };
 

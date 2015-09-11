@@ -1,4 +1,6 @@
-var _ = require("lodash");
+var _ = require("lodash"),
+    Q = require("q"),
+    usersApi = require("../db/users").UsersAPI(require("../db/database").client);
 
 module.exports = function (io, session) {
     "use strict";
@@ -18,27 +20,43 @@ module.exports = function (io, session) {
         if (!cookies._bsession) { return next(new Error("Cookie invalide!!!")); }
         socket.request.sessionId = require("cookie-parser").signedCookie(cookies._bsession, "robba1979");
         session.store.get(socket.request.sessionId, function (error, data) {
-            if (!!error || !data || (!data.user && !data.token)) { return next(new Error("Session invalide!!!")); }
-            var auth = gAuth(data.token);
-            socket.request.client = auth.client;
-            if (!!data.user) {
-                socket.request.user = data.user;
+            if (!!error || !data || !data.token) { return next(new Error("Session invalide!!!")); }
+            if (!!data.token._id) {
+                socket.request.user = data.token;
                 session.middleware(socket.request, socket.request.res, next);
-            } else if (!!data.token) {
-                auth.getUserInfos(function(error, infos) {
-                    if (!!error || !infos) { return next(error || new Error("Token invalide!!!")); }
-                    socket.request.user = { username: infos.email, name: infos.name, googleSignIn: true, link: infos.link, picture: infos.picture };
-                    session.middleware(socket.request, socket.request.res, next);
+            } else {
+                var auth = gAuth();
+                auth.getUserInfos(data.token, function(error, infos) {
+                    if (!!error) { console.error("getUSersInfo error", error); return next(error); }
+                    var findUser = new Q.Promise(function (resolve, reject) {
+                        usersApi.findUser(infos.email)
+                            .then(resolve)
+                            .catch(usersApi.addUser(infos.email, "", infos.name).then(resolve));
+                    });
+                    findUser.done(function (user) {
+                        socket.request.client = auth.client;
+                        socket.request.user = _.merge(user, { googleSignIn: true, link: infos.link, picture: infos.picture });
+                        session.middleware(socket.request, socket.request.res, next);
+                        var onEvent = socket.onevent;
+                        socket.onevent = function () {
+                            var args = arguments;
+                            if (_.get(auth, "client.credentials.expiry_date") < new Date()) {
+                                auth.refreshToken(function (error) {
+                                    if (!error) { return onEvent.apply(socket, args); }
+                                    console.error("refreshToken error", error);
+                                    socket.emit("logout");
+                                    auth.revokeCredentials();
+                                });
+                            } else {
+                                onEvent.apply(socket, args);
+                            }
+                        };
+                    });
                 });
             }
         });
     }).on("connection", function (socket) {
-        var onEvent = socket.onevent;
-        addNew(socket.request.user.username, socket);
-        socket.onevent = function () {
-            var args = arguments;
-            session.store.get(socket.request.sessionId, function (error, sess) { if (!!error || !sess) { socket.emit("logout"); } else { onEvent.apply(socket, args); }});
-        };
+        addNew(socket.request.user._id, socket);
         require("./main")(socket);
     });
 };

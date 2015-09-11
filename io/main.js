@@ -13,8 +13,8 @@ module.exports = function main (socket) {
         userAPI = new UsersAPI(db),
         bookAPI = new BooksAPI(db, client),
         sessionId = socket.request.sessionId,
-        userInfos = socket.request.user,
-        thisUser, thisBooks = [], lastSearch = {}, lastDetail = {},
+        thisUser = socket.request.user,
+        thisBooks = [], lastSearch = {}, lastDetail = {},
         defBooks = function (request, query) {
             return new Q.Promise(function (resolve, reject) {
                 bookAPI[request](query, function (error, response) {
@@ -92,107 +92,87 @@ module.exports = function main (socket) {
             arr.splice(toIndex, 0, element);
         };
 
-    socket.on("isConnected", function () {
-        if (!userInfos || !userInfos.username) { socket.emit("logout"); } else {
-            userAPI.findUser(userInfos.username)
-                .catch(function (error) {
-                    if (!!userInfos.googleSignIn) {
-                        return Q.Promise(function (resolve) {
-                            userAPI.addUser(userInfos.username, "", userInfos.name)
-                                .then(function (user) { resolve(user); }).catch(function (error) { console.error("isConnected - userAPI.addUser", error); resolve(false); });
-                        });
-                    } else {
-                        console.error("isConnected - userAPI.findUser", error || new Error("No user Data"));
-                        return !1;
+    if (!thisUser || !thisUser._id) { socket.emit("logout"); } else {
+        var booksList = _.pluck(thisUser.books, "book"),
+            tagsList = _.countBy(_.flatten(_.compact(_.pluck(thisUser.books, "tags")), true).sort()),
+            coverList = _.compact(_.pluck(thisUser.books, "cover"));
+        userAPI.updateUser({ _id: thisUser._id }, { "$set": { "last_connect": new Date() }, "$inc": { "connect_number": 1 }});
+        socket.emit("user", {
+            connex: thisUser.connect_number,
+            first: !thisUser.connect_number,
+            googleSignIn: !!thisUser.googleSignIn,
+            googleSync: thisUser.googleSync,
+            id: thisUser._id,
+            link: thisUser.link,
+            name: thisUser.name,
+            picture: thisUser.picture,
+            tags: tagsList,
+            session: sessionId,
+            orders: thisUser.orders
+        });
+        Q.allSettled([
+            defBooks("loadNotifs", { "_id.to": thisUser._id, isNew: true }),
+            defBooks("loadBooks", { id : { $in : booksList }}),
+            defBooks("loadCovers", { "_id": {$in: coverList }}),
+            defBooks("loadComments", { "_id.book" : { $in : booksList }})
+        ]).spread(function (Notifs, Books, Covers, Comments) {
+            var def64 = [],
+                indice = 0,
+                toSend = [],
+                sendCovers = [],
+                notifs = Notifs.value || [],
+                books = Books.value || [],
+                covers = Covers.value || [],
+                comments = _.groupBy(Comments.value, function (elt) { return JSON.stringify(elt._id.book); }) || [],
+                returnInfo = function (elt) { return _.isEqual(elt.book, books[book].id); },
+                returnComments = function (elt) { return elt._id.user !== thisUser._id; },
+                returnUserComments = function (elt) { return elt._id.user === thisUser._id; },
+                returnCover = function (cover) { return _.isEqual(cover._id.book, books[book].id); };
+
+            for (var book in books) {
+                var infos = _.find(thisUser.books, returnInfo),
+                    comment = _.filter(comments[JSON.stringify(books[book].id)], returnComments),
+                    userComment = _.filter(comments[JSON.stringify(books[book].id)], returnUserComments),
+                    cover = _.find(covers, { _id: _.result(infos, "cover")});
+
+                books[book].tags = _.result(infos, "tags");
+                books[book].from = _.result(infos, "from");
+                books[book].comments = comment;
+                books[book].alt = _.result(infos, "cover");
+                books[book].userNote = 0;
+                books[book].userComment = books[book].userDate = "";
+                if (!!userComment.length) {
+                    books[book].userComment = userComment[0].comment;
+                    books[book].userNote = userComment[0].note;
+                    books[book].userDate = userComment[0].date;
+                }
+                if (!!cover) {
+                    if (!!books[book].cover) { bookAPI.removeCovers({ _id: { user: thisUser._id , book: books[book].id }}); } else {
+                        sendCovers.push({ "id": books[book].id, "alternative": cover.cover });
+                        books[book].mainColor = cover.color;
                     }
-                })
-                .then(function (userData) {
-                    if (!userData) { return socket.emit("logout", true); }
-                    thisUser = userData;
-                    var booksList = _.pluck(userData.books, "book"),
-                        tagsList = _.countBy(_.flatten(_.compact(_.pluck(userData.books, "tags")), true).sort()),
-                        coverList = _.compact(_.pluck(userData.books, "cover"));
-
-                    thisUser.googleSignIn = !!userInfos.googleSignIn;
-                    userAPI.updateUser({ _id: userData._id }, { "$set": { "last_connect": new Date() }, "$inc": { "connect_number": 1 }});
-                    socket.emit("user", {
-                        connex: thisUser.connect_number,
-                        first: !thisUser.connect_number,
-                        googleSignIn: !!thisUser.googleSignIn,
-                        googleSync: thisUser.googleSync,
-                        id: thisUser._id,
-                        link: userInfos.link,
-                        name: thisUser.name,
-                        picture: userInfos.picture,
-                        tags: tagsList,
-                        session: sessionId,
-                        orders: userData.orders
-                    });
-                    Q.allSettled([
-                        defBooks("loadNotifs", { "_id.to": thisUser._id, isNew: true }),
-                        defBooks("loadBooks", { id : { $in : booksList }}),
-                        defBooks("loadCovers", { "_id": {$in: coverList }}),
-                        defBooks("loadComments", { "_id.book" : { $in : booksList }})
-                    ]).spread(function (Notifs, Books, Covers, Comments) {
-                        var def64 = [],
-                            indice = 0,
-                            toSend = [],
-                            sendCovers = [],
-                            notifs = Notifs.value || [],
-                            books = Books.value || [],
-                            covers = Covers.value || [],
-                            comments = _.groupBy(Comments.value, function (elt) { return JSON.stringify(elt._id.book); }) || [],
-                            returnInfo = function (elt) { return _.isEqual(elt.book, books[book].id); },
-                            returnComments = function (elt) { return elt._id.user !== thisUser._id; },
-                            returnUserComments = function (elt) { return elt._id.user === thisUser._id; },
-                            returnCover = function (cover) { return _.isEqual(cover._id.book, books[book].id); };
-
-                        for (var book in books) {
-                            var infos = _.find(userData.books, returnInfo),
-                                comment = _.filter(comments[JSON.stringify(books[book].id)], returnComments),
-                                userComment = _.filter(comments[JSON.stringify(books[book].id)], returnUserComments),
-                                cover = _.find(covers, { _id: _.result(infos, "cover")});
-
-                            books[book].tags = _.result(infos, "tags");
-                            books[book].from = _.result(infos, "from");
-                            books[book].comments = comment;
-                            books[book].alt = _.result(infos, "cover");
-                            books[book].userNote = 0;
-                            books[book].userComment = books[book].userDate = "";
-                            if (!!userComment.length) {
-                                books[book].userComment = userComment[0].comment;
-                                books[book].userNote = userComment[0].note;
-                                books[book].userDate = userComment[0].date;
-                            }
-                            if (!!cover) {
-                                if (!!books[book].cover) { bookAPI.removeCovers({ _id: { user: thisUser._id , book: books[book].id }}); } else {
-                                    sendCovers.push({ "id": books[book].id, "alternative": cover.cover });
-                                    books[book].mainColor = cover.color;
-                                }
-                            } else if (!!books[book].cover) {
-                                def64.push(bookAPI.loadBase64(books[book].cover, books[book].id));
-                                books[book].cover = true;
-                            }
-                            toSend.push(books[book]);
-                            if (toSend.length % 40 === 0) {
-                                socket.emit("initCollect", toSend);
-                                toSend = [];
-                            }
-                        }
-                        socket.emit("endCollect", {
-                            tags: _.countBy(_.flatten(_.map(userData.books, "tags")).sort()),
-                            notifs: notifs,
-                            books: toSend
-                        });
-                        thisBooks = books;
-                        Q.allSettled(def64).then(function (results) {
-                            if (!!results.length) { sendCovers.push(_.map(results, "value")); }
-                            socket.emit("covers", _.flatten(sendCovers));
-                        }).catch(function (error) { console.error("isConnected - Q.allSettled(def64)", error); });
-                    });
-                });
-        }
-    });
+                } else if (!!books[book].cover) {
+                    def64.push(bookAPI.loadBase64(books[book].cover, books[book].id));
+                    books[book].cover = true;
+                }
+                toSend.push(books[book]);
+                if (toSend.length % 40 === 0) {
+                    socket.emit("initCollect", toSend);
+                    toSend = [];
+                }
+            }
+            socket.emit("endCollect", {
+                tags: _.countBy(_.flatten(_.map(thisUser.books, "tags")).sort()),
+                notifs: notifs,
+                books: toSend
+            });
+            thisBooks = books;
+            Q.allSettled(def64).then(function (results) {
+                if (!!results.length) { sendCovers.push(_.map(results, "value")); }
+                socket.emit("covers", _.flatten(sendCovers));
+            }).catch(function (error) { console.error("isConnected - Q.allSettled(def64)", error); });
+        });
+    }
 
     socket.on("searchBooks", function (param) {
         if (!!lastSearch && lastSearch.param && _.isEqual(lastSearch.param, param) && !!lastSearch.books) {

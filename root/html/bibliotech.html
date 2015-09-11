@@ -4,8 +4,13 @@
         <title>Bibliotech</title>
         <meta http-equiv="Content-type" content="text/html">
         <meta charset="utf-8">
-        <meta name="description" content="Gérer votre bibliothèque: notez, commentez et faites partager votre expérience de lecture à vos amis. Connectez-vous avec votre compte Google et mettez à jour votre bibliothèque.">
+        <meta name="description" content="{{description}}">
         <meta name="author" content="Julien Tassin"/>
+        <meta property="og:title" content="Biblio.tech" />
+        <meta property="og:type" content="website" />
+        <meta property="og:description" content="{{description}}" />
+        <meta property="og:url" content="https://biblio.tech" />
+        <meta property="og:image" content="http://lh6.googleusercontent.com/-s--8k-h-7Ok/Vc3p0VuxE6I/AAAAAAAAAU4/bd7r1D0fA0c/s256-no/bold-icon-g%252B.png" />
         <link rel="stylesheet" href="../css/bibliotech.css"/>
         <script src="js/images.js" defer></script>
     </head>
@@ -297,8 +302,8 @@
                     </div>
                     <div class="inCollection">
                         <form role="form" id="formTag" autocomplete="off">
-                            <input name="tag" type="text" placeholder="{{newTag}}" maxlength="20" autofocus required size="20" maxlength="20"/>
-                            <datalist id="tagsList" disabled="disabled"></datalist>
+                            <input name="tag" type="text" placeholder="{{newTag}}" list="tagsList" maxlength="30" autofocus required size="30"/>
+                            <datalist id="tagsList"></datalist>
                             <button type="submit">+</button>
                         </form>
                     </div>

@@ -30,7 +30,8 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 auth2 = gapi.auth2.init({
                     "client_id": "216469168993-dqhiqllodmfovgtrmjdf2ps5kj0h1gg9.apps.googleusercontent.com",
                     "scope": "email https://www.googleapis.com/auth/books",
-                    "fetch_basic_profile": false
+                    "fetch_basic_profile": false,
+                    "prompt": "consent"
                 });
                 µ.one("#f").setEvents("click", function () {
                     auth2.grantOfflineAccess({ "redirect_uri": "postmessage" }).then(function (response) {

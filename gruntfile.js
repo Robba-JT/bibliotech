@@ -69,7 +69,8 @@ module.exports = function (grunt) {
                 files: {
                     "root/js/bibliotech.js": [ "root/js/dev/bibliotech.proto.js", "root/js/dev/bibliotech.dev.js" ],
                     "root/js/m.bibliotech.js": [ "root/js/dev/bibliotech.proto.js", "root/js/dev/m.bibliotech.dev.js" ],
-                    "root/js/images.js": [ "root/images/images.js" ]
+                    "root/js/images.js": [ "root/images/images.js" ],
+                    "root/js/admin.js": [ "root/js/dev/admin.dev.js" ]
                 }
             }
         },
@@ -94,6 +95,7 @@ module.exports = function (grunt) {
                 files: {
                     "views/bibliotech.html": "root/html/bibliotech.html",
                     "views/mbibliotech.html": "root/html/m.bibliotech.html",
+                    "views/admin.html": "root/html/admin.html",
                     "views/preview.html": "root/html/preview.html"
                 }
             }
@@ -109,16 +111,17 @@ module.exports = function (grunt) {
             bibliotech: {
                 files: {
                     "root/css/bibliotech.css": [ "root/css/dev/bibliotech.dev.css" ],
-                    "root/css/m.bibliotech.css": [ "root/css/dev/m.bibliotech.dev.css" ]
+                    "root/css/m.bibliotech.css": [ "root/css/dev/m.bibliotech.dev.css" ],
+                    "root/css/admin.css": [ "root/css/dev/admin.dev.css" ]
                 }
             }
         },
         open: {
             dev: {
-                path: "http://localhost:9876"
+                path: "https://localhost"
             },
             prod: {
-                path: "http://192.168.9.27:8765"
+                path: "https://biblio.tech"
             }
         },
         clean: [ "logs/*.log" ],
