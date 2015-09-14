@@ -1,13 +1,10 @@
 var Q = require("q"),
     request = require("request"),
     reqOptions = { "gzip": true },
-    ObjectID = require("mongodb").ObjectID,
     fs = require("fs"),
     googleKey = JSON.parse(fs.readFileSync("google_client_config.json")).key,
     _ = require("lodash"),
     gBooks = require("googleapis").books("v1");
-
-if (require("ip").address() === "128.1.236.11") { reqOptions.proxy = "http://CGDM-EMEA\jtassin:password_4@isp-ceg.emea.cegedim.grp:3128/"; }
 
 module.exports.BooksAPI = BooksAPI = function (db, authClient) {
     "use strict";

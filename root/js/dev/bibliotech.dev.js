@@ -270,7 +270,8 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                         Windows.close();
                     };
                     this.upload = function () {
-                        µ.one("#uploadHidden [type=file]").trigger("click");
+                        //µ.one("#uploadHidden [type=file]").trigger("click");
+                        µ.one("#uploadHidden [ui]").click();
                     };
                     this.preview = function () {
                         µ.one("@previewid").value = bookid;
@@ -367,10 +368,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     if (µ.one("#collection").hasClass("active")) { Bookcells.display(); }
                 },
                 sendNotif: function () {
-                    var notif = this.formToJson();
-                    notif.book = Detail.data.book.id;
-                    notif.title = Detail.data.book.title;
-                    if (!!Detail.data.book.alt) { notif.alt = Detail.data.book.alt; }
+                    var notif = _.merge(this.formToJson(), { id: Detail.data.book.id });
                     socket.emit("sendNotif", notif);
                     µ.one("#recommandWindow img").trigger("click");
                     return false;
@@ -496,7 +494,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                         reader.onload = (function() {
                             var img = new Image();
                             return function(e) {
-                                image.onload = function () {
+                                img.onload = function () {
                                     var mainColor = Detail.mainColor(img);
                                     µ.one("#detailCover").toggleClass("new", true).setAttribute("mainColor", mainColor.hex);
                                     µ.one("#detailWindow").css({ "background": "radial-gradient(whitesmoke 40%, " + mainColor.hex + ")" });
@@ -667,6 +665,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 Waiting.toggle(true);
                 User.destroy();
                 if (!!Idb.indexedDB) { Idb.indexedDB.deleteDatabase(User.get().session); }
+                socket.close();
                 location.assign("/logout");
                 return false;
             },
@@ -903,6 +902,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                                     µ.alls(".deroulant").toggle(false);
                                     if (!!µ.one("#picture img")) { µ.one("#picture img").removeAll(); }
                                     µ.alls("#notifications, #tags").toggle(false);
+                                    µ.alls("[notif]").removeAll();
                                     if (µ.one(".active")) { Images.blur.call(µ.one(".active").toggleClass("active", false)); }
                                     var forms = µ.alls("form");
                                     for (var jta = 0, lg = forms.length; jta < lg; jta++) { forms[jta].reset(); }
@@ -1276,10 +1276,10 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                         Waiting.over(false);
                         if (µ.one("#h").isVisible()) { Windows.help(false); }
                         if (!win) { resolve(); } else {
-                            win.fade(false).then(function () {
-                                delete Windows.on;
-                                resolve();
-                            });
+                            win.fade(false);
+                            resolve();
+                            delete Windows.on;
+                            resolve();
                             if (notTog !== true) { Waiting.toggle(); }
                             for (var jta = 0, lg = forms.length; jta < lg; jta++) { forms[jta].reset(); }
                         }

@@ -123,13 +123,13 @@ HTMLElement.prototype.toggleClass = function (cls, bo) {
     return el;
 };
 HTMLElement.prototype.trigger = function (evt) {
-    var event;
-    try { event = new Event(evt); }
+    var thisEvent;
+    try { thisEvent = new Event(evt); }
     catch (e) {
-        event = document.createEvent(_.includes(["click", "mouseenter", "mouseleave", "mouseup", "mousedown"], evt) ? "MouseEvents" : "HTMLEvents");
-        event.initEvent(evt, true, true);
+        thisEvent = document.createEvent(_.includes(["click", "mouseenter", "mouseleave", "mouseup", "mousedown"], evt) ? "MouseEvents" : "HTMLEvents");
+        thisEvent.initEvent(evt, true, true);
     }
-    this.dispatchEvent(event);
+    this.dispatchEvent(thisEvent);
     return this;
 };
 HTMLElement.prototype.xposition = function () {

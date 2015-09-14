@@ -15,7 +15,8 @@ var nodemailer = require("nodemailer"),
         "subject": " vous recommande: ",
         "text": "",
         "html": ""
-    };
+    },
+    swig = require("swig");
 
 module.exports.MailsAPI = MailsAPI = function () {
     "use strict";
@@ -27,23 +28,37 @@ module.exports.MailsAPI = MailsAPI = function () {
 
     var sendMail = function (options, callback) { smtpTransport.sendMail(options, callback); };
 
-    this.sendPassword = function (user, pwd, callback) {
-        var sendOptions = mailLogin;
+    this.sendPassword = function (user, name, pwd, callback) {
+        var sendOptions = mailLogin,
+            pwdHtml = swig.renderFile("./tools/password.html", {
+                "name": name,
+                "password": pwd
+            });
+
         sendOptions.to = user;
         sendOptions.text += pwd;
-        sendOptions.html += pwd;
+        sendOptions.html = pwdHtml;
         sendMail(sendOptions, callback);
     };
 
-    this.sendToFriend = function (name, friend, title, source, callback) {
-        var sendOptions = mailFriend;
+    this.sendToFriend = function (name, friend, book, callback) {
+
+        var sendOptions = mailFriend,
+            index = book.description.indexOf(" ", 500),
+            notifHtml = swig.renderFile("./tools/notif.html", {
+                "title": book.title,
+                "description": book.description.substr(0, Math.max(index, 500)) + ((index !== -1) ? "..." : ""),
+                "source": book.base64 || book.alternative,
+                "name": !!book.userComment || !!book.userNote ? name + ":" : "",
+                "note": !!book.userNote ? "Note: " + book.userNote : "",
+                "comment": !!book.userComment ? "\"" + book.userComment + "\"" : ""
+            });
+
         sendOptions.to = friend;
-        sendOptions.subject = name + sendOptions.subject + title;
-        sendOptions.html = "<div>";
-        if (!!source) { sendOptions.html += "<img style='width: 256px;' src='" + source + "'></img>"; }
-        sendOptions.html += "<legend style='text-align: center;'><b>" + title + "</b></legend></div>";
-        sendOptions.html += "<BR><BR>Cliquer ici pour vous inscrire à <a href='http://localhost:5678'>Bibliotech</a>";
-        sendOptions.text += title + ". Pour vous inscrire, rendez-vous à l'adresse: 'http://localhost:5678'";
+        sendOptions.subject = name + sendOptions.subject + book.title;
+        sendOptions.html = notifHtml;
+        sendOptions.text = sendOptions.subject + ". Pour vous inscrire, rendez-vous à l'adresse: \"https://biblio.tech\"";
+
         sendMail(sendOptions, callback);
     };
 };

@@ -5,8 +5,7 @@ var gAuth = require("../tools/gAuth"),
     db = require("../db/database").client,
     usersAPI = require("../db/users").UsersAPI(db),
     Q = require("q"),
-    fs = require("fs"),
-    admins = JSON.parse(fs.readFileSync("./tools/admins.json")).admins,
+    admins = JSON.parse(require("fs").readFileSync("./tools/admins.json")).admins,
     _ = require("lodash");
 
 module.exports = exports = function (app, session) {
@@ -25,10 +24,10 @@ module.exports = exports = function (app, session) {
 	//Display pages
 		.get("/",
             function (req, res, next) {
-                if (!req.session.token) {
+                if (!req.session.user && !req.session.token) {
                     req.session.destroy(function () { res.render(res.locals.is_mobile? "mlogin" : "login", getLang(req).login); });
                 } else {
-                    if (!!req.session.token._id && admins.indexOf(req.session.token._id) !== -1) {
+                    if (!!req.session.user && admins.indexOf(req.session.user) !== -1) {
                         var proms = [];
                         db.collections(function (error, collection) {
                             var list = _.pluck(_.filter(collection, function (collect) { return collect.s.name.indexOf("system") !== 0 }), "s.name");
@@ -57,25 +56,28 @@ module.exports = exports = function (app, session) {
 	//Login
 		.post("/login", function (req, res) {
 			usersAPI.validateLogin(req.body.a, req.body.c, false)
-                .then(function (user) {
-                    req.session.token = user;
+                .then(function (userId) {
+                    req.session.user = userId;
                     if (!!req.body.o) { req.session.cookie.maxAge = null; }
-                    res.jsonp({ success: !!user });
+                    res.jsonp({ success: !!userId });
                 })
                 .catch(function (err) { res.jsonp({ "error": getLang(req).error.invalidCredential }); });
 		})
 	//Login
 		.post("/new", function (req, res) {
 			usersAPI.addUser(req.body.a, req.body.c, req.body.b)
-                .then(function (user) { req.session.user = { username: user._id }; res.jsonp({ success: !!user }); })
+                .then(function (user) { req.session.token = user; res.jsonp({ success: !!user }); })
                 .catch(function (err) { res.jsonp({ "error": getLang(req).error.alreadyExist }); });
 		})
 	//Mot de passe oublié
 		.post("/mail", function (req, res) {
-            mailsAPI.sendPassword(req.body.a, req.body.b, function (error, response) {
-                console.error(error);
-                res.jsonp({ success: !error });
-            });
+            usersAPI.findUser(req.body.a)
+                .then(function (user) {
+                    mailsAPI.sendPassword(user._id, user.name, usersAPI.encryptPwd("password"), function (error, response) {
+                        console.error(error);
+                        res.jsonp({ success: !error });
+                    });
+                }).catch(function (error) { res.jsonp({ success: false }); });
 		})
     //Preview
         .post("/preview", function (req, res, next) { res.render("preview", { bookid: req.body.previewid }); })

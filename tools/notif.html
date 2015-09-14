@@ -1,0 +1,25 @@
+<body>
+    <style>
+        * { margin: 5px; }
+        body {
+            background-color: gainsboro;
+            color: #574d37;
+            font-family: Trebuchet MS,Tahoma,Verdana,Arial,sans-serif;
+            position: relative;
+        }
+        h1, span { text-decoration: underline; }
+        figure { float: left; }
+        legend img { cursor: pointer; }
+        .cover { width: 256px; border-radius: 5px; }
+    </style>
+    <figure>
+        <a href="https://biblio.tech"><img class="cover" src="{{source}}" title="{{title}}"/></a>
+        <legend>
+            <a href="https://biblio.tech"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAOwgAADsIBFShKgAAAABh0RVh0U29mdHdhcmUAcGFpbnQubmV0IDQuMC4zjOaXUAAAB7dJREFUeF7VWltsFGUUHq/YnX9m2grRVkBDNSZoDMbLqxoN4aHyQAIxxAcvCSZEMTGoJIobKXNpaYGKEgnwoL4AgahI5rIt6QNIiBcICNFUlEAIRBtDooCWQOs5uwfabs/M/LO7s7t8yZdA5z/n/87Z/3pmlDSxzzaacp3Gs4Et3g8sdadviWO+lfnTt9SLwCvA0TzN/L/hb/hMHMO2aIO26IPc3RgY6G6Z6tvaKxCIC0Gdvx5k6QQf4At8om/qpu5wU9BlzAGRWwqC2UAqwfOeJba6tvEo9lnousbo72p8xLfVXSBuuEhsmhzGPrFvklF9+D16s2+LXs9S/2UEVoXYN4yIjw6AFpJVHfiWPg86/50TVQsWtOjzSF56OJZVbvcdzfRM9TInpJbMawJtqJHkVhZ7YDuCefc113k9EUbDbtRKsiuDga5pd0OGD3Id1iM9Wz2Imkl+edgDjnxTHBrXwRlIxonqMPPXuH4TUhxC7RRGaehzmgw4pR0Y7xiy+zQ9Th1ub7MerGl6GBa4131L64OkXBqvJZagHWMgd8nwwyblNnCC+/sEp9VMQDFynVMfCJzGzQkTsQtjIRfyCCx9JRiPFDmraQKuwVulPejZ4tdibSEcCRx9JZnKIdfZ+BQMn/8YZ3WRAMTAunsbccXnNE4ixIIxkWk09nfeqYHjn1lHwHpJAMJbO7MFpoPUSMCYMDYyDQccJjo4B9dpi+/gPPC5a2kdrilmk1nN4Hcaz9B1mtc7jp6trSYzHm6X3gaZ+oczZonTxFRXjY7G38xyPa0vB7ZxmqXTeNp39N1wrv8M5vZCPyt/th+FWyFo3snqKyLGhjGS6WTAVoPXWdY4gldynfrj5CIU/d2tWcaWpWdl4EqtLZdJLCLnNC3i/PDUtpDZRMDxcRY0wEoNYxRHkSU3oUiSACT8WiMw1aRGF54XwhZthhcxVjIdA8wPh2ksR9vwyU0okiaACKOrIXZ04TQILPVbxp4lxkqmBeze1JKBjJ/hGkvRzAyQq1CUmACg9im5iARq4O0nE2PFmMk0P/fb80OOaSzFNBMg4RuRMAEQq9ZOpnjqE1u5htKscQJ27FBu8W3tOGsfQoy5YIxFDks9VdwgEdNMgCVcchGK/KXNkl4Er/EUxq54TtNDsgeJUKaYgMAWS8hFKOCs/wJnG0mIeS/ErgS29hLbIAlTSgAcjAaDNXep5IIF7gAQzFecfRwxdgUru9zDREwlAdpRz55yH5mHwrObn4P2JY1gOHWugx1A9HMPE1EiAX09LcvGKj2hHIQVeotnafPdXmUKmYZi4ONpAvT/xmqSIqwv0OEg/zABJRJQaQRrFBX69idpScbjsAWqZdTdiFVOAJbJYPhWokg7BFOgAjX+KiYgm1Vuhiv7cuhziNWSgLDIXsYEsA8TsQZTAPb+mdD3nklaEvKGTQBie8/0BljI5MpiIcQElP9yUyIB+zbObHI79LZIdultByAoMpHC9h6lAY7B37O64nkJdgHxB/MgGSUSIH8OQD36F0nKbUHXtDmwhV7g/UVRnMUE/MQ/TMCKJoCIBQ5bkyqIIEBDD+snkuJHPAmW/8IzjQQAC9dW/T1yEQnXbJ6d9E4D/nfGV4FlmFICkJ6ZueB33DGD3IRix0K8EicdzVqH4pliAf8wAVNMQJ6OWEFuIhHYxkbWPoSeIxYofnfTDPhPed/3pJ0AW4utOSICx3iHtec5jLEXho4ljjAN5Jl2AiT8I/CtFWvPUhzB2MmwjIowMuUEwL19I7mJRJIETKgMu5b+BPyx9KpQ6gkwYqtCCN/RV3D2DK/0QcxkBvfqrHIrDInDTEM5ppuAv/t7pt9DbiKBJXTGnqE4jDGTWQGBJZbyjSVoG7GFy5ITYOofkItI5CvDcL+fZM8wsPSlZDaGL7NGIzw8W9xYjpV/NYaELfob2bsBvp8Em9hpHNjqWYyVzCYC91vOKJJw+nLtDH67G4lkCcgMwSltmdt7f2xZDIHHZd8y5AqjUWcKqq+fnGQUysyQb+tvYGWWXIQi190637M0rPeFkj6GaseXnWQmhdzqBqlfH3gy9qMpCGgx3KzCX5PZ2ieuqb7oW42JhaaB/RtmtPqmiP3RMKYcxEZm4cDFBOce5wRZT5/IJCmMYkwYG5lGI19uMtVzrKM6ScDeLr0NRusvnEaG5zAmMpWD36m1g+GkO0KtE4AVIM823i58RTJRWwiHMRYyTwbY3t4tXg9qlQDXaZgOC+WHcD2Wfo+R127K3SRZ5NcDW9sAzsaSYKqL2XpehQnH38dcM/MqzF3oXzuarxCNC06CI6hdet6HofDJrLYZHRZ1UM8Erdrmkj6R5VBIglgPjq8WdVR3LExZsb5iwV/DaFa5OXC0t0oYitUjaEONqJVkVx5wdZ4Lx9TTrIAaEjXBJWcuyUwX3uqpLbA4bYOOS68hVIgQ+NXAFttQE8mrDvJTwtaeBxGJPk6qMI/D1jg/1SEfh93ZlkzgiNdATPnfGchzEPvEvklG7YH3ds/RF8EK3J/KQpn3Kfqxj6TvD6sKvJv3rTVmwSHkTc8SOZijJX+AgbboIwe+0Kfsa7K6wkH8kNnRn3RtsQSCWQvrhge/5AnguJeZ+G9xAp9hG2yLNrF397KhKP8DMcRpP1CJfkUAAAAASUVORK5CYII=" title="Biblio.tech"/></a>
+        </legend>
+    </figure>
+    <h1>{{title}}</h1>
+    <p>{{description}}</p>
+    <BR><BR>
+    <p><span>{{name}}</span> {{note}}<BR>{{comment}}</p>
+</body>

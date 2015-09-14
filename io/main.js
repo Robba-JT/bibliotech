@@ -1,10 +1,10 @@
 var Q = require("q"),
     _ = require("lodash"),
-    ObjectID = require("mongodb").ObjectID,
     db = require("../db/database").client,
+    ObjectID = require("mongodb").ObjectID,
     UsersAPI = require("../db/users").UsersAPI,
     BooksAPI = require("../db/books").BooksAPI,
-    mailAPI = require("../tools/mails").MailsAPI;
+    MailsAPI = require("../tools/mails").MailsAPI;
 
 module.exports = function main (socket) {
     "use strict";
@@ -12,6 +12,7 @@ module.exports = function main (socket) {
     var client = socket.request.client,
         userAPI = new UsersAPI(db),
         bookAPI = new BooksAPI(db, client),
+        mailAPI = new MailsAPI(),
         sessionId = socket.request.sessionId,
         thisUser = socket.request.user,
         thisBooks = [], lastSearch = {}, lastDetail = {},
@@ -78,7 +79,7 @@ module.exports = function main (socket) {
                 if (!_.isObject(book.id) && !!thisUser.googleSync) { bookAPI.googleAdd({ volumeId: book.id }); }
             }
             if (!!book.from) { update.$addToSet.books.from = book.from; }
-            if (!!book.alt) { update.$addToSet.books.cover = new ObjectID(book.alt); }
+            if (!!book.alt) { update.$addToSet.books.cover = book.alt; }
             userAPI.updateUser({ _id: thisUser._id }, update);
             thisBooks.push(book);
             if (!!book.isNew) {
@@ -147,11 +148,15 @@ module.exports = function main (socket) {
                     books[book].userDate = userComment[0].date;
                 }
                 if (!!cover) {
-                    if (!!books[book].cover) { bookAPI.removeCovers({ _id: { user: thisUser._id , book: books[book].id }}); } else {
+                    if (!!books[book].cover) {
+                        bookAPI.removeCovers({ _id: { user: thisUser._id , book: books[book].id }});
+                        userAPI.updateUser({ _id: thisUser._id, "books.book": books[book].id }, {$unset: { "books.$.cover" : true }});
+                    } else {
                         sendCovers.push({ "id": books[book].id, "alternative": cover.cover });
                         books[book].mainColor = cover.color;
                     }
-                } else if (!!books[book].cover) {
+                }
+                if (!!books[book].cover) {
                     def64.push(bookAPI.loadBase64(books[book].cover, books[book].id));
                     books[book].cover = true;
                 }
@@ -169,7 +174,9 @@ module.exports = function main (socket) {
             thisBooks = books;
             Q.allSettled(def64).then(function (results) {
                 if (!!results.length) { sendCovers.push(_.map(results, "value")); }
-                socket.emit("covers", _.flatten(sendCovers));
+                sendCovers = _.flatten(sendCovers);
+                socket.emit("covers", sendCovers);
+                for (var jta = 0, lg = sendCovers.length; jta < lg; jta++) { _.assign(_.find(thisBooks, _.matchesProperty("id", sendCovers[jta].id)), sendCovers[jta]); }
             }).catch(function (error) { console.error("isConnected - Q.allSettled(def64)", error); });
         });
     }
@@ -207,7 +214,9 @@ module.exports = function main (socket) {
     socket.on("addDetail", function () { addBookToUser(lastDetail); });
 
     socket.on("updateBook", function (data) {
-        var defReq = [];
+        var defReq = [],
+            infos = _.find(thisBooks, _.matchesProperty("id", data.id));
+
         if (data.hasOwnProperty("alternative") && data.hasOwnProperty("mainColor")) {
             defReq.push(defBooks("addCover", { cover: data.alternative, color: data.mainColor, date: new Date() }).then(function (cover) {
                 userAPI.updateUser({ _id: thisUser._id, "books.book": data.id }, {$set: { "books.$.cover" : cover }});
@@ -269,20 +278,19 @@ module.exports = function main (socket) {
     });
 
     socket.on("sendNotif", function (data) {
+        var infos = _.find(thisBooks, _.matchesProperty("id", data.id));
+        if (!infos) { return false; }
         userAPI.hasBook(data.recommand.toLowerCase(), data.book, function (error, response) {
             if (!!error) { console.error("sendNotif", error); }
             if (!response) {
                 defBooks("updateNotif", {
-                    _id: {
-                        to: data.recommand.toLowerCase(),
-                        book: data.book
-                    },
+                    _id: { to: data.recommand.toLowerCase(), book: data.id },
                     from: thisUser.name + "<" + thisUser._id + ">",
                     isNew: true,
-                    title: data.title,
-                    alt: data.alt
+                    title: infos.title,
+                    alt: infos.alt
                 });
-                mailAPI.sendToFriend(thisUser.name + "<" + thisUser._id + ">", data.recommand.toLowerCase(), data.title, data.alt);
+                mailAPI.sendToFriend(thisUser.name + "<" + thisUser._id + ">", data.recommand.toLowerCase(), infos);
             }
         });
     });

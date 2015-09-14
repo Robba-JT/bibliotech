@@ -15,7 +15,7 @@ module.exports.UsersAPI = UsersAPI = function (db) {
             findUser({ "_id": userid.toLowerCase() }, function (err, response) {
                 if (!!err || !response) { reject(err || new Error("Invalid user")); } else {
                     if (!!googleSignIn || bcrypt.compareSync(password, response.password)) {
-                        resolve(response);
+                        resolve(response._id);
                     } else {
                         reject(new Error("Invalid password"));
                     }

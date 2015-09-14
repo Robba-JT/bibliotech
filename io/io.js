@@ -20,10 +20,12 @@ module.exports = function (io, session) {
         if (!cookies._bsession) { return next(new Error("Cookie invalide!!!")); }
         socket.request.sessionId = require("cookie-parser").signedCookie(cookies._bsession, "robba1979");
         session.store.get(socket.request.sessionId, function (error, data) {
-            if (!!error || !data || !data.token) { return next(new Error("Session invalide!!!")); }
-            if (!!data.token._id) {
-                socket.request.user = data.token;
-                session.middleware(socket.request, socket.request.res, next);
+            if (!!error || !data || (!data.token && !data.user)) { return next(new Error("Session invalide!!!")); }
+            if (!!data.user) {
+                usersApi.findUser(data.user).then(function (result) {
+                    socket.request.user = result;
+                    session.middleware(socket.request, socket.request.res, next);
+                }).catch(function (error) { return next(error); });
             } else {
                 var auth = gAuth();
                 auth.getUserInfos(data.token, function(error, infos) {
@@ -44,8 +46,8 @@ module.exports = function (io, session) {
                                 auth.refreshToken(function (error) {
                                     if (!error) { return onEvent.apply(socket, args); }
                                     console.error("refreshToken error", error);
-                                    socket.emit("logout");
                                     auth.revokeCredentials();
+                                    socket.emit("logout");
                                 });
                             } else {
                                 onEvent.apply(socket, args);
