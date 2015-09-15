@@ -98,7 +98,9 @@ module.exports = exports = {
         },
         error: {
             invalidCredential: "Identifiants incorrects!",
-            alreadyExist: "Utilisateur déjà créé!"
+            alreadyExist: "Utilisateur déjà créé!",
+            errorSendMail: "Une erreur est survenue durant l'envoi de l'email, veuillez réessayer ultérieurement ou nous envoyer un mail à: admin@biblio.tech.",
+            successSendMail: "Un email contenant votre nouveau mot de passe vient de vous être envoyé."
         },
         login: {
             lang: "fr",
@@ -224,7 +226,9 @@ module.exports = exports = {
         },
         error: {
             invalidCredential: "Invalid credentials!",
-            alreadyExist: "User already exist!"
+            alreadyExist: "User already exist!",
+            errorSendMail: "An error occured while sending the email, please try again later or send us an email to: admin@biblio.tech.",
+            successSendMail: "An email containing your new password has been sent to you."
         },
         login: {
             lang: "en",

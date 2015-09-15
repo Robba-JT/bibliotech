@@ -4,6 +4,7 @@ module.exports.UsersAPI = UsersAPI = function (db) {
     "use strict";
 
     if (!(this instanceof UsersAPI)) { return new UsersAPI(db); }
+
     var users = db.collection("users"),
         findUser = function (query, callback) { users.findOne(query, callback); },
         updateUser = function (query, data, callback) { users.update(query, data, callback); },

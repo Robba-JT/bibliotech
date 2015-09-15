@@ -108,6 +108,17 @@ form span {
     vertical-align: middle;
 }
 
+.n {
+    width: 100%;
+    text-align: right;
+    font-weight: bold;
+    color: limegreen;
+    padding: 5px;
+    font-size: 18px;
+    float: right;
+    vertical-align: middle;
+}
+
 div {
 	position: fixed;
 	top: 0;

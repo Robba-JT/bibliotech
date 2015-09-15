@@ -1,35 +1,43 @@
 var nodemailer = require("nodemailer"),
     smtpTransport = nodemailer.createTransport(require("nodemailer-smtp-transport")({
-        "service": "Gmail",
-        "auth": { "user": "robba.jt@gmail.com", "pass": "robba1979" },
+        "host": "mail.gandi.net",
+        "port": 465,
+        "secureConnection": true,
+        "auth": { "user": "admin@biblio.tech", "pass": "robba1979" },
         "debug" : true
     })),
     mailLogin = {
         "from": "Bibliotech ✔ <admin@biblio.tech>",
         "subject": "Nouveau mot de passe ✔",
         "text": "Voici votre nouveau mot de passe: ",
-        "html": "<b>Voici votre nouveau mot de passe:</b> "
     },
     mailFriend = {
         "from": "Bibliotech ✔ <admin@biblio.tech>",
         "subject": " vous recommande: ",
         "text": "",
-        "html": ""
     },
     swig = require("swig");
+
+smtpTransport.use("compile", require("nodemailer-plugin-inline-base64"));
 
 module.exports.MailsAPI = MailsAPI = function () {
     "use strict";
 
-    if (!(this instanceof MailsAPI)) {
-        console.log("Warning: MailsAPI constructor called without 'new' operator");
-        return new MailsAPI();
-    }
+    if (!(this instanceof MailsAPI)) { return new MailsAPI(); }
 
-    var sendMail = function (options, callback) { smtpTransport.sendMail(options, callback); };
+    var sendMail = function (options, callback) {
+        smtpTransport.sendMail(options, function (error, success) {
+            if (!!error) {
+                console.error("sendMail error", error);
+                return !!callback ? callback(error) : false;
+            }
+            console.log("sendMail success", success);
+            return !!callback ? callback(null, success) : true;
+        });
+    };
 
     this.sendPassword = function (user, name, pwd, callback) {
-        var sendOptions = mailLogin,
+        var sendOptions = Object.create(mailLogin),
             pwdHtml = swig.renderFile("./tools/password.html", {
                 "name": name,
                 "password": pwd
@@ -38,12 +46,15 @@ module.exports.MailsAPI = MailsAPI = function () {
         sendOptions.to = user;
         sendOptions.text += pwd;
         sendOptions.html = pwdHtml;
+
+        console.info(mailLogin, sendOptions);
+
         sendMail(sendOptions, callback);
     };
 
     this.sendToFriend = function (name, friend, book, callback) {
 
-        var sendOptions = mailFriend,
+        var sendOptions = Object.create(mailFriend),
             index = book.description.indexOf(" ", 500),
             notifHtml = swig.renderFile("./tools/notif.html", {
                 "title": book.title,
@@ -58,6 +69,8 @@ module.exports.MailsAPI = MailsAPI = function () {
         sendOptions.subject = name + sendOptions.subject + book.title;
         sendOptions.html = notifHtml;
         sendOptions.text = sendOptions.subject + ". Pour vous inscrire, rendez-vous à l'adresse: \"https://biblio.tech\"";
+
+        console.info(notifHtml);
 
         sendMail(sendOptions, callback);
     };

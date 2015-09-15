@@ -26,10 +26,10 @@ module.exports = function (io, session) {
                     socket.request.user = result;
                     session.middleware(socket.request, socket.request.res, next);
                 }).catch(function (error) { return next(error); });
-            } else {
+            } else if (!!data.token) {
                 var auth = gAuth();
                 auth.getUserInfos(data.token, function(error, infos) {
-                    if (!!error) { console.error("getUSersInfo error", error); return next(error); }
+                    if (!!error) { console.error("getUsersInfo error", error); return next(error); }
                     var findUser = new Q.Promise(function (resolve, reject) {
                         usersApi.findUser(infos.email)
                             .then(resolve)

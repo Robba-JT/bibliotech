@@ -17,12 +17,12 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     n = this.isVisible() && this.value !== µ.one("[name=c]").value;
                     break;
             }
-            if (!!n) { this.setCustomValidity(this.getAttribute("m")); }
+            if (!!n) { this.setCustomValidity(this.getAttribute("data-m")); }
             return;
         },
         getLabel = function (isv) {
             µ.alls("[type=button]").forEach(function () {
-                this.value = this.getAttribute(isv ? "k" : "j");
+                this.value = this.getAttribute(isv ? "data-k" : "data-j");
             });
         },
         googleApi = function () {
@@ -48,7 +48,9 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
         },
         razError = function () {
             µ.one(".forget").toggle(false);
+            µ.alls("[type=email], [type=password], [type=text]").toggleClass("e", false);
             µ.one(".g").html("");
+            µ.one(".n").html("");
         },
         sendRequest = function (u, d, c) {
             var r = new XMLHttpRequest();
@@ -80,7 +82,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
             e.preventDefault();
             razError();
             µ.one("div").toggle(true);
-            sendRequest(µ.one("[h]").isVisible() ? "/new" : "/login", this.formToJson(), function (s) {
+            sendRequest(µ.one("[data-h]").isVisible() ? "/new" : "/login", this.formToJson(), function (s) {
                 if (!!s && !!s.success) { return window.location.reload(true); }
                 µ.alls("[type=email], [type=password], [type=text]").toggleClass("e", true);
                 µ.one("div").toggle(false);
@@ -94,17 +96,24 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
         µ.alls("[type=email],[type=password]").setEvents("change", razError);
         µ.alls("[type=button]").setEvents("click", function () {
             razError();
-            var v = !µ.one("[h]").isVisible();
+            var v = !µ.one("[data-h]").isVisible();
             getLabel(v);
-            µ.alls("[h]").setValue("");
-            if (!!v) { µ.alls("[h]").setAttributes({ "required": true }); } else { µ.alls("[h]").removeAttributes("required"); }
-            µ.alls("[h]").fade();
+            µ.alls("[data-h]").setValue("");
+            if (!!v) { µ.alls("[data-h]").setAttributes({ "required": true }); } else { µ.alls("[data-h]").removeAttributes("required"); }
+            µ.alls("[data-h]").fade();
             µ.one("[type=email]").focus();
         });
         µ.one("button.m").setEvents("click", function () {
             var that = this;
+            razError();
             µ.one("div").toggle(true);
             sendRequest("/mail", µ.one("form").formToJson(), function (s) {
+                if (!!s.error) {
+                    µ.one(".forget").toggle(true);
+                    µ.alls("[type=email], [type=password], [type=text]").toggleClass("e", true);
+                }
+                µ.one(".g").html(s.error || "");
+                µ.one(".n").html(s.success || "");
                 µ.one("div").toggle(false);
                 return false;
             });

@@ -1,7 +1,7 @@
 var gAuth = require("../tools/gAuth"),
     getToken = gAuth.getToken,
     trads = require("../tools/trads"),
-    mailsAPI = require("../tools/mails").MailsAPI,
+    mailsAPI = require("../tools/mails").MailsAPI(),
     db = require("../db/database").client,
     usersAPI = require("../db/users").UsersAPI(db),
     Q = require("q"),
@@ -66,18 +66,23 @@ module.exports = exports = function (app, session) {
 	//Login
 		.post("/new", function (req, res) {
 			usersAPI.addUser(req.body.a, req.body.c, req.body.b)
-                .then(function (user) { req.session.token = user; res.jsonp({ success: !!user }); })
+                .then(function (user) { req.session.user = user._id; res.jsonp({ success: !!user }); })
                 .catch(function (err) { res.jsonp({ "error": getLang(req).error.alreadyExist }); });
 		})
 	//Mot de passe oublié
 		.post("/mail", function (req, res) {
             usersAPI.findUser(req.body.a)
                 .then(function (user) {
-                    mailsAPI.sendPassword(user._id, user.name, usersAPI.encryptPwd("password"), function (error, response) {
-                        console.error(error);
-                        res.jsonp({ success: !error });
-                    });
-                }).catch(function (error) { res.jsonp({ success: false }); });
+                    var newPwd = Math.random().toString(24).slice(2);
+                    usersAPI.updateUser({ "_id": user._id }, {$set: { "password": usersAPI.encryptPwd(newPwd) }})
+                        .then(function (result) {
+                            console.info("new password request", user._id, newPwd, usersAPI.encryptPwd(newPwd));
+                            mailsAPI.sendPassword(user._id, user.name, newPwd, function (error, response) {
+                                if (!!error) { return res.jsonp({ "error": getLang(req).error.errorSendMail }); }
+                                return res.jsonp({ "success": getLang(req).error.successSendMail });
+                            });
+                        }).catch(function (error) { return res.jsonp({ "error": getLang(req).error.errorSendMail }); });
+                }).catch(function (error) { return res.jsonp({ "error": getLang(req).error.invalidCredential }); });
 		})
     //Preview
         .post("/preview", function (req, res, next) { res.render("preview", { bookid: req.body.previewid }); })
