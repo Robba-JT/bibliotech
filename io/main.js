@@ -290,7 +290,7 @@ module.exports = function main (socket) {
                     title: infos.title,
                     alt: infos.alt
                 });
-                mailAPI.sendToFriend(thisUser.name + "<" + thisUser._id + ">", data.recommand.toLowerCase(), infos);
+                mailAPI.sendToFriend(thisUser.name, thisUser._id, data.recommand.toLowerCase(), infos);
             }
         });
     });
