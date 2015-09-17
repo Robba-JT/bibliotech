@@ -1,8 +1,6 @@
 var nodemailer = require("nodemailer"),
     smtpTransport = nodemailer.createTransport(require("nodemailer-smtp-transport")({
-        "host": "mail.gandi.net",
-        "port": 465,
-        "secureConnection": true,
+        "service": "gmail",
         "auth": { "user": "admin@biblio.tech", "pass": "robba1979" },
         "debug" : true
     })),

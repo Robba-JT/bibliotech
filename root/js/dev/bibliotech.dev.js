@@ -270,8 +270,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                         Windows.close();
                     };
                     this.upload = function () {
-                        //µ.one("#uploadHidden [type=file]").trigger("click");
-                        µ.one("#uploadHidden [ui]").click();
+                        µ.one("#uploadHidden [type=file]").click();
                     };
                     this.preview = function () {
                         µ.one("@previewid").value = bookid;
@@ -499,6 +498,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                                     µ.one("#detailCover").toggleClass("new", true).setAttribute("mainColor", mainColor.hex);
                                     µ.one("#detailWindow").css({ "background": "radial-gradient(whitesmoke 40%, " + mainColor.hex + ")" });
                                 };
+                                console.debug("e.target.result", e.target.result);
                                 img.src = µ.one("#detailCover").src = e.target.result;
                             };
                         })();
