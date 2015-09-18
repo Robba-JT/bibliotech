@@ -1,7 +1,7 @@
 var nodemailer = require("nodemailer"),
     smtpTransport = nodemailer.createTransport(require("nodemailer-smtp-transport")({
         "service": "gmail",
-        "auth": { "user": "admin@biblio.tech", "pass": "robba1979" },
+        "auth": { "user": "robba.jt@gmail.com", "pass": "robba1979" },
         "debug" : true
     })),
     mailLogin = {
