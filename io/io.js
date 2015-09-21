@@ -29,7 +29,11 @@ module.exports = function (io, session) {
             } else if (!!data.token) {
                 var auth = gAuth();
                 auth.getUserInfos(data.token, function(error, infos) {
-                    if (!!error) { console.error("getUsersInfo error", error); return next(error); }
+                    if (!!error) {
+                        console.error("getUsersInfo error", error);
+                        auth.revokeCredentials();
+                        return next(error);
+                    }
                     var findUser = new Q.Promise(function (resolve, reject) {
                         usersApi.findUser(infos.email)
                             .then(resolve)

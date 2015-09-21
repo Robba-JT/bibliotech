@@ -71,16 +71,16 @@ module.exports = function main (socket) {
             });
         },
         addBookToUser = function (book) {
-            var update = { $addToSet: { books: { book: book.id }}};
+            var update = { "$addToSet": { "books": { "book": book.id }}};
             if (!!book.id.user && _.isEqual(book.id.user, thisUser._id)) {
                 update.$inc = { "userbooks": 1 };
                 thisUser.userbooks++;
             } else {
-                if (!_.isObject(book.id) && !!thisUser.googleSync) { bookAPI.googleAdd({ volumeId: book.id }); }
+                if (!_.isObject(book.id) && !!thisUser.googleSync) { bookAPI.googleAdd({ "volumeId": book.id }); }
             }
             if (!!book.from) { update.$addToSet.books.from = book.from; }
             if (!!book.alt) { update.$addToSet.books.cover = book.alt; }
-            userAPI.updateUser({ _id: thisUser._id }, update);
+            userAPI.updateUser({ "_id": thisUser._id }, update);
             thisBooks.push(book);
             if (!!book.isNew) {
                 delete book.isNew;
@@ -97,7 +97,7 @@ module.exports = function main (socket) {
         var booksList = _.pluck(thisUser.books, "book"),
             tagsList = _.countBy(_.flatten(_.compact(_.pluck(thisUser.books, "tags")), true).sort()),
             coverList = _.compact(_.pluck(thisUser.books, "cover"));
-        userAPI.updateUser({ _id: thisUser._id }, { "$set": { "last_connect": new Date() }, "$inc": { "connect_number": 1 }});
+        userAPI.updateUser({ "_id": thisUser._id }, { "$set": { "last_connect": new Date() }, "$inc": { "connect_number": 1 }});
         socket.emit("user", {
             connex: thisUser.connect_number,
             first: !thisUser.connect_number,
@@ -112,10 +112,10 @@ module.exports = function main (socket) {
             orders: thisUser.orders
         });
         Q.allSettled([
-            defBooks("loadNotifs", { "_id.to": thisUser._id, isNew: true }),
-            defBooks("loadBooks", { id : { $in : booksList }}),
-            defBooks("loadCovers", { "_id": {$in: coverList }}),
-            defBooks("loadComments", { "_id.book" : { $in : booksList }})
+            defBooks("loadNotifs", { "_id.to": thisUser._id, "isNew": true }),
+            defBooks("loadBooks", { "id" : { "$in" : booksList }}),
+            defBooks("loadCovers", { "_id": { "$in": coverList }}),
+            defBooks("loadComments", { "_id.book" : { "$in" : booksList }})
         ]).spread(function (Notifs, Books, Covers, Comments) {
             var def64 = [],
                 indice = 0,
@@ -149,8 +149,8 @@ module.exports = function main (socket) {
                 }
                 if (!!cover) {
                     if (!!books[book].cover) {
-                        bookAPI.removeCovers({ _id: { user: thisUser._id , book: books[book].id }});
-                        userAPI.updateUser({ _id: thisUser._id, "books.book": books[book].id }, {$unset: { "books.$.cover" : true }});
+                        bookAPI.removeCovers({ "_id": { "user": thisUser._id , "book": books[book].id }});
+                        userAPI.updateUser({ "_id": thisUser._id, "books.book": books[book].id }, {"$unset": { "books.$.cover" : true }});
                     } else {
                         sendCovers.push({ "id": books[book].id, "alternative": cover.cover });
                         books[book].mainColor = cover.color;
@@ -189,7 +189,7 @@ module.exports = function main (socket) {
             searchLoop("searchBooks", param, function (books) { socket.emit("books", books); })
                 .catch(function (error) { console.error("searchBooks", error); })
                 .done(function (books) {
-                    if (!!books) { lastSearch = { param: param, books: books }; }
+                    if (!!books) { lastSearch = { "param": param, "books": books }; }
                     socket.emit("endRequest", (!!books) ? books.length : 0);
                 });
         }
@@ -219,38 +219,39 @@ module.exports = function main (socket) {
 
         if (data.hasOwnProperty("alternative") && data.hasOwnProperty("mainColor")) {
             defReq.push(defBooks("addCover", { cover: data.alternative, color: data.mainColor, date: new Date() }).then(function (cover) {
-                userAPI.updateUser({ _id: thisUser._id, "books.book": data.id }, {$set: { "books.$.cover" : cover }});
+                console.log("cover", cover);
+                userAPI.updateUser({ "_id": thisUser._id, "books.book": data.id }, {"$set": { "books.$.cover" : cover }});
             }));
         }
         if (data.hasOwnProperty("userNote") || data.hasOwnProperty("userComment")) {
-            var update = { _id: { user: thisUser._id, book: data.id }, date: new Date(), name: thisUser.name };
+            var update = { "_id": { "user": thisUser._id, "book": data.id }, "date": new Date(), "name": thisUser.name };
             if (data.hasOwnProperty("userNote")) { update.note = data.userNote; }
             if (data.hasOwnProperty("userComment")) { update.comment = data.userComment; }
             defReq.push(defBooks((!update.note && !update.comment) ? "removeComment" : "updateComment", update));
         }
-        if (data.hasOwnProperty("tags")) { defReq.push(userAPI.updateUser({ _id: thisUser._id, "books.book": data.id }, {$set: { "books.$.tags" : data.tags }})); }
-        if (data.hasOwnProperty("update")) { defReq.push(defBooks("updateBook", _.assign(data.update, { id: data.id }))); }
+        if (data.hasOwnProperty("tags")) { defReq.push(userAPI.updateUser({ "_id": thisUser._id, "books.book": data.id }, {"$set": { "books.$.tags" : data.tags }})); }
+        if (data.hasOwnProperty("update")) { defReq.push(defBooks("updateBook", _.assign(data.update, { "id": data.id }))); }
         Q.allSettled(defReq).catch(function (error) { console.error("updateBook", error); });
     });
 
     socket.on("removeBook", function (bookid) {
-        userAPI.updateUser({ _id: thisUser._id }, {$pull: { books: { book: bookid }}});
-        _.remove(thisBooks, { id: bookid });
-        defBooks("removeCovers", { _id: { user: thisUser._id, book: bookid }});
-        defBooks("removeNotifs", { "id.book": bookid, from: thisUser._id });
+        userAPI.updateUser({ "_id": thisUser._id }, {"$pull": { "books": { "book": bookid }}});
+        _.remove(thisBooks, { "id": bookid });
+        defBooks("removeCovers", { "_id": { "user": thisUser._id, "book": bookid }});
+        defBooks("removeNotifs", { "id.book": bookid, "from": thisUser._id });
         if (_.isEqual(bookid.user, thisUser._id)) {
-            defBooks("removeOne", { id: bookid });
+            defBooks("removeOne", { "id": bookid });
         } else if (!!thisUser.googleSync && !bookid.user) {
-            defBooks("googleRemove", { volumeId: bookid }).catch(function (error) { console.error("googleRemove", error); });
+            defBooks("googleRemove", { "volumeId": bookid }).catch(function (error) { console.error("googleRemove", error); });
         }
     });
 
     socket.on("updateUser", function (data) {
         userAPI.validateLogin(thisUser._id, data.pwd, thisUser.googleSignIn)
             .then(function (response) {
-                var newData = { name: data.name, googleSync: !!data.googleSync };
+                var newData = { "name": data.name, "googleSync": !!data.googleSync };
                 if (!!data.newPwd) { newData.password = userAPI.encryptPwd(data.newPwd); }
-                userAPI.updateUser({ _id: thisUser._id }, {$set: newData });
+                userAPI.updateUser({ "_id": thisUser._id }, {"$set": newData });
                 socket.emit("updateOk", data);
             })
             .catch(function (error) {
@@ -262,7 +263,7 @@ module.exports = function main (socket) {
     socket.on("deleteUser", function (password) {
         var isDeleted = function () {
             bookAPI.removeUserData(thisUser._id);
-            userAPI.removeUser({ _id: thisUser._id });
+            userAPI.removeUser({ "_id": thisUser._id });
             socket.emit("logout");
         };
         if (!thisUser.googleSignIn) {
@@ -284,11 +285,11 @@ module.exports = function main (socket) {
             if (!!error) { console.error("sendNotif", error); }
             if (!response) {
                 defBooks("updateNotif", {
-                    _id: { to: data.recommand.toLowerCase(), book: data.id },
-                    from: thisUser.name + "<" + thisUser._id + ">",
-                    isNew: true,
-                    title: infos.title,
-                    alt: infos.alt
+                    "_id": { "to": data.recommand.toLowerCase(), "book": data.id },
+                    "from": thisUser.name + "<" + thisUser._id + ">",
+                    "isNew": true,
+                    "title": infos.title,
+                    "alt": infos.alt
                 });
                 mailAPI.sendToFriend(thisUser.name, thisUser._id, data.recommand.toLowerCase(), infos);
             }
@@ -302,7 +303,7 @@ module.exports = function main (socket) {
                 response.from = notif.from;
                 if (!response.base64 && !!notif.alt) {
                     response.alt = notif.alt;
-                    bookAPI.loadCover({ _id: new ObjectID(notif.alt) }, function (error, result) {
+                    bookAPI.loadCover({ "_id": new ObjectID(notif.alt) }, function (error, result) {
                         if (!!error) { console.error(error); }
                         if (!!result) {
                             response.base64 = result.cover;
@@ -315,17 +316,17 @@ module.exports = function main (socket) {
                 }
             }
         });
-        defBooks("updateNotif", { _id: notif._id, isNew: false });
+        defBooks("updateNotif", { "_id": notif._id, "isNew": false });
     });
 
     socket.on("associated", function (bookid) {
-        searchLoop("associatedBooks", { volumeId: bookid }, function (books) { socket.emit("books", books); })
+        searchLoop("associatedBooks", { "volumeId": bookid }, function (books) { socket.emit("books", books); })
             .catch(function (error) { console.error("associated", error); })
             .done(function (books) { socket.emit("endRequest", (!!books) ? books.length : 0); });
     });
 
     socket.on("recommanded", function () {
-        searchLoop("myGoogleBooks", { search: true, shelf: 8 }, function (books) { socket.emit("books", books); })
+        searchLoop("myGoogleBooks", { "search": true, "shelf": 8 }, function (books) { socket.emit("books", books); })
             .catch(function (error) { console.error("recommanded", error); })
             .done(function (books) { socket.emit("endRequest", (!!books) ? books.length : 0); });
     });
@@ -335,7 +336,7 @@ module.exports = function main (socket) {
         var qAdd = [], qCover = [], sendCovers = [],
             gestionImport = function (books) {
                 _.forEach(books, function (book) {
-                    if (_.findIndex(thisUser.books, { book: book.id}) === -1) {
+                    if (_.findIndex(thisUser.books, { "book": book.id}) === -1) {
                         qAdd.push(addBook(book.id).then(function (added) {
                             if (!!added.cover) {
                                 if (!added.base64) { qCover.push(bookAPI.loadBase64(added.cover, added.id)); } else {
@@ -365,19 +366,19 @@ module.exports = function main (socket) {
         if (!thisUser.googleSignIn) { return; }
         var defExport = [];
         for (var jta in thisUser.books) {
-            defExport.push(defBooks("googleAdd", { volumeId: thisUser.books[jta].book }));
+            defExport.push(defBooks("googleAdd", { "volumeId": thisUser.books[jta].book }));
         }
         Q.allSettled(defExport).catch(function (error) { console.error("exportNow", error); });
     });
 
     socket.on("newbook", function (data) {
-        var newbook = _.merge({ id: { user: thisUser._id, book: thisUser.userbooks }, isNew: true }, data);
+        var newbook = _.merge({ "id": { "user": thisUser._id, "book": thisUser.userbooks }, "isNew": true }, data);
         addBookToUser(newbook);
         return socket.emit("newbook", newbook);
     });
 
     socket.on("orders", function (order) {
-        var query = { _id: thisUser._id }, update = {};
+        var query = { "_id": thisUser._id }, update = {};
         if (order.new) {
             query["orders.id"] = order.data.id;
             update.$set = { "orders.$.order": order.data.order };

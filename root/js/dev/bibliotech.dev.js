@@ -360,7 +360,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     µ.alls("#formNew [field]").toggle(false);
                 },
                 newCell: function () {
-                    µ.alls("[actclick=add], [actclick=update], #upload, .inCollection").toggle();
+                    µ.alls("[actclick=add], [actclick=update], [actclick=recommand], #upload, .inCollection").toggle();
                     //var cell = Bookcells.one(Detail.data.book.id);
                     //if (!cell) { User.get().addbook(Detail.data.book); } else if (!!cell.cell) { cell.cell.alls("button").fade(); }
                     User.get().addbook(Detail.data.book);
