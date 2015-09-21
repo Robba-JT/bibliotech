@@ -111,7 +111,7 @@ module.exports.BooksAPI = BooksAPI = function (db, authClient) {
                 if (!!error || response.statusCode !== 200) {
                     defColor.reject(error || new Error("status: " + response.statusCode));
                 } else {
-                    defColor.resolve({ base64: "data:" + response.headers["content-type"] + ";base64," + new Buffer(body, "binary").toString("base64"), id: bookid });
+                    defColor.resolve({ "base64": "data:" + response.headers["content-type"] + ";base64," + new Buffer(body, "binary").toString("base64"), "id": bookid });
                 }
             });
             return defColor.promise;
@@ -123,26 +123,26 @@ module.exports.BooksAPI = BooksAPI = function (db, authClient) {
                     if (!!error) { return console.error(error); }
                     var toRemoved = [];
                     userBooks = _.flattenDeep(_.pluck(userBooks, "books"));
-                    allCovers.forEach(function (result) { if (_.findIndex(userBooks, { cover: result._id }) === -1) { toRemoved.push(result._id); }});
-                    if (!!toRemoved.length) { removeCovers({ "_id": {$in: toRemoved }}); }
+                    allCovers.forEach(function (result) { if (_.findIndex(userBooks, { "cover": result._id }) === -1) { toRemoved.push(result._id); }});
+                    if (!!toRemoved.length) { removeCovers({ "_id": {"$in": toRemoved }}); }
                     console.info("Covers removed", toRemoved.length);
                 });
             });
         },
         updateAllBooks = function () {
             var last = (new Date(((new Date()).setDate((new Date()).getDate() - 30))));
-            books.find({ "date": { $lte: last }, "id.user": { $exists: false }}, { "_id": false }).toArray(function (error, result) {
+            books.find({ "date": { "$lte": last }, "id.user": { "$exists": false }}, { "_id": false }).toArray(function (error, result) {
                 if (!!error) { console.error("Error Update Books", error); }
                 if (!!result) {
                     var updated = 0, removed = 0, requests = [];
                     result.forEach(function (oldOne) {
-                        var params = _.merge({ volumeId: oldOne.id }, reqParams.searchOne);
+                        var params = _.merge({ "volumeId": oldOne.id }, reqParams.searchOne);
                         requests.push(new Promise(function () {
                             gBooks.volumes.get(params, function (error, response) {
                                 if (!!error) {
                                     console.error("Error Update One", oldOne.id, error);
                                     if (error.code === 404 && error.message === "The volume ID could not be found.") {
-                                        books.remove({ id: oldOne.id });
+                                        books.remove({ "id": oldOne.id });
                                         removed++;
                                     }
                                 } else {
@@ -161,7 +161,7 @@ module.exports.BooksAPI = BooksAPI = function (db, authClient) {
         },
         updateBook = function (book, callback) {
             var newbook = _.omit(book, "base64");
-            books.update({ id: newbook.id }, { $set: newbook }, { upsert: true }, callback);
+            books.update({ "id": newbook.id }, { "$set": newbook }, { "upsert": true }, callback);
         },
         booksEqual = function (a, b) {
             var aII = Object.create(a), bII = Object.create(b);
@@ -170,6 +170,9 @@ module.exports.BooksAPI = BooksAPI = function (db, authClient) {
             delete aII.date;
             delete bII.date;
             return _.isEqual(aII, bII);
+        },
+        anonimiseComments = function (userId, callback) {
+            comments.update({ "_id.user": userId }, {"$set": { "name": "**********" }}, { "multi": true }, callback);
         };
 
     for (var param in reqParams) { _.assign(reqParams[param], addParam); }
@@ -186,13 +189,13 @@ module.exports.BooksAPI = BooksAPI = function (db, authClient) {
     this.loadCover = loadCover;
     this.loadCovers = loadCovers;
     this.loadBooks = function (filter, callback) {
-        books.find(filter).sort({ title : 1 }).toArray(callback);
+        books.find(filter).sort({ "title" : 1 }).toArray(callback);
     };
     this.loadAllBooks = function (filter, projection, callback) {
         books.find(filter, projection).toArray(callback);
     };
     this.loadNotifs = function (filter, callback) {
-        notifs.find(filter).sort({ date: 1 }).toArray(callback);
+        notifs.find(filter).sort({ "date": 1 }).toArray(callback);
     };
     this.loadBase64 = loadBase64;
     this.loadOne = loadOne;
@@ -219,22 +222,25 @@ module.exports.BooksAPI = BooksAPI = function (db, authClient) {
         gBooks.mylibrary.bookshelves.removeVolume(params, callback);
     };
     this.updateNotif = function (data, callback) {
-        notifs.update({ _id: data._id }, { $set: data }, { upsert: true }, callback);
+        notifs.update({ "_id": data._id }, { "$set": data }, { "upsert": true }, callback);
     };
     this.removeCovers = removeCovers;
     this.removeNotifs = removeNotifs;
-    this.removeUserData = function (userId) { removeNotifs({ "_id.to": userId }); };
+    this.removeUserData = function (userId) {
+        removeNotifs({ "_id.to": userId });
+        anonimiseComments(userId);
+    };
     this.updateCover = function (data, callback) {
-        covers.update({ _id: data._id }, {$set: data }, { upsert: true }, callback);
+        covers.update({ "_id": data._id }, {"$set": data }, { "upsert": true }, callback);
     };
     this.loadComments = function (filter, callback) {
         comments.find(filter).toArray(callback);
     };
     this.updateComment = function (data, callback) {
-        comments.update({ _id: data._id }, {$set: data }, { upsert: true }, callback);
+        comments.update({ "_id": data._id }, {"$set": data }, { "upsert": true }, callback);
     };
     this.removeComment = function (comment, callback) {
-        comments.remove({ _id: comment._id }, callback);
+        comments.remove({ "_id": comment._id }, callback);
     };
     this.addCover = function (data, callback) {
         loadCover({ cover: data.cover }, function (error, result) {

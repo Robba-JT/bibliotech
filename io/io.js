@@ -63,6 +63,6 @@ module.exports = function (io, session) {
         });
     }).on("connection", function (socket) {
         addNew(socket.request.user._id, socket);
-        require("./main")(socket);
+        require("./main")(socket, allSessions);
     });
 };

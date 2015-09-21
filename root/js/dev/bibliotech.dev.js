@@ -227,7 +227,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     };
                     this.update = function () {
                         var update = false,
-                            values = { id: bookid },
+                            values = { "id": bookid },
                             tags = _.map(µ.alls("#userTags > div").toArray(), function (tag) { return tag.one(".libelle").text(); }),
                             note = µ.one("#userNote").value,
                             comment = µ.one("#userComment").value,
@@ -320,7 +320,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     var rgbColor = colorthief.getColor(image),
                         hexColor = "#" + ((1 << 24) + (rgbColor[0] << 16) + (rgbColor[1] << 8) + rgbColor[2]).toString(16).substr(1);
 
-                    return { rgb: rgbColor, hex:hexColor};
+                    return { "rgb": rgbColor, "hex": hexColor};
                 },
                 modify: function () {
                     if (!!this.hasClass("modify")) {
@@ -367,7 +367,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     if (µ.one("#collection").hasClass("active")) { Bookcells.display(); }
                 },
                 sendNotif: function () {
-                    var notif = _.merge(this.formToJson(), { id: Detail.data.book.id });
+                    var notif = _.merge(this.formToJson(), { "id": Detail.data.book.id });
                     socket.emit("sendNotif", notif);
                     µ.one("#recommandWindow img").trigger("click");
                     return false;
@@ -540,7 +540,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 get: function () {
                     var $dock = µ.one("#d"), colWidth;
                     if (!$dock) {
-                        $dock = µ.body.newElement("section", { id: "d", role: "main"});
+                        $dock = µ.body.newElement("section", { "id": "d", "role": "main"});
                         $dock.newElement("section", { "class": "notdisplayed" });
                     }
                     colWidth = ($dock.clientWidth / Dock.nbcols).toFixed(0);
@@ -548,7 +548,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                         $dock.alls(".col").removeAll();
                         for (var i = 0; i < Dock.nbcols; i++) { $dock.newElement("div", { "class": "col", "colid": i }).css({ "width": colWidth, "max-width": colWidth }); }
                         $dock.css({ "padding-top" : µ.one("#nvb").isVisible() ? µ.one("#nvb").clientHeight : 0 });
-                        µ.alls(".col").setEvents({ dragenter: Dock.dragenter, dragover: Dock.dragover, drop: Dock.drop });
+                        µ.alls(".col").setEvents({ "dragenter": Dock.dragenter, "dragover": Dock.dragover, "drop": Dock.drop });
                     }
                     return $dock;
                 },
@@ -618,8 +618,8 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                             };
                             request.onupgradeneeded = function() {
                                 var db = this.result;
-                                db.createObjectStore("queries", { keyPath: "query" }).createIndex("by_query", "query", { unique: true });
-                                db.createObjectStore("details", { keyPath: "id" }).createIndex("by_id", "id", { unique: true });
+                                db.createObjectStore("queries", { "keyPath": "query" }).createIndex("by_query", "query", { "unique": true });
+                                db.createObjectStore("details", { "keyPath": "id" }).createIndex("by_id", "id", { "unique": true });
                                 console.info("DB Updated", new Date().toLocaleString());
                             };
                         }
@@ -650,7 +650,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     var image = this.tagName.toLowerCase() === "img" ? this : this.one("img");
                     if (!!this.hasClass("active") || !!this.hasClass("sortBy")) { return false; }
                     if (!!image) { image.src = images[image.getAttribute("source")][image.getAttribute("blur")];
-                        if (!image.isVisible() && !image.hasClass("nsv")) { image.css({ visibility: "visible" }); }
+                        if (!image.isVisible() && !image.hasClass("nsv")) { image.css({ "visibility": "visible" }); }
                     }
                     return this;
                 },
@@ -717,7 +717,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     var notifs = µ.one("#notifs");
                     if (!!state) { µ.one("#sort").fade(false); }
                     if (notifs.isVisible()) { notifs.fade(false); } else {
-                        notifs.css({ top: µ.one("#nvb").clientHeight + 5, left: µ.one("#notifications").offsetLeft }).fade(true);
+                        notifs.css({ "top": µ.one("#nvb").clientHeight + 5, "left": µ.one("#notifications").offsetLeft }).fade(true);
                     }
                 },
                 selectstart: function (event) {
@@ -732,7 +732,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     var sorts = µ.one("#sort");
                     if (!!state) { µ.one("#notifs").fade(false); }
                     if (sorts.isVisible()) { sorts.fade(false); } else {
-                        sorts.css({ top: µ.one("#nvb").clientHeight + 5, left: µ.one("#tris").offsetLeft }).fade(true);
+                        sorts.css({ "top": µ.one("#nvb").clientHeight + 5, "left": µ.one("#tris").offsetLeft }).fade(true);
                     }
                 },
                 toggle: function () {
@@ -765,19 +765,21 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     Waiting.toggle(true, true);
                     socket.emit("readNotif", notif);
                 },
+                list: [],
+                new: function (notif) {
+                    var clone = µ.one("#tempNotif").cloneNode(true);
+                    clone.setAttributes({ "notif": JSON.stringify(notif) }).removeAttribute("id");
+                    clone.one(".notifName").html(notif.from);
+                    clone.one(".notifTitle").text(notif.title);
+                    clone.setEvents("click", Notifs.click);
+                    µ.one("#notifs").appendChild(clone);
+                },
                 show: function (list) {
                     var notifs = [];
                     if (!!list) { Notifs.list = list; }
                     µ.alls("#notifications, #notifNumber").toggle(!!Notifs.list.length);
                     µ.one("#notifNumber").text(Notifs.list.length);
-                    for (var jta = 0, lg = Notifs.list.length; jta < lg; jta++) {
-                        var notif = Notifs.list[jta], clone = µ.one("#tempNotif").cloneNode(true);
-                        clone.setAttributes({ notif: JSON.stringify(notif) }).removeAttribute("id");
-                        clone.one(".notifName").html(notif.from);
-                        clone.one(".notifTitle").text(notif.title);
-                        clone.setEvents("click", Notifs.click);
-                        µ.one("#notifs").appendChild(clone);
-                    }
+                    for (var jta = 0, lg = Notifs.list.length; jta < lg; jta++) { Notifs.new(Notifs.list[jta]); }
                 }
             },
             Search = {
@@ -796,7 +798,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 },
                 books: function () {
                     var val = this.formToJson(), stored;
-                    Search.last = { q: val.searchby + val.searchinput, langRestrict: val.langage };
+                    Search.last = { "q": val.searchby + val.searchinput, "langRestrict": val.langage };
                     µ.one("@filtre").value = µ.one("@last").value = "";
                     Search.clear();
                     Windows.close(true).then(function () {
@@ -957,16 +959,23 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                             .on("logout", logout)
                             .on("newbook", function (data) {
                                 Detail.bookid = data.id;
-                                Detail.data = { book: data };
+                                Detail.data = { "book": data };
                                 Detail.newCell();
                                 Detail.show(true);
                                 Waiting.over(false);
+                            })
+                            .on("newNotif", function (data) {
+                                console.debug("data", data);
+                                Notifs.list.push(data);
+                                Notifs.new(data);
+                                µ.alls("#notifications, #notifNumber").toggle(!!Notifs.list.length);
+                                µ.one("#notifNumber").text(Notifs.list.length);
                             })
                             .on("returnAdd", userActions.addbook)
                             .on("returnDetail", Bookcells.returned)
                             .on("returnNotif", function (notif) {
                                 Detail.bookid = notif.id;
-                                Detail.data = { book: notif };
+                                Detail.data = { "book": notif };
                                 Detail.show(User.get().bookindex(notif.id) !== -1);
                             })
                             .on("updateNok", userActions.nokdated)
@@ -1042,13 +1051,13 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                             radius = 0,
                             angle = 6.28 * Math.random();
 
-                        µtag.css({ top: top, left: left });
+                        µtag.css({ "top": top, "left": left });
                         while(isOver(µtag, µtags)) {
                             radius += step;
                             angle += (jta % 2 === 0 ? 1 : -1) * step;
                             top = height + radius * Math.sin(angle) - (µtag.clientHeight / 2.0);
                             left = width - (µtag.clientWidth / 2.0) + (radius * Math.cos(angle)) * ratio;
-                            µtag.css({ top: top, left: left });
+                            µtag.css({ "top": top, "left": left });
                         }
                         µtags.push(µtag);
                     }
@@ -1104,7 +1113,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     this.collection = this.loading = [];
                     if (!!this.picture && !!this.link) {
                         µ.one("#picture").toggle(true)
-                            .newElement("img", { src: this.picture, title: "Google+" })
+                            .newElement("img", { "src": this.picture, "title": "Google+" })
                                 .setEvents("click", function () { window.open(instance.link); });
                     }
                     µ.alls(".gSignIn").toggle(!!this.googleSignIn);
@@ -1261,7 +1270,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                         };
 
                     if (!!toShow) {
-                        µ.setEvents({ mousemove: mouseMove });
+                        µ.setEvents({ "mousemove": mouseMove });
                         setTimeout(function () { noConnect.toggle(toShow); }, 2000);
                     } else {
                         µ.removeEventListener("mousemove", mouseMove);
@@ -1357,7 +1366,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     });
                 }
             },
-            xcroll = function () { return { top: window.scrollY || µ.documentElement.scrollTop, left: window.scrollX || µ.documentElement.scrollLeft }; };
+            xcroll = function () { return { "top": window.scrollY || µ.documentElement.scrollTop, "left": window.scrollX || µ.documentElement.scrollLeft }; };
 
         Bookcell.prototype.active = function () {
             if (!!this.actived) { return; }
@@ -1440,7 +1449,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     var cover = self.cell.one(".cover");
                     if (!!cover && window.innerHeight + xcroll().top > self.cell.offsetTop) {
                         self.cell.toggleClass("toshow", false);
-                        self.cell.setEvents({ dragstart: dragstart, dragend: dragend });
+                        self.cell.setEvents({ "dragstart": dragstart, "dragend": dragend });
                         if (!!self.book.alternative || !!self.book.base64) { cover.src = self.book.alternative || self.book.base64; }
                         self.cell.one("footer").css({ "bottom": self.cell.one("figcaption").clientHeight + 5 });
                     }

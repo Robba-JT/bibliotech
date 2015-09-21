@@ -6,7 +6,7 @@ var Q = require("q"),
     BooksAPI = require("../db/books").BooksAPI,
     MailsAPI = require("../tools/mails").MailsAPI;
 
-module.exports = function main (socket) {
+module.exports = function main (socket, allSessions) {
     "use strict";
 
     var client = socket.request.client,
@@ -16,12 +16,49 @@ module.exports = function main (socket) {
         sessionId = socket.request.sessionId,
         thisUser = socket.request.user,
         thisBooks = [], lastSearch = {}, lastDetail = {},
+        addBook = function (bookid) {
+            return new Q.Promise(function (resolve, reject) {
+                searchDetail(bookid, function (error, book) {
+                    if (!!error) { reject(error); }
+                    if (!!book) {
+                        resolve(book);
+                        addBookToUser(book);
+                    }
+                });
+            });
+        },
+        addBookToUser = function (book) {
+            var update = { "$addToSet": { "books": { "book": book.id }}};
+            if (!!book.id.user && _.isEqual(book.id.user, thisUser._id)) {
+                update.$inc = { "userbooks": 1 };
+                thisUser.userbooks++;
+            } else {
+                if (!_.isObject(book.id) && !!thisUser.googleSync) { bookAPI.googleAdd({ "volumeId": book.id }); }
+            }
+            if (!!book.from) { update.$addToSet.books.from = book.from; }
+            if (!!book.alt) { update.$addToSet.books.cover = new ObjectID(book.alt); }
+            userAPI.updateUser({ "_id": thisUser._id }, update);
+            thisBooks.push(book);
+            if (!!book.isNew) {
+                delete book.isNew;
+                defBooks("updateBook", book);
+            }
+        },
+        arraymove = function (arr, fromIndex, toIndex) {
+            var element = arr[fromIndex];
+            arr.splice(fromIndex, 1);
+            arr.splice(toIndex, 0, element);
+        },
         defBooks = function (request, query) {
             return new Q.Promise(function (resolve, reject) {
                 bookAPI[request](query, function (error, response) {
                     if (!!error || !response) { reject(error || new Error("No response!")); } else { resolve(response); }
                 });
             });
+        },
+        isConnected = function (userId) {
+            var friend = _.find(allSessions, _.matchesProperty("user", userId));
+            return !!friend ? friend.id : null;
         },
         searchDetail = function (bookid, callback) {
             if (!!lastDetail && !!lastDetail.id && _.isEqual(lastDetail.id, bookid)) { return callback(null, lastDetail); }
@@ -58,39 +95,6 @@ module.exports = function main (socket) {
             _.assign(param, { startIndex: 0 });
             loop();
             return defLoop.promise;
-        },
-        addBook = function (bookid) {
-            return new Q.Promise(function (resolve, reject) {
-                searchDetail(bookid, function (error, book) {
-                    if (!!error) { reject(error); }
-                    if (!!book) {
-                        resolve(book);
-                        addBookToUser(book);
-                    }
-                });
-            });
-        },
-        addBookToUser = function (book) {
-            var update = { "$addToSet": { "books": { "book": book.id }}};
-            if (!!book.id.user && _.isEqual(book.id.user, thisUser._id)) {
-                update.$inc = { "userbooks": 1 };
-                thisUser.userbooks++;
-            } else {
-                if (!_.isObject(book.id) && !!thisUser.googleSync) { bookAPI.googleAdd({ "volumeId": book.id }); }
-            }
-            if (!!book.from) { update.$addToSet.books.from = book.from; }
-            if (!!book.alt) { update.$addToSet.books.cover = book.alt; }
-            userAPI.updateUser({ "_id": thisUser._id }, update);
-            thisBooks.push(book);
-            if (!!book.isNew) {
-                delete book.isNew;
-                defBooks("updateBook", book);
-            }
-        },
-        arraymove = function (arr, fromIndex, toIndex) {
-            var element = arr[fromIndex];
-            arr.splice(fromIndex, 1);
-            arr.splice(toIndex, 0, element);
         };
 
     if (!thisUser || !thisUser._id) { socket.emit("logout"); } else {
@@ -284,13 +288,17 @@ module.exports = function main (socket) {
         userAPI.hasBook(data.recommand.toLowerCase(), data.book, function (error, response) {
             if (!!error) { console.error("sendNotif", error); }
             if (!response) {
-                defBooks("updateNotif", {
+                var notif = {
                     "_id": { "to": data.recommand.toLowerCase(), "book": data.id },
                     "from": thisUser.name + "<" + thisUser._id + ">",
                     "isNew": true,
                     "title": infos.title,
                     "alt": infos.alt
-                });
+                };
+                defBooks("updateNotif", notif);
+                console.log("isConnected", isConnected(data.recommand.toLowerCase()));
+                var socketId = isConnected(data.recommand.toLowerCase());
+                if (!!socketId) { socket.to(socketId).emit("newNotif", notif); }
                 mailAPI.sendToFriend(thisUser.name, thisUser._id, data.recommand.toLowerCase(), infos);
             }
         });
