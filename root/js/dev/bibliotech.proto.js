@@ -132,8 +132,13 @@ HTMLElement.prototype.trigger = function (evt) {
     this.dispatchEvent(thisEvent);
     return this;
 };
+
 HTMLElement.prototype.xposition = function () {
     return !!this.parentNode && !!this.parentNode.tagName ? this.parentNode.offsetLeft : this.offsetLeft;
+};
+
+HTMLElement.prototype.yposition = function () {
+    return !!this.parentNode && !!this.parentNode.tagName ? this.parentNode.offsetTop : this.offsetTop;
 };
 
 HTMLDocument.prototype.alls = HTMLCollection.prototype.alls = HTMLElement.prototype.alls = NodeList.prototype.alls = function () {

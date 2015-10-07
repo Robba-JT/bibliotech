@@ -8,7 +8,7 @@ var gAuth = require("../tools/gAuth"),
     admins = JSON.parse(require("fs").readFileSync("./tools/admins.json")).admins,
     _ = require("lodash");
 
-module.exports = exports = function (app, session) {
+module.exports = exports = function (app) {
     "use strict";
     var getLang = function (request) { return trads[(!!trads[request.acceptsLanguages()[0]]) ? request.acceptsLanguages()[0] : "fr"]; };
 
@@ -25,7 +25,7 @@ module.exports = exports = function (app, session) {
 		.get("/",
             function (req, res, next) {
                 if (!req.session.user && !req.session.token) {
-                    req.session.destroy(function () { res.render(res.locals.is_mobile? "mlogin" : "login", getLang(req).login); });
+                    req.session.destroy(function () { res.render("login", getLang(req).login); });
                 } else {
                     if (!!req.session.user && admins.indexOf(req.session.user) !== -1) {
                         var proms = [];
@@ -44,15 +44,25 @@ module.exports = exports = function (app, session) {
                 }
             },
             function (req, res) {
-                res.render(res.locals.is_mobile? "mbibliotech" : "bibliotech", getLang(req).bibliotech);
+                res.render("bibliotech", { version: JSON.stringify(require("../package.json").version) });
             }
 		)
+
     //Logout
 		.get("/logout", function (req, res) {
-            req.session.destroy(function (err) { res.status(205).redirect("/"); });
+            req.session.destroy(function (err) {
+                res.clearCookie("_bsession");
+                req.session = null;
+                res.status(205).redirect("/");
+            });
         })
+
+    //Trads
+        .get("/trad", function (req, res) { res.jsonp(getLang(req).bibliotech); })
+
 	//Erreur url
 		.get("*", function (req, res) { res.status(404).render("error", { error: "Error 404" });})
+
 	//Login
 		.post("/login", function (req, res) {
 			usersAPI.validateLogin(req.body.a, req.body.c, false)
@@ -84,13 +94,17 @@ module.exports = exports = function (app, session) {
                         }).catch(function (error) { return res.jsonp({ "error": getLang(req).error.errorSendMail }); });
                 }).catch(function (error) { return res.jsonp({ "error": getLang(req).error.invalidCredential }); });
 		})
+
     //Preview
         .post("/preview", function (req, res, next) { res.render("preview", { bookid: req.body.previewid }); })
+
     // Google Login
         .post("/googleAuth", function (req, res) {
             getToken(req.body.c, function (err, token) {
-                if (!!err || !token) { console.error(err || "googleAuth No token!!!"); } else { req.session.token = token; }
-				res.jsonp({ success: !!token });
+                if (!!err || !token || token.expiry_date < new Date()) { console.error(err || "googleAuth No token!!!"); } else {
+                    req.session.token = token;
+                }
+				res.jsonp({ success: !!token && token.expiry_date > new Date() });
             })
         });
 };

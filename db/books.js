@@ -15,7 +15,7 @@ module.exports.BooksAPI = BooksAPI = function (db, authClient) {
         comments = db.collection("comments"),
         notifs = db.collection("notifications"),
         covers = db.collection("covers"),
-        addParam = _.isEmpty(authClient.credentials) ? { "key": googleKey } : { "auth": authClient },
+        addParam = authClient && _.isEmpty(authClient.credentials) ? { "key": googleKey } : { "auth": authClient },
         reqParams = {
             "searchOne": {
                 "fields": "id, etag, accessInfo(accessViewStatus), volumeInfo(title, subtitle, authors, publisher, publishedDate, description, industryIdentifiers, pageCount, categories, imageLinks, canonicalVolumeLink)",

@@ -7,8 +7,7 @@ var MongoClient = require("mongodb").MongoClient,
         "gzip": true,
         "headers": {
             "Accept-Encoding": "gzip",
-            "Content-Type": "application/json",
-            "proxy": "http://CGDM-EMEA\jtassin:password_4@isp-ceg.emea.cegedim.grp:3128/"
+            "Content-Type": "application/json"
         }
     };
 
@@ -28,7 +27,7 @@ module.exports.init = function (mongoUrl, callback) {
                     "key": "AIzaSyBw0Wgo4DDJ48-dd7pC8DpryvOm_z8515A"
                 };
 
-            /*db.collection("covers").find({}, function (error, allCovers) {
+            db.collection("covers").find({}, function (error, allCovers) {
                 if (!!error) { return console.error("Covers removed", error); }
                 db.collection("users").find({}, { "books.cover": true }).toArray(function (error, userBooks) {
                     if (!!error) { return console.error(error); }
@@ -40,7 +39,7 @@ module.exports.init = function (mongoUrl, callback) {
                 });
             });
 
-            db.collection("books").find({ "date": { $lte: last }, "id.user": { $exists: false }}, { "_id": false }).toArray(function (error, result) {
+            /*db.collection("books").find({ "date": { $lte: last }, "id.user": { $exists: false }}, { "_id": false }).toArray(function (error, result) {
                 if (!!error) { console.error("Error Update Books", error); }
                 if (!!result) {
                     var updated = 0, removed = 0, requests = [];

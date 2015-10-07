@@ -1,0 +1,23 @@
+<header class="windowheader">&nbsp;[{trads.search}]<div class="closeWindow" title="[{trads.close}]" ng-click="windows.close('search')"></div></header>
+<form autocomplete="off" name="searchForm" novalidate ng-submit="searchForm.$valid && search.send()">
+    <div>
+        <input ng-model="search.result.search" ng-minlength="3" error="[{trads.error}]" type="search" autocomplete="on" required placeholder="[{trads.search}]" auto-focus="windows.opened.search" />
+        <input type="submit" ng-value="trads.valid" />
+    </div>
+    <div id="recommand4u" ng-show="profile.user.googleSignIn" ng-click="search.recommanded()"><input type="button" ng-value="trads.recommand4u"/></div>
+    <div>
+        <div class="radio">[{trads.searchby}]:</div>
+        <label>&nbsp;[{trads.all}]<input type="radio" ng-model="search.result.by" value=""/></label>
+        <label>&nbsp;[{trads.isbn}]<input type="radio" ng-model="search.result.by" value="isbn:"/></label>
+        <label>&nbsp;[{trads.title}]<input type="radio" ng-model="search.result.by" value="intitle:"/></label>
+        <label>&nbsp;[{trads.author}]<input type="radio" ng-model="search.result.by" value="inauthor:"/></label>
+        <label>&nbsp;[{trads.publisher}]<input type="radio" ng-model="search.result.by" value="inpublisher:"/></label>
+    </div>
+    <div>
+        <div class="radio">[{trads.language}]:</div>
+        <label>&nbsp;[{trads.alls}]<input type="radio" ng-model="search.result.lang" value="all"/></label>
+        <label>&nbsp;[{trads.english}]<input type="radio" ng-model="search.result.lang" value="en"/></label>
+        <label>&nbsp;[{trads.french}]<input type="radio" ng-model="search.result.lang" value="fr"/></label>
+    </div>
+</form>
+<footer title="Powered by Google"></footer>

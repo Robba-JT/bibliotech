@@ -23,20 +23,26 @@ var Auth = function () {
     var client = new OAuth2Client(googleConfig.client_id, googleConfig.client_secret, "postmessage");
     this.client = client;
     this.getUserInfos = function (token, callback) {
+        if (token.expiry_date < new Date()) { return callback("Expired Token!!!"); }
         google.oauth2("v2").userinfo.get(token, function (error, infos) {
-            if (!!error || !infos) { return callback(error || new Error("No userInfos")); }
             client.setCredentials(token);
+            if (!!error || !infos) { return callback(error || new Error("No userInfos")); }
             callback(null, infos);
         });
     };
-    this.revokeCredentials = function () { client.revokeCredentials(function (error) { if (!!error) { console.error("revokeCredentials error", error); }}); };
+    this.revokeCredentials = function () { client.revokeCredentials(function (error) {
+        if (!!error) {
+            console.error("revokeCredentials error", error);
+            client.revokeToken(client.credentials);
+        }});
+    };
     this.refreshToken = function (callback) {
         console.log(client.credentials);
         client.refreshAccessToken(function (error, token) {
             if (!!error || !token) { return callback(error || new Error("No refresh token!!!")); }
             console.log("token", token);
             console.log("client.credentials", client.credentials);
-            callback();
+            callback(null, token);
         });
     };
     return this;

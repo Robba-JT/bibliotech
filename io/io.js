@@ -2,8 +2,9 @@ var _ = require("lodash"),
     Q = require("q"),
     usersApi = require("../db/users").UsersAPI(require("../db/database").client);
 
-module.exports = function (io, session) {
+module.exports = function (io) {
     "use strict";
+
     var gAuth = require("../tools/gAuth").Auth,
         allSessions = [],
         addNew = function (user, socket) {
@@ -15,54 +16,60 @@ module.exports = function (io, session) {
         removeOne = function (id) { _.remove(allSessions, _.matchesProperty("id", id)); };
 
     io.use(function (socket, next) {
+        var current = socket.request.session;
         if (!socket.request.headers.cookie) { return next(new Error("Cookie inexistant!!!")); }
         var cookies = require("express/node_modules/cookie").parse(socket.request.headers.cookie);
         if (!cookies._bsession) { return next(new Error("Cookie invalide!!!")); }
-        socket.request.sessionId = require("cookie-parser").signedCookie(cookies._bsession, "robba1979");
-        session.store.get(socket.request.sessionId, function (error, data) {
-            if (!!error || !data || (!data.token && !data.user)) { return next(new Error("Session invalide!!!")); }
-            if (!!data.user) {
-                usersApi.findUser(data.user).then(function (result) {
-                    socket.request.user = result;
-                    session.middleware(socket.request, socket.request.res, next);
-                }).catch(function (error) { return next(error); });
-            } else if (!!data.token) {
-                var auth = gAuth();
-                auth.getUserInfos(data.token, function(error, infos) {
-                    if (!!error) {
-                        console.error("getUsersInfo error", error);
-                        auth.revokeCredentials();
-                        return next(error);
-                    }
-                    var findUser = new Q.Promise(function (resolve, reject) {
-                        usersApi.findUser(infos.email)
-                            .then(resolve)
-                            .catch(usersApi.addUser(infos.email, "", infos.name).then(resolve));
-                    });
-                    findUser.done(function (user) {
-                        socket.request.client = auth.client;
-                        socket.request.user = _.merge(user, { googleSignIn: true, link: infos.link, picture: infos.picture });
-                        session.middleware(socket.request, socket.request.res, next);
-                        var onEvent = socket.onevent;
-                        socket.onevent = function () {
-                            var args = arguments;
-                            if (_.get(auth, "client.credentials.expiry_date") < new Date()) {
-                                auth.refreshToken(function (error) {
-                                    if (!error) { return onEvent.apply(socket, args); }
+        var sessionId = require("cookie-parser").signedCookie(cookies._bsession, "robba1979");
+        _.assign(current, { "id": sessionId });
+        if (!current || !current.id || (!current.token && !current.user)) { return next(new Error("Session invalide!!!")); }
+        if (!!current.user) {
+            usersApi.findUser(current.user).then(function (result) {
+                current.user = result;
+                next();
+            }).catch(function (error) { return next(error); });
+        } else if (!!current.token) {
+            var auth = gAuth();
+            auth.getUserInfos(current.token, function(error, infos) {
+                if (!!error) {
+                    console.error("getUsersInfo error", error);
+                    auth.revokeCredentials();
+                    delete socket.request.session;
+                    return next(error);
+                }
+                var findUser = new Q.Promise(function (resolve, reject) {
+                    usersApi.findUser(infos.email)
+                        .then(resolve)
+                        .catch(usersApi.addUser(infos.email, "", infos.name).then(resolve));
+                });
+                findUser.done(function (user) {
+                    current.client = auth.client;
+                    current.user = _.merge(user, { "googleSignIn": true, "link": infos.link, "picture": infos.picture });
+                    var onEvent = socket.onevent;
+                    socket.onevent = function () {
+                        var args = arguments;
+                        if (_.get(auth, "client.credentials.expiry_date") < new Date()) {
+                            auth.refreshToken(function (error, token) {
+                                if (!error && !!token) {
+                                    onEvent.apply(socket, args);
+                                    //session.store.set(sessionId, _.merge(current, { "token": token }));
+                                    current.token = token;
+                                } else {
                                     console.error("refreshToken error", error);
                                     auth.revokeCredentials();
                                     socket.emit("logout");
-                                });
-                            } else {
-                                onEvent.apply(socket, args);
-                            }
-                        };
-                    });
+                                }
+                            });
+                        } else {
+                            onEvent.apply(socket, args);
+                        }
+                    };
+                    next();
                 });
-            }
-        });
+            });
+        }
     }).on("connection", function (socket) {
-        addNew(socket.request.user._id, socket);
+        addNew(socket.request.session.user._id, socket);
         require("./main")(socket, allSessions);
     });
 };

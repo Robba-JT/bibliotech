@@ -1,0 +1,32 @@
+<header class="windowheader">&nbsp;[{trads.profile}]<div class="closeWindow" title="[{close}]" ng-click="windows.close('profile')"></div></header>
+<form name="profileForm" autocomplete="off" novalidate ng-submit="profileForm.$valid && profile.send()">
+    <p>
+        <input type="email" disabled="disabled" ng-value="profile.user.id"> <input type="submit" ng-value="trads.valid" ng-disabled="profileForm.$invalid">
+    </p>
+    <p>
+        <input type="text" ng-model="profile.user.name" autocomplete="off" placeholder="[{trads.name}]" ng-value="profile.user.name" ng-minlength="4" auto-focus="windows.opened.profile">
+    </p>
+    <p ng-hide="profile.user.googleSignIn">
+        <input type="password" ng-model="profile.user.pwd" error="[{trads.errPwd}]" wrongpwd="Invalid password" placeholder="[{trads.password}]" ng-required="!profile.user.googleSignIn" ng-minlength="4" ng-maxlength="12">
+    </p>
+    <p class="errMsg" ng-show="profile.user.error">[{trads.msgPwd}]</p>
+    <p ng-show="profile.user.googleSignIn">
+        <label><input type="checkbox" disabled="disabled" ng-checked="profile.user.googleSignIn">&nbsp;[{trads.gconnexion}]</label>
+    </p>
+    <p ng-show="profile.user.googleSignIn">
+        <label><input type="checkbox" ng-model="googleSync" ng-checked="profile.user.googleSync">&nbsp;[{trads.gsync}]</label>
+    </p>
+    <p ng-show="profile.user.googleSignIn">
+        <input type="button" ng-value="trads.gimport" message="goperation" titre="warning" callback="profile.import"> <input type="button" ng-value="trads.gexport" message="goperation" titre="warning" callback="profile.export">
+    </p>
+    <p>
+        <input ng-hide="profile.user.googleSignIn" type="button" ng-value="trads.modPwd" ng-click="profile.newPassword = !profile.newPassword"> <input type="button" id="delete" ng-value="trads.deleteAccount" message="deleteConfirm" titre="warning" callback="profile.delete" ng-disabled="profileForm.$invalid">
+    </p>
+    <p ng-hide="profile.user.googleSignIn">
+        <input type="password" ng-show="profile.newPassword" ng-model="profile.user.newPwd" error="[{trads.errPwd}]" placeholder="[{trads.newPwd}]" ng-required="profile.newPassword" ng-minlength="4" ng-maxlength="12">
+    </p>
+    <p ng-hide="profile.user.googleSignIn">
+        <input type="password" ng-show="profile.newPassword" ng-model="profile.user.confirmPwd" error="[{trads.errConfirm}]" placeholder="[{trads.confirmPwd}]" ng-required="profile.newPassword" ng-minlength="4" ng-maxlength="12" compare-to="profile.user.newPwd">
+    </p>
+</form>
+<p>[{trads.nbBooks}]:&nbsp;<span id="nbBooks">[{bookcells.collection.length}]</span></p>

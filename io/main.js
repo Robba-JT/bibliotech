@@ -9,12 +9,12 @@ var Q = require("q"),
 module.exports = function main (socket, allSessions) {
     "use strict";
 
-    var client = socket.request.client,
+    var client = socket.request.session.client,
         userAPI = new UsersAPI(db),
         bookAPI = new BooksAPI(db, client),
         mailAPI = new MailsAPI(),
-        sessionId = socket.request.sessionId,
-        thisUser = socket.request.user,
+        sessionId = socket.request.session.id,
+        thisUser = socket.request.session.user,
         thisBooks = [], lastSearch = {}, lastDetail = {},
         addBook = function (bookid) {
             return new Q.Promise(function (resolve, reject) {
@@ -99,7 +99,7 @@ module.exports = function main (socket, allSessions) {
 
     if (!thisUser || !thisUser._id) { socket.emit("logout"); } else {
         var booksList = _.pluck(thisUser.books, "book"),
-            tagsList = _.countBy(_.flatten(_.compact(_.pluck(thisUser.books, "tags")), true).sort()),
+            //tagsList = _.countBy(_.flatten(_.compact(_.pluck(thisUser.books, "tags")), true).sort()),
             coverList = _.compact(_.pluck(thisUser.books, "cover"));
         userAPI.updateUser({ "_id": thisUser._id }, { "$set": { "last_connect": new Date() }, "$inc": { "connect_number": 1 }});
         socket.emit("user", {
@@ -111,7 +111,7 @@ module.exports = function main (socket, allSessions) {
             link: thisUser.link,
             name: thisUser.name,
             picture: thisUser.picture,
-            tags: tagsList,
+            //tags: tagsList,
             session: sessionId,
             orders: thisUser.orders
         });
@@ -133,6 +133,8 @@ module.exports = function main (socket, allSessions) {
                 returnComments = function (elt) { return elt._id.user !== thisUser._id; },
                 returnUserComments = function (elt) { return elt._id.user === thisUser._id; },
                 returnCover = function (cover) { return _.isEqual(cover._id.book, books[book].id); };
+
+            if (notifs.length) { socket.emit("notifs", notifs); }
 
             for (var book in books) {
                 var infos = _.find(thisUser.books, returnInfo),
@@ -157,7 +159,6 @@ module.exports = function main (socket, allSessions) {
                         userAPI.updateUser({ "_id": thisUser._id, "books.book": books[book].id }, {"$unset": { "books.$.cover" : true }});
                     } else {
                         sendCovers.push({ "id": books[book].id, "alternative": cover.cover });
-                        books[book].mainColor = cover.color;
                     }
                 }
                 if (!!books[book].cover) {
@@ -170,11 +171,7 @@ module.exports = function main (socket, allSessions) {
                     toSend = [];
                 }
             }
-            socket.emit("endCollect", {
-                tags: _.countBy(_.flatten(_.map(thisUser.books, "tags")).sort()),
-                notifs: notifs,
-                books: toSend
-            });
+            socket.emit("endCollect", toSend);
             thisBooks = books;
             Q.allSettled(def64).then(function (results) {
                 if (!!results.length) { sendCovers.push(_.map(results, "value")); }
@@ -185,7 +182,8 @@ module.exports = function main (socket, allSessions) {
         });
     }
 
-    socket.on("searchBooks", function (param) {
+    socket.on("searchBooks", function (result) {
+        var param = { "q": result.by + result.search, "langRestrict": result.lang };
         if (!!lastSearch && lastSearch.param && _.isEqual(lastSearch.param, param) && !!lastSearch.books) {
             socket.emit("books", lastSearch.books);
             socket.emit("endRequest", (!!lastSearch.books) ? lastSearch.books.length : 0);
@@ -221,20 +219,26 @@ module.exports = function main (socket, allSessions) {
         var defReq = [],
             infos = _.find(thisBooks, _.matchesProperty("id", data.id));
 
-        if (data.hasOwnProperty("alternative") && data.hasOwnProperty("mainColor")) {
-            defReq.push(defBooks("addCover", { cover: data.alternative, color: data.mainColor, date: new Date() }).then(function (cover) {
-                console.log("cover", cover);
+        if (data.hasOwnProperty("alternative")) {
+            defReq.push(defBooks("addCover", { cover: data.alternative, date: new Date() }).then(function (cover) {
                 userAPI.updateUser({ "_id": thisUser._id, "books.book": data.id }, {"$set": { "books.$.cover" : cover }});
             }));
+            delete data.alternative;
         }
         if (data.hasOwnProperty("userNote") || data.hasOwnProperty("userComment")) {
             var update = { "_id": { "user": thisUser._id, "book": data.id }, "date": new Date(), "name": thisUser.name };
             if (data.hasOwnProperty("userNote")) { update.note = data.userNote; }
             if (data.hasOwnProperty("userComment")) { update.comment = data.userComment; }
             defReq.push(defBooks((!update.note && !update.comment) ? "removeComment" : "updateComment", update));
+            delete data.userNote;
+            delete data.userComment;
+            delete data.userDate;
         }
-        if (data.hasOwnProperty("tags")) { defReq.push(userAPI.updateUser({ "_id": thisUser._id, "books.book": data.id }, {"$set": { "books.$.tags" : data.tags }})); }
-        if (data.hasOwnProperty("update")) { defReq.push(defBooks("updateBook", _.assign(data.update, { "id": data.id }))); }
+        if (data.hasOwnProperty("tags")) {
+            defReq.push(userAPI.updateUser({ "_id": thisUser._id, "books.book": data.id }, {"$set": { "books.$.tags" : data.tags }}));
+            delete data.tags;
+        }
+        if (_.keys(data).length > 1) { defReq.push(defBooks("updateBook", _.assign(data, { "id": data.id }))); }
         Q.allSettled(defReq).catch(function (error) { console.error("updateBook", error); });
     });
 
@@ -256,7 +260,7 @@ module.exports = function main (socket, allSessions) {
                 var newData = { "name": data.name, "googleSync": !!data.googleSync };
                 if (!!data.newPwd) { newData.password = userAPI.encryptPwd(data.newPwd); }
                 userAPI.updateUser({ "_id": thisUser._id }, {"$set": newData });
-                socket.emit("updateOk", data);
+                socket.emit("updateUser", data);
             })
             .catch(function (error) {
                 console.error("updateUser", error);
@@ -283,9 +287,10 @@ module.exports = function main (socket, allSessions) {
     });
 
     socket.on("sendNotif", function (data) {
+        console.log("data", data);
         var infos = _.find(thisBooks, _.matchesProperty("id", data.id));
         if (!infos) { return false; }
-        userAPI.hasBook(data.recommand.toLowerCase(), data.book, function (error, response) {
+        userAPI.hasBook(data.recommand.toLowerCase(), data.id, function (error, response) {
             if (!!error) { console.error("sendNotif", error); }
             if (!response) {
                 var notif = {
@@ -313,10 +318,7 @@ module.exports = function main (socket, allSessions) {
                     response.alt = notif.alt;
                     bookAPI.loadCover({ "_id": new ObjectID(notif.alt) }, function (error, result) {
                         if (!!error) { console.error(error); }
-                        if (!!result) {
-                            response.base64 = result.cover;
-                            response.mainColor = result.color;
-                        }
+                        if (!!result) { response.base64 = result.cover; }
                         socket.emit("returnNotif", lastDetail = response);
                     });
                 } else {
@@ -387,11 +389,12 @@ module.exports = function main (socket, allSessions) {
 
     socket.on("orders", function (order) {
         var query = { "_id": thisUser._id }, update = {};
-        if (order.new) {
-            query["orders.id"] = order.data.id;
-            update.$set = { "orders.$.order": order.data.order };
+        if (!order.new) {
+            query["orders.id"] = order.id;
+            update.$set = { "orders.$.order": order.order };
         } else {
-            update.$addToSet = { "orders": order.data };
+            delete order.new;
+            update.$addToSet = { "orders": order };
         }
         userAPI.updateUser(query, update);
     });

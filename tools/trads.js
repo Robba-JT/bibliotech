@@ -43,6 +43,7 @@ module.exports = exports = {
             goperation: "Cette opération va importer/exporter vos EBooks depuis/vers votre bibliothèque Google. Etes vous sur de vouloir continuer?",
             gplus: "Google +",
             gsync: "Synchronisation automatique Google",
+            headDesc: "Gérer votre bibliothèque: notez, commentez et faites partager votre expérience de lecture à vos amis. Connectez-vous avec votre compte Google et mettez à jour votre bibliothèque.",
             info: "Information",
             isbn: "ISBN",
             isbn10: "ISBN10",
@@ -130,6 +131,11 @@ module.exports = exports = {
     en: {
         bibliotech: {
             lang: "en",
+
+            cellLabel: "add = 'Add'; remove = 'Remove';",
+            searchLabel: "search = 'Search'; close = 'Close'; error = 'Search field must contain at least 3 characters!'; go = 'Go'; recommand = 'Recommand 4 u'; searchLbl = 'Search by'; all = 'All'; isbn = 'ISBN'; title = 'Title'; author = 'Author'; publisher = 'Publisher'; language = 'Language'; alls = 'All'; english = 'English'; french = 'French';",
+            profileLabel: "profile = 'Profile'; close = 'Close'; valid = 'Valid'; errName = 'Name field must contain at least 4 characters!'; name = 'Name'; errPwd = 'Password field must contain between 4 and 12 characters!'; password = 'Password'; msgPwd = 'Invalid password!'; gconnexion = 'Google Connection'; gsync = 'Auto sync Google'; gimport = 'Import now'; goperation = 'This operation will import / export your eBooks from / to your Google library. Are you sure you want to continue?'; gexport = 'Export now'; modPwd = 'Change password'; deleteAccount = 'Delete account'; deleteConfirm = 'This is irreversible. Do you want to delete your account?'; errPwd = 'Password field must contain between 4 and 12 characters!'; newPwd = 'New password'; errConfirm = 'Password fields are not identical!'; confirmPwd = 'Confirm password'; nbBooks = 'Books number';",
+
             add: "Add",
             addbook: "Add a book",
             affich: "Menu",
@@ -171,6 +177,7 @@ module.exports = exports = {
             gbooks: "Google Books",
             gplus: "Google +",
             gsync: "Auto sync Google",
+            headDesc: "Manage your library : note , comment , and please share your reading experience to your friends. Sign in with your Google Account and update your library.",
             info: "Information",
             isbn: "ISBN",
             isbn10: "ISBN10",

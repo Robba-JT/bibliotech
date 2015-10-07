@@ -7,7 +7,8 @@ var express = require("express"),
     port = config.port,
     sPort = config.sPort,
     bodyParser = require("body-parser"),
-    session = require("./db/session")(config),
+    Session = require("express-session"),
+    MongoStore = require("connect-mongo")(Session),
     http = require("http"),
     https = require("https"),
     server = http.Server(app).listen(port),
@@ -38,10 +39,23 @@ console.extended
 require("./db/database").init(mongoUrl, function (error) {
     if (!!error) { console.error("Database Error", error); throw error; }
 
+    var mongoStore = new MongoStore({ url: "mongodb://" + config.mongoHost + ":" + config.mongoPort + "/" + config.mongoDB, autoRemove: "native", touchAfter: 24 * 3600 }),
+        session = new Session({
+                "key": "_bsession",
+                "proxy": false,
+                "resave": true,
+                "unset": "destroy",
+                "saveUninitialized": false,
+                "rolling": false,
+                "store": mongoStore,
+                "secret": "robba1979",
+                "cookie": { "maxAge": config.maxAge, "secure": true }
+        });
+
     app.engine("html", require("consolidate").swig)
         .set("view engine", "html")
         .set("views", path.join(__dirname + "/views"))
-        //.set("view cache", true)
+        .set("view cache", true)
         .set("json spaces", 1)
         .set("x-powered-by", true)
         .enable("etag").set("etag", true)
@@ -54,7 +68,7 @@ require("./db/database").init(mongoUrl, function (error) {
         .use(bodyParser.urlencoded({ extended: false }))
 		.use(bodyParser.json())
         .use(device.capture())
-        .use(session.middleware)
+        .use(session)
         .use(function (req, res, next) { if (req.secure) { next(); } else { res.redirect("https://" + req.headers.host + req.url); }})
         .use(function (req, res, next) {
             res.setHeader("X-Frame-Options", "sameorigin");
@@ -65,9 +79,11 @@ require("./db/database").init(mongoUrl, function (error) {
             next();
         });
 
+    io.use(function(socket, next) { session(socket.request, socket.request.res, next); });
+
     device.enableDeviceHelpers(app);
-    require("./routes")(app, session);
-    require("./io/io")(io, session);
+    require("./routes")(app);
+    require("./io/io")(io);
 
     console.info("Server deployé sur les ports https: " + sPort + " / http: " + port);
 });

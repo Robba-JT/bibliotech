@@ -91,6 +91,12 @@ p {
     height: 48px;
     cursor: pointer;
     border: none !important;
+    border-radius: 15px 5px;
+    opacity: .9;
+}
+
+#f:hover {
+    opacity: 1;
 }
 
 form span {
