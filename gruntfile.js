@@ -185,7 +185,7 @@ module.exports = function (grunt) {
                 options: { spawn: false }
             },
             htmlbibliotech: {
-                files: [ "root/html/bibliotech.html", "root/html/preview.html", "root/html/directives/dev/*.html" ],
+                files: [ "root/html/bibliotech.html", "root/html/preview.html", "root/html/dev/*.html" ],
                 tasks: [ "htmlmin:bibliotech" ],
                 options: { spawn: false }
             },

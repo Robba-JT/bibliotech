@@ -55,6 +55,7 @@
                     if (!!idb.indexedDB) { idb.indexedDB.deleteDatabase(scope.profile.user.session); }
                     scope.profile.user = {};
                     location.assign("/logout");
+                    socks.emit("revoke");
                     socks.close();
                     return false;
                 };
@@ -211,6 +212,14 @@
                 };
 
                 angular.element(window)
+                    .on("selectstart", function (event) {
+                        event.preventDefault();
+                        if (!!event.target.tagName && !_.includes(["input", "textarea"], event.target.tagName.toLowerCase())) { return false; }
+                    })
+                    .on("contextmenu", function (event) {
+                        event.preventDefault();
+                        return false;
+                    })
                     .on("resize", function () {
                         scope.bookcells.style = { "width": ~~(µ.one("[bookcells]").clientWidth / ~~(µ.one("[bookcells]").clientWidth / 256)) - 10 + "px" };
                         windows.close("*");
@@ -225,6 +234,7 @@
                         scope.modal.notifsLeft = µ.one("#notifications").offsetLeft;
                         if (event.target.id !== "tris") { scope.modal.sort = false; }
                         if (event.target.id !== "notifications") { scope.modal.notifs = false; }
+                        if (!event.target.getAttribute("nav")) { scope.context.show = false; }
                         scope.$apply();
                     }).on("keypress, keydown", function (event) {
                         event = event || window.event;

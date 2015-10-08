@@ -25,7 +25,9 @@ module.exports = exports = function (app) {
 		.get("/",
             function (req, res, next) {
                 if (!req.session.user && !req.session.token) {
-                    req.session.destroy(function () { res.render("login", getLang(req).login); });
+                    req.session.destroy(function () {
+                        res.render("login", getLang(req).login);
+                    });
                 } else {
                     if (!!req.session.user && admins.indexOf(req.session.user) !== -1) {
                         var proms = [];
@@ -50,11 +52,8 @@ module.exports = exports = function (app) {
 
     //Logout
 		.get("/logout", function (req, res) {
-            req.session.destroy(function (err) {
-                res.clearCookie("_bsession");
-                req.session = null;
-                res.status(205).redirect("/");
-            });
+            res.clearCookie("_bsession");
+            req.session.destroy(function (err) { res.status(205).redirect("/"); });
         })
 
     //Trads
@@ -101,10 +100,8 @@ module.exports = exports = function (app) {
     // Google Login
         .post("/googleAuth", function (req, res) {
             getToken(req.body.c, function (err, token) {
-                if (!!err || !token || token.expiry_date < new Date()) { console.error(err || "googleAuth No token!!!"); } else {
-                    req.session.token = token;
-                }
-				res.jsonp({ success: !!token && token.expiry_date > new Date() });
-            })
+                if (!!err) { console.error(err); } else { req.session.token = token; }
+				res.jsonp({ success: !!token });
+            });
         });
 };

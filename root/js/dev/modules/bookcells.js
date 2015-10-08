@@ -56,14 +56,16 @@
                 };
 
                 socks.on("initCollect", function (part) {
-                    _.assign(scope.waiting, { "screen": false, "icon": false, "anim": true });
+                    _.assign(scope.waiting, { "icon": false, "anim": true });
+                    if (!scope.windows.opened || _.isEmpty(scope.windows.opened)) { _.assign(scope.waiting,  { "screen": false }); }
                     cellsRender(part, true);
                 });
                 socks.on("endCollect", function (part) {
                     scope.navbar.isCollect = true;
                     scope.tags.init();
                     cellsRender(part, true);
-                    _.assign(scope.waiting, { "screen": false, "icon": false, "anim": false });
+                    _.assign(scope.waiting, { "icon": false, "anim": false });
+                    if (!scope.windows.opened || _.isEmpty(scope.windows.opened)) { _.assign(scope.waiting,  { "screen": false }); }
                 });
                 socks.on("covers", function (covers) {
                     return new Promise(function (resolve) {
@@ -83,7 +85,8 @@
                 });
                 socks.on("books", function (part) {
                     cellsRender(part);
-                    _.assign(scope.waiting, { "screen": false, "icon": false, "anim": true });
+                    _.assign(scope.waiting, { "icon": false, "anim": true });
+                    if (!scope.windows.opened || _.isEmpty(scope.windows.opened)) { _.assign(scope.waiting,  { "screen": false }); }
                 });
                 socks.on("returnAdd", function (data) {
                     var index = _.findIndex(bookcells.cells, _.matchesProperty("id", data.id));
@@ -93,7 +96,8 @@
                 socks.on("endRequest", function (nb) {
                     console.debug("endRequest", nb);
                     if (!scope.navbar.isCollect && !!bookcells.lastSearch) { idb.setQuery(bookcells.lastSearch, bookcells.cells); }
-                    _.assign(scope.waiting, { "screen": false, "icon": false, "anim": false });
+                    _.assign(scope.waiting, { "icon": false, "anim": false });
+                    if (!scope.windows.opened || _.isEmpty(scope.windows.opened)) { _.assign(scope.waiting,  { "screen": false }); }
                 });
 
                 scope.$on("dropEvent", function(evt, dragged, dropped) {

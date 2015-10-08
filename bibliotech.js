@@ -41,21 +41,21 @@ require("./db/database").init(mongoUrl, function (error) {
 
     var mongoStore = new MongoStore({ url: "mongodb://" + config.mongoHost + ":" + config.mongoPort + "/" + config.mongoDB, autoRemove: "native", touchAfter: 24 * 3600 }),
         session = new Session({
-                "key": "_bsession",
-                "proxy": false,
-                "resave": true,
-                "unset": "destroy",
-                "saveUninitialized": false,
-                "rolling": false,
-                "store": mongoStore,
-                "secret": "robba1979",
-                "cookie": { "maxAge": config.maxAge, "secure": true }
+            "key": "_bsession",
+            "proxy": false,
+            "resave": false,
+            "unset": "destroy",
+            "saveUninitialized": false,
+            "rolling": false,
+            "store": mongoStore,
+            "secret": "robba1979",
+            "cookie": { "maxAge": config.maxAge, "secure": true }
         });
 
     app.engine("html", require("consolidate").swig)
         .set("view engine", "html")
         .set("views", path.join(__dirname + "/views"))
-        .set("view cache", true)
+        //.set("view cache", true)
         .set("json spaces", 1)
         .set("x-powered-by", true)
         .enable("etag").set("etag", true)
@@ -79,11 +79,9 @@ require("./db/database").init(mongoUrl, function (error) {
             next();
         });
 
-    io.use(function(socket, next) { session(socket.request, socket.request.res, next); });
-
     device.enableDeviceHelpers(app);
     require("./routes")(app);
-    require("./io/io")(io);
+    require("./io/io")(io, mongoStore);
 
     console.info("Server deployé sur les ports https: " + sPort + " / http: " + port);
 });

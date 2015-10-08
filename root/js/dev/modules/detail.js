@@ -6,6 +6,7 @@
             templateUrl: "./html/detail.html",
             controller: ["$scope", "$socket", "$idb", "$thief", function (scope, socks, idb, thief) {
                 var detail = scope.detail = {},
+                    context = scope.context = {},
                     preview = scope.preview = {},
                     getMainColor = function (image) {
                         var rgbColor = thief.getColor(image),
@@ -70,20 +71,19 @@
 
                 detail.show = function (data) {
                     detail.reset();
-                    console.debug(data);
                     if (!data.alternative && !data.base64) {
                         µ.one("[detail]").css({ "background": "radial-gradient(circle at 50%, whitesmoke 0%, #909090 100%)" });
                     }
-                    scope.windows.open("detail").then(function () {
-                        detail.height = µ.one("[detail]").clientHeight - µ.one("[detail] header").clientHeight;
-                        µ.one(".detailBook").scrollTop = 0;
-                    });
                     scope.waiting.icon = false;
                     detail.ref = data;
                     detail.book = angular.copy(data);
                     detail.XDate = detail.book.publishedDate ? new Date(detail.book.publishedDate) : null;
                     detail.edit.able = _.isPlainObject(detail.book.id) && detail.book.id.user === scope.profile.user.id;
                     if (_.isEmpty(detail.book)) { _.assign(detail.edit, { "able": true, "new": true }); }
+                    scope.windows.open("detail").then(function () {
+                        detail.height = µ.one("[detail]").clientHeight - µ.one("[detail] header").clientHeight;
+                        µ.one(".detailBook").scrollTop = 0;
+                    });
                 };
 
                 detail.reset = function () {
@@ -157,6 +157,21 @@
                     scope.bookcells.addBook(detail.book);
                 });
 
+                angular.element(µ.one("[detail] article")).on("contextmenu", function (event) {
+                    event.preventDefault();
+                    context.show = true;
+                    scope.$apply();
+                    var ctx = µ.one("#contextMenu");
+                    if (ctx.clientHeight > this.clientHeight) { context.show = false; } else {
+                        context.style = {
+                            "top": ((event.clientY + ctx.clientHeight > window.innerHeight) ? event.clientY - ctx.clientHeight : event.clientY) + "px",
+                            "left": ((event.clientX + ctx.clientWidth > window.innerWidth) ? event.clientX - ctx.clientWidth : event.clientX) + "px"
+                        };
+                    }
+                    scope.$apply();
+                    return false;
+                });
+
                 angular.element(µ.alls("#uploadHidden [type=file]")).on("change", function () {
                     var image = this.files[0];
                     if (!!image) {
@@ -197,6 +212,32 @@
                     .on("mouseleave", function () {
                         µ.alls(".note").toggleClass("plus", false).toggleClass("minus", false);
                     });
+                angular.element(µ.alls("#contextMenu [nav]")).on("click", function () {
+                    var cells = _.filter(scope.bookcells.cells, function (cell) { return !cell.toHide && !cell.toFilter; }),
+                        index = _.findIndex(cells, detail.book),
+                        next = index,
+                        cellByRow = ~~(µ.one("[bookcells]").clientWidth / 256);
+
+                    switch (this.getAttribute("nav")) {
+                        case "top":
+                            if (index > cellByRow) { next -= cellByRow; }
+                            break;
+                        case "bottom":
+                            if (index + cellByRow < cells.length) { next += cellByRow; }
+                            break;
+                        case "left":
+                            if (!!index) { next--; }
+                            break;
+                        case "right":
+                            if (index < cells.length-1) { next++; }
+                            break;
+                        default:
+                            return;
+                    }
+                    if (next !== index) {
+                        if (cells[next].inCollection) { detail.show(cells[next]); } else { detail.prepare(next); }
+                    }
+                });
             }]
         };
     });
