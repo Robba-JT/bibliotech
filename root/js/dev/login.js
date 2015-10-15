@@ -7,14 +7,14 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
             var n;
             this.setCustomValidity("");
             switch (this.name) {
-                case "b":
+                case "name":
                     n = this.isVisible() && this.value.length < 4;
                     break;
-                case "c":
+                case "password":
                     n = this.value.length < 4 || this.value.length > 12;
                     break;
-                case "d":
-                    n = this.isVisible() && this.value !== µ.one("[name=c]").value;
+                case "confirm":
+                    n = this.isVisible() && this.value !== µ.one("[name=password]").value;
                     break;
             }
             if (!!n) { this.setCustomValidity(this.getAttribute("data-m")); }
@@ -23,27 +23,6 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
         getLabel = function (isv) {
             µ.alls("[type=button]").forEach(function () {
                 this.value = this.getAttribute(isv ? "data-k" : "data-j");
-            });
-        },
-        googleApi = function () {
-            gapi.load("auth2", function() {
-                auth2 = gapi.auth2.init({
-                    "client_id": "216469168993-dqhiqllodmfovgtrmjdf2ps5kj0h1gg9.apps.googleusercontent.com",
-                    "scope": "email https://www.googleapis.com/auth/books",
-                    "fetch_basic_profile": false,
-                    "prompt": "consent"
-                });
-                µ.one("#f").setEvents("click", function () {
-                    auth2.grantOfflineAccess({ "redirect_uri": "postmessage" }).then(function (response) {
-                        if (!response.code) { return false; }
-                        µ.one("div").toggle(true);
-                        sendRequest("/googleAuth", { c: response.code }, function (s) {
-                            if (!!s && !!s.success) { return window.location.reload(true); }
-                            µ.one("div").toggle(false);
-                            return false;
-                        });
-                    });
-                });
             });
         },
         razError = function () {
@@ -64,21 +43,12 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
             r.send(JSON.stringify(d));
         };
 
-    (function() {
-        var po = µ.createElement("script");
-        po.type = "text/javascript";
-        po.async = true;
-        po.src = "https://apis.google.com/js/client:platform.js?onload=googleApi";
-        var s = µ.one("script");
-        s.parentNode.insertBefore(po, s);
-    })();
-
     µ.addEventListener("DOMContentLoaded", function (event) {
         "use strict";
         µ.one("section").toggle(true);
         µ.one("div").toggle(false);
         µ.alls("input").setEvents("input propertychange", checkValid);
-        µ.one("form").setEvents("submit", function (e) {
+        µ.one("#logForm").setEvents("submit", function (e) {
             e.preventDefault();
             razError();
             µ.one("div").toggle(true);
@@ -107,7 +77,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
             var that = this;
             razError();
             µ.one("div").toggle(true);
-            sendRequest("/mail", µ.one("form").formToJson(), function (s) {
+            sendRequest("/mail", µ.one("#logForm").formToJson(), function (s) {
                 if (!!s.error) {
                     µ.one(".forget").toggle(true);
                     µ.alls("[type=email], [type=password], [type=text]").toggleClass("e", true);
@@ -118,5 +88,6 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 return false;
             });
         });
+        µ.one("#f").setEvents("click", function () { window.location = "/gAuth"; });
     });
 }

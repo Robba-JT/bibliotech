@@ -13,10 +13,10 @@ module.exports.UsersAPI = UsersAPI = function (db) {
 
     this.validateLogin = function (userid, password, googleSignIn) {
         return new Q.Promise(function (resolve, reject) {
-            findUser({ "_id": userid.toLowerCase() }, function (err, response) {
-                if (!!err || !response) { reject(err || new Error("Invalid user")); } else {
-                    if (!!googleSignIn || bcrypt.compareSync(password, response.password)) {
-                        resolve(response._id);
+            findUser({ "_id": userid.toLowerCase() }, function (err, user) {
+                if (!!err || !user) { reject(err || new Error("Invalid user")); } else {
+                    if (!!googleSignIn || bcrypt.compareSync(password, user.password)) {
+                        resolve(user);
                     } else {
                         reject(new Error("Invalid password"));
                     }

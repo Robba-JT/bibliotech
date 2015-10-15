@@ -40,7 +40,7 @@ require("./db/database").init(mongoUrl, function (error) {
     if (!!error) { console.error("Database Error", error); throw error; }
 
     var mongoStore = new MongoStore({ url: "mongodb://" + config.mongoHost + ":" + config.mongoPort + "/" + config.mongoDB, autoRemove: "native", touchAfter: 24 * 3600 }),
-        session = new Session({
+        session = Session({
             "key": "_bsession",
             "proxy": false,
             "resave": false,
@@ -49,7 +49,11 @@ require("./db/database").init(mongoUrl, function (error) {
             "rolling": false,
             "store": mongoStore,
             "secret": "robba1979",
-            "cookie": { "maxAge": config.maxAge, "secure": true }
+            "cookie": {
+                "maxAge": config.maxAge,
+                "secure": true,
+                "httpOnly": true
+            }
         });
 
     app.engine("html", require("consolidate").swig)
@@ -58,30 +62,32 @@ require("./db/database").init(mongoUrl, function (error) {
         //.set("view cache", true)
         .set("json spaces", 1)
         .set("x-powered-by", true)
-        .enable("etag").set("etag", true)
+        //.enable("etag").set("etag", true)
         .use(require("compression")())
         .use(require("cors")())
         .use(require("express-json")())
         .use(require("serve-static")(path.join(__dirname, "root"), { maxAge: require("ms")("10 days") }))
         .use(require("serve-favicon")(path.join(__dirname, "root/images/bold-icon-24.png")))
         .use(require("errorhandler")(config.errorHandlerOptions))
-        .use(bodyParser.urlencoded({ extended: false }))
+        .use(bodyParser.urlencoded({ extended: true }))
 		.use(bodyParser.json())
         .use(device.capture())
         .use(session)
         .use(function (req, res, next) { if (req.secure) { next(); } else { res.redirect("https://" + req.headers.host + req.url); }})
         .use(function (req, res, next) {
+            res.setHeader("Access-Control-Allow-Origin", "https://biblio.tech");
             res.setHeader("X-Frame-Options", "sameorigin");
             res.setHeader("X-Content-Type-Options", "nosniff");
             res.setHeader("X-XSS-Protection", "1;mode=block");
-            res.setHeader("Access-Control-Allow-Origin", "https://biblio.tech");
             res.setHeader("Access-Control-Allow-Methods", "GET,POST");
             next();
         });
 
     device.enableDeviceHelpers(app);
-    require("./routes")(app);
-    require("./io/io")(io, mongoStore);
+
+    require("./routes")(app, mongoStore, io);
+
+    //require("./io/io")(io, mongoStore);
 
     console.info("Server deployé sur les ports https: " + sPort + " / http: " + port);
 });

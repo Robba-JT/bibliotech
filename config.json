@@ -6,7 +6,7 @@
         "mongoHost": "localhost",
         "mongoPort": 29017,
         "mongoDB": "bibliotech",
-        "maxAge": 900000,
+        "maxAge": 3600000,
         "errorHandlerOptions": {
             "dumpExceptions": true,
             "showStack": true

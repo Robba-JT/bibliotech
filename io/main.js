@@ -8,13 +8,12 @@ var Q = require("q"),
 
 module.exports = function main (socket, allSessions) {
     "use strict";
-
-    var client = socket.request.session.client,
+    var thisUser = socket.request.user,
+        token = thisUser.token,
+        sessionId = socket.request.sessionID,
         userAPI = new UsersAPI(db),
-        bookAPI = new BooksAPI(db, client),
+        bookAPI = new BooksAPI(db, token),
         mailAPI = new MailsAPI(),
-        sessionId = socket.request.session.id,
-        thisUser = socket.request.session.user,
         thisBooks = [], lastSearch = {}, lastDetail = {},
         addBook = function (bookid) {
             return new Q.Promise(function (resolve, reject) {
@@ -97,21 +96,20 @@ module.exports = function main (socket, allSessions) {
             return defLoop.promise;
         };
 
-    if (!thisUser || !thisUser._id) { socket.emit("logout"); } else {
+    if (_.isEmpty(thisUser) || !thisUser._id) { socket.emit("logout"); } else {
         var booksList = _.pluck(thisUser.books, "book"),
-            //tagsList = _.countBy(_.flatten(_.compact(_.pluck(thisUser.books, "tags")), true).sort()),
             coverList = _.compact(_.pluck(thisUser.books, "cover"));
+
         userAPI.updateUser({ "_id": thisUser._id }, { "$set": { "last_connect": new Date() }, "$inc": { "connect_number": 1 }});
         socket.emit("user", {
             connex: thisUser.connect_number,
             first: !thisUser.connect_number,
-            googleSignIn: !!thisUser.googleSignIn,
+            googleSignIn: !!thisUser.token,
             googleSync: thisUser.googleSync,
             id: thisUser._id,
-            link: thisUser.link,
+            link: !!thisUser.infos ? thisUser.infos.link : null,
             name: thisUser.name,
-            picture: thisUser.picture,
-            //tags: tagsList,
+            picture: !!thisUser.infos ? thisUser.infos.picture : null,
             session: sessionId,
             orders: thisUser.orders
         });
@@ -287,7 +285,6 @@ module.exports = function main (socket, allSessions) {
     });
 
     socket.on("sendNotif", function (data) {
-        console.log("data", data);
         var infos = _.find(thisBooks, _.matchesProperty("id", data.id));
         if (!infos) { return false; }
         userAPI.hasBook(data.recommand.toLowerCase(), data.id, function (error, response) {
@@ -301,7 +298,6 @@ module.exports = function main (socket, allSessions) {
                     "alt": infos.alt
                 };
                 defBooks("updateNotif", notif);
-                console.log("isConnected", isConnected(data.recommand.toLowerCase()));
                 var socketId = isConnected(data.recommand.toLowerCase());
                 if (!!socketId) { socket.to(socketId).emit("newNotif", notif); }
                 mailAPI.sendToFriend(thisUser.name, thisUser._id, data.recommand.toLowerCase(), infos);

@@ -2,19 +2,20 @@ var google = require("googleapis"),
     Q = require("q"),
     fs = require("fs"),
     googleConfig = JSON.parse(fs.readFileSync("google_client_config.json")).web,
-    googleAuth = require("google-auth-library"),
+    GoogleAuth = require("google-auth-library"),
     gOptions = {
         "gzip": true,
         "headers": {
             "Accept-Encoding": "gzip",
             "Content-Type": "application/json"
-        }
+        },
+        "proxy": "http://CGDM-EMEA\jtassin:password_4@isp-ceg.emea.cegedim.grp:3128/"
     };
 
 google.options(gOptions);
 
 var getToken = function (code, callback) {
-    var auth = new googleAuth(),
+    var auth = new GoogleAuth(),
         oauth2Client = new auth.OAuth2(googleConfig.client_id, googleConfig.client_secret, "postmessage");
 
     oauth2Client.getToken(code, function (error, token) {
@@ -23,34 +24,42 @@ var getToken = function (code, callback) {
     });
 };
 
+var getUrl = function () {
+    var OAuth2 = google.auth.OAuth2,
+        oauth2Client = new OAuth2(googleConfig.client_id, googleConfig.client_secret, "postmessage"),
+        scopes = [ "email", "https://www.googleapis.com/auth/books" ];
+
+    return oauth2Client.generateAuthUrl({ "access_type": "offline", "scope": scopes, "approval_prompt": "force" });
+};
+
 var Auth = function (token) {
     if (!(this instanceof Auth)) { return new Auth(token); }
     var self = this,
-        auth = new googleAuth(),
+        auth = new GoogleAuth(),
         client = new auth.OAuth2(googleConfig.client_id, googleConfig.client_secret, "postmessage"),
         getUserInfo = function (callback) {
             google.oauth2("v2").userinfo.get(client.credentials, function (error, infos) {
                 if (!!error || !infos) {
-                    client.revokeCredentials();
+                    self.revokeCredentials();
                     return callback(error || new Error("No userInfos"));
                 }
                 callback(null, infos);
             });
         },
-        oauth = new Q.Promise(function (resolve) {
-            client.setCredentials(token);
-            if (token.refresh_token) {
-                client.refreshAccessToken(function (error, new_token) {
-                    if (!!error || !token) { return console.error(error || new Error("No refresh token!!!")); }
-                    client.setCredentials(new_token);
-                    resolve(self);
-                });
-            } else { resolve(self); }
-        }),
         refreshToken = function (callback) {
+            if (!client.credentials.refresh_token) {
+                self.revokeCredentials();
+                return callback(new Error("No refresh token!!!"));
+            }
+            if (client.credentials.expiry_date < new Date()) { return callback(null); }
             client.refreshAccessToken(function (error, token) {
-                if (!!error || !token) { return callback(error || new Error("No refresh token!!!")); }
-                callback(null, token);
+                if (!!error || !token) {
+                    self.revokeCredentials();
+                    return callback(error || new Error("Error refreshing token!!!"));
+                }
+                token.expiry_date = new Date(token.expiry_date);
+                client.setCredentials(token);
+                callback(null);
             });
         },
         revokeCredentials = function () { client.revokeCredentials(function (error) { if (!!error) { console.error("revokeCredentials error", error); }}); };
@@ -60,8 +69,17 @@ var Auth = function (token) {
     this.client = client;
     this.refreshToken = refreshToken;
 
-    return oauth;
+    return new Q.Promise(function (resolve, reject) {
+        client.setCredentials(token);
+        self.refreshToken(function (error) {
+            if (!!error) {
+                console.log("Auth refresh", error);
+                reject(error);
+            } else { resolve(self); }
+        });
+    });
 };
 
 exports.getToken = getToken;
 exports.Auth = Auth;
+exports.getUrl = getUrl;

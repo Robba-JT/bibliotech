@@ -2,20 +2,31 @@ var Q = require("q"),
     request = require("request"),
     reqOptions = { "gzip": true },
     fs = require("fs"),
-    googleKey = JSON.parse(fs.readFileSync("google_client_config.json")).key,
+    googleConfig = JSON.parse(fs.readFileSync("google_client_config.json")),
     _ = require("lodash"),
-    gBooks = require("googleapis").books("v1");
+    google = require("googleapis"),
+    gBooks = google.books("v1"),
+    gAuth = google.auth.OAuth2,
+    gOptions = {
+        "gzip": true,
+        "headers": {
+            "Accept-Encoding": "gzip",
+            "Content-Type": "application/json"
+        }
+    };
+
+google.options(gOptions);
 
 module.exports.BooksAPI = BooksAPI = function (db, authClient) {
     "use strict";
 
-    if (!(this instanceof BooksAPI)) { return new BooksAPI(db, authClient); }
+    if (!(this instanceof BooksAPI)) { return new BooksAPI(db); }
 
     var books = db.collection("books"),
         comments = db.collection("comments"),
         notifs = db.collection("notifications"),
         covers = db.collection("covers"),
-        addParam = authClient && _.isEmpty(authClient.credentials) ? { "key": googleKey } : { "auth": authClient },
+        addParam = { "key": googleConfig.key },
         reqParams = {
             "searchOne": {
                 "fields": "id, etag, accessInfo(accessViewStatus), volumeInfo(title, subtitle, authors, publisher, publishedDate, description, industryIdentifiers, pageCount, categories, imageLinks, canonicalVolumeLink)",
@@ -81,7 +92,21 @@ module.exports.BooksAPI = BooksAPI = function (db, authClient) {
         },
         searchOne = function (bookid, callback) {
             var params = _.merge({ volumeId: bookid }, reqParams.searchOne);
-            gBooks.volumes.get(params, function (error, response) {
+            /*gBooks.volumes.get(params, function (error, response) {
+                if (!!error || !response) { callback(error || new Error("Bad Single Request!!!")); } else {
+                    var book = formatOne(response);
+                    book.isNew = true;
+                    if (!!book.cover) {
+                        loadBase64(book.cover).done(function (response) {
+                            if (!!response && !!response.base64) { book.base64 = response.base64; }
+                            callback(null, book);
+                        });
+                    } else {
+                        callback(null, book);
+                    }
+                }
+            });*/
+            googleRequest("volumes.get", params, function (error, response) {
                 if (!!error || !response) { callback(error || new Error("Bad Single Request!!!")); } else {
                     var book = formatOne(response);
                     book.isNew = true;
@@ -138,7 +163,22 @@ module.exports.BooksAPI = BooksAPI = function (db, authClient) {
                     result.forEach(function (oldOne) {
                         var params = _.merge({ "volumeId": oldOne.id }, reqParams.searchOne);
                         requests.push(new Promise(function () {
-                            gBooks.volumes.get(params, function (error, response) {
+                            /*gBooks.volumes.get(params, function (error, response) {
+                                if (!!error) {
+                                    console.error("Error Update One", oldOne.id, error);
+                                    if (error.code === 404 && error.message === "The volume ID could not be found.") {
+                                        books.remove({ "id": oldOne.id });
+                                        removed++;
+                                    }
+                                } else {
+                                    var newOne = formatOne(response);
+                                    if (!booksEqual(oldOne, newOne)) {
+                                        updated++;
+                                    }
+                                    updateBook(newOne);
+                                }
+                            });*/
+                            googleRequest("volumes.get", params, function (error, response) {
                                 if (!!error) {
                                     console.error("Error Update One", oldOne.id, error);
                                     if (error.code === 404 && error.message === "The volume ID could not be found.") {
@@ -173,9 +213,39 @@ module.exports.BooksAPI = BooksAPI = function (db, authClient) {
         },
         anonimiseComments = function (userId, callback) {
             comments.update({ "_id.user": userId }, {"$set": { "name": "**********" }}, { "multi": true }, callback);
+        },
+        auth = new gAuth(googleConfig.web.client_id, googleConfig.web.client_secret, "postmessage"),
+        setCredentials = function (token) {
+            auth.setCredentials(token);
+        },
+        refreshCredentials = function () {
+            return new Q.Promise(function (resolve, reject) {
+                auth.refreshAccessToken(function (error, token) {
+                    if (!!error || !token) { return reject(error || new Error("No refresh token!!!")); }
+                    setCredentials(token);
+                    resolve();
+                });
+            });
+        },
+        googleRequest = function (fonction, params, callback) {
+            var gFunction = _.get(gBooks, fonction);
+            if (typeof params === "function") { callback = params; params = {}; }
+            if (!!auth.credentials) { _.assign(params, { "auth": auth }); } else { _.assign(params, { "key": googleConfig.key }); }
+            if (typeof gFunction !== "function") { callback(new Error("Invalid Call!!!")); } else {
+                gFunction(params, function (error, success) {
+                    if (!!error && error.code !== 401) { return callback(error); }
+                    if (!!error && error.code === 401) {
+                        refreshCredentials()
+                            .then(function () { gFunction(params, callback); })
+                            .catch(callback);
+                    } else {
+                        callback(null, success);
+                    }
+                });
+            }
         };
 
-    for (var param in reqParams) { _.assign(reqParams[param], addParam); }
+    setCredentials(authClient);
 
     this.updateBook = updateBook;
     this.formatBooks = function (books) {
@@ -203,23 +273,28 @@ module.exports.BooksAPI = BooksAPI = function (db, authClient) {
     this.searchOne = searchOne;
     this.searchBooks = function (params, callback) {
         params = _.merge(params, reqOptions);
-        gBooks.volumes.list(_.merge(params, reqParams.search), callback);
+        //gBooks.volumes.list(_.merge(params, reqParams.search), callback);
+        googleRequest("volumes.list", _.merge(params, reqParams.search), callback);
     };
     this.associatedBooks = function (params, callback) {
-        gBooks.volumes.associated.list(_.merge(params, reqParams.search), callback);
+        //gBooks.volumes.associated.list(_.merge(params, reqParams.search), callback);
+        googleRequest("volumes.associated.list", _.merge(params, reqParams.search), callback);
     };
     this.myGoogleBooks = function (params, callback) {
-        gBooks.mylibrary.bookshelves.volumes.list((!!params.search) ? _.merge(params, reqParams.search) : _.merge(params, reqParams.import), callback);
+        //gBooks.mylibrary.bookshelves.volumes.list((!!params.search) ? _.merge(params, reqParams.search) : _.merge(params, reqParams.import), callback);
+        googleRequest("mylibrary.bookshelves.volumes.list", !!params.search ? _.merge(params, reqParams.search) : _.merge(params, reqParams.import), callback);
     };
     this.googleAdd = function (params, callback) {
         params.shelf = 7;
         _.assign(params, addParam);
-        gBooks.mylibrary.bookshelves.addVolume(params, callback);
+        //gBooks.mylibrary.bookshelves.addVolume(params, callback);
+        googleRequest("mylibrary.bookshelves.addVolume", params, callback);
     };
     this.googleRemove = function (params, callback) {
         params.shelf = 7;
         _.assign(params, addParam);
-        gBooks.mylibrary.bookshelves.removeVolume(params, callback);
+        //gBooks.mylibrary.bookshelves.removeVolume(params, callback);
+        googleRequest("bookshelves.removeVolume", params, callback);
     };
     this.updateNotif = function (data, callback) {
         notifs.update({ "_id": data._id }, { "$set": data }, { "upsert": true }, callback);
