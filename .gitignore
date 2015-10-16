@@ -1,4 +1,4 @@
-/logs/*
+/logs/
 /node_modules/
 /proxy.js
 /root/images/images.js
