@@ -70,6 +70,7 @@ module.exports = function (grunt) {
                         "node_modules/angular/angular.min.js",
                         "node_modules/lodash/index.js",
                         "node_modules/socket.io-client/socket.io.js",
+                        "node_modules/angular-socket-io/socket.min.js",
                         "root/lib/color-thief.js",
                         "root/lib/Promise.min.js",
                         "root/js/dev/bibliotech.proto.js"

@@ -32,7 +32,6 @@
                         _.assign(this.ref, this.book);
                         if (cell) { _.assign(cell, this.book); }
                         if (!!diffs.userComment) { this.book.userDate = diffs.userDate = new Date(); }
-                        console.debug("diffs", diffs);
                         socks.emit("updateBook", _.merge(diffs, { "id": this.book.id }));
                         if (!!diffs.tags) { scope.tags.init(); }
                     }
@@ -176,13 +175,14 @@
                     var image = this.files[0];
                     if (!!image) {
                         if (!image.type.match(/image.*/) || image.size > 100000) {
-                            confirm("error", "Veuillez sélectionner un fichier de type \"image\" inférieure à 100KB.");
+                            _.assign(scope.waiting, { "over": true });
+                            scope.windows.open("confirm");
+                            scope.$apply();
                             return false;
                         }
                         var reader = new FileReader();
                         reader.onload = function(e) {
                             detail.book.alternative = e.target.result;
-                            console.debug(e.target.result);
                             scope.$apply();
                         };
                         reader.readAsDataURL(image);

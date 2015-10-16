@@ -25,6 +25,7 @@
                 };
 
                 socks.on("user", function (data) {
+                    console.debug("socks user", data);
                     scope.waiting.screen = false;
                     profile.user = data;
                     if (data.link && data.picture && !µ.one("#picture").isVisible()) {

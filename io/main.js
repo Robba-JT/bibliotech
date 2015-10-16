@@ -96,7 +96,11 @@ module.exports = function main (socket, allSessions) {
             return defLoop.promise;
         };
 
-    if (_.isEmpty(thisUser) || !thisUser._id) { socket.emit("logout"); } else {
+
+    if (_.isEmpty(thisUser) || !thisUser._id) { socket.emit("logout"); }
+
+    socket.on("isConnected", function () {
+        console.log("isConnected", thisUser._id, new Date());
         var booksList = _.pluck(thisUser.books, "book"),
             coverList = _.compact(_.pluck(thisUser.books, "cover"));
 
@@ -178,7 +182,7 @@ module.exports = function main (socket, allSessions) {
                 for (var jta = 0, lg = sendCovers.length; jta < lg; jta++) { _.assign(_.find(thisBooks, _.matchesProperty("id", sendCovers[jta].id)), sendCovers[jta]); }
             }).catch(function (error) { console.error("isConnected - Q.allSettled(def64)", error); });
         });
-    }
+    });
 
     socket.on("searchBooks", function (result) {
         var param = { "q": result.by + result.search, "langRestrict": result.lang };

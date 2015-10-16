@@ -55,7 +55,6 @@
                     if (!!idb.indexedDB) { idb.indexedDB.deleteDatabase(scope.profile.user.session); }
                     scope.profile.user = {};
                     location.assign("/logout");
-                    //socks.emit("revoke");
                     socks.close();
                     return false;
                 };

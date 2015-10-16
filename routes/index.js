@@ -32,9 +32,7 @@ module.exports = exports = function (app, mongoStore, io) {
             "callbackURL": "/googleAuth"
         },
         function(accessToken, refreshToken, params, profile, done) {
-            var today = new Date(),
-                email = _.find(profile.emails, _.matchesProperty("type", "account"));
-
+            var email = _.find(profile.emails, _.matchesProperty("type", "account"));
             if (!email || !email.value) { done(new Error("Invalid profile")); }
             usersAPI.findUser(email.value)
                 .then(function (user) {
@@ -42,7 +40,7 @@ module.exports = exports = function (app, mongoStore, io) {
                     if (!!raw && !!raw.image && !!raw.image.url && !!raw.url) {
                         _.assign(user, { infos: { picture: raw.image.url, link: raw.url }});
                     }
-                    _.assign(params, { "refresh_token": refreshToken, "expiry": new Date(today.setSeconds(today.getSeconds() + params.expires_in)) });
+                    _.assign(params, { "refresh_token": refreshToken });
                     _.assign(user, { "token": params });
                     done(null, user); }
                 )
@@ -53,9 +51,10 @@ module.exports = exports = function (app, mongoStore, io) {
     passport.use("login", new LocalStrategy({
             usernameField: "email",
             passwordField: "password",
-            session: false
+            session: false,
+            passReqToCallback: true
         },
-        function (username, password, done) {
+        function (req, username, password, done) {
             usersAPI.validateLogin(username, password, false)
                 .then(function (user) { done(null, user) })
                 .catch(done);
@@ -166,12 +165,23 @@ module.exports = exports = function (app, mongoStore, io) {
         "fail": function (data, message, error, next) { next(error); },
         "success": function (data, next) {
             console.log("successful connection to socket.io", data.user._id, data.sessionID);
-            passportSocketIo.filterSocketsByUser(io, function(user) {
+            /*passportSocketIo.filterSocketsByUser(io, function(user) {
                 return user._id === data.user._id;
-            }).forEach(function(socket) { socket.emit("logout"); });
+            }).forEach(function(socket) { socket.emit("logout"); });*/
             next();
         }
     })).on("connection", function (socket) {
+        var onEvent = socket.onevent;
+        socket.onevent = function () {
+            var args = arguments;
+            mongoStore.get(socket.request.sessionID, function (error, session) {
+                if (!!error || !session) { console.error(error || new Error("No session find!!!")); return socket.emit("logout"); }
+                onEvent.apply(socket, args);
+                var today = new Date();
+                session.cookie.expires = today.setSeconds(today.getSeconds() + 3600);
+                mongoStore.set(socket.request.sessionID, session);
+            });
+        };
         require("../io/main")(socket);
     });
 };

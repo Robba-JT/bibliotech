@@ -39,7 +39,11 @@ console.extended
 require("./db/database").init(mongoUrl, function (error) {
     if (!!error) { console.error("Database Error", error); throw error; }
 
-    var mongoStore = new MongoStore({ url: "mongodb://" + config.mongoHost + ":" + config.mongoPort + "/" + config.mongoDB, autoRemove: "native", touchAfter: 24 * 3600 }),
+    var mongoStore = new MongoStore({
+            "url": "mongodb://" + config.mongoHost + ":" + config.mongoPort + "/" + config.mongoDB,
+            "autoRemove": "native",
+            "touchAfter": config.maxAge
+        }),
         session = Session({
             "key": "_bsession",
             "proxy": false,
@@ -50,7 +54,8 @@ require("./db/database").init(mongoUrl, function (error) {
             "store": mongoStore,
             "secret": "robba1979",
             "cookie": {
-                "maxAge": config.maxAge,
+                //"maxAge": config.maxAge,
+                "expires": false,
                 "secure": true,
                 "httpOnly": true
             }

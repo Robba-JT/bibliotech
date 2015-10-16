@@ -82,60 +82,61 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
         };
     });
     app.factory("$socket", ["$rootScope", function(root) {
-        var $socket = (function (conn) {
-            var connect = function () {
-                    var connection = conn.connect({ "secure": true, "multiplex": false }),
-                        mouseMove = function (event) {
-                            µ.one("#noConnect").css({
-                                "top": (noConnect.clientHeight + event.clientY > window.innerHeight) ? event.clientY - noConnect.clientHeight: event.clientY,
-                                "left": (noConnect.clientWidth + event.clientX > window.innerWidth) ? event.clientX - noConnect.clientWidth: event.clientX
-                            });
-                        };
-
-                    connection
-                        .on("error", function (error) { console.error("error", error); root.logout(); })
-                        .once("connect", function () {
-                            _.assign(root.waiting, { "connect": false });
-                            console.info("socket.connect", new Date().toLocaleString(), (new Date() - start) / 1000);
-                            µ.removeEventListener("mousemove", mouseMove);
-                            start = new Date();
-                            this.once("disconnect", function (data) {
-                                console.info("socket.disconnect", this.id, new Object(this), new Date().toLocaleString(), data);
-                                reconnect(this);
-                                root.windows.close("*");
-                                root.bookcells.reset();
-                                µ.setEvents({ "mousemove": mouseMove });
-                                setTimeout(function () { _.assign(root.waiting, { "connect": true }); }, 2000);
-                                root.$apply();
-                            });
-                            this.on("logout", root.logout);
-                    });
-                    return connection;
-                },
-                reconnect = function(cur) {
-                    var connectTimeInterval = setInterval(function () {
-                        if (!!cur && !!cur.connected && cur.io.readyState === "open") {
-                            clearInterval(connectTimeInterval);
-                            socket = connect();
-                        }
-                        try { cur.connect(); } catch(error) { }
-                    }, 3000);
-                };
-            return connect();
-        })(io);
+        var $socket = (function () {
+            var mouseMove = function (event) {
+                µ.one("#noConnect").css({
+                    "top": (noConnect.clientHeight + event.clientY > window.innerHeight) ? event.clientY - noConnect.clientHeight: event.clientY,
+                    "left": (noConnect.clientWidth + event.clientX > window.innerWidth) ? event.clientX - noConnect.clientWidth: event.clientX
+                });
+            };
+            this.connect = function () {
+                this.connection = io.connect({ "secure": true, "multiplex": false });
+                this.connection
+                    .on("error", function (error) { console.error("error", error); root.logout(); })
+                    .once("connect", function () {
+                        _.assign(root.waiting, { "connect": false });
+                        console.info("socket.connect", new Date().toLocaleString(), (new Date() - start) / 1000);
+                        this.emit("isConnected");
+                        µ.removeEventListener("mousemove", mouseMove);
+                        start = new Date();
+                        this.once("disconnect", function (data) {
+                            console.info("socket.disconnect", this.id, new Object(this), new Date().toLocaleString(), data);
+                            reconnect(this);
+                            root.windows.close("*");
+                            root.bookcells.reset();
+                            µ.setEvents({ "mousemove": mouseMove });
+                            setTimeout(function () { _.assign(root.waiting, { "connect": true }); }, 2000);
+                            root.$apply();
+                        });
+                        this.on("logout", root.logout);
+                });
+            };
+            this.reconnect = function(cur) {
+                var connectTimeInterval = setInterval(function () {
+                    if (!!cur && !!cur.connected && cur.io.readyState === "open") {
+                        clearInterval(connectTimeInterval);
+                        this.connect();
+                    }
+                    try { cur.connect(); } catch(error) { }
+                }, 3000);
+            };
+            if (!this.connection) { this.connect(); }
+            return this;
+        })();
 
         return {
             on: function(eventName, callback) {
-                $socket.on(eventName, function() {
+                $socket.connection.on(eventName, function() {
                     var args = arguments;
                     root.$apply(function() { callback.apply($socket, args); });
                 });
             },
             emit: function(eventName, data) {
-                $socket.emit(eventName, data);
+                $socket.connection.emit(eventName, data);
             },
-            close: function () { $socket.close(); }
+            close: function () { $socket.connection.close(); }
         };
+
     }]);
     app.directive("defCloak", function () {
         return {
