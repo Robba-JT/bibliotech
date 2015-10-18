@@ -17,9 +17,9 @@
         "port": 80,
         "sport": 443,
         "mongoHost": "localhost",
-        "mongoPort": 27017,
+        "mongoPort": 29017,
         "mongoDB": "bibliotech",
-        "maxAge": 604800000,
+        "maxAge": 3600000,
         "errorHandlerOptions": {
             "dumpExceptions": false,
             "showStack": false
