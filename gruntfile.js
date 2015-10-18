@@ -11,6 +11,9 @@ module.exports = function (grunt) {
             },
             mongo: {
                 command: "F:/MongoDB/Server/3.0/bin/mongod --port 29017 --dbpath ../MongoDB/Data/db"
+            },
+            ubuntu: {
+                command: "mongod --port 29017 --dbpath ../bibliodata/db"
             }
         },
         express: {
@@ -202,6 +205,7 @@ module.exports = function (grunt) {
     grunt.registerTask("bibliotech", [ "jshint:bibliotech", "uglify:bibliotech", "uglify:bibliotechlib", "htmlmin:bibliotech", "cssmin:bibliotech" ]);
 
     grunt.registerTask("mongo", [ "shell:mongo" ]);
+    grunt.registerTask("ubuntu", [ "shell:ubuntu" ]);
     grunt.registerTask("server", [ "clean", "express:dev", /*"open:dev",*/ "watch" ]);
     grunt.registerTask("prod", [ "clean", "express:production", "watch" ]);
 };

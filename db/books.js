@@ -12,13 +12,10 @@ var Q = require("q"),
         "headers": {
             "Accept-Encoding": "gzip",
             "Content-Type": "application/json"
-        },
-        "proxy": "http://CGDM-EMEA\jtassin:password_4@isp-ceg.emea.cegedim.grp:3128/"
+        }
     };
 
 google.options(gOptions);
-
-if (require("ip").address() === "128.1.236.11") { reqOptions.proxy = "http://CGDM-EMEA\jtassin:password_4@isp-ceg.emea.cegedim.grp:3128/"; }
 
 module.exports.BooksAPI = BooksAPI = function (db, token) {
     "use strict";
@@ -30,7 +27,6 @@ module.exports.BooksAPI = BooksAPI = function (db, token) {
         comments = db.collection("comments"),
         covers = db.collection("covers"),
         notifs = db.collection("notifications"),
-       // addParam = { "key": googleConfig.key },
         reqParams = {
             "searchOne": {
                 "fields": "id, etag, accessInfo(accessViewStatus), volumeInfo(title, subtitle, authors, publisher, publishedDate, description, industryIdentifiers, pageCount, categories, imageLinks, canonicalVolumeLink)",
@@ -153,20 +149,6 @@ module.exports.BooksAPI = BooksAPI = function (db, token) {
         },
         searchOne = function (bookid, callback) {
             var params = _.merge({ volumeId: bookid }, reqParams.searchOne);
-            /*gBooks.volumes.get(params, function (error, response) {
-                if (!!error || !response) { callback(error || new Error("Bad Single Request!!!")); } else {
-                    var book = formatOne(response);
-                    book.isNew = true;
-                    if (!!book.cover) {
-                        loadBase64(book.cover).done(function (response) {
-                            if (!!response && !!response.base64) { book.base64 = response.base64; }
-                            callback(null, book);
-                        });
-                    } else {
-                        callback(null, book);
-                    }
-                }
-            });*/
             googleRequest("volumes.get", params, function (error, response) {
                 if (!!error || !response) { callback(error || new Error("Bad Single Request!!!")); } else {
                     var book = formatOne(response);
@@ -183,7 +165,6 @@ module.exports.BooksAPI = BooksAPI = function (db, token) {
             });
         },
         setCredentials = function (token) {
-            //auth.setCredentials(token);
             _.assign(auth.credentials, token);
         },
         unusedCovers = function () {
@@ -208,21 +189,6 @@ module.exports.BooksAPI = BooksAPI = function (db, token) {
                     result.forEach(function (oldOne) {
                         var params = _.merge({ "volumeId": oldOne.id }, reqParams.searchOne);
                         requests.push(new Promise(function () {
-                            /*gBooks.volumes.get(params, function (error, response) {
-                                if (!!error) {
-                                    console.error("Error Update One", oldOne.id, error);
-                                    if (error.code === 404 && error.message === "The volume ID could not be found.") {
-                                        books.remove({ "id": oldOne.id });
-                                        removed++;
-                                    }
-                                } else {
-                                    var newOne = formatOne(response);
-                                    if (!booksEqual(oldOne, newOne)) {
-                                        updated++;
-                                    }
-                                    updateBook(newOne);
-                                }
-                            });*/
                             googleRequest("volumes.get", params, function (error, response) {
                                 if (!!error) {
                                     console.error("Error Update One", oldOne.id, error);
@@ -262,7 +228,6 @@ module.exports.BooksAPI = BooksAPI = function (db, token) {
         });
     };
     this.associatedBooks = function (params, callback) {
-        //gBooks.volumes.associated.list(_.merge(params, reqParams.search), callback);
         googleRequest("volumes.associated.list", _.merge(params, reqParams.search), callback);
     };
     this.formatBooks = function (books) {
@@ -275,8 +240,6 @@ module.exports.BooksAPI = BooksAPI = function (db, token) {
     };
     this.googleAdd = function (params, callback) {
         params.shelf = 7;
-        //_.assign(params, addParam);
-        //gBooks.mylibrary.bookshelves.addVolume(params, callback);
         googleRequest("mylibrary.bookshelves.addVolume", params, callback);
     };
     this.loadAllBooks = function (filter, projection, callback) {
@@ -296,20 +259,16 @@ module.exports.BooksAPI = BooksAPI = function (db, token) {
     };
     this.loadOne = loadOne;
     this.myGoogleBooks = function (params, callback) {
-        //gBooks.mylibrary.bookshelves.volumes.list((!!params.search) ? _.merge(params, reqParams.search) : _.merge(params, reqParams.import), callback);
         googleRequest("mylibrary.bookshelves.volumes.list", !!params.search ? _.merge(params, reqParams.search) : _.merge(params, reqParams.import), callback);
     };
     this.removeOne = removeOne;
     this.searchBooks = function (params, callback) {
         params = _.merge(params, reqOptions);
-        //gBooks.volumes.list(_.merge(params, reqParams.search), callback);
         googleRequest("volumes.list", _.merge(params, reqParams.search), callback);
     };
     this.searchOne = searchOne;
     this.googleRemove = function (params, callback) {
         params.shelf = 7;
-        //_.assign(params, addParam);
-        //gBooks.mylibrary.bookshelves.removeVolume(params, callback);
         googleRequest("bookshelves.removeVolume", params, callback);
     };
     this.removeComment = function (comment, callback) {

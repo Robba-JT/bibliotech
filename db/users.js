@@ -14,7 +14,7 @@ module.exports.UsersAPI = UsersAPI = function (db) {
     this.validateLogin = function (userid, password, googleSignIn) {
         return new Q.Promise(function (resolve, reject) {
             findUser({ "_id": userid.toLowerCase() }, function (err, user) {
-                if (!!err || !user) { reject(err || new Error("Invalid user")); } else {
+                if (!!err || !user) { reject(err); } else {
                     if (!!googleSignIn || bcrypt.compareSync(password, user.password)) {
                         resolve(user);
                     } else {
@@ -46,7 +46,7 @@ module.exports.UsersAPI = UsersAPI = function (db) {
     this.findUser = function (userid) {
         return new Q.Promise(function (resolve, reject) {
             findUser({ "_id": userid.toLowerCase() }, function (err, result) {
-                if (!!err || !result) { reject(err || new Error("Invalid user")); } else { resolve(result); }
+                if (!!err || !result) { reject(err); } else { resolve(result); }
             });
         });
     };

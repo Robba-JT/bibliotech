@@ -17,7 +17,7 @@ module.exports = exports = function (app, mongoStore, io) {
     var getLang = function (request) { return trads[(!!trads[request.acceptsLanguages()[0]]) ? request.acceptsLanguages()[0] : "fr"]; };
 
     passport.serializeUser(function(user, done) {
-        done(null, { _id: user._id, token: user.token, infos: user.infos });
+        done(null, { "_id": user._id, "token": user.token, "infos": user.infos });
     });
 
     passport.deserializeUser(function(data, done) {
@@ -32,19 +32,25 @@ module.exports = exports = function (app, mongoStore, io) {
             "callbackURL": "/googleAuth"
         },
         function(accessToken, refreshToken, params, profile, done) {
-            var email = _.find(profile.emails, _.matchesProperty("type", "account"));
-            if (!email || !email.value) { done(new Error("Invalid profile")); }
-            usersAPI.findUser(email.value)
+            var email = _.find(profile.emails, _.matchesProperty("type", "account")),
+                raw = JSON.parse(profile._raw),
+                gInfos = { "token": _.merge(params, { "refresh_token": refreshToken })};
+
+            if (!email || !email.value) { return done(new Error("Invalid profile")); }
+            if (!!raw && !!raw.image && !!raw.image.url && !!raw.url) { _.assign(gInfos, { "infos": { "picture": raw.image.url, "link": raw.url }}); }
+            usersAPI.validateLogin(email.value, raw.id)
                 .then(function (user) {
-                    var raw = JSON.parse(profile._raw);
-                    if (!!raw && !!raw.image && !!raw.image.url && !!raw.url) {
-                        _.assign(user, { infos: { picture: raw.image.url, link: raw.url }});
-                    }
-                    _.assign(params, { "refresh_token": refreshToken });
-                    _.assign(user, { "token": params });
+                    _.assign(user, gInfos);
                     done(null, user); }
                 )
-                .catch(done);
+                .catch(function (error) {
+                    if (!!error) { return done(error); }
+                    usersAPI.addUser(email.value, raw.id, raw.displayName)
+                        .then(function (newUser) {
+                            _.assign(newUser, gInfos);
+                            done(null, newUser);
+                        }).catch(done);
+                });
         }
     ));
 
@@ -55,7 +61,7 @@ module.exports = exports = function (app, mongoStore, io) {
             passReqToCallback: true
         },
         function (req, username, password, done) {
-            usersAPI.validateLogin(username, password, false)
+            usersAPI.validateLogin(username, password)
                 .then(function (user) { done(null, user) })
                 .catch(done);
         })

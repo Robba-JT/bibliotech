@@ -92,7 +92,5 @@ require("./db/database").init(mongoUrl, function (error) {
 
     require("./routes")(app, mongoStore, io);
 
-    //require("./io/io")(io, mongoStore);
-
     console.info("Server deployé sur les ports https: " + sPort + " / http: " + port);
 });

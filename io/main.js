@@ -101,6 +101,7 @@ module.exports = function main (socket, allSessions) {
 
     socket.on("isConnected", function () {
         console.log("isConnected", thisUser._id, new Date());
+        thisUser.googleSignIn = !!thisUser.token;
         var booksList = _.pluck(thisUser.books, "book"),
             coverList = _.compact(_.pluck(thisUser.books, "cover"));
 
@@ -108,7 +109,7 @@ module.exports = function main (socket, allSessions) {
         socket.emit("user", {
             connex: thisUser.connect_number,
             first: !thisUser.connect_number,
-            googleSignIn: !!thisUser.token,
+            googleSignIn: thisUser.googleSignIn,
             googleSync: thisUser.googleSync,
             id: thisUser._id,
             link: !!thisUser.infos ? thisUser.infos.link : null,
@@ -342,7 +343,7 @@ module.exports = function main (socket, allSessions) {
     });
 
     socket.on("importNow", function () {
-        if (!thisUser.googleSignIn) { return; }
+        if (!thisUser.googleSignIn) { return socket.emit("endCollect", {}); }
         var qAdd = [], qCover = [], sendCovers = [],
             gestionImport = function (books) {
                 _.forEach(books, function (book) {
