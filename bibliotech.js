@@ -54,7 +54,6 @@ require("./db/database").init(mongoUrl, function (error) {
             "store": mongoStore,
             "secret": "robba1979",
             "cookie": {
-                //"maxAge": config.maxAge,
                 "expires": false,
                 "secure": true,
                 "httpOnly": true
@@ -67,7 +66,7 @@ require("./db/database").init(mongoUrl, function (error) {
         //.set("view cache", true)
         .set("json spaces", 1)
         .set("x-powered-by", true)
-        //.enable("etag").set("etag", true)
+        .enable("etag").set("etag", true)
         .use(require("compression")())
         .use(require("cors")())
         .use(require("express-json")())
