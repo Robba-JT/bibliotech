@@ -207,5 +207,5 @@ module.exports = function (grunt) {
     grunt.registerTask("mongo", [ "shell:mongo" ]);
     grunt.registerTask("ubuntu", [ "shell:ubuntu" ]);
     grunt.registerTask("server", [ "clean", "express:dev", /*"open:dev",*/ "watch" ]);
-    grunt.registerTask("prod", [ "clean", "express:production", "watch" ]);
+    grunt.registerTask("prod", [ "clean", "express:prod", "watch" ]);
 };
