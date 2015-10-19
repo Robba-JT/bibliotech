@@ -100,8 +100,6 @@ module.exports = function main (socket, allSessions) {
     if (_.isEmpty(thisUser) || !thisUser._id) { socket.emit("logout"); }
 
     socket.on("isConnected", function () {
-        console.log("isConnected", thisUser._id, new Date());
-        thisUser.googleSignIn = !!thisUser.token;
         var booksList = _.pluck(thisUser.books, "book"),
             coverList = _.compact(_.pluck(thisUser.books, "cover"));
 
@@ -277,7 +275,7 @@ module.exports = function main (socket, allSessions) {
             userAPI.removeUser({ "_id": thisUser._id });
             socket.emit("logout");
         };
-        if (!thisUser.googleSignIn) {
+/*        if (!thisUser.googleSignIn) {
             userAPI.validateLogin(thisUser._id, password)
                 .then(isDeleted)
                 .catch(function (error) {
@@ -286,7 +284,15 @@ module.exports = function main (socket, allSessions) {
                 });
         } else {
             isDeleted();
-        }
+        }*/
+        console.log(thisUser._id, password, thisUser.googleId);
+        if (!!thisUser.googleId) { password = thisUser.googleId; }
+        userAPI.validateLogin(thisUser._id, password)
+            .then(isDeleted)
+            .catch(function (error) {
+                console.error("deleteUser", error);
+                socket.emit("updateNok");
+            });
     });
 
     socket.on("sendNotif", function (data) {

@@ -24,7 +24,7 @@ module.exports.UsersAPI = UsersAPI = function (db) {
             });
         });
     };
-    this.addUser = function (userid, password, name) {
+    this.addUser = function (userid, password, name, googleSignIn) {
         return new Q.Promise(function (resolve, reject) {
             var user = {
                 "_id": userid.toLowerCase(),
@@ -36,8 +36,10 @@ module.exports.UsersAPI = UsersAPI = function (db) {
                 "tags": [],
                 "books": [],
                 "orders": [],
-                "userbooks": 0
+                "userbooks": 0,
+                "googleSignIn": !!googleSignIn
             };
+            if (!!googleSignIn) { user.googleId = password; }
             insertUser(user, function (err, result) {
                 if (!!err || !result) { reject(err || new Error("Error Database")); } else { resolve(user); }
             });

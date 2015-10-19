@@ -65,6 +65,7 @@
                     scope.tags.init();
                     cellsRender(part, true);
                     _.assign(scope.waiting, { "icon": false, "anim": false });
+                    if (!!bookcells.cells) { bookcells.cells =  _.sortByOrder(bookcells.cells, "title"); }
                     if (!scope.windows.opened || _.isEmpty(scope.windows.opened)) { _.assign(scope.waiting,  { "screen": false }); }
                 });
                 socks.on("covers", function (covers) {
@@ -90,7 +91,7 @@
                 });
                 socks.on("returnAdd", function (data) {
                     var index = _.findIndex(bookcells.cells, _.matchesProperty("id", data.id));
-                    if (index !== -1) { _.assign(bookcells[index], data); } else { bookcells.cells.push(data); }
+                    if (index !== -1) { _.assign(bookcells.cells[index], data); } else { bookcells.cells.push(data); }
                 });
 
                 socks.on("endRequest", function (nb) {

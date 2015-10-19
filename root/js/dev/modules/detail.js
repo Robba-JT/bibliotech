@@ -171,21 +171,21 @@
                     return false;
                 });
 
-                angular.element(µ.alls("#uploadHidden [type=file]")).on("change", function () {
+                angular.element(µ.one("#uploadHidden [type=file]")).on("change", function () {
                     var image = this.files[0];
                     if (!!image) {
-                        if (!image.type.match(/image.*/) || image.size > 100000) {
-                            _.assign(scope.waiting, { "over": true });
-                            scope.windows.open("confirm");
-                            scope.$apply();
-                            return false;
-                        }
                         var reader = new FileReader();
                         reader.onload = function(e) {
-                            detail.book.alternative = e.target.result;
-                            scope.$apply();
+                            if (!image.type.match(/image.*/) || image.size > 100000) {
+                                µ.one("#uploadHidden [type=hidden]").click();
+                                return false;
+                            } else {
+                                detail.book.alternative = e.target.result;
+                                scope.$apply();
+                            }
                         };
                         reader.readAsDataURL(image);
+                        µ.one("#uploadHidden").reset();
                     }
                 });
                 angular.element(µ.one("#detailCover")).on("load", detail.setBack);
@@ -216,7 +216,8 @@
                     var cells = _.filter(scope.bookcells.cells, function (cell) { return !cell.toHide && !cell.toFilter; }),
                         index = _.findIndex(cells, detail.book),
                         next = index,
-                        cellByRow = ~~(µ.one("[bookcells]").clientWidth / 256);
+                        cellByRow = ~~(µ.one("[bookcells]").clientWidth / 256),
+                        bookcells = µ.alls(".bookcell:not(.ng-hide)");
 
                     switch (this.getAttribute("nav")) {
                         case "top":
@@ -235,6 +236,7 @@
                             return;
                     }
                     if (next !== index) {
+                        if (bookcells[index].offsetTop !== bookcells[next].offsetTop) { window.scroll(0, bookcells[next].offsetTop); }
                         if (cells[next].inCollection) { detail.show(cells[next]); } else { detail.prepare(next); }
                     }
                 });

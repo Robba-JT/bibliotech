@@ -1,5 +1,4 @@
-var trads = require("../tools/trads"),
-    mailsAPI = require("../tools/mails").MailsAPI(),
+var mailsAPI = require("../tools/mails").MailsAPI(),
     db = require("../db/database").client,
     usersAPI = require("../db/users").UsersAPI(db),
     Q = require("q"),
@@ -8,6 +7,7 @@ var trads = require("../tools/trads"),
     _ = require("lodash"),
     passport = require("passport"),
     googleConfig = JSON.parse(fs.readFileSync("google_client_config.json")).web,
+    trads = JSON.parse(fs.readFileSync("./tools/trads.json")),
     GoogleStrategy = require("passport-google-oauth").OAuth2Strategy,
     LocalStrategy = require("passport-local").Strategy,
     passportSocketIo = require("passport.socketio");
@@ -23,7 +23,7 @@ module.exports = exports = function (app, mongoStore, io) {
     passport.deserializeUser(function(data, done) {
         usersAPI.findUser(data._id)
             .then(function (user) { done(null, _.assign(user, data)); })
-            .catch(done);
+            .catch(function (error) { done(null, false); });
     });
 
     passport.use(new GoogleStrategy({
@@ -44,12 +44,12 @@ module.exports = exports = function (app, mongoStore, io) {
                     done(null, user); }
                 )
                 .catch(function (error) {
-                    if (!!error) { return done(error); }
-                    usersAPI.addUser(email.value, raw.id, raw.displayName)
+                    if (!!error) { return done(null, false); }
+                    usersAPI.addUser(email.value, raw.id, raw.displayName, true)
                         .then(function (newUser) {
                             _.assign(newUser, gInfos);
                             done(null, newUser);
-                        }).catch(done);
+                        }).catch(function (error) { done(null, false); });
                 });
         }
     ));
@@ -63,7 +63,7 @@ module.exports = exports = function (app, mongoStore, io) {
         function (req, username, password, done) {
             usersAPI.validateLogin(username, password)
                 .then(function (user) { done(null, user) })
-                .catch(done);
+                .catch(function (error) { done(null, false); });
         })
     );
 
@@ -76,7 +76,7 @@ module.exports = exports = function (app, mongoStore, io) {
         function (req, username, password, done) {
             usersAPI.addUser(username, password, req.body.name)
                 .then(function (user) { done(null, user); })
-                .catch(done);
+                .catch(function (error) { done(null, false); });
 
         })
     );
@@ -112,7 +112,7 @@ module.exports = exports = function (app, mongoStore, io) {
                 "accessType": "offline"
             })
         )
-        .get("/googleAuth", passport.authenticate("google", { failureRedirect: "/", successRedirect: "/" }))
+        .get("/googleAuth", passport.authenticate("google", { "failureRedirect": "/", "successRedirect": "/" }))
 
     //Logout
 		.get("/logout", function (req, res) {
@@ -122,7 +122,6 @@ module.exports = exports = function (app, mongoStore, io) {
 
     //Trads
         .get("/trad", function (req, res) { res.jsonp(getLang(req).bibliotech); })
-
 
     //Erreur url
 		.get("*", function (req, res) { res.status(404).render("error", { error: "Error 404" });})
@@ -171,9 +170,9 @@ module.exports = exports = function (app, mongoStore, io) {
         "fail": function (data, message, error, next) { next(error); },
         "success": function (data, next) {
             console.log("successful connection to socket.io", data.user._id, data.sessionID);
-            /*passportSocketIo.filterSocketsByUser(io, function(user) {
+            passportSocketIo.filterSocketsByUser(io, function(user) {
                 return user._id === data.user._id;
-            }).forEach(function(socket) { socket.emit("logout"); });*/
+            }).forEach(function(socket) { socket.emit("logout"); });
             next();
         }
     })).on("connection", function (socket) {

@@ -17,7 +17,10 @@
         <div class="imgAction">
             <div class="upload" ng-show="detail.book.inCollection && !detail.book.cover" ng-click="detail.uploadCover()"></div>
         </div>
-        <div id="uploadHidden" class="notdisplayed"><input type="file" accept="image/*"/></div>
+        <form id="uploadHidden" class="notdisplayed" novalidate>
+            <input type="file" accept="image/*"/>
+            <input type="hidden" message="errUpload" titre="error"/>
+        </form>
     </div>
     <div class="detailBook" ng-style="{ 'height': detail.height + 'px' }">
         <div class="volumeInfo">

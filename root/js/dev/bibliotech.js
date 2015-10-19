@@ -12,21 +12,21 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
     }]);
     app.factory("$thief", function () {
         return {
-            getColor: new ColorThief().getColor,
-            getPalette: new ColorThief().getPalette
+            "getColor": new ColorThief().getColor,
+            "getPalette": new ColorThief().getPalette
         };
     });
     app.factory("$idb", function() {
         return {
-            deleteDetail: function (bookid) {
+            "deleteDetail": function (bookid) {
                 if (!this.db) { return; }
                 this.db.transaction(["details"], "readwrite").objectStore("details").delete(bookid);
             },
-            deleteQuery: function (key) {
+            "deleteQuery": function (key) {
                 if (!this.db) { return; }
                 this.db.transaction(["queries"], "readwrite").objectStore("queries").delete(key);
             },
-            getDetail: function (bookid) {
+            "getDetail": function (bookid) {
                 var self = this;
                 if (_.isPlainObject(bookid)) { bookid = JSON.stringify(bookid); }
                 return new Promise(function (resolve) {
@@ -36,7 +36,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     request.onerror = function () { resolve(); };
                 });
             },
-            getQuery: function (key) {
+            "getQuery": function (key) {
                 var self = this;
                 return new Promise(function (resolve, reject) {
                     if (!self.db) { reject(); }
@@ -50,7 +50,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     request.onerror = reject;
                 });
             },
-            init: function (session) {
+            "init": function (session) {
                 var self = this;
                 this.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
                 return new Promise(function (resolve, reject) {
@@ -71,11 +71,11 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     }
                 });
             },
-            setDetail: function (book) {
+            "setDetail": function (book) {
                 if (!this.db) { return; }
                 var request = this.db.transaction(["details"], "readwrite").objectStore("details").put(book);
             },
-            setQuery: function (key, value) {
+            "setQuery": function (key, value) {
                 if (!this.db) { return; }
                 var request = this.db.transaction(["queries"], "readwrite").objectStore("queries").put({ "query": JSON.stringify(key), "books": value });
             }
@@ -115,7 +115,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 var connectTimeInterval = setInterval(function () {
                     if (!!cur && !!cur.connected && cur.io.readyState === "open") {
                         clearInterval(connectTimeInterval);
-                        this.connect();
+                        $socket.connect();
                     }
                     try { cur.connect(); } catch(error) { }
                 }, 3000);
@@ -124,24 +124,24 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
             return this;
         })();
 
-        return {
-            on: function(eventName, callback) {
+        /*return {
+            "on": function(eventName, callback) {
                 $socket.connection.on(eventName, function() {
                     var args = arguments;
                     root.$apply(function() { callback.apply($socket, args); });
                 });
             },
-            emit: function(eventName, data) {
+            "emit": function(eventName, data) {
                 $socket.connection.emit(eventName, data);
             },
-            close: function () { $socket.connection.close(); }
-        };
-
+            "close": function () { $socket.connection.close(); }
+        };*/
+        return $socket.connection;
     }]);
     app.directive("defCloak", function () {
         return {
-            restrict: "A",
-            link: function (scope, element, attrs) {
+            "restrict": "A",
+            "link": function (scope, element, attrs) {
                 attrs.$set("defCloak", undefined);
                 element.removeClass("def-cloak");
             }
@@ -158,8 +158,8 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
             };
 
         return {
-            restrict: "A",
-            link: function(scope, element, attrs)  {
+            "restrict": "A",
+            "link": function(scope, element, attrs)  {
                 attrs.$set("draggable", "true");
                 scope.dragData = scope[attrs.drag];
                 scope.dragStyle = attrs.dragstyle;
@@ -187,8 +187,8 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
             };
 
         return {
-            restrict: "A",
-            link: function(scope, element, attrs)  {
+            "restrict": "A",
+            "link": function(scope, element, attrs)  {
                 scope.dropData = scope[attrs.drop];
                 scope.dropStyle = attrs.dropstyle;
                 element.bind("dragenter", function(evt) {
@@ -207,13 +207,13 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
     }]);
     app.directive("compareTo", ["$rootScope", function (root) {
         return {
-            restrict: "A",
-            require: "ngModel",
-            scope: {
+            "restrict": "A",
+            "require": "ngModel",
+            "scope": {
                 "otherModelValue": "=compareTo",
                 "notEquals": "@"
             },
-            link: function (scope, element, attrs, ngModel) {
+            "link": function (scope, element, attrs, ngModel) {
                 ngModel.$validators.compareTo = function(modelValue) {
                     if (!scope.notEquals) { return modelValue === scope.otherModelValue; } else { return modelValue !== scope.otherModelValue; }
                 };
@@ -221,20 +221,22 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
             }
         };
     }]);
-    app.directive("message", ["$rootScope", function (root) {
+    app.directive("message", ["$rootScope", "$window", function (root, window) {
         return {
-            restrict: "A",
-            scope: {
+            "restrict": "A",
+            "scope": {
                 "message": "@",
                 "titre": "@",
                 "callback": "=callback"
             },
-            link: function (scope, element, attrs) {
+            "link": function (scope, element, attrs) {
                 element.on("click", function () {
                     var confirm = root.confirm = {};
                     confirm.titre = root.trads[scope.titre];
                     confirm.message = root.trads[scope.message];
                     confirm.callback = scope.callback;
+                    confirm.top = root.windows.xcroll().top + window.innerHeight / 4;
+                    confirm.left = window.innerWidth / 4;
                     root.windows.open("confirm");
                 });
             }
@@ -242,14 +244,14 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
     }]);
     app.directive("autoFocus", ["$timeout", function(timeout) {
         return {
-            restrict: "A",
-            link: function (scope, element, attrs) { scope.$watch(attrs.autoFocus, function (test) { timeout(function () { if (!!test) { element[0].focus(); }}); }); }
+            "restrict": "A",
+            "link": function (scope, element, attrs) { scope.$watch(attrs.autoFocus, function (test) { timeout(function () { if (!!test) { element[0].focus(); }}); }); }
         };
     }]);
     app.directive("description", ["$timeout", function (timeout) {
         return {
-            restrict: "A",
-            link: function (scope, element, attrs) {
+            "restrict": "A",
+            "link": function (scope, element, attrs) {
                 var thisScope = scope,
                     show = function (event) {
                         if (this.one(".description") || scope.noShow) { delete scope.noShow; return; }
