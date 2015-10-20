@@ -17,25 +17,38 @@ module.exports = function (grunt) {
             }
         },
         "concurrent": {
-            dev: {
-                tasks: ["nodemon:dev", "watch"],
-                options: {
-                    logConcurrentOutput: true
+            "dev": {
+                "tasks": ["nodemon:dev", "watch"],
+                "options": {
+                    "logConcurrentOutput": true
                 }
             },
-            prod: {
-                tasks: ["nodemon:prod", "watch"],
-                options: {
-                    logConcurrentOutput: true
+            "prod": {
+                "tasks": ["nodemon:prod", "watch"],
+                "options": {
+                    "logConcurrentOutput": true
                 }
             }
         },
         "nodemon": {
-            "dev": { "script": "bibliotech.js" },
-            "prod": { "script": "bibliotech.js" },
-            "options": { "watch": "watch" }
+            "dev": {
+                "script": "bibliotech.js",
+                "options": {
+                    "nodeArgs": ["--debug"],
+                    "cwd": __dirname,
+                    "ignore": ["node_modules/**", "logs/**", "views/**", ".rebooted", "gruntfile.js"]
+                }
+            },
+            "prod": {
+                "script": "bibliotech.js",
+                "options": {
+                    "env": {
+                        "NODE_ENV": "production"
+                    },
+                }
+            }
         },
-        "express": {
+        /*"express": {
             "dev": {
               "options": {
                 "script": "bibliotech.js"
@@ -47,7 +60,7 @@ module.exports = function (grunt) {
                 "node_env": "production"
               }
             }
-        },
+        },*/
         "jshint": {
             "login": [
                 "root/js/dev/bibliotech.proto.js",
@@ -174,13 +187,13 @@ module.exports = function (grunt) {
             "options": {
                 "livereload": true
             },
-            "express": {
+            /*"express": {
                 "files":  [ "db/*.js", "io/*.js", "tools/*.js", "bibliotech.js", "routes/*.js" ],
-                "tasks":  [ "concurrent:dev" ],
+                "tasks":  [ "nodemon:dev" ],
                 "options": {
                     "spawn": false
                 }
-            },
+            },*/
             "jsserver": {
                 "files": [ "bibliotech.js", "io/*.js", "db/*.js", "tools/*.js" ],
                 "tasks": [ "jshint:server" ],

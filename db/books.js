@@ -1,6 +1,6 @@
 var Q = require("q"),
     request = require("request"),
-    reqOptions = { "gzip": true },
+    reqOptions = { "gzip": true, "timeout": 5000 },
     fs = require("fs"),
     googleConfig = JSON.parse(fs.readFileSync("google_client_config.json")),
     _ = require("lodash"),
@@ -12,8 +12,12 @@ var Q = require("q"),
         "headers": {
             "Accept-Encoding": "gzip",
             "Content-Type": "application/json"
-        }
+        },
+        "proxy": "http://CGDM-EMEA\jtassin:password_4@isp-ceg.emea.cegedim.grp:3128/",
+        "timeout": 5000
     };
+
+if (require("ip").address() === "128.1.236.11") { reqOptions.proxy = "http://CGDM-EMEA\jtassin:password_4@isp-ceg.emea.cegedim.grp:3128/"; }
 
 google.options(gOptions);
 

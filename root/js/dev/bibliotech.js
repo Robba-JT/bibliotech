@@ -124,7 +124,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
             return this;
         })();
 
-        /*return {
+        return {
             "on": function(eventName, callback) {
                 $socket.connection.on(eventName, function() {
                     var args = arguments;
@@ -135,8 +135,8 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 $socket.connection.emit(eventName, data);
             },
             "close": function () { $socket.connection.close(); }
-        };*/
-        return $socket.connection;
+        };
+        //return $socket.connection;
     }]);
     app.directive("defCloak", function () {
         return {

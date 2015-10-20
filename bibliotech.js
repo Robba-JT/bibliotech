@@ -15,26 +15,9 @@ var express = require("express"),
     sServer = https.Server(options, app).listen(sPort),
     mongoUrl = "mongodb://" + config.mongoHost + ":" + config.mongoPort + "/" + config.mongoDB,
     device = require("express-device"),
-    extconsole = require("extended-console"),
-    logsApi = require("./tools/logs"),
     io = require("socket.io")(sServer);
 
-console.extended.timestampFormat = "DD-MM-YYYY hh:mm:ss";
-console.extended.showLogLevel = true;
-console.extended
-	.on("inf", function () {
-        "use strict";
-		logsApi.logsWrite("info", arguments);
-	}).on("log", function () {
-        "use strict";
-		if (app.settings.env !== "development") { logsApi.logsWrite("log", arguments); }
-	}).on("war", function () {
-        "use strict";
-		logsApi.logsWrite("error", arguments);
-	}).on("err", function () {
-        "use strict";
-		logsApi.logsWrite("error", arguments);
-	});
+require("./tools/console")(app);
 
 require("./db/database").init(mongoUrl, function (error) {
     if (!!error) { console.error("Database Error", error); throw error; }
@@ -91,5 +74,5 @@ require("./db/database").init(mongoUrl, function (error) {
 
     require("./routes")(app, mongoStore, io);
 
-    console.info("Server deployé sur les ports https: " + sPort + " / http: " + port);
+    console.info("Environment" ,app.settings.env, "Server deployé sur les ports https:", sPort, "http:", port);
 });
