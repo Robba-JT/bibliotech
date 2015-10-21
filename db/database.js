@@ -8,8 +8,7 @@ var MongoClient = require("mongodb").MongoClient,
         "headers": {
             "Accept-Encoding": "gzip",
             "Content-Type": "application/json"
-        },
-        "proxy": "http://CGDM-EMEA\jtassin:password_4@isp-ceg.emea.cegedim.grp:3128/"
+        }
     };
 
 google.options(gOptions);

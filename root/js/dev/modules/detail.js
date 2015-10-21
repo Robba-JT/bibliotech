@@ -107,6 +107,7 @@
                 };
 
                 detail.byTag = function (index) {
+                    if (!scope.navbar.isCollect) { return; }
                     scope.tags.search(detail.book.tags[index]);
                     scope.waiting.screen = scope.waiting.over = false;
                 };

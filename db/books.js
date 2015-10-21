@@ -13,11 +13,8 @@ var Q = require("q"),
             "Accept-Encoding": "gzip",
             "Content-Type": "application/json"
         },
-        "proxy": "http://CGDM-EMEA\jtassin:password_4@isp-ceg.emea.cegedim.grp:3128/",
         "timeout": 5000
     };
-
-if (require("ip").address() === "128.1.236.11") { reqOptions.proxy = "http://CGDM-EMEA\jtassin:password_4@isp-ceg.emea.cegedim.grp:3128/"; }
 
 google.options(gOptions);
 
@@ -86,18 +83,17 @@ module.exports.BooksAPI = BooksAPI = function (db, token) {
             var gFunction = _.get(gBooks, fonction);
             if (typeof params === "function") { callback = params; params = {}; }
             if (!!auth.credentials) { _.assign(params, { "auth": auth }); } else { _.assign(params, { "key": googleConfig.key }); }
-            if (typeof gFunction !== "function") { callback(new Error("Invalid Call!!!")); } else {
-                gFunction(params, function (error, success) {
-                    if (!!error && error.code !== 401) { return callback(error); }
-                    if (!!error && error.code === 401) {
-                        refreshCredentials()
-                            .then(function () { gFunction(params, callback); })
-                            .catch(callback);
-                    } else {
-                        callback(null, success);
-                    }
-                });
-            }
+            if (typeof gFunction !== "function") { return callback ? callback(new Error("Invalid Call!!!")) : new Error("Invalid Call!!!"); }
+            gFunction(params, function (error, success) {
+                if (!!error && error.code !== 401) { return callback ? callback(error) : error; }
+                if (!!error && error.code === 401) {
+                    refreshCredentials()
+                        .then(function () { gFunction(params, callback); })
+                        .catch(callback);
+                } else {
+                    return callback ? callback(null, success) : success;
+                }
+            });
         },
         loadBase64 = function (url, bookid) {
             var defColor = Q.defer(), params = reqOptions;
@@ -273,7 +269,7 @@ module.exports.BooksAPI = BooksAPI = function (db, token) {
     this.searchOne = searchOne;
     this.googleRemove = function (params, callback) {
         params.shelf = 7;
-        googleRequest("bookshelves.removeVolume", params, callback);
+        googleRequest("mylibrary.bookshelves.removeVolume", params, callback);
     };
     this.removeComment = function (comment, callback) {
         comments.remove({ "_id": comment._id }, callback);

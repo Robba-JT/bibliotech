@@ -169,7 +169,7 @@ module.exports = exports = function (app, mongoStore, io) {
         "store": mongoStore,
         "fail": function (data, message, error, next) { next(error); },
         "success": function (data, next) {
-            console.log("successful connection to socket.io", data.user._id, data.sessionID);
+            /*console.log("successful connection to socket.io", data.user._id, data.sessionID);*/
             passportSocketIo.filterSocketsByUser(io, function(user) {
                 return user._id === data.user._id;
             }).forEach(function(socket) { socket.emit("logout"); });

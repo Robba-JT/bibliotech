@@ -26,10 +26,6 @@
                     "icon": true,
                     "anim": true
                 };
-                scope.onFocus = function (evt) {
-                    console.debug(evt);
-                    return true;
-                };
                 scope.windows.close = function (win) {
                     if (win === "*") { this.opened = {}; } else { delete this.opened[win]; }
                     _.assign(scope.waiting, { "screen": !_.isEmpty(this.opened), "over": false });
@@ -220,10 +216,12 @@
                         return false;
                     })
                     .on("resize", function () {
-                        scope.bookcells.style = { "width": ~~(µ.one("[bookcells]").clientWidth / ~~(µ.one("[bookcells]").clientWidth / 256)) - 10 + "px" };
-                        windows.close("*");
+                        scope.bookcells.style = { "width": ~~(µ.one("[bookcells]").clientWidth / ~~(µ.one("[bookcells]").clientWidth / 256)) - ~~(µ.one("[bookcells]").clientWidth / 256) + "px" };
+                        scope.windows.close("*");
+                        scope.navbar.height = µ.one("#navbar").clientHeight;
                         scope.tags.reset();
                         scope.$apply();
+                        µ.one("[bookcells]").css({ "top": navbar.visible ? navbar.height : 0 });
                     }).on("scroll", function () {
                         scope.footer = (!!scope.windows.xcroll().top);
                         scope.$apply();

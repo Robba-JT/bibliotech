@@ -1,7 +1,8 @@
 <header class="windowheader">&nbsp;[{trads.profile}]<div class="closeWindow" title="[{close}]" ng-click="windows.close('profile')"></div></header>
 <form name="profileForm" autocomplete="off" novalidate ng-submit="profileForm.$valid && profile.send()">
     <p>
-        <input type="email" disabled="disabled" ng-value="profile.user.id"> <input type="submit" ng-value="trads.valid" ng-disabled="profileForm.$invalid">
+        <input type="email" disabled="disabled" ng-value="profile.user.id">
+        <input type="submit" ng-value="trads.valid" ng-disabled="profileForm.$invalid">
     </p>
     <p>
         <input type="text" ng-model="profile.user.name" autocomplete="off" placeholder="[{trads.name}]" ng-value="profile.user.name" ng-minlength="4" auto-focus="windows.opened.profile">
@@ -14,7 +15,7 @@
         <label><input type="checkbox" disabled="disabled" ng-checked="profile.user.googleSignIn">&nbsp;[{trads.gconnexion}]</label>
     </p>
     <p ng-show="profile.user.googleSignIn">
-        <label><input type="checkbox" ng-model="googleSync" ng-checked="profile.user.googleSync">&nbsp;[{trads.gsync}]</label>
+        <label><input type="checkbox" ng-model="profile.user.googleSync" ng-checked="profile.user.googleSync">&nbsp;[{trads.gsync}]</label>
     </p>
     <p ng-show="profile.user.googleSignIn">
         <input type="button" ng-value="trads.gimport" message="goperation" titre="warning" callback="profile.import"> <input type="button" ng-value="trads.gexport" message="goperation" titre="warning" callback="profile.export">

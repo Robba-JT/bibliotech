@@ -100,6 +100,7 @@ module.exports = function main (socket, allSessions) {
     if (_.isEmpty(thisUser) || !thisUser._id) { socket.emit("logout"); }
 
     socket.on("isConnected", function () {
+        console.log("Connexion", thisUser._id, "@", new Date().toString("yyyy/MM/dd"));
         var booksList = _.pluck(thisUser.books, "book"),
             coverList = _.compact(_.pluck(thisUser.books, "cover"));
 
@@ -385,7 +386,8 @@ module.exports = function main (socket, allSessions) {
         for (var jta in thisUser.books) {
             defExport.push(defBooks("googleAdd", { "volumeId": thisUser.books[jta].book }));
         }
-        Q.allSettled(defExport).catch(function (error) { console.error("exportNow", error); });
+        Q.allSettled(defExport)
+            .catch(function (error) { console.error("exportNow", error); });
     });
 
     socket.on("newbook", function (data) {

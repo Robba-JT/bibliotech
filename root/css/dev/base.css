@@ -4,12 +4,12 @@
 
 html {
     position: relative;
-    background-color: #493D26;
+    background-color: #453A24;
     overflow-x : hidden;
     overflow-y : auto;
-    background-image: url("../../images/background_main_II.png");
+    /*background-image: url("../../images/background_main_II.png");
     background-size: 100%;
-    background-repeat: repeat-y;
+    background-repeat: repeat-y;*/
     font-family: Trebuchet MS,Tahoma,Verdana,Arial,sans-serif;
     width: 100%;
     height: 100%;
@@ -57,7 +57,7 @@ img {
     border-width: 2px !important;
 }
 
-[def-cloak], [data-def-cloak], [x-def-cloak], .def-cloak {
+[def-cloak], [data-def-cloak], [x-def-cloak], .def-cloak, .x-def-cloak {
     display: none !important;
 }
 
@@ -101,10 +101,10 @@ footer .recommanded {
 }
 
 #navbar {
-    width: 98%;
+    width: 99%;
     max-width: 99%;
     background-color: darkgoldenrod;
-    white-space: nowrap;
+    /*white-space: nowrap;*/
 }
 
 .navbar > * {
@@ -554,13 +554,14 @@ input[type=submit]:disabled, input[type=button]:disabled, button:disabled {
 }
 
 .bookcell {
-    margin: 2.5px;
+    margin-top: 2px;
+    margin-left: 2px;
     background-color: black;
     border-color: #666;
     color: white;
     font-size: 12px;
-    border-radius: 6px;
-    border: 1px solid transparent;
+    border-bottom-right-radius: 25px;
+    /*border: 5px solid gainsboro;*/
     z-index: 2;
     text-align: center;
     vertical-align: top;
@@ -569,7 +570,7 @@ input[type=submit]:disabled, input[type=button]:disabled, button:disabled {
 
 .bookcell:hover {
     color: black;
-    background-color: goldenrod;
+    background-color: darkgoldenrod;
     -webkit-transition: box-shadow linear .2s, background-color linear .2s;
     -moz-transition: box-shadow linear .2s, background-color linear .2s;
     -o-transition: box-shadow linear .2s, background-color linear .2s;
@@ -591,13 +592,15 @@ input[type=submit]:disabled, input[type=button]:disabled, button:disabled {
 .bookcell header {
     color: white;
     font-size: 150%;
-    background-color: #2E2E2E;
-    border-color: #333;
-    border-radius: 6px;
+    /*background-color: #2E2E2E;*/
+    background-color: #3F3F3F;
+    /*border-color: #333;*/
+    /*border-radius: 6px;*/
+    border-bottom-right-radius: 9px;
     padding: 5px;
-    margin: 1px;
-    border-width: 0px 0px 1px;
-    border-bottom: 1px solid transparent;
+    margin: 5px;
+    /*border-width: 0px 0px 1px;
+    border-bottom: 1px solid transparent;*/
     overflow: hidden;
 }
 
@@ -614,6 +617,10 @@ input[type=submit]:disabled, input[type=button]:disabled, button:disabled {
 .bookcell figure {
     margin: 5px;
     position: relative;
+}
+
+.bookcell figure .cover {
+    border-bottom-right-radius: 20px;
 }
 
 .bookcell figcaption {
@@ -1532,6 +1539,7 @@ div.tag button:not(.libelle):hover {
 
 #noConnect span {
     white-space: nowrap;
+    display: block;
 }
 
 .roundIcon {

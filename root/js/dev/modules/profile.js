@@ -21,7 +21,6 @@
                 profile.export = function () {
                     socks.emit("exportNow");
                     scope.windows.close("*");
-                    _.assign(scope.waiting, { "screen": true, "icon": true });
                 };
 
                 socks.on("user", function (data) {

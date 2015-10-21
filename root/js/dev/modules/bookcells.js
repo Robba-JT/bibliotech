@@ -23,7 +23,7 @@
                         });
                     };
 
-                bookcells.style = { "width": ~~(µ.one("[bookcells]").clientWidth / ~~(µ.one("[bookcells]").clientWidth / 256)) - 10 + "px" };
+                bookcells.style = { "width": ~~(µ.one("[bookcells]").clientWidth / ~~(µ.one("[bookcells]").clientWidth / 256)) - ~~(µ.one("[bookcells]").clientWidth / 256) + "px" };
 
                 bookcells.addBook = function (cell) {
                     if (_.findIndex(bookcells.collection, _.matchesProperty("id", cell.id)) === -1) {
