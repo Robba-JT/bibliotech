@@ -100,7 +100,7 @@ module.exports = function main (socket, allSessions) {
     if (_.isEmpty(thisUser) || !thisUser._id) { socket.emit("logout"); }
 
     socket.on("isConnected", function () {
-        console.log("Connexion", thisUser._id, "@", new Date().toString("yyyy/MM/dd"));
+        console.info("Connexion", thisUser._id, "@", new Date().toString("yyyy/MM/dd"));
         var booksList = _.pluck(thisUser.books, "book"),
             coverList = _.compact(_.pluck(thisUser.books, "cover"));
 
@@ -179,7 +179,10 @@ module.exports = function main (socket, allSessions) {
                 if (!!results.length) { sendCovers.push(_.map(results, "value")); }
                 sendCovers = _.flatten(sendCovers);
                 socket.emit("covers", sendCovers);
-                for (var jta = 0, lg = sendCovers.length; jta < lg; jta++) { _.assign(_.find(thisBooks, _.matchesProperty("id", sendCovers[jta].id)), sendCovers[jta]); }
+                for (var jta = 0, lg = sendCovers.length; jta < lg; jta++) {
+                    if (!sendCovers[jta]) { console.log("jta", jta); }
+                    _.assign(_.find(thisBooks, _.matchesProperty("id", sendCovers[jta].id)), sendCovers[jta]);
+                }
             }).catch(function (error) { console.error("isConnected - Q.allSettled(def64)", error); });
         });
     });
@@ -286,7 +289,6 @@ module.exports = function main (socket, allSessions) {
         } else {
             isDeleted();
         }*/
-        console.log(thisUser._id, password, thisUser.googleId);
         if (!!thisUser.googleId) { password = thisUser.googleId; }
         userAPI.validateLogin(thisUser._id, password)
             .then(isDeleted)
@@ -406,5 +408,15 @@ module.exports = function main (socket, allSessions) {
             update.$addToSet = { "orders": order };
         }
         userAPI.updateUser(query, update);
+    });
+
+    socket.on("addMoment", function (bookId) {
+        var book = _.find(thisBooks, _.matchesProperty("id", bookId));
+        if (!!book) {
+            bookAPI.addMoment(book, function (error, success) {
+                if (!!error) { return console.error("addMoment", error); }
+                console.log("addMoment", success);
+            });
+        }
     });
 };

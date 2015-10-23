@@ -17,7 +17,7 @@ module.exports = exports = function (app, mongoStore, io) {
     var getLang = function (request) { return trads[(!!trads[request.acceptsLanguages()[0]]) ? request.acceptsLanguages()[0] : "fr"]; };
 
     passport.serializeUser(function(user, done) {
-        done(null, { "_id": user._id, "token": user.token, "infos": user.infos });
+        done(null, { "_id": user._id, "token": user.token, "infos": user.infos, "active": !!user.active });
     });
 
     passport.deserializeUser(function(data, done) {
@@ -35,6 +35,9 @@ module.exports = exports = function (app, mongoStore, io) {
             var email = _.find(profile.emails, _.matchesProperty("type", "account")),
                 raw = JSON.parse(profile._raw),
                 gInfos = { "token": _.merge(params, { "refresh_token": refreshToken })};
+
+        console.log("profile", profile);
+        console.log("raw", raw);
 
             if (!email || !email.value) { return done(new Error("Invalid profile")); }
             if (!!raw && !!raw.image && !!raw.image.url && !!raw.url) { _.assign(gInfos, { "infos": { "picture": raw.image.url, "link": raw.url }}); }
@@ -62,7 +65,7 @@ module.exports = exports = function (app, mongoStore, io) {
         },
         function (req, username, password, done) {
             usersAPI.validateLogin(username, password)
-                .then(function (user) { done(null, user) })
+                .then(function (user) { done(null, _.merge(user, { "active": req.body.active })); })
                 .catch(function (error) { done(null, false); });
         })
     );
@@ -75,7 +78,7 @@ module.exports = exports = function (app, mongoStore, io) {
         },
         function (req, username, password, done) {
             usersAPI.addUser(username, password, req.body.name)
-                .then(function (user) { done(null, user); })
+                .then(function (user) { done(null, _.merge(user, { "active": req.body.active })); })
                 .catch(function (error) { done(null, false); });
 
         })
@@ -104,7 +107,6 @@ module.exports = exports = function (app, mongoStore, io) {
                 res.render("bibliotech", { version: JSON.stringify(require("../package.json").version) });
             }
 		)
-
         .get("/gAuth",
             passport.authenticate("google", {
                 "approvalPrompt": "force",
@@ -182,9 +184,11 @@ module.exports = exports = function (app, mongoStore, io) {
             mongoStore.get(socket.request.sessionID, function (error, session) {
                 if (!!error || !session) { console.error(error || new Error("No session find!!!")); return socket.emit("logout"); }
                 onEvent.apply(socket, args);
-                var today = new Date();
-                session.cookie.expires = today.setSeconds(today.getSeconds() + 3600);
-                mongoStore.set(socket.request.sessionID, session);
+                if (!!socket.request.user && !socket.request.user.active) {
+                    var today = new Date();
+                    session.cookie.expires = today.setSeconds(today.getSeconds() + 3600);
+                    mongoStore.set(socket.request.sessionID, session);
+                }
             });
         };
         require("../io/main")(socket);

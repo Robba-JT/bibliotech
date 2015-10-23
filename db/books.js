@@ -6,6 +6,7 @@ var Q = require("q"),
     _ = require("lodash"),
     google = require("googleapis"),
     gBooks = google.books("v1"),
+    gPlus = google.plus("v1"),
     gAuth = google.auth.OAuth2,
     gOptions = {
         "gzip": true,
@@ -14,7 +15,8 @@ var Q = require("q"),
             "Content-Type": "application/json"
         },
         "timeout": 5000
-    };
+    },
+    swig = require("swig");
 
 google.options(gOptions);
 
@@ -289,5 +291,24 @@ module.exports.BooksAPI = BooksAPI = function (db, token) {
     };
     this.updateNotif = function (data, callback) {
         notifs.update({ "_id": data._id }, { "$set": data }, { "upsert": true }, callback);
+    };
+    this.addMoment = function (book, callback) {
+        console.log("auth", auth);
+        var index = book.description.indexOf(" ", 500),
+            params = {
+            "auth": auth,
+            "collection": "vault",
+            "debug": true,
+            "userId": "me",
+            "resource": swig.renderFile("./tools/notif.html", {
+                "title": book.title,
+                "description": book.description.substr(0, Math.max(index, 500)) + ((index !== -1) ? "..." : ""),
+                "source": book.base64 || book.alternative,
+                "name": !!book.userComment || !!book.userNote ? name + ":" : "",
+                "note": !!book.userNote ? "Note: " + book.userNote : "",
+                "comment": !!book.userComment ? "\"" + book.userComment + "\"" : ""
+            })
+        };
+        gPlus.moments.insert(params, callback);
     };
 };

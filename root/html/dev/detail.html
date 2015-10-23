@@ -1,5 +1,5 @@
-
 <header class="windowheader">&nbsp;<span class="direct">[{detail.book.title || trads.newBook}]</span>
+    <div title="+1" class="notdisplayed" ng-click="detail.plusUn()">+1</div>
     <div class="closeWindow" title="[{trads.close}]" ng-click="windows.close('detail')"></div>
     <div class="detailSave" ng-show="detail.book.inCollection" title="[{trads.save}]" ng-click="detail.updateBook()"></div>
     <div class="detailAdd" ng-hide="detail.book.inCollection" title="[{trads.add}]" ng-click="detail.addBook()"></div>
@@ -108,7 +108,7 @@
     </div>
 </article>
 <form target="iPreview" method="POST" action="/preview" novalidate><input type="hidden" name="previewid" ng-value="detail.book.id"/></form>
-<section id="contextMenu" def-cloak ng-style="context.style" ng-show="context.show">
+<section id="contextMenu" ng-style="context.style" ng-show="context.show">
     <div class="navgrid">
         <div>
             <span nav="top" source="arrow-24-icon-top" blur="white" hover="alt" width="32" height="32"></span>

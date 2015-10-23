@@ -117,11 +117,11 @@ module.exports = function (grunt) {
                 "files": {
                     "root/js/bibliotech.js": [
                         "root/js/dev/bibliotech.js",
-                        "root/js/dev/modules/bookcells.js",
-                        "root/js/dev/modules/detail.js",
                         "root/js/dev/modules/navbar.js",
                         "root/js/dev/modules/profile.js",
-                        "root/js/dev/modules/search.js"
+                        "root/js/dev/modules/search.js",
+                        "root/js/dev/modules/bookcells.js",
+                        "root/js/dev/modules/detail.js"
                     ],
                     "root/js/admin.js": [ "root/js/dev/admin.js" ]
                 }

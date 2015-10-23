@@ -1,4 +1,4 @@
-<div id="navbar" class="navbar" ng-class="waiting.anim && 'inactive'" ng-show="navbar.visible">
+<div id="navbar" class="navbar" ng-class="waiting.anim && 'inactive'" ng-show="navbar && navbar.visible" def-cloak>
     <div id="affichToggle" class="button" title="{{trads.mask}}" ng-click="navbar.toggleMenu()"></div>
     <div id="logout" class="button" ng-click="logout()" title="{{trads.logout}}"></div>
     <div id="recherche" class="button" ng-click="windows.open('search')"  ng-class="!navbar.isCollect && 'active'" title="{{trads.search}}"></div>
@@ -23,11 +23,11 @@
     <div id="picture" class="button" ng-show="profile.user.link && profile.user.picture" title="Google +"></div>
 </div>
 
-<div id="altNavbar" class="navbar" ng-class="waiting.anim && 'inactive'" ng-hide="navbar.visible" def-cloak>
+<div id="altNavbar" class="navbar" ng-class="waiting.anim && 'inactive'" ng-hide="navbar.visible">
     <div id="altAffichToggle" class="button" title="{{trads.affich}}" ng-click="navbar.toggleMenu()"></div>
 </div>
 
-<div id="sort" class="deroulant" ng-show="modal.sort" def-cloak ng-style="{ 'top': modal.navBottom + 'px', 'left': modal.sortLeft + 'px' }">
+<div id="sort" class="deroulant" ng-show="modal.sort" ng-style="{ 'top': modal.navBottom + 'px', 'left': modal.sortLeft + 'px' }" def-cloak>
     <div by="title" class="sortBy">[{trads.title}]&nbsp;<span class="asc"></span></div>
     <div by="title" sort="desc">[{trads.title}]&nbsp;<span class="desc"></span></div>
     <div by="authors">[{trads.authors}]&nbsp;<span class="asc"></span></div>
@@ -40,7 +40,7 @@
     <div ng-repeat="notif in notifs.notifs" ng-click="notifs.show($index)"><span class="notifName"></span>&nbsp;[{notif.from}]:&nbsp;<span class="notifTitle">[{notif.title}]</span></div>
 </div>
 
-<div id="cloud" ng-show="windows.opened.cloud"><div title="[{trads.close}]" ng-click="windows.close('cloud')"></div></div>
+<div id="cloud" ng-show="windows.opened.cloud"><div title="[{trads.close}]" ng-click="windows.close('cloud')" def-cloak></div></div>
 
 <section id="contactsWindow" class="window" ng-show="windows.opened.contacts" ng-style="{ 'top': windows.top + 'px' }" def-cloak>
     <header class="windowheader">&nbsp;Contacts<div class="closeWindow" title="[{trads.close}]" ng-click="windows.close('contacts')"></div></header>

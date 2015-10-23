@@ -82,67 +82,6 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
         };
     });
     app.factory("$socket", ["$rootScope", "$timeout", function(root, timeout) {
-/*        var events = {
-                "on": [],
-                "emit": []
-            },
-            mouseMove = function (event) {
-                µ.one("#noConnect").css({
-                    "top": (noConnect.clientHeight + event.clientY > window.innerHeight) ? event.clientY - noConnect.clientHeight: event.clientY,
-                    "left": (noConnect.clientWidth + event.clientX > window.innerWidth) ? event.clientX - noConnect.clientWidth: event.clientX
-                });
-            },
-            $socket = (function () {
-                this.connect = function () {
-                    this.connection = io.connect({ "secure": true, "multiplex": false });
-                    this.connection
-                        .on("error", function (error) { console.error("error", error); root.logout(); })
-                        .once("connect", function () {
-                            _.assign(root.waiting, { "connect": false });
-                            console.info("socket.connect", this, new Date().toLocaleString(), (new Date() - start) / 1000);
-                            this.emit("isConnected");
-                            µ.removeEventListener("mousemove", mouseMove);
-                            start = new Date();
-                            this.once("disconnect", function (data) {
-                                console.info("socket.disconnect", this.id, new Object(this), new Date().toLocaleString(), data);
-                                console.debug("events.on", events.on);
-                                reconnect(this);
-                                root.windows.close("*");
-                                root.bookcells.reset();
-                                µ.setEvents({ "mousemove": mouseMove });
-                                setTimeout(function () { _.assign(root.waiting, { "connect": true }); }, 2000);
-                                root.$apply();
-                            });
-                            this.on("logout", root.logout);
-                    });
-                };
-                this.reconnect = function(cur) {
-                    var connectTimeInterval = setInterval(function () {
-                        if (!!cur && !!cur.connected && cur.io.readyState === "open") {
-                            clearInterval(connectTimeInterval);
-                            $socket.connect();
-                        }
-                        try { cur.connect(); } catch(error) { }
-                    }, 3000);
-                };
-                if (!this.connection) { this.connect(); }
-                this.get = function () { return this.connection; };
-                return this;
-            })();
-
-        return {
-            "on": function(eventName, callback) {
-                events.on.push({ "name": eventName, "fn": callback });
-                $socket.connection.on(eventName, function() {
-                    var args = arguments;
-                    root.$apply(function() { callback.apply($socket, args); });
-                });
-            },
-            "emit": function(eventName, data) {
-                $socket.connection.emit(eventName, data);
-            },
-            "close": function () { $socket.get().close(); }
-        };*/
         var mouseMove = function (event) {
                 µ.one("#noConnect").css({
                     "top": (noConnect.clientHeight + event.clientY > window.innerHeight) ? event.clientY - noConnect.clientHeight: event.clientY,
@@ -163,7 +102,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 var addListener = function (eventName, callback) {
                         connection.on(eventName, function() {
                             var args = arguments;
-                            root.$apply(function() { callback.apply($socket, args); });
+                            root.$apply(function() { callback.apply(connection, args); });
                         });
                     },
                     connect = function () {
@@ -187,7 +126,6 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                                 });
                                 this.on("logout", root.logout);
                                 for (var jta = 0, lg = onQueue.on.length; jta < lg; jta++) {
-                                    //connection.on(onQueue.on[jta].event, onQueue.on[jta].callback);
                                     addListener(onQueue.on[jta].event, onQueue.on[jta].callback);
                                 }
                                 for (jta = 0, lg = onQueue.emit.length; jta < lg; jta++) {
@@ -231,15 +169,6 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
             })();
         return $socket;
     }]);
-    app.directive("defCloak", function () {
-        return {
-            "restrict": "A",
-            "link": function (scope, element, attrs) {
-                attrs.$set("defCloak", undefined);
-                element.removeClass("def-cloak");
-            }
-        };
-    });
     app.directive("drag", ["$rootScope", function(root) {
         var dragStart = function (evt, element, dragStyle) {
                 element.addClass(dragStyle);
@@ -348,13 +277,14 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 var thisScope = scope,
                     show = function (event) {
                         if (this.one(".description") || scope.noShow) { delete scope.noShow; return; }
+                        if (!scope.cell.description) { return; }
                         var self = this,
                             index = scope.cell.description.indexOf(" ", 500),
                             title = scope.cell.title,
                             description = scope.cell.description.substr(0, Math.max(index, 500)) + ((index !== -1) ? "..." : ""),
                             width = self.clientWidth,
                             height = self.clientHeight,
-                            top = Math.max(window.innerHeight, µ.one("[bookcells]").clientHeight) - (self.yposition() + height) < height ? -(height / 3).toFixed(0) : (height / 3).toFixed(0),
+                            top = Math.max(window.innerHeight, µ.one("[bookcells]").clientHeight) - self.yposition() < height ? -(height / 3).toFixed(0) : (height / 3).toFixed(0),
                             left = window.innerWidth - (self.xposition() + width) < width ? -(width / 3).toFixed(0) : (width / 3).toFixed(0),
                             style = "top: " + top + "px; left: " + left + "px; width: " + width + "px;",
                             div = angular.element("<div class=\"description notdisplayed\" style=\"" + style + "\"><span>" + title + "</span><div>" + description + "</div></div>");
@@ -378,6 +308,17 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 element.on("mouseover", show);
                 element.on("mouseleave", hide);
             }
+        };
+    }]);
+    app.directive("defCloak", ["$timeout", function (timeout) {
+        return {
+            "restrict": "A",
+            "link": { "post": function (scope, element, attrs) {
+                timeout(function () {
+                    attrs.$set("defCloak", undefined);
+                    element.removeClass("def-cloak");
+                });
+            }}
         };
     }]);
 }

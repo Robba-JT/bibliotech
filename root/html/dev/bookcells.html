@@ -1,4 +1,5 @@
-<section class="bookcell" drag="cell" drop="cell" dragStyle="isDrag" ng-repeat="cell in bookcells.cells" ng-style="bookcells.style" ng-hide="!!cell.toHide || !!cell.toFilter" >        <header ng-click="detail.prepare($index)">[{cell.title}]</header>
+<section class="bookcell" drag="cell" drop="cell" dragStyle="isDrag" ng-repeat="cell in bookcells.cells" ng-style="bookcells.style" ng-hide="!!cell.toHide || !!cell.toFilter" >
+    <header ng-click="detail.prepare($index)">[{cell.title}]</header>
     <article description>
         <button ng-hide="cell.inCollection" ng-click="bookcells.addBook(cell)" class="add">[{trads.add}]</button>
         <button ng-show="cell.inCollection" ng-click="bookcells.removeBook(cell)" class="remove">{{trads.remove}}</button>

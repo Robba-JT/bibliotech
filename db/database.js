@@ -39,7 +39,7 @@ module.exports.init = function (mongoUrl, callback) {
                 });
             });
 
-            /*db.collection("books").find({ "date": { $lte: last }, "id.user": { $exists: false }}, { "_id": false }).toArray(function (error, result) {
+            db.collection("books").find({ "date": { $lte: last }, "id.user": { $exists: false }}, { "_id": false }).toArray(function (error, result) {
                 if (!!error) { console.error("Error Update Books", error); }
                 if (!!result) {
                     var updated = 0, removed = 0, requests = [];
@@ -65,7 +65,7 @@ module.exports.init = function (mongoUrl, callback) {
                     });
                     Q.allSettled(requests).then(function () { console.info("Books updated", updated, "removed", removed); });
                 }
-            });*/
+            });
         }
     });
 };

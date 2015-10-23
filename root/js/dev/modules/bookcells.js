@@ -50,7 +50,7 @@
                 };
                 bookcells.reset = function () {
                     _.assign(scope.waiting, { "screen": true, "icon": true, "anim": true });
-                    this.cells = [];
+                    this.cells.length = 0;
                     this.filtre = this.last = this.tag = null;
                     µ.one("[bookcells]").css({ "top": µ.one("#navbar").clientHeight });
                 };
@@ -69,20 +69,17 @@
                     if (!scope.windows.opened || _.isEmpty(scope.windows.opened)) { _.assign(scope.waiting,  { "screen": false }); }
                 });
                 socks.on("covers", function (covers) {
-                    return new Promise(function (resolve) {
-                        for (var jta = 0, lg = covers.length; jta < lg; jta++) {
-                            var cell = _.find(bookcells.cells, _.matchesProperty("id", covers[jta].id)) || {},
-                                inCollect = _.find(bookcells.collection, _.matchesProperty("id", covers[jta].id)) || {};
+                    for (var jta = 0, lg = covers.length; jta < lg; jta++) {
+                        var cell = _.find(bookcells.cells, _.matchesProperty("id", covers[jta].id)) || {},
+                            inCollect = _.find(bookcells.collection, _.matchesProperty("id", covers[jta].id)) || {};
 
-                            cell.base64 = inCollect.base64 = covers[jta].base64;
-                            cell.alternative = inCollect.alternative = covers[jta].alternative;
-                            if (scope.detail.book && scope.detail.book.id === covers[jta].id) {
-                                scope.detail.book.base64 = covers[jta].base64;
-                                scope.detail.book.alternative = covers[jta].alternative;
-                            }
+                        cell.base64 = inCollect.base64 = covers[jta].base64;
+                        cell.alternative = inCollect.alternative = covers[jta].alternative;
+                        if (scope.detail.book && scope.detail.book.id === covers[jta].id) {
+                            scope.detail.book.base64 = covers[jta].base64;
+                            scope.detail.book.alternative = covers[jta].alternative;
                         }
-                        resolve();
-                    });
+                    }
                 });
                 socks.on("books", function (part) {
                     cellsRender(part);

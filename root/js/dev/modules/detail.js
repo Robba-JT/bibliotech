@@ -23,6 +23,10 @@
                     socks.emit("newbook", this.book);
                     this.edit.new = false;
                 };
+                detail.plusUn = function () {
+                    console.debug("this.book.id", this.book.id);
+                    socks.emit("addMoment", this.book.id);
+                };
                 detail.updateBook = function () {
                     scope.windows.close("detail");
                     if (!angular.equals(new Date(this.book.publishedDate), this.XDate)) { this.book.publishedDate = this.XDate; }
