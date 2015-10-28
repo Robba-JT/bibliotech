@@ -36,9 +36,6 @@ module.exports = exports = function (app, mongoStore, io) {
                 raw = JSON.parse(profile._raw),
                 gInfos = { "token": _.merge(params, { "refresh_token": refreshToken })};
 
-        console.log("profile", profile);
-        console.log("raw", raw);
-
             if (!email || !email.value) { return done(new Error("Invalid profile")); }
             if (!!raw && !!raw.image && !!raw.image.url && !!raw.url) { _.assign(gInfos, { "infos": { "picture": raw.image.url, "link": raw.url }}); }
             usersAPI.validateLogin(email.value, raw.id)
@@ -130,11 +127,11 @@ module.exports = exports = function (app, mongoStore, io) {
 
 	//Login
 		.post("/login", function (req, res, next) {
-                passport.authenticate("login", function(err, user, info) {
-                    if (!user) { return res.jsonp({ "error": getLang(req).error.invalidCredential }); }
-                    req.login(user, function(err) { return res.jsonp({ success : !err }); });
-                })(req, res, next)
-            })
+            passport.authenticate("login", function(err, user, info) {
+                if (!user) { return res.jsonp({ "error": getLang(req).error.invalidCredential }); }
+                req.login(user, function(err) { return res.jsonp({ success : !err }); });
+            })(req, res, next)
+        })
 
 
 	//Nouvel utilisateur
@@ -182,7 +179,7 @@ module.exports = exports = function (app, mongoStore, io) {
         socket.onevent = function () {
             var args = arguments;
             mongoStore.get(socket.request.sessionID, function (error, session) {
-                if (!!error || !session) { console.error(error || new Error("No session find!!!")); return socket.emit("logout"); }
+                if (!!error || !session || !!session.cookie.expires && session.cookie.expires < new Date()) { console.error(error || new Error("No session find!!!")); return socket.emit("logout"); }
                 onEvent.apply(socket, args);
                 if (!!socket.request.user && !socket.request.user.active) {
                     var today = new Date();

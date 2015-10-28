@@ -1,6 +1,5 @@
 <header class="windowheader">&nbsp;<span class="direct">[{detail.book.title || trads.newBook}]</span>
-    <div title="+1" class="notdisplayed" ng-click="detail.plusUn()">+1</div>
-    <div class="closeWindow" title="[{trads.close}]" ng-click="windows.close('detail')"></div>
+    <div class="closeWindow" title="[{trads.close}]" ng-click="detail.close()"></div>
     <div class="detailSave" ng-show="detail.book.inCollection" title="[{trads.save}]" ng-click="detail.updateBook()"></div>
     <div class="detailAdd" ng-hide="detail.book.inCollection" title="[{trads.add}]" ng-click="detail.addBook()"></div>
     <div class="detailGbooks" ng-show="detail.book.link" title="[{trads.gbooks}]" ng-click="navbar.openUrl(detail.book.link)"></div>
@@ -75,7 +74,7 @@
             </form>
         </div>
         <div ng-show="detail.book.inCollection">
-            <div class="tag" ng-repeat="tag in detail.book.tags"><button class="libelle" title=[{trads.filter}] ng-click="detail.byTag($index)">[{tag}]</button><button title=[{trads.remove}] ng-click="detail.removeTag($index)"><b>x</b></button></div>
+            <div class="tag" ng-repeat="tag in detail.book.tags"><button class="libelle" ng-class="(!detail.ref.tags || detail.ref.tags.indexOf('[{tag}]') === -1) && 'new'" title=[{trads.filter}] ng-click="detail.byTag($index)">[{tag}]</button><button title=[{trads.remove}] ng-click="detail.removeTag($index)"><b>x</b></button></div>
         </div>
         <div id="userNote" class="inCollection" ng-show="detail.book.inCollection">
             <div note=1 class="note" ng-class="detail.book.userNote >= 1 ? 'select' : 'empty'"></div>
@@ -88,23 +87,30 @@
             <textarea ng-model="detail.book.userComment" class="direct" rows="5" placeholder="[{trads.comments}]"></textarea>
             <div ng-show="detail.book.userDate" class="direct date">&nbsp;@&nbsp;[{detail.book.userDate | date: 'dd-MM-yyyy'}]</div>
         </div>
-
         <div ng-show="detail.book.comments.length">
             <span class="title">[{trads.readersComments}]:</span>
             <span class="subtitle" ng-show="detail.book.note">[{trads.mNote}]:&nbsp;<span>[{detail.book.note}]</span></span>
             <span id="comments"></span>
             <div ng-repeat="comment in detail.book.comments">
                 <fieldset>
-                    <textarea disabled>[{comment.comment}]</textarea><br />
+                    <div ng-show="comment.comment" disabled>[{comment.comment}]</div><br />
                     <legend>
                         <span>[{comment.name}]</span>&nbsp;@&nbsp;
                         <span>[{comment.date | date: "dd/MM/yyyy"}]</span>.&nbsp;[{trads.note}]:&nbsp;
                         <span>[{comment.note}]</span>
                     </legend>
                 </fieldset>
+                <hr />
             </div>
         </div>
-
+        <div ng-show="detail.mostAdded.length">
+            <span class="title">[{trads.mostAdded}]:<BR></span>
+            <div class="mostAdded" ng-repeat="mostAdded in detail.mostAdded" ng-click="detail.load(null, mostAdded.id)">
+                <header>[{mostAdded.title}]</header>
+                <img src="./images/white/iconmonstr-book-4-icon.png" ng-src="[{mostAdded.base64}]"/>
+                <footer>[{mostAdded.authors}]</footer>
+            </div>
+        </div>
     </div>
 </article>
 <form target="iPreview" method="POST" action="/preview" novalidate><input type="hidden" name="previewid" ng-value="detail.book.id"/></form>

@@ -1,4 +1,6 @@
-var bcrypt = require("bcrypt-nodejs"), Q = require("q");
+var bcrypt = require("bcrypt-nodejs"),
+    Q = require("q"),
+    _ = require("lodash");
 
 module.exports.UsersAPI = UsersAPI = function (db) {
     "use strict";
@@ -6,24 +8,11 @@ module.exports.UsersAPI = UsersAPI = function (db) {
     if (!(this instanceof UsersAPI)) { return new UsersAPI(db); }
 
     var users = db.collection("users"),
+        encryptPwd = function (password) { return bcrypt.hashSync(password); },
         findUser = function (query, callback) { users.findOne(query, callback); },
-        updateUser = function (query, data, callback) { users.update(query, data, callback); },
         insertUser = function (data, callback) { users.insert(data, callback); },
-        encryptPwd = function (password) { return bcrypt.hashSync(password); };
+        updateUser = function (query, data, callback) { users.update(query, data, callback); };
 
-    this.validateLogin = function (userid, password, googleSignIn) {
-        return new Q.Promise(function (resolve, reject) {
-            findUser({ "_id": userid.toLowerCase() }, function (err, user) {
-                if (!!err || !user) { reject(err); } else {
-                    if (!!googleSignIn || bcrypt.compareSync(password, user.password)) {
-                        resolve(user);
-                    } else {
-                        reject(new Error("Invalid password"));
-                    }
-                }
-            });
-        });
-    };
     this.addUser = function (userid, password, name, googleSignIn) {
         return new Q.Promise(function (resolve, reject) {
             var user = {
@@ -45,6 +34,7 @@ module.exports.UsersAPI = UsersAPI = function (db) {
             });
         });
     };
+    this.encryptPwd = encryptPwd;
     this.findUser = function (userid) {
         return new Q.Promise(function (resolve, reject) {
             findUser({ "_id": userid.toLowerCase() }, function (err, result) {
@@ -52,6 +42,43 @@ module.exports.UsersAPI = UsersAPI = function (db) {
             });
         });
     };
+    this.hasBook = function (user, book) {
+        return new Q.Promise(function (resolve, reject) {
+            users.findOne({ _id: user, "books.book": book }, function (error, success) {
+                if (!!error) { return reject(error); }
+                resolve(success);
+            });
+        });
+    };
+    this.mostAdded = function (bookid, user, books) {
+        if (!books || !books.length) { books = []; }
+        books.push(bookid);
+        return new Q.Promise(function (resolve, reject) {
+            users.aggregate([
+                    { "$match": { "books.book": bookid, "_id": { "$ne": user }}},
+                    { "$project": { "_id": false, "books.book": true }},
+                    { "$unwind":  "$books" },
+                    { "$group": { "_id": "$books.book", "count": { "$sum": 1 }}},
+                    { "$sort": { "count": -1 }},
+                    { "$match": { "_id": { "$nin": books }}},
+                    { "$match": { "_id.user": { "$exists": false }}}
+                ]).toArray(function (error, result) {
+                    if (!!error) { return reject(error); }
+                    var books = _.groupBy(result, "count"),
+                        keys = _.keys(_.groupBy(result, "count")).sort(),
+                        most = [],
+                        mostLength = 5;
+
+                    for (var jta = 0, lg = keys.length; jta < lg && mostLength > 0; jta++) {
+                        most.push(_.map(_.sample(books[keys[jta]], mostLength), "_id"));
+                        most = _.flattenDeep(most);
+                        mostLength = 5 - most.length;
+                    }
+                    resolve(most);
+                });
+        });
+    };
+    this.removeUser = function (query, callback) { users.remove(query, callback); };
     this.updateUser = function (query, data) {
         return new Q.Promise(function (resolve, reject) {
             updateUser(query, data, function (err, result) {
@@ -59,7 +86,17 @@ module.exports.UsersAPI = UsersAPI = function (db) {
             });
         });
     };
-    this.removeUser = function (query, callback) { users.remove(query, callback); };
-    this.hasBook = function (user, book, callback) { users.findOne({ _id: user, "books.book": book }, callback); };
-    this.encryptPwd = encryptPwd;
+    this.validateLogin = function (userid, password, googleSignIn) {
+        return new Q.Promise(function (resolve, reject) {
+            findUser({ "_id": userid.toLowerCase() }, function (err, user) {
+                if (!!err || !user) { reject(err); } else {
+                    if (!!googleSignIn || bcrypt.compareSync(password, user.password)) {
+                        resolve(user);
+                    } else {
+                        reject(new Error("Invalid password"));
+                    }
+                }
+            });
+        });
+    };
 };

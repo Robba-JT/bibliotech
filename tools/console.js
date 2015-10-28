@@ -41,7 +41,9 @@ module.exports = function (app) {
                 if (typeof value !== "string") { value = util.inspect(value); }
                 args.push(value);
             });
-            if (app.settings.env !== "development") { logsApi.logsWrite(name, args); }
+            //if (app.settings.env !== "development") { logsApi.logsWrite(name, args); }
+            logsApi.logsWrite(name, args);
+
             return fn.apply(this, [colors[name](args.join(" "))]);
         };
     });

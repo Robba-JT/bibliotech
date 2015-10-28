@@ -62,12 +62,23 @@ module.exports = function main (socket, allSessions) {
         searchDetail = function (bookid, callback) {
             if (!!lastDetail && !!lastDetail.id && _.isEqual(lastDetail.id, bookid)) { return callback(null, lastDetail); }
             defBooks("loadOne", { id: bookid })
-                .then(function (book) { callback(null, book); })
+                .then(function (book) { return book; })
                 .catch(function (error) {
-                    defBooks("searchOne", bookid)
-                        .then(function (response) { callback(null, response); })
+                    return defBooks("searchOne", bookid)
+                        .then(function (response) { return response; })
                         .catch(callback);
-                });
+                })
+                .then(function (infos) {
+                    var subs = [];
+                    subs.push(defBooks("loadComments", { "_id.book" : infos.id }));
+                    if (!!infos.cover) { subs.push(bookAPI.loadBase64(infos.cover)); }
+                    Q.allSettled(subs)
+                        .spread(function (comments, cover) {
+                            if (!!comments && !!comments.value) { infos.comments = comments.value; }
+                            if (!!cover && !!cover.value) { infos.base64 = cover.value.base64; }
+                            callback(null, infos);
+                        });
+                }).catch(function (error) { console.error("error", error); });
         },
         searchLoop = function (fn, param, callback) {
             var defLoop = Q.defer(), listBooks = [],
@@ -180,7 +191,6 @@ module.exports = function main (socket, allSessions) {
                 sendCovers = _.flatten(sendCovers);
                 socket.emit("covers", sendCovers);
                 for (var jta = 0, lg = sendCovers.length; jta < lg; jta++) {
-                    if (!sendCovers[jta]) { console.log("jta", jta); }
                     _.assign(_.find(thisBooks, _.matchesProperty("id", sendCovers[jta].id)), sendCovers[jta]);
                 }
             }).catch(function (error) { console.error("isConnected - Q.allSettled(def64)", error); });
@@ -204,7 +214,7 @@ module.exports = function main (socket, allSessions) {
 
     socket.on("searchDetail", function (bookid) {
         searchDetail(bookid, function (error, response) {
-            if (!!error) { console.error("searchDetail", error); }
+            if (!!error) { return console.error("searchDetail", error); }
             if (!!response) {
                 lastDetail = response;
             }
@@ -301,7 +311,7 @@ module.exports = function main (socket, allSessions) {
     socket.on("sendNotif", function (data) {
         var infos = _.find(thisBooks, _.matchesProperty("id", data.id));
         if (!infos) { return false; }
-        userAPI.hasBook(data.recommand.toLowerCase(), data.id, function (error, response) {
+        /*userAPI.hasBook(data.recommand.toLowerCase(), data.id, function (error, response) {
             if (!!error) { console.error("sendNotif", error); }
             if (!response) {
                 var notif = {
@@ -316,7 +326,23 @@ module.exports = function main (socket, allSessions) {
                 if (!!socketId) { socket.to(socketId).emit("newNotif", notif); }
                 mailAPI.sendToFriend(thisUser.name, thisUser._id, data.recommand.toLowerCase(), infos);
             }
-        });
+        });*/
+        userAPI.hasBook(data.recommand.toLowerCase(), data.id)
+            .then(function (response) {
+                if (!response) {
+                    var notif = {
+                        "_id": { "to": data.recommand.toLowerCase(), "book": data.id },
+                        "from": thisUser.name + "<" + thisUser._id + ">",
+                        "isNew": true,
+                        "title": infos.title,
+                        "alt": infos.alt
+                    };
+                    defBooks("updateNotif", notif);
+                    var socketId = isConnected(data.recommand.toLowerCase());
+                    if (!!socketId) { socket.to(socketId).emit("newNotif", notif); }
+                    mailAPI.sendToFriend(thisUser.name, thisUser._id, data.recommand.toLowerCase(), infos);
+                }
+            }).catch(function (error) { console.error("sendNotif", error); });
     });
 
     socket.on("readNotif", function (notif) {
@@ -410,13 +436,38 @@ module.exports = function main (socket, allSessions) {
         userAPI.updateUser(query, update);
     });
 
-    socket.on("addMoment", function (bookId) {
-        var book = _.find(thisBooks, _.matchesProperty("id", bookId));
-        if (!!book) {
-            bookAPI.addMoment(book, function (error, success) {
-                if (!!error) { return console.error("addMoment", error); }
-                console.log("addMoment", success);
-            });
-        }
+    socket.on("mostAdded", function (bookid) {
+        userAPI.mostAdded(bookid, thisUser._id, _.pluck(thisUser.books, "book"))
+            .then(function (result) {
+                var def = [],
+                    fullLoad = function (id) {
+                        return new Q.Promise(function (resolve) {
+                            bookAPI.loadOne({ id: id }, function (error, response) {
+                                if (!!error || !response) { return resolve(); }
+                                var book = {
+                                    "id": response.id,
+                                    "title": response.title,
+                                    "authors": response.authors.join(", ")
+                                };
+                                if (!response.cover) { return resolve(book); }
+                                bookAPI.loadBase64(response.cover).done(function (cover) {
+                                    if (!cover || !cover.base64) { return resolve(book); }
+                                    book.base64 = cover.base64;
+                                    resolve(book);
+                                });
+                            });
+                        });
+                    };
+
+                for (var jta = 0, lg = result.length; jta < lg; jta++) { def.push(fullLoad(result[jta])); }
+                Q.allSettled(def).then(function (results) {
+                    var mostAdded = [];
+                    for (jta = 0, lg = results.length; jta < lg; jta++) {
+                        if (results[jta].state === "fulfilled") { mostAdded.push(results[jta].value); }
+                    }
+                    if (mostAdded.length) { socket.emit("mostAdded", mostAdded); }
+                });
+            })
+            .catch(function (error) { console.error("mostAdded", error); });
     });
 };

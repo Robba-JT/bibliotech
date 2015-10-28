@@ -19,13 +19,16 @@
                     this.edit[element] = !!this.edit.able ? !this.edit[element] : false;
                 };
                 detail.addBook = function () {
-                    if (!this.edit.new) { return scope.bookcells.addBook(this.book); }
+                    if (!this.edit.new) {
+                        scope.bookcells.addBook(this.book);
+                        return;
+                    }
                     socks.emit("newbook", this.book);
                     this.edit.new = false;
                 };
-                detail.plusUn = function () {
-                    console.debug("this.book.id", this.book.id);
-                    socks.emit("addMoment", this.book.id);
+                detail.close = function () {
+                    detail.reset();
+                    scope.windows.close("detail");
                 };
                 detail.updateBook = function () {
                     scope.windows.close("detail");
@@ -51,18 +54,21 @@
 
                     _.assign(scope.waiting, { screen: true, icon: true });
                     if (!book && !cell.updated) {
-                        idb.getDetail(cell.id).then(function (result) {
-                            if (!!result) {
-                                _.assign(cell, result);
-                                detail.show(result);
-                                scope.$apply();
-                            } else { socks.emit("searchDetail", cell.id); }
-                        });
+                        this.load(cell);
                     } else {
                         detail.show(book || cell);
                     }
                 };
-
+                detail.load = function (cell, id) {
+                    var bookid = id || cell.id;
+                    idb.getDetail(bookid).then(function (result) {
+                        if (!!result) {
+                            if (cell) { _.assign(cell, result); }
+                            detail.show(result);
+                            scope.$apply();
+                        } else { socks.emit("searchDetail", bookid); }
+                    });
+                };
                 detail.setBack = function () {
                     if (!!detail.book.alternative || !!detail.book.base64) {
                         var backColor = getMainColor(µ.one("#detailCover")).hex;
@@ -71,7 +77,6 @@
                         );
                     }
                 };
-
                 detail.show = function (data) {
                     detail.reset();
                     if (!data.alternative && !data.base64) {
@@ -87,20 +92,19 @@
                         detail.height = µ.one("[detail]").clientHeight - µ.one("[detail] header").clientHeight;
                         µ.one(".detailBook").scrollTop = 0;
                     });
+                    if (!data.id.user) { socks.emit("mostAdded", data.id); }
                 };
-
                 detail.reset = function () {
                     delete this.ref;
                     delete this.book;
+                    delete this.mostAdded;
                     this.edit = { "able": false, "new": false };
                     this.tag = null;
                     if (µ.alls(".new")) { µ.alls(".new").toggleClass("new", false); }
                 };
-
                 detail.parseAuthors = function () {
                     this.book.authors = _.uniq(this.book.authors.noSpace().split(","));
                 };
-
                 detail.addTag = function () {
                     if (!this.book.tags) { this.book.tags = []; }
                     if (this.book.tags.indexOf(this.tag) === -1) {
@@ -136,12 +140,12 @@
                 };
 
                 socks.on("returnDetail", function (book) {
+                    idb.setDetail(book);
                     var cell = _.find(scope.bookcells.cells, _.matchesProperty("id", book.id));
                     if (!!cell) {
                         cell.updated = true;
                         _.assign(cell, book);
                     }
-                    idb.setDetail(book);
                     scope.detail.show(book);
                 });
 
@@ -159,6 +163,10 @@
                     _.assign(detail.book, book);
                     detail.book.new = true;
                     scope.bookcells.addBook(detail.book);
+                });
+
+                socks.on("mostAdded", function (response) {
+                    detail.mostAdded = response;
                 });
 
                 angular.element(µ.one("[detail] article")).on("contextmenu", function (event) {
@@ -219,7 +227,7 @@
                     });
                 angular.element(µ.alls("#contextMenu [nav]")).on("click", function () {
                     var cells = _.filter(scope.bookcells.cells, function (cell) { return !cell.toHide && !cell.toFilter; }),
-                        index = _.findIndex(cells, detail.book),
+                        index = _.findIndex(cells, _.matchesProperty("id", detail.book.id)),
                         next = index,
                         cellByRow = ~~(µ.one("[bookcells]").clientWidth / 256),
                         bookcells = µ.alls(".bookcell:not(.ng-hide)");

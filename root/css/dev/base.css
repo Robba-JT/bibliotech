@@ -65,11 +65,11 @@ footer .personnal {
     width: 48px;
     height: 48px;
     cursor: pointer;
-    background-image: url(/images/alt/iconmonstr-x-mark-3-icon.png);
+    background-image: url(/images/alt/iconmonstr-plus-4-icon.png);
 }
 
 .bookcell:hover footer .personnal {
-    background-image: url(/images/black/iconmonstr-x-mark-3-icon.png);
+    background-image: url(/images/black/iconmonstr-plus-4-icon.png);
 }
 
 footer .previewable {
@@ -91,7 +91,36 @@ footer .recommanded {
 }
 
 .bookcell:hover footer .recommanded {
-    background-image: url(/images/black/iconmonstr-info-7-icon.png);
+    background-image: url(/images/black/iconmonstr-info-8-icon.png);
+}
+
+.mostAdded {
+    display: inline-block;
+    width: 19%;
+    vertical-align: top;
+    text-align: center;
+    padding: 5px;
+    color: whitesmoke;
+    background-color: #3F3F3F;
+    margin-right: 1%;
+    border-bottom-right-radius: 25px;
+    cursor: pointer;
+}
+
+.mostAdded:hover {
+    background-color: darkgoldenrod;
+}
+
+.mostAdded header {
+    font-weight: bold;
+}
+
+.mostAdded img {
+    padding: 5px;
+}
+
+.mostAdded footer {
+    font-style: italic;
 }
 
 [search] footer {

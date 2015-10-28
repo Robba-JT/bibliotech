@@ -36,7 +36,7 @@ module.exports = function (grunt) {
                 "options": {
                     "nodeArgs": ["--debug"],
                     "cwd": __dirname,
-                    "ignore": ["node_modules/**", "root/**", "logs/**", "views/**", "gruntfile.js"]
+                    "ignore": ["node_modules/**", "root/**", "logs/**", "views/**", "gruntfile.js", "requests.js"]
                 }
             },
             "prod": {
@@ -46,7 +46,7 @@ module.exports = function (grunt) {
                         "NODE_ENV": "production"
                     },
                     "cwd": __dirname,
-                    "ignore": ["node_modules/**", "root/**", "logs/**", "views/**", "gruntfile.js"]
+                    "ignore": ["node_modules/**", "root/**", "logs/**", "views/**", "gruntfile.js", "requests.js"]
                 }
             }
         },

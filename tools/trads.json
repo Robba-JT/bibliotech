@@ -55,6 +55,7 @@
             "mNote": "Note moyenne",
             "modify": "Modifier",
             "modPwd": "Modifier mot de passe",
+            "mostAdded": "Les lecteurs ont aussi ajoutés",
             "msgPwd": "Mot de passe invalide!",
             "name": "Nom",
             "navigatorError": "Votre navigateur n'est pas compatible!!!",
@@ -121,7 +122,7 @@
             "lang": "fr",
             "name": "Nom",
             "password": "Mot de passe",
-            "title": "Bibliotech Login",
+            "title": "Bibliotech",
             "valid": "Valider",
             "welcome": "Biblio.tech"
         },
@@ -184,6 +185,7 @@
             "mask": "Menu",
             "modify": "Change",
             "modPwd": "Change password",
+            "mostAdded": "Readers have also added",
             "mNote": "Average rating",
             "msgPwd": "Invalid password!",
             "name": "Name",
@@ -251,7 +253,7 @@
             "lang": "en",
             "name": "Name",
             "password": "Password",
-            "title": "Bibliotech Login",
+            "title": "Bibliotech",
             "valid": "Valid",
             "welcome": "Biblio.tech"
         },

@@ -38,8 +38,8 @@
                             if (!µ.one("#sort > div").hasClass("sortBy")) {
                                 µ.one(".sortBy").toggleClass("sortBy", false);
                                 µ.one("#sort > div").toggleClass("sortBy", true);
-                                bookcells.cells =  _.sortByOrder(bookcells.cells, "title");
                             }
+                            bookcells.cells =  _.sortByOrder(bookcells.cells, "title");
                         }
                     }
                 };
@@ -50,8 +50,9 @@
                 };
                 bookcells.reset = function () {
                     _.assign(scope.waiting, { "screen": true, "icon": true, "anim": true });
-                    this.cells.length = 0;
-                    this.filtre = this.last = this.tag = null;
+                    delete this.cells;
+                    delete this.collection;
+                    scope.tags.last = scope.navbar.filtre = scope.navbar.last = null;
                     µ.one("[bookcells]").css({ "top": µ.one("#navbar").clientHeight });
                 };
 
