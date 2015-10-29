@@ -13,18 +13,19 @@
                     scope.navbar.filtre = search.last = scope.tags.last = null;
                     if (µ.one(".sortBy")) { µ.one(".sortBy").toggleClass("sortBy", false); }
                     if (!_.isEqual(this.result, this.last)) {
-                        this.last = this.result;
-                        scope.bookcells.reset();
-                        idb.getQuery(this.result)
-                            .then(function (cells) {
-                                search.reset();
-                                scope.bookcells.cells = cells;
-                                _.assign(scope.waiting, { "screen": false, "icon": false, "anim": false });
-                            })
-                            .catch(function () {
-                                socks.emit("searchBooks", search.last);
-                                search.reset();
-                            });
+                        scope.bookcells.reset().then(function () {
+                            search.last = search.result;
+                            idb.getQuery(search.result)
+                                .then(function (cells) {
+                                    search.reset();
+                                    scope.bookcells.cells = cells;
+                                    _.assign(scope.waiting, { "screen": false, "icon": false, "anim": false });
+                                })
+                                .catch(function () {
+                                    socks.emit("searchBooks", search.last);
+                                    search.reset();
+                                });
+                        });
                     }
                 };
                 search.associated = function () {
@@ -34,18 +35,19 @@
                     scope.navbar.filtre = search.last = scope.tags.last = null;
                     if (µ.one(".sortBy")) { µ.one(".sortBy").toggleClass("sortBy", false); }
                     if (!_.isEqual(query, this.last)) {
-                        this.last = query;
-                        scope.bookcells.reset();
-                        idb.getQuery(query)
-                            .then(function (cells) {
-                                search.reset();
-                                search.cells = cells;
-                                _.assign(scope.waiting, { "screen": false, "icon": false, "anim": false });
-                            })
-                            .catch(function () {
-                                socks.emit("associated", query.associated);
-                                search.reset();
-                            });
+                        scope.bookcells.reset().then(function () {
+                            search.last = query;
+                            idb.getQuery(query)
+                                .then(function (cells) {
+                                    search.reset();
+                                    search.cells = cells;
+                                    _.assign(scope.waiting, { "screen": false, "icon": false, "anim": false });
+                                })
+                                .catch(function () {
+                                    socks.emit("associated", query.associated);
+                                    search.reset();
+                                });
+                        });
                     }
                 };
                 search.recommanded = function () {
@@ -55,18 +57,19 @@
                     scope.navbar.filtre = search.last = scope.tags.last = null;
                     if (µ.one(".sortBy")) { µ.one(".sortBy").toggleClass("sortBy", false); }
                     if (!_.isEqual(query, search.last)) {
-                        search.last = query;
-                        scope.bookcells.reset();
-                        idb.getQuery(query)
-                            .then(function (cells) {
-                                search.reset();
-                                scope.bookcells.cells = cells;
-                                _.assign(scope.waiting, { "screen": false, "icon": false, "anim": false });
-                            })
-                            .catch(function () {
-                                socks.emit("recommanded");
-                                search.reset();
-                            });
+                        scope.bookcells.reset().then(function () {
+                            search.last = query;
+                            idb.getQuery(query)
+                                .then(function (cells) {
+                                    search.reset();
+                                    scope.bookcells.cells = cells;
+                                    _.assign(scope.waiting, { "screen": false, "icon": false, "anim": false });
+                                })
+                                .catch(function () {
+                                    socks.emit("recommanded");
+                                    search.reset();
+                                });
+                        });
                     }
                 };
             }]

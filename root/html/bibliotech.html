@@ -5,6 +5,7 @@
         <meta http-equiv="Content-type" content="text/html; charset=utf-8">
         <meta name="description" content="[{trads.headDesc}]">
         <meta name="author" content="Julien Tassin"/>
+        <meta name="keywords" content="bibliotech, bibliothèque, library, bibliothèque virtuelle, virtual library, bibliothèque personnelle, personnal library"/>
         <meta property="og:title" content="Biblio.tech" />
         <meta property="og:type" content="website" />
         <meta property="og:description" content="[{trads.headDesc}]" />
@@ -77,7 +78,7 @@
         <section id="detailWindow" class="window" ng-class="(!detail.book.base64 && !detail.book.alternative) && 'noCover'" detail ng-show="!!windows.opened.detail" ng-style="{ 'top': windows.top + 'px' }" def-cloak></section>
 
         <section id="previewWindow" class="window" ng-show="!!windows.opened.preview" ng-style="{ 'top': windows.top + 'px' }" def-cloak>
-            <span class="closePreview" title="[{trads.close}]" ng-click="windows.close('preview')"></span>
+            <span class="closePreview" title="[{trads.close}]" ng-click="preview.close()"></span>
             <span class="googlePreview" title="Google Preview" ng-click="navbar.openUrl(detail.book.link)"></span>
             <iframe id="iPreview" name="iPreview" seamless=true></iframe>
         </section>

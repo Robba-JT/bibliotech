@@ -85,6 +85,7 @@ module.exports.BooksAPI = BooksAPI = function (db, token) {
             if (!_.isEmpty(auth.credentials)) { _.assign(params, { "auth": auth }); } else { _.assign(params, { "key": googleConfig.key }); }
             if (typeof gFunction !== "function") { return callback ? callback(new Error("Invalid Call!!!")) : new Error("Invalid Call!!!"); }
             gFunction(params, function (error, success) {
+                if (!!error) { console.log("googleRequest", error.code, error); }
                 if (!!error && error.code !== 401) { return callback ? callback(error) : error; }
                 if (!!error && error.code === 401) {
                     refreshCredentials()
@@ -125,6 +126,7 @@ module.exports.BooksAPI = BooksAPI = function (db, token) {
         },
         refreshCredentials = function () {
             return new Q.Promise(function (resolve, reject) {
+                if (_.isEmpty(auth.credentials)) { reject("No oauth connexion!!!"); }
                 auth.refreshAccessToken(function (error, token) {
                     if (!!error || !token) { return reject(error || new Error("No refresh token!!!")); }
                     setCredentials(token);

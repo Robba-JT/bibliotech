@@ -66,20 +66,21 @@
                 navbar.openUrl = function (url) { window.open(url); };
                 navbar.mailTo = function () { µ.location.href = "mailto:admin@biblio.tech?subject=Bibliotech"; };
                 navbar.collection = function () {
-                    _.assign(scope.waiting, { "screen": true, "icon": true });
-                    if (!navbar.isCollect) {
-                        scope.bookcells.reset();
-                        scope.bookcells.cells = scope.bookcells.collection;
-                        navbar.isCollect = true;
-                    }
                     navbar.saveorder = false;
-                    navbar.filtre = navbar.last = scope.search.last = scope.tags.last = null;
                     if (µ.one(".sortBy") && !µ.one("#sort > div").hasClass("sortBy")) { µ.one(".sortBy").toggleClass("sortBy", false); }
                     µ.one("#sort > div").toggleClass("sortBy", true);
-                    scope.bookcells.cells = _.sortByOrder(scope.bookcells.cells, "title");
-                    _.forEach(scope.bookcells.cells, function (cell) { _.assign(cell, { "toHide": false, "toFilter": false}); });
                     window.scroll(0, 0);
-                    _.assign(scope.waiting, { "screen": false, "icon": false, "anim": false });
+                    if (!navbar.isCollect) {
+                        scope.bookcells.reset().then(function () {
+                            scope.bookcells.cells = _.sortByOrder(scope.bookcells.collection, "title");
+                            navbar.isCollect = true;
+                            _.assign(scope.waiting, { "screen": false, "icon": false, "anim": false });
+                        });
+                    } else {
+                        navbar.filtre = navbar.last = scope.search.last = scope.tags.last = null;
+                        scope.bookcells.cells = _.sortByOrder(scope.bookcells.cells, "title");
+                        _.forEach(scope.bookcells.cells, function (cell) { _.assign(cell, { "toHide": false, "toFilter": false}); });
+                    }
                 };
                 navbar.filter = function () {
                     var filtre = this.filtre.toLowerCase().noAccent().noSpace().split(" ").sort(),

@@ -465,7 +465,7 @@ module.exports = function main (socket, allSessions) {
                     for (jta = 0, lg = results.length; jta < lg; jta++) {
                         if (results[jta].state === "fulfilled") { mostAdded.push(results[jta].value); }
                     }
-                    if (mostAdded.length) { socket.emit("mostAdded", mostAdded); }
+                    if (mostAdded.length) { socket.emit("mostAdded", { "book": bookid, "mostAdded": mostAdded }); }
                 });
             })
             .catch(function (error) { console.error("mostAdded", error); });

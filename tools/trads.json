@@ -97,7 +97,7 @@
             "valid": "Valider",
             "warning": "Attention",
             "waiting": "Veuillez patienter...",
-            "welcome": "Bienvenu sur Biblio.tech!"
+            "welcome": "Bienvenu sur BiblioTech!"
         },
         "error": {
             "invalidCredential": "Identifiants incorrects!",
@@ -122,9 +122,9 @@
             "lang": "fr",
             "name": "Nom",
             "password": "Mot de passe",
-            "title": "Bibliotech",
+            "title": "BiblioTech",
             "valid": "Valider",
-            "welcome": "Biblio.tech"
+            "welcome": "BiblioTech"
         },
         "maintenance": {
             "message": "Le site est actuellement en cours de maintenance."
@@ -228,7 +228,7 @@
             "valid": "Ok",
             "warning": "Warning",
             "waiting": "Please wait...",
-            "welcome": "Welcome to Biblio.tech!"
+            "welcome": "Welcome to BiblioTech!"
         },
         "error": {
             "invalidCredential": "Invalid credentials!",
@@ -253,9 +253,9 @@
             "lang": "en",
             "name": "Name",
             "password": "Password",
-            "title": "Bibliotech",
+            "title": "BiblioTech",
             "valid": "Valid",
-            "welcome": "Biblio.tech"
+            "welcome": "BiblioTech"
         },
         "maintenance": {
             "message": "Site under maintenance"

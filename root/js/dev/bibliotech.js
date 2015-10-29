@@ -55,7 +55,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 this.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
                 return new Promise(function (resolve, reject) {
                     if (!!self.indexedDB) {
-                        var request = indexedDB.open(session, 1);
+                        var request = self.indexedDB.open(session, 1);
                         request.onerror = function () { reject(); };
                         request.onsuccess = function () {
                             console.info("DB Opened", new Date().toLocaleString());
@@ -120,6 +120,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                                     reconnect(this);
                                     root.windows.close("*");
                                     root.bookcells.reset();
+                                    delete root.bookcells.collection;
                                     µ.setEvents({ "mousemove": mouseMove });
                                     setTimeout(function () { _.assign(root.waiting, { "connect": true }); }, 2000);
                                     root.$apply();

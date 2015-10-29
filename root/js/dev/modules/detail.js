@@ -138,6 +138,10 @@
                     µ.one("[target]").submit();
                     scope.windows.open("preview");
                 };
+                preview.close = function () {
+                    scope.windows.close("preview");
+                    µ.one("#iPreview").contentWindow.document.write("");
+                };
 
                 socks.on("returnDetail", function (book) {
                     idb.setDetail(book);
@@ -166,7 +170,9 @@
                 });
 
                 socks.on("mostAdded", function (response) {
-                    detail.mostAdded = response;
+                    if (response.book === detail.book.id) {
+                        detail.mostAdded = response.mostAdded;
+                    }
                 });
 
                 angular.element(µ.one("[detail] article")).on("contextmenu", function (event) {
@@ -232,6 +238,8 @@
                         cellByRow = ~~(µ.one("[bookcells]").clientWidth / 256),
                         bookcells = µ.alls(".bookcell:not(.ng-hide)");
 
+                    if (index === -1) { return; }
+
                     switch (this.getAttribute("nav")) {
                         case "top":
                             if (index > cellByRow) { next -= cellByRow; }
@@ -250,7 +258,7 @@
                     }
                     if (next !== index) {
                         if (bookcells[index].offsetTop !== bookcells[next].offsetTop) { window.scroll(0, bookcells[next].offsetTop); }
-                        if (cells[next].inCollection) { detail.show(cells[next]); } else { detail.prepare(next); }
+                        if (cells[next].inCollection) { detail.show(cells[next]); } else { detail.prepare(cells[next].index); }
                     }
                 });
             }]
