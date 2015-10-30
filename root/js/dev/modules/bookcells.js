@@ -4,7 +4,7 @@
         return {
             restrict: "A",
             templateUrl: "./html/bookcells.html",
-            controller: ["$scope", "$timeout", "$socket", "$idb", function (scope, timeout, socks, idb) {
+            controller: ["$scope", "$socket", "$idb", function (scope, socks, idb) {
                 var bookcells = scope.bookcells = {},
                     cellsRender = function (cells, isCollection) {
                         if (!bookcells.cells) { bookcells.cells = []; }
@@ -14,7 +14,7 @@
                                 notYet = _.findIndex(bookcells.cells, _.matchesProperty("id", cell.id)) === -1;
 
                             if (notYet) {
-                                bookcells.cells.push(_.assign(angular.copy(bookcells.collection[isIn]) || cell, {
+                                bookcells.cells.push(_.assign(bookcells.collection[isIn] || cell, {
                                     "index": bookcells.cells.length,
                                     "inCollection": isCollection || isIn !== -1
                                 }));
@@ -30,7 +30,7 @@
                         if (!this.cell) { _.assign(_.find(bookcells.cells, _.matchesProperty("id", cell.id)), { "inCollection": true }); }
                         bookcells.collection.push(cell);
                         bookcells.collection = _.sortByOrder(bookcells.collection, "title");
-                        _.assign(cell, { "inCollection": true });
+                        _.assign(cell, { "inCollection": true, "index": bookcells.collection.length - 1 });
                         if (!cell.new) {
                             socks.emit("addBook", cell.id);
                         } else if (!!scope.navbar.isCollect) {
@@ -49,9 +49,9 @@
                     if (!!scope.navbar.isCollect) { _.pull(this.cells, cell); } else { _.assign(cell, { "inCollection": false}); }
                 };
                 bookcells.reset = function () {
+                    _.assign(scope.waiting, { "screen": true, "icon": true, "anim": true });
                     return new Promise(function (resolve) {
                         delete bookcells.cells;
-                        _.assign(scope.waiting, { "screen": true, "icon": true, "anim": true });
                         scope.tags.last = scope.search.last = scope.navbar.filtre = scope.navbar.last = null;
                         µ.one("[bookcells]").css({ "top": µ.one("#navbar").clientHeight });
                         resolve();
@@ -73,6 +73,10 @@
                 });
                 socks.on("covers", function (covers) {
                     for (var jta = 0, lg = covers.length; jta < lg; jta++) {
+                        if (!covers[jta].id) {
+                            console.error("cover", covers[jta]);
+                            continue;
+                        }
                         var cell = _.find(bookcells.cells, _.matchesProperty("id", covers[jta].id)) || {},
                             inCollect = _.find(bookcells.collection, _.matchesProperty("id", covers[jta].id)) || {};
 
@@ -84,6 +88,17 @@
                         }
                     }
                     console.debug("end load cover", (new Date()).toString());
+                });
+                socks.on("cover", function (cover) {
+                    if (!cover.id) { return console.error("cover", covers[jta]); }
+                    var inCollect = _.find(bookcells.collection, _.matchesProperty("id", cover.id)) || {},
+                        cell = _.find(bookcells.cells, _.matchesProperty("id", cover.id));
+                    inCollect.base64 = cell.base64 = cover.base64;
+                    cell.alternative = cover.alternative;
+                    if (scope.detail.book && scope.detail.book.id === cover.id) {
+                        scope.detail.book.base64 = cover.base64;
+                        scope.detail.book.alternative = cover.alternative;
+                    }
                 });
                 socks.on("books", function (part) {
                     cellsRender(part);

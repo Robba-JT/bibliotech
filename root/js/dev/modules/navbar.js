@@ -4,7 +4,7 @@
         return {
             restrict: "A",
             templateUrl: "./html/navbar.html",
-            controller: ["$socket", "$scope", "$window", "$idb", "$http", function (socks, scope, window, idb, http) {
+            controller: ["$socket", "$scope", "$window", "$idb", "$http", "$timeout", function (socks, scope, window, idb, http, timeout) {
                 var navbar = scope.navbar = {},
                     tags = scope.tags = { "cloud": false },
                     windows = scope.windows = { "opened": {}, "top": 0 },
@@ -72,9 +72,12 @@
                     window.scroll(0, 0);
                     if (!navbar.isCollect) {
                         scope.bookcells.reset().then(function () {
-                            scope.bookcells.cells = _.sortByOrder(scope.bookcells.collection, "title");
-                            navbar.isCollect = true;
-                            _.assign(scope.waiting, { "screen": false, "icon": false, "anim": false });
+                            timeout(function () {
+                                scope.bookcells.cells = angular.copy(_.sortByOrder(scope.bookcells.collection, "title"));
+                                navbar.isCollect = true;
+                            }).then(function () {
+                                _.assign(scope.waiting, { "screen": false, "icon": false, "anim": false });
+                            });
                         });
                     } else {
                         navbar.filtre = navbar.last = scope.search.last = scope.tags.last = null;

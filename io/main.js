@@ -78,13 +78,13 @@ module.exports = function main (socket, allSessions) {
                             if (!!cover && !!cover.value) { infos.base64 = cover.value.base64; }
                             callback(null, infos);
                         });
-                }).catch(function (error) { console.error("error", error); });
+                }).catch(function (error) { console.error(thisUser._id, "error", error); });
         },
         searchLoop = function (fn, param, callback) {
             var defLoop = Q.defer(), listBooks = [],
                 loop = function () {
                     bookAPI[fn](param, function (error, response) {
-                        if (!!error) { console.error("searchLoop", error); }
+                        if (!!error) { console.error(thisUser._id, "searchLoop", error); }
                         if (!!response && !!response.items) {
                             var books = bookAPI.formatBooks(response.items), defCovers = [];
                             _.forEach(books, function (book) { defCovers.push(bookAPI.loadBase64(book.cover, book.id)); });
@@ -145,7 +145,13 @@ module.exports = function main (socket, allSessions) {
                 returnInfo = function (elt) { return _.isEqual(elt.book, books[book].id); },
                 returnComments = function (elt) { return elt._id.user !== thisUser._id; },
                 returnUserComments = function (elt) { return elt._id.user === thisUser._id; },
-                returnCover = function (cover) { return _.isEqual(cover._id.book, books[book].id); };
+                returnCover = function (cover) { return _.isEqual(cover._id.book, books[book].id); },
+                loadCover = function (id, cover) {
+                    return bookAPI.loadBase64(cover, id).then(function (base64) {
+                        socket.emit("cover", base64);
+                        return base64;
+                    });
+                };
 
             if (notifs.length) { socket.emit("notifs", notifs); }
 
@@ -171,11 +177,12 @@ module.exports = function main (socket, allSessions) {
                         bookAPI.removeCovers({ "_id": { "user": thisUser._id , "book": books[book].id }});
                         userAPI.updateUser({ "_id": thisUser._id, "books.book": books[book].id }, {"$unset": { "books.$.cover" : true }});
                     } else {
-                        sendCovers.push({ "id": books[book].id, "alternative": cover.cover });
+                        //sendCovers.push({ "id": books[book].id, "alternative": cover.cover });
+                        books[book].alternative = cover.cover;
                     }
                 }
                 if (!!books[book].cover) {
-                    def64.push(bookAPI.loadBase64(books[book].cover, books[book].id));
+                    def64.push(loadCover(books[book].id, books[book].cover));
                     books[book].cover = true;
                 }
                 toSend.push(books[book]);
@@ -189,11 +196,11 @@ module.exports = function main (socket, allSessions) {
             Q.allSettled(def64).then(function (results) {
                 if (!!results.length) { sendCovers.push(_.map(results, "value")); }
                 sendCovers = _.flatten(sendCovers);
-                socket.emit("covers", sendCovers);
+                //socket.emit("covers", sendCovers);
                 for (var jta = 0, lg = sendCovers.length; jta < lg; jta++) {
                     _.assign(_.find(thisBooks, _.matchesProperty("id", sendCovers[jta].id)), sendCovers[jta]);
                 }
-            }).catch(function (error) { console.error("isConnected - Q.allSettled(def64)", error); });
+            }).catch(function (error) { console.error(thisUser._id, "isConnected - Q.allSettled(def64)", error); });
         });
     });
 
@@ -204,7 +211,7 @@ module.exports = function main (socket, allSessions) {
             socket.emit("endRequest", (!!lastSearch.books) ? lastSearch.books.length : 0);
         } else {
             searchLoop("searchBooks", param, function (books) { socket.emit("books", books); })
-                .catch(function (error) { console.error("searchBooks", error); })
+                .catch(function (error) { console.error(thisUser._id, "searchBooks", error); })
                 .done(function (books) {
                     if (!!books) { lastSearch = { "param": param, "books": books }; }
                     socket.emit("endRequest", (!!books) ? books.length : 0);
@@ -214,7 +221,7 @@ module.exports = function main (socket, allSessions) {
 
     socket.on("searchDetail", function (bookid) {
         searchDetail(bookid, function (error, response) {
-            if (!!error) { return console.error("searchDetail", error); }
+            if (!!error) { return console.error(thisUser._id, "searchDetail", error); }
             if (!!response) {
                 lastDetail = response;
             }
@@ -225,7 +232,7 @@ module.exports = function main (socket, allSessions) {
     socket.on("addBook", function (bookid) {
         addBook(bookid)
             .then(function (book) { socket.emit("returnAdd", book); })
-            .catch(function (error) { console.error("addBook", error); });
+            .catch(function (error) { console.error(thisUser._id, "addBook", error); });
     });
 
     socket.on("addDetail", function () { addBookToUser(lastDetail); });
@@ -254,7 +261,7 @@ module.exports = function main (socket, allSessions) {
             delete data.tags;
         }
         if (_.keys(data).length > 1) { defReq.push(defBooks("updateBook", _.assign(data, { "id": data.id }))); }
-        Q.allSettled(defReq).catch(function (error) { console.error("updateBook", error); });
+        Q.allSettled(defReq).catch(function (error) { console.error(thisUser._id, "updateBook", error); });
     });
 
     socket.on("removeBook", function (bookid) {
@@ -265,7 +272,7 @@ module.exports = function main (socket, allSessions) {
         if (_.isEqual(bookid.user, thisUser._id)) {
             defBooks("removeOne", { "id": bookid });
         } else if (!!thisUser.googleSync && !bookid.user) {
-            defBooks("googleRemove", { "volumeId": bookid }).catch(function (error) { console.error("googleRemove", error); });
+            defBooks("googleRemove", { "volumeId": bookid }).catch(function (error) { console.error(thisUser._id, "googleRemove", error); });
         }
     });
 
@@ -278,7 +285,7 @@ module.exports = function main (socket, allSessions) {
                 socket.emit("updateUser", data);
             })
             .catch(function (error) {
-                console.error("updateUser", error);
+                console.error(thisUser._id, "updateUser", error);
                 socket.emit("updateNok");
             });
     });
@@ -293,7 +300,7 @@ module.exports = function main (socket, allSessions) {
             userAPI.validateLogin(thisUser._id, password)
                 .then(isDeleted)
                 .catch(function (error) {
-                    console.error("deleteUser", error);
+                    console.error(thisUser._id, "deleteUser", error);
                     socket.emit("updateNok");
                 });
         } else {
@@ -303,7 +310,7 @@ module.exports = function main (socket, allSessions) {
         userAPI.validateLogin(thisUser._id, password)
             .then(isDeleted)
             .catch(function (error) {
-                console.error("deleteUser", error);
+                console.error(thisUser._id, "deleteUser", error);
                 socket.emit("updateNok");
             });
     });
@@ -312,7 +319,7 @@ module.exports = function main (socket, allSessions) {
         var infos = _.find(thisBooks, _.matchesProperty("id", data.id));
         if (!infos) { return false; }
         /*userAPI.hasBook(data.recommand.toLowerCase(), data.id, function (error, response) {
-            if (!!error) { console.error("sendNotif", error); }
+            if (!!error) { console.error(thisUser._id, "sendNotif", error); }
             if (!response) {
                 var notif = {
                     "_id": { "to": data.recommand.toLowerCase(), "book": data.id },
@@ -342,12 +349,12 @@ module.exports = function main (socket, allSessions) {
                     if (!!socketId) { socket.to(socketId).emit("newNotif", notif); }
                     mailAPI.sendToFriend(thisUser.name, thisUser._id, data.recommand.toLowerCase(), infos);
                 }
-            }).catch(function (error) { console.error("sendNotif", error); });
+            }).catch(function (error) { console.error(thisUser._id, "sendNotif", error); });
     });
 
     socket.on("readNotif", function (notif) {
         searchDetail(notif._id.book, function (error, response) {
-            if (!!error) { console.error("readNotif", error); }
+            if (!!error) { console.error(thisUser._id, "readNotif", error); }
             if (!!response) {
                 response.from = notif.from;
                 if (!response.base64 && !!notif.alt) {
@@ -367,13 +374,13 @@ module.exports = function main (socket, allSessions) {
 
     socket.on("associated", function (bookid) {
         searchLoop("associatedBooks", { "volumeId": bookid }, function (books) { socket.emit("books", books); })
-            .catch(function (error) { console.error("associated", error); })
+            .catch(function (error) { console.error(thisUser._id, "associated", error); })
             .done(function (books) { socket.emit("endRequest", (!!books) ? books.length : 0); });
     });
 
     socket.on("recommanded", function () {
         searchLoop("myGoogleBooks", { "search": true, "shelf": 8 }, function (books) { socket.emit("books", books); })
-            .catch(function (error) { console.error("recommanded", error); })
+            .catch(function (error) { console.error(thisUser._id, "recommanded", error); })
             .done(function (books) { socket.emit("endRequest", (!!books) ? books.length : 0); });
     });
 
@@ -403,7 +410,7 @@ module.exports = function main (socket, allSessions) {
                         socket.emit("covers", _.flatten(sendCovers));
                     });
                 })
-                .catch(function (error) { console.error("importNow", error); })
+                .catch(function (error) { console.error(thisUser._id, "importNow", error); })
                 .done(function () { socket.emit("endCollect", {}); });
         });
     });
@@ -415,7 +422,7 @@ module.exports = function main (socket, allSessions) {
             defExport.push(defBooks("googleAdd", { "volumeId": thisUser.books[jta].book }));
         }
         Q.allSettled(defExport)
-            .catch(function (error) { console.error("exportNow", error); });
+            .catch(function (error) { console.error(thisUser._id, "exportNow", error); });
     });
 
     socket.on("newbook", function (data) {
@@ -468,6 +475,6 @@ module.exports = function main (socket, allSessions) {
                     if (mostAdded.length) { socket.emit("mostAdded", { "book": bookid, "mostAdded": mostAdded }); }
                 });
             })
-            .catch(function (error) { console.error("mostAdded", error); });
+            .catch(function (error) { console.error(thisUser._id, "mostAdded", error); });
     });
 };

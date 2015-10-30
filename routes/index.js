@@ -106,7 +106,7 @@ module.exports = exports = function (app, mongoStore, io) {
 		)
         .get("/gAuth",
             passport.authenticate("google", {
-                /*"approvalPrompt": "force",*/
+                "approvalPrompt": "force",
                 "scope": "email https://www.googleapis.com/auth/books",
                 "accessType": "offline"
             })

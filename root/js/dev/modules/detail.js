@@ -11,7 +11,6 @@
                     getMainColor = function (image) {
                         var rgbColor = thief.getColor(image),
                             hexColor = "#" + ((1 << 24) + (rgbColor[0] << 16) + (rgbColor[1] << 8) + rgbColor[2]).toString(16).substr(1);
-
                         return { "rgb": rgbColor, "hex": hexColor};
                     };
 
@@ -32,25 +31,31 @@
                 };
                 detail.updateBook = function () {
                     scope.windows.close("detail");
+                    if (!this.ref) { return; }
                     if (!angular.equals(new Date(this.book.publishedDate), this.XDate)) { this.book.publishedDate = this.XDate; }
                     if (!angular.equals(this.ref, this.book)) {
-                        var diffs = {}, cell = _.find(scope.bookcells.cells, _.matchesProperty("id", this.ref.id));
+                        var diffs = {},
+                            cell = _.find(scope.bookcells.cells, _.matchesProperty("id", this.ref.id)),
+                            collect = _.find(scope.bookcells.collection, _.matchesProperty("id", this.ref.id));
+
                         _.forEach(this.book, function (value, key) { if (!_.isEqual(value, detail.ref[key])) { diffs[key] = value; }});
                         _.assign(this.ref, this.book);
-                        if (cell) { _.assign(cell, this.book); }
                         if (!!diffs.userComment) { this.book.userDate = diffs.userDate = new Date(); }
+                        if (cell) { _.assign(cell, diffs); }
+                        if (collect) { _.assign(collect, diffs); }
                         socks.emit("updateBook", _.merge(diffs, { "id": this.book.id }));
                         if (!!diffs.tags) { scope.tags.init(); }
                     }
                 };
                 detail.searchBy = function (evt) {
+                    if (!!scope.waiting && !!scope.waiting.anim) { return false; }
                     scope.search.result = { "by": evt.target.getAttribute("searchby"), "search": evt.target.html(), lang: "fr" };
                     scope.search.send();
                 };
                 detail.uploadCover = function () { µ.one("[type=file]").trigger("click"); };
                 detail.prepare = function (index) {
                     var cell = scope.bookcells.cells[index],
-                        book = _.find(scope.bookcells.collection, _.matchesProperty("id", cell.id));
+                        book = angular.copy(_.find(scope.bookcells.collection, _.matchesProperty("id", cell.id)));
 
                     _.assign(scope.waiting, { screen: true, icon: true });
                     if (!book && !cell.updated) {
@@ -83,8 +88,8 @@
                         µ.one("[detail]").css({ "background": "radial-gradient(circle at 50%, whitesmoke 0%, #909090 100%)" });
                     }
                     scope.waiting.icon = false;
-                    detail.ref = data;
-                    detail.book = angular.copy(data);
+                    detail.ref = angular.copy(data);
+                    detail.book = data;
                     detail.XDate = detail.book.publishedDate ? new Date(detail.book.publishedDate) : null;
                     detail.edit.able = _.isPlainObject(detail.book.id) && detail.book.id.user === scope.profile.user.id;
                     if (_.isEmpty(detail.book)) { _.assign(detail.edit, { "able": true, "new": true }); }
@@ -208,7 +213,7 @@
                     }
                 });
                 angular.element(µ.one("#detailCover")).on("load", detail.setBack);
-                angular.element(µ.alls(".link")).on("click", detail.searchBy);
+                angular.element(µ.alls("[searchby]")).on("click", detail.searchBy);
                 angular.element(µ.alls(".note"))
                     .on("click", function (event) {
                         if (detail.book.userNote === "1" && event.target.getAttribute("note") === "1") { detail.book.userNote = "0"; } else {
@@ -257,7 +262,8 @@
                             return;
                     }
                     if (next !== index) {
-                        if (bookcells[index].offsetTop !== bookcells[next].offsetTop) { window.scroll(0, bookcells[next].offsetTop); }
+                        detail.close();
+                        //if (bookcells[index].offsetTop !== bookcells[next].offsetTop) { window.scroll(0, bookcells[next].offsetTop); }
                         if (cells[next].inCollection) { detail.show(cells[next]); } else { detail.prepare(cells[next].index); }
                     }
                 });
