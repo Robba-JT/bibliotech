@@ -33,6 +33,15 @@ img {
     display: none !important;
 }
 
+/*.window {
+  -webkit-transition:all linear .25s;
+  transition:all linear .25s;
+}
+
+.window.ng-hide-remove {
+  opacity:0;
+}*/
+
 .windowheader div {
     float: right;
     cursor: pointer;

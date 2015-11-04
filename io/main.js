@@ -69,6 +69,7 @@ module.exports = function main (socket, allSessions) {
                         .catch(callback);
                 })
                 .then(function (infos) {
+                    if (!infos || !infos.id) { return; }
                     var subs = [];
                     subs.push(defBooks("loadComments", { "_id.book" : infos.id }));
                     if (!!infos.cover) { subs.push(bookAPI.loadBase64(infos.cover)); }
@@ -269,6 +270,7 @@ module.exports = function main (socket, allSessions) {
         _.remove(thisBooks, { "id": bookid });
         defBooks("removeCovers", { "_id": { "user": thisUser._id, "book": bookid }});
         defBooks("removeNotifs", { "id.book": bookid, "from": thisUser._id });
+        defBooks("removeComment", { "_id": { "user": thisUser._id, "book": bookid }});
         if (_.isEqual(bookid.user, thisUser._id)) {
             defBooks("removeOne", { "id": bookid });
         } else if (!!thisUser.googleSync && !bookid.user) {

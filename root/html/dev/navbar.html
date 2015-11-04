@@ -42,11 +42,11 @@
 
 <div id="cloud" ng-show="windows.opened.cloud"><div title="[{trads.close}]" ng-click="windows.close('cloud')" def-cloak></div></div>
 
-<section id="contactsWindow" class="window" ng-show="windows.opened.contacts" ng-style="{ 'top': windows.top + 'px' }" def-cloak>
+<section id="contactsWindow" class="window" ng-show="!!windows.opened.contacts" ng-style="{ 'top': windows.opened.contacts + 'px' }" def-cloak>
     <header class="windowheader">&nbsp;Contacts<div class="closeWindow" title="[{trads.close}]" ng-click="windows.close('contacts')"></div></header>
     <article>
         <div id="googleLink" ng-click="navbar.openUrl('https://plus.google.com/+BiblioTechWeb')" title="Google +"></div>
-        <div id="facebookLink" ng-click="navbar.openUrl('https://www.facebook.com/my.biblio.tech')" title="Facebook"></div>
+        <div id="facebookLink" ng-click="navbar.openUrl('https://www.facebook.com/virtual.biblio.tech')" title="Facebook"></div>
         <div id="mailLink" ng-click="navbar.mailTo()" title="Mail"></div>
         <div id="helpLink" ng-click="windows.open('help', true)" title="Help"></div>
     </article>

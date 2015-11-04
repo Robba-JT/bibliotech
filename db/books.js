@@ -267,11 +267,15 @@ module.exports.BooksAPI = BooksAPI = function (db, token) {
     this.removeComment = function (comment, callback) {
         comments.remove({ "_id": comment._id }, callback);
     };
+    this.removeAllComments = function (userId, callback) {
+        comments.remove({ "_id.user": userId }, callback);
+    };
     this.removeCovers = removeCovers;
     this.removeNotifs = removeNotifs;
     this.removeUserData = function (userId) {
         removeNotifs({ "_id.to": userId });
-        anonimiseComments(userId);
+        //anonimiseComments(userId);
+        removeAllComments(userId);
     };
     this.updateBook = updateBook;
     this.updateComment = function (data, callback) {

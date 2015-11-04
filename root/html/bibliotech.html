@@ -75,10 +75,10 @@
 
         <section id="profileWindow" class="window" profile ng-show="!!windows.opened.profile" ng-style="{ 'top': windows.top + 'px' }" def-cloak></section>
 
-        <section id="detailWindow" class="window" ng-class="(!detail.book.base64 && !detail.book.alternative) && 'noCover'" detail ng-show="!!windows.opened.detail" ng-style="{ 'top': windows.top + 'px' }" def-cloak></section>
+        <section id="detailWindow" class="window" ng-class="(!detail.book.base64 && !detail.book.alternative) && 'noCover'" detail ng-show="!!windows.opened.detail" ng-style="{ 'top': windows.opened.detail + 'px' }" def-cloak></section>
 
-        <section id="previewWindow" class="window" ng-show="!!windows.opened.preview" ng-style="{ 'top': windows.top + 'px' }" def-cloak>
-            <span class="closePreview" title="[{trads.close}]" ng-click="preview.close()"></span>
+        <section id="previewWindow" class="window" ng-show="!!windows.opened.preview" ng-style="{ 'top': windows.opened.preview + 'px' }" def-cloak>
+            <span class="closePreview" title="[{trads.close}]" ng-click="windows.close('preview')"></span>
             <span class="googlePreview" title="Google Preview" ng-click="navbar.openUrl(detail.book.link)"></span>
             <iframe id="iPreview" name="iPreview" seamless=true></iframe>
         </section>
@@ -109,7 +109,7 @@
 
         <div bookcells></div>
 
-        <footer id="footer" title="Top" ng-show="!!footer" def-cloak></footer>
+        <footer id="footer" title="Top" ng-show="footer" def-cloak></footer>
 
         <div id="noConnect" ng-show="!!waiting.connect" def-cloak><span>[{trads.noConnect}]</span><span>[{trads.waiting}]</span></div>
 

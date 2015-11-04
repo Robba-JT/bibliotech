@@ -46,7 +46,16 @@
                 bookcells.removeBook = function (cell) {
                     _.remove(this.collection, _.matchesProperty("id", cell.id));
                     socks.emit("removeBook", cell.id);
-                    if (!!scope.navbar.isCollect) { _.pull(this.cells, cell); } else { _.assign(cell, { "inCollection": false}); }
+                    if (!!cell.tags) { scope.tags.init(); }
+                    if (!!scope.navbar.isCollect) { _.pull(this.cells, cell); } else {
+                        _.assign(cell, {
+                            "inCollection": false,
+                            "tags": [],
+                            "userNote": null,
+                            "userComment": null,
+                            "index": null
+                        });
+                    }
                 };
                 bookcells.reset = function () {
                     _.assign(scope.waiting, { "screen": true, "icon": true, "anim": true });

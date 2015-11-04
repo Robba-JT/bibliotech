@@ -3,12 +3,109 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
 } else {
     var start = new Date(),
         µ = document,
-        app = angular.module("bibliotech", ["navbar", "search", "profile", "bookcells", "detail"]);
+        app = angular.module("bibliotech", ["navbar", "search", "profile", "bookcells", "detail"/*, "ngAnimate"*/]);
 
     app.config(["$interpolateProvider", "$sceProvider", function(interpolateProvider, sceProvider) {
         interpolateProvider.startSymbol("[{");
         interpolateProvider.endSymbol("}]");
         sceProvider.enabled(false);
+    }]);
+    app.run(["$rootScope", "$http", "$window"/*, "$animate"*/,function (scope, http, win/*, animate*/) {
+        http.get("/trad").then(function (result) { scope.trads = result.data; });
+        scope.waiting = {
+            "screen": true,
+            "over": false,
+            "icon": true,
+            "anim": true
+        };
+        scope.windows = {
+            "opened": {},
+            "top": 0,
+            "close": function (win) {
+                    if (win === "*") { this.opened = {}; } else { delete this.opened[win]; }
+                    _.assign(scope.waiting, { "screen": !_.isEmpty(this.opened), "over": false });
+                },
+            "open": function (win, only) {
+                if (!!only) { this.close("*"); }
+                this.opened[win] = this.xcroll().top + 10;
+                if (win !== "sort" && win !== "notifs") {
+                    _.assign(scope.waiting, { "screen": true, "over": _.keys(this.opened).length > 1 });
+                }
+            },
+            "xcroll": function () {
+                return {
+                    "top": win.scrollY || µ.documentElement.scrollTop,
+                    "left": win.scrollX || µ.documentElement.scrollLeft
+                };
+            }
+        };
+        angular.element(win)
+            .on("selectstart", function (event) {
+                event.preventDefault();
+                if (!!event.target.tagName && !_.includes(["input", "textarea"], event.target.tagName.toLowerCase())) { return false; }
+            })
+            .on("contextmenu", function (event) {
+                event.preventDefault();
+                return false;
+            })
+            .on("resize", function () {
+                scope.bookcells.style = { "width": ~~(µ.one("[bookcells]").clientWidth / ~~(µ.one("[bookcells]").clientWidth / 256)) - ~~(µ.one("[bookcells]").clientWidth / 256) + "px" };
+                scope.windows.close("*");
+                scope.navbar.height = µ.one("#navbar").clientHeight;
+                scope.tags.reset();
+                scope.$apply();
+                µ.one("[bookcells]").css({ "top": navbar.visible ? navbar.height : 0 });
+            }).on("scroll", function () {
+                scope.$apply(scope.footer = (!!scope.windows.xcroll().top));
+            }).on("click", function (event) {
+                scope.modal.navBottom = µ.one("#navbar").clientHeight + 5;
+                scope.modal.sortLeft = µ.one("#tris").offsetLeft;
+                scope.modal.notifsLeft = µ.one("#notifications").offsetLeft;
+                if (event.target.id !== "tris") { scope.modal.sort = false; }
+                if (event.target.id !== "notifications") { scope.modal.notifs = false; }
+                if (!event.target.getAttribute("nav")) { scope.context.show = false; }
+                scope.$apply();
+            }).on("keypress, keydown", function (event) {
+                event = event || window.event;
+                var action;
+                if (!event.altKey) {
+                    if (!event.ctrlKey) {
+                        if (event.keyCode === 27) {
+                            scope.windows.close("*");
+                            action = true;
+                        }
+                    } else {
+                        if ([77, 76, 82, 80, 66, 69, 73, 72].indexOf(event.keyCode) !== -1 && scope.waiting.anim) { action = true; } else {
+                            switch (event.keyCode) {
+                                case 77: navbar.toggleMenu(); action = true; break;
+                                case 76: scope.logout(); action = true; break;
+                                case 82: windows.open("search", true); action = true; break;
+                                case 80: windows.open("profile", true); action = true; break;
+                                case 66: navbar.collection(); action = true; break;
+                                case 69: scope.tags.show(); action = true; break;
+                                case 73: windows.open("contacts", true); action = true; break;
+                                case 72: windows.open("help", true); action = true; break;
+                            }
+                        }
+                    }
+                    if (!!action) {
+                        event.preventDefault();
+                        scope.$apply();
+                        return false;
+                    }
+                }
+            });
+
+        angular.element(µ.one("#footer")).on("click", function () {
+            var timer = setInterval(function () {
+                var scr = ((scope.windows.xcroll().top / 2) - 0.1).toFixed(1);
+                win.scroll(0, scr);
+                if (scr <= 0.1) {
+                    win.scroll(0, 0);
+                    clearInterval(timer);
+                }
+            }, 100);
+        });
     }]);
     app.factory("$thief", function () {
         return {

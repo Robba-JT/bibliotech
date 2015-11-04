@@ -4,10 +4,9 @@
         return {
             restrict: "A",
             templateUrl: "./html/navbar.html",
-            controller: ["$socket", "$scope", "$window", "$idb", "$http", "$timeout", function (socks, scope, window, idb, http, timeout) {
+            controller: ["$socket", "$scope", "$window", "$idb", "$timeout", function (socks, scope, window, idb, timeout) {
                 var navbar = scope.navbar = {},
                     tags = scope.tags = { "cloud": false },
-                    windows = scope.windows = { "opened": {}, "top": 0 },
                     modal = scope.modal = { "sort": false, "notifs": false },
                     notifs = scope.notifs = {},
                     sortBy = function () {
@@ -19,33 +18,6 @@
                         this.toggleClass("sortBy", true);
                     };
 
-                scope.trads = {};
-                scope.waiting = {
-                    "screen": true,
-                    "over": false,
-                    "icon": true,
-                    "anim": true
-                };
-                scope.windows.close = function (win) {
-                    if (win === "*") { this.opened = {}; } else { delete this.opened[win]; }
-                    _.assign(scope.waiting, { "screen": !_.isEmpty(this.opened), "over": false });
-                };
-                scope.windows.open = function (win, only) {
-                    return new Promise(function (resolve) {
-                        if (!!only) { windows.close("*"); }
-                        windows.top = windows.xcroll().top + 10;
-                        windows.opened[win] = true;
-                        if (win !== "sort" && win !== "notifs") { _.assign(scope.waiting, { "screen": true, "over": _.keys(windows.opened).length > 1 }); }
-                        resolve();
-                    });
-                };
-                scope.windows.xcroll = function () {
-                    return {
-                        "top": window.scrollY || µ.documentElement.scrollTop,
-                        "left": window.scrollX || µ.documentElement.scrollLeft
-                    };
-                };
-
                 scope.logout = function () {
                     scope.waiting.screen = true;
                     if (!!idb.indexedDB) { idb.indexedDB.deleteDatabase(scope.profile.user.session); }
@@ -54,8 +26,6 @@
                     socks.close();
                     return false;
                 };
-
-                http.get("/trad").then(function (result) { scope.trads = result.data; });
 
                 navbar.visible = true;
                 navbar.height = µ.one("#navbar").clientHeight;
@@ -157,17 +127,17 @@
                     cloud.alls("span").setEvents("click", scope.tags.click);
                 };
                 tags.show = function () {
-                    new Promise(function (resolve) { resolve(windows.open("cloud", true)); })
+                    new Promise(function (resolve) { resolve(scope.windows.open("cloud", true)); })
                         .then(function () { if (!µ.alls("#cloud span").length) { scope.tags.generate(); } });
                 };
                 tags.click = function () {
-                    windows.close("*");
+                    scope.windows.close("*");
                     tags.search(this.html());
                     scope.$apply();
                 };
                 tags.search = function (tag) {
                     scope.tags.last = tag;
-                    windows.close("*");
+                    scope.windows.close("*");
                     navbar.saveorder = false;
                     window.scroll(0, 0);
                     navbar.filtre = navbar.last = "";
@@ -209,75 +179,6 @@
                 notifs.show = function (index) {
                     socks.emit("readNotif", _.pullAt(this.notifs, index)[0]);
                 };
-
-                angular.element(window)
-                    .on("selectstart", function (event) {
-                        event.preventDefault();
-                        if (!!event.target.tagName && !_.includes(["input", "textarea"], event.target.tagName.toLowerCase())) { return false; }
-                    })
-                    .on("contextmenu", function (event) {
-                        event.preventDefault();
-                        return false;
-                    })
-                    .on("resize", function () {
-                        scope.bookcells.style = { "width": ~~(µ.one("[bookcells]").clientWidth / ~~(µ.one("[bookcells]").clientWidth / 256)) - ~~(µ.one("[bookcells]").clientWidth / 256) + "px" };
-                        scope.windows.close("*");
-                        scope.navbar.height = µ.one("#navbar").clientHeight;
-                        scope.tags.reset();
-                        scope.$apply();
-                        µ.one("[bookcells]").css({ "top": navbar.visible ? navbar.height : 0 });
-                    }).on("scroll", function () {
-                        scope.footer = (!!scope.windows.xcroll().top);
-                        scope.$apply();
-                    }).on("click", function (event) {
-                        scope.modal.navBottom = µ.one("#navbar").clientHeight + 5;
-                        scope.modal.sortLeft = µ.one("#tris").offsetLeft;
-                        scope.modal.notifsLeft = µ.one("#notifications").offsetLeft;
-                        if (event.target.id !== "tris") { scope.modal.sort = false; }
-                        if (event.target.id !== "notifications") { scope.modal.notifs = false; }
-                        if (!event.target.getAttribute("nav")) { scope.context.show = false; }
-                        scope.$apply();
-                    }).on("keypress, keydown", function (event) {
-                        event = event || window.event;
-                        var action;
-                        if (!event.altKey) {
-                            if (!event.ctrlKey) {
-                                if (event.keyCode === 27) {
-                                    scope.windows.close("*");
-                                    action = true;
-                                }
-                            } else {
-                                if ([77, 76, 82, 80, 66, 69, 73, 72].indexOf(event.keyCode) !== -1 && scope.waiting.anim) { action = true; } else {
-                                    switch (event.keyCode) {
-                                        case 77: navbar.toggleMenu(); action = true; break;
-                                        case 76: scope.logout(); action = true; break;
-                                        case 82: windows.open("search", true); action = true; break;
-                                        case 80: windows.open("profile", true); action = true; break;
-                                        case 66: navbar.collection(); action = true; break;
-                                        case 69: scope.tags.show(); action = true; break;
-                                        case 73: windows.open("contacts", true); action = true; break;
-                                        case 72: windows.open("help", true); action = true; break;
-                                    }
-                                }
-                            }
-                            if (!!action) {
-                                event.preventDefault();
-                                scope.$apply();
-                                return false;
-                            }
-                        }
-                    });
-
-                angular.element(µ.one("#footer")).on("click", function () {
-                    var timer = setInterval(function () {
-                        var scr = ((scope.windows.xcroll().top / 2) - 0.1).toFixed(1);
-                        window.scroll(0, scr);
-                        if (scr <= 0.1) {
-                            window.scroll(0, 0);
-                            clearInterval(timer);
-                        }
-                    }, 100);
-                });
 
                 angular.element(µ.alls("#sort > div")).on("click", sortBy);
             }]

@@ -105,6 +105,7 @@ module.exports = function (grunt) {
                 "files": {
                     "root/js/bibliotech.lib.js": [
                         "node_modules/angular/angular.min.js",
+                        "node_modules/angular-animate/angular-animate.min.js",
                         "node_modules/lodash/index.js",
                         "node_modules/socket.io-client/socket.io.js",
                         "root/lib/color-thief.js",

@@ -1,10 +1,10 @@
 <header class="windowheader">&nbsp;<span class="direct">[{detail.book.title || trads.newBook}]</span>
-    <div class="closeWindow" title="[{trads.close}]" ng-click="detail.close()"></div>
+    <div class="closeWindow" title="[{trads.close}]" ng-click="windows.close('detail')"></div>
     <div class="detailSave" ng-show="detail.book.inCollection" title="[{trads.save}]" ng-click="detail.updateBook()"></div>
     <div class="detailAdd" ng-hide="detail.book.inCollection" title="[{trads.add}]" ng-click="detail.addBook()"></div>
     <div class="detailGbooks" ng-show="detail.book.link" title="[{trads.gbooks}]" ng-click="navbar.openUrl(detail.book.link)"></div>
     <div class="detailConnex" title="[{trads.connex}]" ng-show="!waiting.anim && detail.book.link" ng-click="search.associated()"></div>
-    <div class="detailPreview" ng-show="detail.book.access === 'SAMPLE'" title="[{trads.preview}]" ng-click="preview.open()"></div>
+    <div class="detailPreview" ng-show="detail.book.access === 'SAMPLE'" title="[{trads.preview}]" ng-click="windows.open('preview')"></div>
     <div class="detailRecommand" ng-show="detail.book.inCollection" title="[{trads.torecommand}]" ng-click="windows.open('recommand')"></div>
 </header>
 <article>

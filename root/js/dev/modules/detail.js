@@ -4,7 +4,27 @@
         return {
             restrict: "A",
             templateUrl: "./html/detail.html",
-            controller: ["$scope", "$socket", "$idb", "$thief", function (scope, socks, idb, thief) {
+            link: function (scope, attr, element) {
+                scope.$watch("windows.opened.detail", function (isVis) {
+                    if (!isVis) {
+                        scope.detail.reset();
+                        if (!!µ.one("#iPreview").contentWindow.document.body) {
+                            //µ.one("#iPreview").contentWindow.document.body.remove();
+                            µ.one("#iPreview").contentWindow.document.body.parentNode.removeChild(µ.one("#iPreview").contentWindow.document.body);
+                        }
+                    }
+                });
+                scope.$watch("windows.opened.preview", function (isVis) {
+                    if (!!isVis) {
+                        if (!µ.one("#iPreview").contentWindow.document.getElementById("viewer")) {
+                            µ.one("[target]").submit();
+                        } else if (!!µ.one("#iPreview").contentWindow.document.querySelector("[dir=ltr]")) {
+                            µ.one("#iPreview").contentWindow.document.querySelector("[dir=ltr]").scrollTop = 0;
+                        }
+                    }
+                });
+            },
+            controller: ["$scope", "$socket", "$idb", "$thief", "$timeout", function (scope, socks, idb, thief, timeout) {
                 var detail = scope.detail = {},
                     context = scope.context = {},
                     preview = scope.preview = {},
@@ -24,10 +44,6 @@
                     }
                     socks.emit("newbook", this.book);
                     this.edit.new = false;
-                };
-                detail.close = function () {
-                    detail.reset();
-                    scope.windows.close("detail");
                 };
                 detail.updateBook = function () {
                     scope.windows.close("detail");
@@ -93,7 +109,11 @@
                     detail.XDate = detail.book.publishedDate ? new Date(detail.book.publishedDate) : null;
                     detail.edit.able = _.isPlainObject(detail.book.id) && detail.book.id.user === scope.profile.user.id;
                     if (_.isEmpty(detail.book)) { _.assign(detail.edit, { "able": true, "new": true }); }
-                    scope.windows.open("detail").then(function () {
+                    /*scope.windows.open("detail").then(function () {
+                        detail.height = µ.one("[detail]").clientHeight - µ.one("[detail] header").clientHeight;
+                        µ.one(".detailBook").scrollTop = 0;
+                    });*/
+                    timeout(scope.windows.open("detail")).then(function () {
                         detail.height = µ.one("[detail]").clientHeight - µ.one("[detail] header").clientHeight;
                         µ.one(".detailBook").scrollTop = 0;
                     });
@@ -139,14 +159,14 @@
                     this.book[field] = this.book[field].noSpace();
                 };
 
-                preview.open = function () {
-                    µ.one("[target]").submit();
+                /*preview.open = function () {
+                    if (!µ.one("#iPreview").contentWindow.document.getElementById("viewer")) {
+                        µ.one("[target]").submit();
+                    } else if (!!µ.one("#iPreview").contentWindow.document.querySelector("[dir=ltr]")) {
+                        µ.one("#iPreview").contentWindow.document.querySelector("[dir=ltr]").scrollTop = 0;
+                    }
                     scope.windows.open("preview");
-                };
-                preview.close = function () {
-                    scope.windows.close("preview");
-                    µ.one("#iPreview").contentWindow.document.write("");
-                };
+                };*/
 
                 socks.on("returnDetail", function (book) {
                     idb.setDetail(book);
@@ -262,9 +282,11 @@
                             return;
                     }
                     if (next !== index) {
-                        detail.close();
-                        //if (bookcells[index].offsetTop !== bookcells[next].offsetTop) { window.scroll(0, bookcells[next].offsetTop); }
-                        if (cells[next].inCollection) { detail.show(cells[next]); } else { detail.prepare(cells[next].index); }
+                        //detail.close();
+                        timeout(scope.windows.close("detail")).then(function () {
+                            if (bookcells[index].offsetTop !== bookcells[next].offsetTop) { window.scroll(0, bookcells[next].offsetTop); }
+                            if (cells[next].inCollection) { detail.show(cells[next]); } else { detail.prepare(/*cells[next].index*/next); }
+                        });
                     }
                 });
             }]
