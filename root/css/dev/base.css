@@ -33,14 +33,14 @@ img {
     display: none !important;
 }
 
-/*.window {
-  -webkit-transition:all linear .25s;
-  transition:all linear .25s;
+.window:not(.ng-hide) {
+    animation: fadein .5s;
 }
 
-.window.ng-hide-remove {
-  opacity:0;
-}*/
+@keyframes fadein {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
 
 .windowheader div {
     float: right;

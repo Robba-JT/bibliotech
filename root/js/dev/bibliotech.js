@@ -3,14 +3,14 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
 } else {
     var start = new Date(),
         µ = document,
-        app = angular.module("bibliotech", ["navbar", "search", "profile", "bookcells", "detail"/*, "ngAnimate"*/]);
+        app = angular.module("bibliotech", ["navbar", "search", "profile", "bookcells", "detail"]);
 
     app.config(["$interpolateProvider", "$sceProvider", function(interpolateProvider, sceProvider) {
         interpolateProvider.startSymbol("[{");
         interpolateProvider.endSymbol("}]");
         sceProvider.enabled(false);
     }]);
-    app.run(["$rootScope", "$http", "$window"/*, "$animate"*/,function (scope, http, win/*, animate*/) {
+    app.run(["$rootScope", "$http", "$window", "$timeout", function (scope, http, win, timeout) {
         http.get("/trad").then(function (result) { scope.trads = result.data; });
         scope.waiting = {
             "screen": true,

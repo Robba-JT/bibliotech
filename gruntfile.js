@@ -50,19 +50,6 @@ module.exports = function (grunt) {
                 }
             }
         },
-        /*"express": {
-            "dev": {
-              "options": {
-                "script": "bibliotech.js"
-              }
-            },
-            "prod": {
-              "options": {
-                "script": "bibliotech.js",
-                "node_env": "production"
-              }
-            }
-        },*/
         "jshint": {
             "login": [
                 "root/js/dev/bibliotech.proto.js",
@@ -105,7 +92,6 @@ module.exports = function (grunt) {
                 "files": {
                     "root/js/bibliotech.lib.js": [
                         "node_modules/angular/angular.min.js",
-                        "node_modules/angular-animate/angular-animate.min.js",
                         "node_modules/lodash/index.js",
                         "node_modules/socket.io-client/socket.io.js",
                         "root/lib/color-thief.js",
@@ -190,13 +176,6 @@ module.exports = function (grunt) {
             "options": {
                 "livereload": true
             },
-            /*"express": {
-                "files":  [ "db/*.js", "io/*.js", "tools/*.js", "bibliotech.js", "routes/*.js" ],
-                "tasks":  [ "nodemon:dev" ],
-                "options": {
-                    "spawn": false
-                }
-            },*/
             "jsserver": {
                 "files": [ "bibliotech.js", "io/*.js", "db/*.js", "tools/*.js" ],
                 "tasks": [ "jshint:server" ],
@@ -247,6 +226,6 @@ module.exports = function (grunt) {
     grunt.registerTask("mongo", [ "shell:mongo" ]);
     grunt.registerTask("ubuntu", [ "shell:ubuntu" ]);
 
-    grunt.registerTask("server", [ "clean", "concurrent:dev"/*, "open:dev", "watch"*/ ]);
-    grunt.registerTask("prod", [ "clean", "concurrent:prod"/*, "express:prod", "watch"*/ ]);
+    grunt.registerTask("server", [ "clean", "concurrent:dev" ]);
+    grunt.registerTask("prod", [ "clean", "concurrent:prod" ]);
 };
