@@ -53,7 +53,9 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
             razError();
             µ.one("div").toggle(true);
             sendRequest(µ.one("[data-h]").isVisible() ? "/new" : "/login", this.formToJson(), function (s) {
-                if (!!s && !!s.success) { return window.location.reload(true); }
+                if (!!s && !!s.success) {
+                    return window.location.reload(true);
+                }
                 µ.alls("[type=email], [type=password], [type=text]").toggleClass("e", true);
                 µ.one("div").toggle(false);
                 µ.one("[type=email]").focus();

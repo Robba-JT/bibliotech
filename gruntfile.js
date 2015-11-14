@@ -76,6 +76,7 @@ module.exports = function (grunt) {
             },
             "loginlib": {
                 "files": { "root/js/login.lib.js": [
+                    "node_modules/angular/angular.min.js",
                     "node_modules/lodash/index.js",
                     "root/lib/Promise.min.js",
                     "root/js/dev/bibliotech.proto.js"

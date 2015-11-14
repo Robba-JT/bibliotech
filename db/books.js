@@ -30,7 +30,7 @@ module.exports.BooksAPI = BooksAPI = function (db, token) {
         notifs = db.collection("notifications"),
         reqParams = {
             "searchOne": {
-                "fields": "id, etag, accessInfo(accessViewStatus), volumeInfo(title, subtitle, authors, publisher, publishedDate, description, industryIdentifiers, pageCount, categories, imageLinks, canonicalVolumeLink)",
+                "fields": "id, etag, accessInfo(accessViewStatus, webReaderLink), volumeInfo(title, subtitle, authors, publisher, publishedDate, description, industryIdentifiers, pageCount, categories, imageLinks, canonicalVolumeLink)",
                 "projection": "full"
             },
             "search": {
@@ -76,6 +76,7 @@ module.exports.BooksAPI = BooksAPI = function (db, token) {
                 "isbn13": (!!bookinfos.industryIdentifiers && !!_.find(bookinfos.industryIdentifiers, { type: "ISBN_13" })) ? _.find(bookinfos.industryIdentifiers, { type: "ISBN_13" }).identifier : "",
                 "cover": (!!bookinfos.imageLinks) ? bookinfos.imageLinks.small || bookinfos.imageLinks.medium || bookinfos.imageLinks.large || bookinfos.imageLinks.extraLarge || bookinfos.imageLinks.thumbnail || bookinfos.imageLinks.smallThumbnail : "",
                 "access": (!!book.accessInfo) ? book.accessInfo.accessViewStatus : "NONE",
+                "preview": (!!book.accessInfo) ? book.accessInfo.webReaderLink : "",
                 "date": new Date()
             };
         },

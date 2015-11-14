@@ -9,14 +9,7 @@ var mailsAPI = require("../tools/mails").MailsAPI(),
     trads = JSON.parse(fs.readFileSync("./tools/trads.json")),
     GoogleStrategy = require("passport-google-oauth").OAuth2Strategy,
     LocalStrategy = require("passport-local").Strategy,
-    passportSocketIo = require("passport.socketio"),
-    jwt = require("jsonwebtoken"),
-    expressJwt = require("express-jwt"),
-    key = fs.readFileSync("./ssl/biblio.tech.pem"),
-    jwtCheck = expressJwt({
-        "secret": key,
-        "audience": googleConfig.key
-    });
+    passportSocketIo = require("passport.socketio");
 
 module.exports = exports = function (app, mongoStore, io) {
     "use strict";
@@ -95,8 +88,6 @@ module.exports = exports = function (app, mongoStore, io) {
         .use(passport.initialize())
         .use(passport.session())
 
-        //.use(jwtCheck.unless({ path: [ "/", "/login", "/new", "/logout", "/preview", "/trad" ]}))
-
 	//Maintenance url
 	//	.get("*", function (req, res) { res.status(503).render("maintenance", getLang(req).maintenance);})
 
@@ -105,7 +96,7 @@ module.exports = exports = function (app, mongoStore, io) {
             function (req, res, next) {
                 if (!req.isAuthenticated()) {
                     res.clearCookie("_bsession");
-                    res.render("login_ang");
+                    res.render("login", getLang(req).login);
                 } else { next(); }
             },
             function (req, res) {
@@ -127,28 +118,24 @@ module.exports = exports = function (app, mongoStore, io) {
             req.session.destroy(function (err) { res.status(205).redirect("/"); });
         })
 
+    //Trads
+        .get("/trad", function (req, res) { res.jsonp(getLang(req).bibliotech); })
+
     //Erreur url
 		.get("*", function (req, res) { res.status(404).render("error", { error: "Error 404" });})
 
-    //Trads
-        .post("/trad", function (req, res) { res.jsonp(getLang(req)[req.body.from]); })
-
 	//Login
 		.post("/login", function (req, res, next) {
-            passport.authenticate("login", function(err, user) {
+            passport.authenticate("login", function(err, user, info) {
                 if (!user) { return res.jsonp({ "error": getLang(req).error.invalidCredential }); }
-                req.login(user, function(err) {
-                    /*var token = false;
-                    if (!err) { token = jwt.sign({ "user": user }, key); }*/
-                    return res.jsonp({ "success" : !!user });
-                });
+                req.login(user, function(err) { return res.jsonp({ success : !err }); });
             })(req, res, next)
         })
 
 
 	//Nouvel utilisateur
 		.post("/new", function (req, res, next) {
-            passport.authenticate("new", function(err, user) {
+            passport.authenticate("new", function(err, user, info) {
                 if (!user) { return res.jsonp({ "error": getLang(req).error.alreadyExist }); }
                 req.login(user, function(err) { return res.jsonp({ success : !err }); });
             })(req, res, next)

@@ -11,7 +11,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
         sceProvider.enabled(false);
     }]);
     app.run(["$rootScope", "$http", "$window", "$timeout", function (scope, http, win, timeout) {
-        http.get("/trad").then(function (result) { scope.trads = result.data; });
+        http.post("/trad", { "from": "bibliotech" }).then(function (result) { scope.trads = result.data; });
         scope.waiting = {
             "screen": true,
             "over": false,

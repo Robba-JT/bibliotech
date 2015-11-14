@@ -62,7 +62,7 @@ require("./db/database").init(mongoUrl, function (error) {
         .use(session)
         .use(function (req, res, next) { if (req.secure) { next(); } else { res.redirect("https://" + req.headers.host + req.url); }})
         .use(function (req, res, next) {
-            res.setHeader("Access-Control-Allow-Origin", "https://biblio.tech");
+            res.setHeader("Access-Control-Allow-Origin", "https://biblio.tech,https://localhost");
             res.setHeader("X-Frame-Options", "sameorigin");
             res.setHeader("X-Content-Type-Options", "nosniff");
             res.setHeader("X-XSS-Protection", "1;mode=block");

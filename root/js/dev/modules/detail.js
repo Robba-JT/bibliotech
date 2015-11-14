@@ -100,6 +100,7 @@
                 };
                 detail.show = function (data) {
                     detail.reset();
+                    console.debug("detail", data);
                     if (!data.alternative && !data.base64) {
                         µ.one("[detail]").css({ "background": "radial-gradient(circle at 50%, whitesmoke 0%, #909090 100%)" });
                     }
@@ -109,10 +110,6 @@
                     detail.XDate = detail.book.publishedDate ? new Date(detail.book.publishedDate) : null;
                     detail.edit.able = _.isPlainObject(detail.book.id) && detail.book.id.user === scope.profile.user.id;
                     if (_.isEmpty(detail.book)) { _.assign(detail.edit, { "able": true, "new": true }); }
-                    /*scope.windows.open("detail").then(function () {
-                        detail.height = µ.one("[detail]").clientHeight - µ.one("[detail] header").clientHeight;
-                        µ.one(".detailBook").scrollTop = 0;
-                    });*/
                     timeout(scope.windows.open("detail")).then(function () {
                         detail.height = µ.one("[detail]").clientHeight - µ.one("[detail] header").clientHeight;
                         µ.one(".detailBook").scrollTop = 0;
