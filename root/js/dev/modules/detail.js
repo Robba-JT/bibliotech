@@ -9,7 +9,6 @@
                     if (!isVis) {
                         scope.detail.reset();
                         if (!!µ.one("#iPreview").contentWindow.document.body) {
-                            //µ.one("#iPreview").contentWindow.document.body.remove();
                             µ.one("#iPreview").contentWindow.document.body.parentNode.removeChild(µ.one("#iPreview").contentWindow.document.body);
                         }
                     }
@@ -100,7 +99,6 @@
                 };
                 detail.show = function (data) {
                     detail.reset();
-                    console.debug("detail", data);
                     if (!data.alternative && !data.base64) {
                         µ.one("[detail]").css({ "background": "radial-gradient(circle at 50%, whitesmoke 0%, #909090 100%)" });
                     }
@@ -114,7 +112,7 @@
                         detail.height = µ.one("[detail]").clientHeight - µ.one("[detail] header").clientHeight;
                         µ.one(".detailBook").scrollTop = 0;
                     });
-                    if (!data.id.user) { socks.emit("mostAdded", data.id); }
+                    if (!!data.id && !data.id.user) { socks.emit("mostAdded", data.id); }
                 };
                 detail.reset = function () {
                     delete this.ref;
@@ -155,15 +153,6 @@
                 detail.noSpace = function (field) {
                     this.book[field] = this.book[field].noSpace();
                 };
-
-                /*preview.open = function () {
-                    if (!µ.one("#iPreview").contentWindow.document.getElementById("viewer")) {
-                        µ.one("[target]").submit();
-                    } else if (!!µ.one("#iPreview").contentWindow.document.querySelector("[dir=ltr]")) {
-                        µ.one("#iPreview").contentWindow.document.querySelector("[dir=ltr]").scrollTop = 0;
-                    }
-                    scope.windows.open("preview");
-                };*/
 
                 socks.on("returnDetail", function (book) {
                     idb.setDetail(book);
@@ -279,10 +268,9 @@
                             return;
                     }
                     if (next !== index) {
-                        //detail.close();
                         timeout(scope.windows.close("detail")).then(function () {
                             if (bookcells[index].offsetTop !== bookcells[next].offsetTop) { window.scroll(0, bookcells[next].offsetTop); }
-                            if (cells[next].inCollection) { detail.show(cells[next]); } else { detail.prepare(/*cells[next].index*/next); }
+                            if (cells[next].inCollection) { detail.show(cells[next]); } else { detail.prepare(next); }
                         });
                     }
                 });

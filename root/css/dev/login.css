@@ -12,7 +12,7 @@ body {
     font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
 }
 
-.notdisplayed {
+.notdisplayed, [def\:cloak], [def-cloak], [data-def-cloak], [x-def-cloak], .def-cloak, .x-def-cloak {
     display: none !important;
 }
 
@@ -49,7 +49,6 @@ label {
 
 label, [type=checkbox] {
     margin: 5px;
-    display: inline;
     cursor: pointer;
     vertical-align: middle;
     line-height: 100%;
@@ -63,7 +62,7 @@ label, [type=checkbox] {
     border: none !important;
 }
 
-[type=button]:hover, [type=submit]:hover {
+[type=button]:hover, [type=submit]:not([disabled]):hover {
     text-decoration: underline;
     font-style: italic;
 }
@@ -72,8 +71,24 @@ label, [type=checkbox] {
     float: right;
 }
 
+[disabled] {
+    cursor: not-allowed !important;
+    color: graytext !important;
+}
+
 .e {
     border: 4px #CB4747 solid;
+}
+
+.error {
+    font-weight: bold;
+    background-color: red;
+    color: white;
+    padding: 5px;
+    border-radius: 5px;
+    white-space: nowrap;
+    float: right;
+    margin-bottom: 5px;
 }
 
 p {
@@ -144,10 +159,6 @@ div {
 	position:	relative;
 	top	: 40%;
     cursor: wait;
-	/*-moz-animation: fullRotation 5s inFinite;
-	-webkit-animation: fullRotation 5s inFinite;
-	-o-animation: fullRotation 5s inFinite;
-	-ms-animation: fullRotation 5s inFinite;*/
 	animation: fullRotation 5s inFinite;
 }
 
@@ -164,7 +175,7 @@ div {
     padding: 5px;
 }
 
-.m:not(.l):hover {
+.m:not(.l):not([disabled]):hover {
     background-color: orange;
     text-decoration: underline;
     font-style: italic;
@@ -176,70 +187,15 @@ div {
 }
 
 .fadeout {
-    /*-webkit-animation: fadeout .25s ease;
-    -moz-animation: fadeout .25s ease;
-    -o-animation: fadeout .25s ease;*/
     animation: fadeout .25s ease;
 }
 
 .fadein {
-    /*-webkit-animation: fadein .5s ease;
-    -moz-animation: fadein .5s ease;
-    -o-animation: fadein .5s ease;*/
     animation: fadein .5s ease;
 }
-
-/*@-moz-keyframes fadein { from { opacity: 0; } to { opacity: 1; }}
-@-webkit-keyframes fadein { from { opacity: 0; } to { opacity: 1; }}
-@-o-keyframes fadein { from { opacity: 0; } to { opacity: 1; }}
-@-ms-keyframes fadein { from { opacity: 0; } to { opacity: 1; }}*/
 @keyframes fadein { from { opacity: 0; } to { opacity: 1; }}
-
-/*@-moz-keyframes fadeout { from { opacity: 1; } to { opacity: 0; }}
-@-webkit-keyframes fadeout { from { opacity: 1; } to { opacity: 0; }}
-@-o-keyframes fadeout { from { opacity: 1; } to { opacity: 0; }}
-@-ms-keyframes fadeout { from { opacity: 1; } to { opacity: 0; }}*/
 @keyframes fadeout { from { opacity: 1; } to { opacity: 0; }}
 
-/*@-moz-keyframes fullRotation {
-	from {
-        -webkit-transform: rotate(0deg);
-        transform: rotate(0deg);
-    } to {
-        -webkit-transform: rotate(360deg);
-        transform: rotate(360deg);
-    }
-}
-
-@-webkit-keyframes fullRotation {
-	from {
-        -webkit-transform: rotate(0deg);
-        transform: rotate(0deg);
-    } to {
-        -webkit-transform: rotate(360deg);
-        transform: rotate(360deg);
-    }
-}
-
-@-o-keyframes fullRotation {
-	from {
-        -webkit-transform: rotate(0deg);
-        transform: rotate(0deg);
-    } to {
-        -webkit-transform: rotate(360deg);
-        transform: rotate(360deg);
-    }
-}
-
-@-ms-keyframes fullRotation {
-	from {
-        -webkit-transform: rotate(0deg);
-        transform: rotate(0deg);
-    } to {
-        -webkit-transform: rotate(360deg);
-        transform: rotate(360deg);
-    }
-}*/
 
 @keyframes fullRotation {
 	from {
@@ -249,4 +205,17 @@ div {
         -webkit-transform: rotate(360deg);
         transform: rotate(360deg);
     }
+}
+
+.ng-invalid {
+    border-color: red !important;
+}
+
+.ng-valid {
+    border-color: green !important;
+    border-width: 2px !important;
+}
+
+input:not(.ng-hide) {
+    animation: fadein .5s;
 }

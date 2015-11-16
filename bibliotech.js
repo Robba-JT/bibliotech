@@ -66,8 +66,13 @@ require("./db/database").init(mongoUrl, function (error) {
             res.setHeader("X-Frame-Options", "sameorigin");
             res.setHeader("X-Content-Type-Options", "nosniff");
             res.setHeader("X-XSS-Protection", "1;mode=block");
-            res.setHeader("Access-Control-Allow-Methods", "GET,POST");
-            next();
+            res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
+            res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+            if (req.method == "OPTIONS") {
+                res.status(200).end();
+            } else {
+                next();
+            }
         });
 
     device.enableDeviceHelpers(app);

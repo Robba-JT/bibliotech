@@ -9,14 +9,7 @@ var mailsAPI = require("../tools/mails").MailsAPI(),
     trads = JSON.parse(fs.readFileSync("./tools/trads.json")),
     GoogleStrategy = require("passport-google-oauth").OAuth2Strategy,
     LocalStrategy = require("passport-local").Strategy,
-    passportSocketIo = require("passport.socketio"),
-    jwt = require("jsonwebtoken"),
-    expressJwt = require("express-jwt"),
-    key = fs.readFileSync("./ssl/biblio.tech.pem"),
-    jwtCheck = expressJwt({
-        "secret": key,
-        "audience": googleConfig.key
-    });
+    passportSocketIo = require("passport.socketio");
 
 module.exports = exports = function (app, mongoStore, io) {
     "use strict";
@@ -95,8 +88,6 @@ module.exports = exports = function (app, mongoStore, io) {
         .use(passport.initialize())
         .use(passport.session())
 
-        //.use(jwtCheck.unless({ path: [ "/", "/login", "/new", "/logout", "/preview", "/trad" ]}))
-
 	//Maintenance url
 	//	.get("*", function (req, res) { res.status(503).render("maintenance", getLang(req).maintenance);})
 
@@ -105,13 +96,15 @@ module.exports = exports = function (app, mongoStore, io) {
             function (req, res, next) {
                 if (!req.isAuthenticated()) {
                     res.clearCookie("_bsession");
-                    res.render("login_ang");
+                    res.render("login");
                 } else { next(); }
             },
             function (req, res) {
                 res.render("bibliotech", { version: JSON.stringify(require("../package.json").version) });
             }
 		)
+
+    //Google OAuth
         .get("/gAuth",
             passport.authenticate("google", {
                 "approvalPrompt": "force",
@@ -138,8 +131,6 @@ module.exports = exports = function (app, mongoStore, io) {
             passport.authenticate("login", function(err, user) {
                 if (!user) { return res.jsonp({ "error": getLang(req).error.invalidCredential }); }
                 req.login(user, function(err) {
-                    /*var token = false;
-                    if (!err) { token = jwt.sign({ "user": user }, key); }*/
                     return res.jsonp({ "success" : !!user });
                 });
             })(req, res, next)

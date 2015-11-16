@@ -1,16 +1,1 @@
-<h1>[{trads.welcome}]</h1>
-<form name="login" autocomplete="off" novalidate ng-submit="login.$valid && submit()">
-    <input type="email" name="email" ng-model="user.email" placeholder="[{trads.email}]" required title="[{trads.email}]" autofocus value="tassin.j@wanadoo.fr"/>
-    <input type="text" ng-model="user.name" autocomplete="off" placeholder="[{trads.name}]" error="[{trads.errName}]" ng-show="new" ng-required="new" title="[{trads.name}]" ng-minlength="4" defCloak/>
-    <input type="hidden" />
-    <input type="password" ng-model="user.password" ng-minlength="4" ng-maxlength="12" placeholder="[{trads.password}]" data-m="[{trads.errPwd}]" required title="[{trads.password}]" />
-    <input type="password" ng-model="user.confirm" ng-minlength="4" ng-maxlength="12" placeholder="[{trads.confirmed}]" ng-show="new" ng-required="new" data-h title="[{trads.confirmed}]" compare-to="user.password" defCloak/>
-    <label>[{trads.active}]<input type="checkbox" ng-model="user.active"/></label>
-    <span class="g" ng-show="error" ng-bind="error"></span>
-    <span class="n" ng-show="success" ng-bind="success"></span>
-    <BR>
-        <input type="button" ng-value="new && trads.cancel || trads.create"/>
-        <input type="submit" ng-value="new && trads.valid || trads.connection" ng-disabled="login.$invalid"/>
-</form>
-<p ng-show="error" defCloak><button class="m" ng-disabled="login.email.$invalid">[{trads.forgetPassword}]</button></p>
-<p><button id="f"></button></p>
+<h1>[{trads.welcome}]</h1><form name="login" autocomplete="off" novalidate ng-submit="login.$valid && submit()"><input type="email" name="email" ng-model="user.email" placeholder="[{trads.email}]" required title="[{trads.email}]" autofocus value="tassin.j@wanadoo.fr"> <input type="text" name="name" ng-model="user.name" autocomplete="off" placeholder="[{trads.name}]" error="[{trads.errName}]" ng-show="new" ng-required="new" title="[{trads.name}]" ng-minlength="4" defcloak> <span class="error" ng-show="login.name.$error.minlength">[{trads.errName}]</span> <input type="hidden"> <input type="password" name="password" ng-model="user.password" ng-minlength="4" ng-maxlength="12" placeholder="[{trads.password}]" data-m="[{trads.errPwd}]" required title="[{trads.password}]"> <span class="error" ng-show="login.password.$error.minlength || login.password.$error.maxlength">[{trads.errPwd}]</span> <input type="password" name="confirm" ng-model="user.confirm" ng-minlength="4" ng-maxlength="12" placeholder="[{trads.confirmed}]" ng-show="new" ng-required="new" data-h title="[{trads.confirmed}]" compare-to="user.password" defcloak> <span class="error" ng-show="!!user.password && login.password.$valid && login.confirm.$error.compareTo">[{trads.errConfirmed}]</span><label>[{trads.active}]<input type="checkbox" ng-model="user.active"></label><span class="g" ng-show="error" ng-bind="error"></span> <span class="n" ng-show="success" ng-bind="success"></span><br><input type="button" ng-value="new && trads.cancel || trads.create"> <input type="submit" ng-value="new && trads.valid || trads.connection" ng-disabled="login.$invalid"></form><p ng-show="error" defcloak><button class="m" ng-disabled="login.email.$invalid">[{trads.forgetPassword}]</button></p><p><button id="f"></button></p>
