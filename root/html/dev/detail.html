@@ -104,10 +104,11 @@
             </div>
         </div>
         <div ng-show="detail.mostAdded.length">
-            <span class="title">[{trads.mostAdded}]:<BR></span>
+            <span class="title">[{trads.mostAdded}]:</span>
             <div class="mostAdded" ng-repeat="mostAdded in detail.mostAdded" ng-click="detail.load(null, mostAdded.id)">
                 <header>[{mostAdded.title}]</header>
-                <img src="./images/white/iconmonstr-book-4-icon.png" ng-src="[{mostAdded.base64}]"/>
+                <div ng-show="!mostAdded.base64" class="altCover"></div>
+                <img ng-show="mostAdded.base64" ng-src="[{mostAdded.base64}]"/>
                 <footer>[{mostAdded.authors}]</footer>
             </div>
         </div>

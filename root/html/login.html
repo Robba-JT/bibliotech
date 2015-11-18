@@ -14,8 +14,8 @@
         <link rel="stylesheet" href="../css/login.css" type="text/css" />
     </head>
     <body>
-		<div ng-show="waiting"><img src="images/loading-12-icon.png" width="256" height="256" class="k" alt="[{trads.waiting}]" /></div>
-        <section login defCloak></section>
+		<div ng-hide="ready"><img src="images/loading-12-icon.png" width="256" height="256" class="k" alt="[{trads.waiting}]" /></div>
+        <section login class="notdisplayed"></section>
         <script>window.___gcfg = { lang: "[{trads.lang}]" };</script>
         <script src="js/login.lib.js"></script>
         <script src="js/login.js"></script>

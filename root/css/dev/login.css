@@ -12,7 +12,7 @@ body {
     font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
 }
 
-.notdisplayed, [def\:cloak], [def-cloak], [data-def-cloak], [x-def-cloak], .def-cloak, .x-def-cloak {
+.notdisplayed {
     display: none !important;
 }
 

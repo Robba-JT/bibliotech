@@ -1,0 +1,503 @@
+.sprite {
+    background-image: url(/images/spritesheet.png);
+    background-repeat: no-repeat;
+    display: block;
+}
+
+.sprite-GANDI_SSL_logo_A_std_fr {
+    width: 79px;
+    height: 39px;
+    background-position: -10px -10px;
+}
+
+.sprite-GANDI_SSL_logo_B_std_fr {
+    width: 79px;
+    height: 39px;
+    background-position: -109px -10px;
+}
+
+.sprite-eject-icon {
+    width: 32px;
+    height: 32px;
+    background-position: -208px -10px;
+}
+
+.sprite-eject-icon {
+    width: 32px;
+    height: 32px;
+    background-position: -260px -10px;
+}
+
+.sprite-gbs_preview_sticker {
+    width: 69px;
+    height: 23px;
+    background-position: -312px -10px;
+}
+
+.sprite-iconmonstr-arrow-24-icon-bottom {
+    width: 32px;
+    height: 32px;
+    background-position: -401px -10px;
+}
+
+.sprite-iconmonstr-arrow-24-icon-bottom {
+    width: 32px;
+    height: 32px;
+    background-position: -453px -10px;
+}
+
+.sprite-iconmonstr-arrow-24-icon-left {
+    width: 32px;
+    height: 32px;
+    background-position: -505px -10px;
+}
+
+.sprite-iconmonstr-arrow-24-icon-left {
+    width: 32px;
+    height: 32px;
+    background-position: -557px -10px;
+}
+
+.sprite-iconmonstr-arrow-24-icon-right {
+    width: 32px;
+    height: 32px;
+    background-position: -208px -62px;
+}
+
+.sprite-iconmonstr-arrow-24-icon-right {
+    width: 32px;
+    height: 32px;
+    background-position: -260px -62px;
+}
+
+.sprite-iconmonstr-arrow-24-icon-top {
+    width: 32px;
+    height: 32px;
+    background-position: -312px -62px;
+}
+
+.sprite-iconmonstr-arrow-24-icon-top {
+    width: 32px;
+    height: 32px;
+    background-position: -364px -62px;
+}
+
+.sprite-iconmonstr-arrow-31-top {
+    width: 32px;
+    height: 32px;
+    background-position: -416px -62px;
+}
+
+.sprite-iconmonstr-book-22-icon {
+    width: 48px;
+    height: 48px;
+    background-position: -468px -62px;
+}
+
+.sprite-iconmonstr-book-22-icon {
+    width: 48px;
+    height: 48px;
+    background-position: -536px -62px;
+}
+
+.sprite-iconmonstr-book-22-icon {
+    width: 48px;
+    height: 48px;
+    background-position: -10px -130px;
+}
+
+.sprite-iconmonstr-book-4-icon {
+    width: 256px;
+    height: 256px;
+    background-position: -78px -114px;
+}
+
+.sprite-iconmonstr-check-mark-icon {
+    width: 48px;
+    height: 48px;
+    background-position: -354px -130px;
+}
+
+.sprite-iconmonstr-check-mark-icon {
+    width: 48px;
+    height: 48px;
+    background-position: -422px -130px;
+}
+
+.sprite-iconmonstr-email-11-icon {
+    width: 32px;
+    height: 32px;
+    background-position: -490px -130px;
+}
+
+.sprite-iconmonstr-email-11-icon {
+    width: 32px;
+    height: 32px;
+    background-position: -542px -130px;
+}
+
+.sprite-iconmonstr-email-12-icon {
+    width: 64px;
+    height: 64px;
+    background-position: -490px -182px;
+}
+
+.sprite-iconmonstr-email-12-icon {
+    width: 64px;
+    height: 64px;
+    background-position: -354px -266px;
+}
+
+.sprite-iconmonstr-facebook-4-icon {
+    width: 64px;
+    height: 64px;
+    background-position: -438px -266px;
+}
+
+.sprite-iconmonstr-facebook-4-icon {
+    width: 64px;
+    height: 64px;
+    background-position: -522px -266px;
+}
+
+.sprite-iconmonstr-google-plus-4-icon {
+    width: 64px;
+    height: 64px;
+    background-position: -354px -350px;
+}
+
+.sprite-iconmonstr-google-plus-4-icon {
+    width: 64px;
+    height: 64px;
+    background-position: -438px -350px;
+}
+
+.sprite-iconmonstr-google-plus-icon {
+    width: 48px;
+    height: 48px;
+    background-position: -10px -266px;
+}
+
+.sprite-iconmonstr-google-plus-icon {
+    width: 48px;
+    height: 48px;
+    background-position: -10px -350px;
+}
+
+.sprite-iconmonstr-help-1-icon {
+    width: 32px;
+    height: 32px;
+    background-position: -589px -125px;
+}
+
+.sprite-iconmonstr-help-2-icon {
+    width: 64px;
+    height: 64px;
+    background-position: -522px -350px;
+}
+
+.sprite-iconmonstr-help-2-icon {
+    width: 64px;
+    height: 64px;
+    background-position: -10px -434px;
+}
+
+.sprite-iconmonstr-help-2-icon {
+    width: 64px;
+    height: 64px;
+    background-position: -94px -434px;
+}
+
+.sprite-iconmonstr-info-7-icon {
+    width: 32px;
+    height: 32px;
+    background-position: -589px -167px;
+}
+
+.sprite-iconmonstr-info-7-icon {
+    width: 32px;
+    height: 32px;
+    background-position: -10px -214px;
+}
+
+.sprite-iconmonstr-info-7-icon {
+    width: 48px;
+    height: 48px;
+    background-position: -178px -434px;
+}
+
+.sprite-iconmonstr-info-8-icon {
+    width: 48px;
+    height: 48px;
+    background-position: -246px -434px;
+}
+
+.sprite-iconmonstr-layer-20-icon {
+    width: 32px;
+    height: 32px;
+    background-position: -354px -214px;
+}
+
+.sprite-iconmonstr-layer-20-icon {
+    width: 32px;
+    height: 32px;
+    background-position: -406px -214px;
+}
+
+.sprite-iconmonstr-layer-20-icon {
+    width: 32px;
+    height: 32px;
+    background-position: -574px -214px;
+}
+
+.sprite-iconmonstr-magnifier-4-icon {
+    width: 16px;
+    height: 16px;
+    background-position: -314px -434px;
+}
+
+.sprite-iconmonstr-magnifier-5-icon {
+    width: 32px;
+    height: 32px;
+    background-position: -350px -434px;
+}
+
+.sprite-iconmonstr-magnifier-5-icon {
+    width: 32px;
+    height: 32px;
+    background-position: -402px -434px;
+}
+
+.sprite-iconmonstr-magnifier-5-icon {
+    width: 32px;
+    height: 32px;
+    background-position: -454px -434px;
+}
+
+.sprite-iconmonstr-menu-2-icon {
+    width: 32px;
+    height: 32px;
+    background-position: -506px -434px;
+}
+
+.sprite-iconmonstr-menu-2-icon {
+    width: 32px;
+    height: 32px;
+    background-position: -558px -434px;
+}
+
+.sprite-iconmonstr-note-25 {
+    width: 32px;
+    height: 32px;
+    background-position: -314px -486px;
+}
+
+.sprite-iconmonstr-note-25 {
+    width: 32px;
+    height: 32px;
+    background-position: -366px -486px;
+}
+
+.sprite-iconmonstr-plus-4-icon {
+    width: 48px;
+    height: 48px;
+    background-position: -418px -486px;
+}
+
+.sprite-iconmonstr-plus-4-icon {
+    width: 48px;
+    height: 48px;
+    background-position: -486px -486px;
+}
+
+.sprite-iconmonstr-plus-icon {
+    width: 48px;
+    height: 48px;
+    background-position: -554px -486px;
+}
+
+.sprite-iconmonstr-plus-icon {
+    width: 48px;
+    height: 48px;
+    background-position: -10px -554px;
+}
+
+.sprite-iconmonstr-save-9-icon {
+    width: 32px;
+    height: 32px;
+    background-position: -78px -554px;
+}
+
+.sprite-iconmonstr-save-9-icon {
+    width: 32px;
+    height: 32px;
+    background-position: -130px -554px;
+}
+
+.sprite-iconmonstr-share-3-icon {
+    width: 48px;
+    height: 48px;
+    background-position: -182px -554px;
+}
+
+.sprite-iconmonstr-share-3-icon {
+    width: 48px;
+    height: 48px;
+    background-position: -250px -554px;
+}
+
+.sprite-iconmonstr-share-icon {
+    width: 48px;
+    height: 48px;
+    background-position: -318px -554px;
+}
+
+.sprite-iconmonstr-share-icon {
+    width: 48px;
+    height: 48px;
+    background-position: -386px -554px;
+}
+
+.sprite-iconmonstr-sort-2-icon {
+    width: 32px;
+    height: 32px;
+    background-position: -454px -554px;
+}
+
+.sprite-iconmonstr-sort-2-icon {
+    width: 32px;
+    height: 32px;
+    background-position: -506px -554px;
+}
+
+.sprite-iconmonstr-sort-23-icon-desc {
+    width: 16px;
+    height: 16px;
+    background-position: -558px -554px;
+}
+
+.sprite-iconmonstr-sort-23-icon-desc {
+    width: 16px;
+    height: 16px;
+    background-position: -594px -554px;
+}
+
+.sprite-iconmonstr-sort-24-icon-asc {
+    width: 16px;
+    height: 16px;
+    background-position: -558px -590px;
+}
+
+.sprite-iconmonstr-sort-24-icon-asc {
+    width: 16px;
+    height: 16px;
+    background-position: -594px -590px;
+}
+
+.sprite-iconmonstr-tag-2-icon {
+    width: 16px;
+    height: 16px;
+    background-position: -609px -10px;
+}
+
+.sprite-iconmonstr-tags-6-icon {
+    width: 32px;
+    height: 32px;
+    background-position: -609px -46px;
+}
+
+.sprite-iconmonstr-tags-6-icon {
+    width: 32px;
+    height: 32px;
+    background-position: -606px -266px;
+}
+
+.sprite-iconmonstr-upload-10-icon {
+    width: 48px;
+    height: 48px;
+    background-position: -606px -318px;
+}
+
+.sprite-iconmonstr-upload-10-icon {
+    width: 48px;
+    height: 48px;
+    background-position: -661px -10px;
+}
+
+.sprite-iconmonstr-user-icon {
+    width: 32px;
+    height: 32px;
+    background-position: -10px -78px;
+}
+
+.sprite-iconmonstr-user-icon {
+    width: 32px;
+    height: 32px;
+    background-position: -661px -78px;
+}
+
+.sprite-iconmonstr-x-mark-2-icon {
+    width: 16px;
+    height: 16px;
+    background-position: -62px -78px;
+}
+
+.sprite-iconmonstr-x-mark-3-icon {
+    width: 64px;
+    height: 64px;
+    background-position: -636px -130px;
+}
+
+.sprite-iconmonstr-x-mark-3-icon {
+    width: 64px;
+    height: 64px;
+    background-position: -658px -214px;
+}
+
+.sprite-iconmonstr-x-mark-3-icon {
+    width: 64px;
+    height: 64px;
+    background-position: -610px -386px;
+}
+
+.sprite-iconmonstr-x-mark-icon {
+    width: 48px;
+    height: 48px;
+    background-position: -674px -298px;
+}
+
+.sprite-iconmonstr-x-mark-icon {
+    width: 48px;
+    height: 48px;
+    background-position: -622px -470px;
+}
+
+.sprite-poweredby {
+    width: 62px;
+    height: 30px;
+    background-position: -630px -538px;
+}
+
+.sprite-star_hover_- {
+    width: 48px;
+    height: 48px;
+    background-position: -630px -588px;
+}
+
+.sprite-star_hover__ {
+    width: 48px;
+    height: 48px;
+    background-position: -10px -656px;
+}
+
+.sprite-star_nok {
+    width: 48px;
+    height: 48px;
+    background-position: -78px -656px;
+}
+
+.sprite-star_ok {
+    width: 48px;
+    height: 48px;
+    background-position: -146px -656px;
+}

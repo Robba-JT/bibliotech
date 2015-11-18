@@ -9,25 +9,8 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
         interpolateProvider.endSymbol("}]");
         sceProvider.enabled(false);
     }]);
-    app.run(["$rootScope", "$http", "$window", function (root, http, win) {
-        win.localStorage.clear();
+    app.run(["$rootScope", "$http", function (root, http) {
         http.post("/trad", { "from": "login" }).then(function (result) { root.trads = result.data; });
-        root.waiting = false;
-        root.$on('$locationChangeStart', function(event, next, current) {
-            if (win.localStorage.token) {
-                console.debug("event", event);
-                console.debug("next", next);
-                console.debug("current", current);
-            }
-        });
-    }]);
-    app.directive("defCloak", ["$timeout", function (timeout) {
-        return {
-            "restrict": "A",
-            "link": { "post": function (scope, element, attrs) {
-                timeout(function () { attrs.$set("defCloak", undefined); element.removeClass("def-cloak"); });
-            }}
-        };
     }]);
     app.directive("compareTo", ["$rootScope", function (root) {
         return {
@@ -46,10 +29,16 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
             }
         };
     }]);
-    app.directive("login", [function () {
+    app.directive("login", ["$timeout", function (timeout) {
         return {
             "restrict": "A",
             templateUrl: "./html/form.html",
+            "link": function (scope, element, attrs) {
+                timeout(function () {
+                    element.removeClass("notdisplayed");
+                    scope.ready = true;
+                });
+            },
             "controller": ["$scope", "$http", "$window", function (scope, http, win) {
                 var user = scope.user = {},
                     razError = function () {
@@ -58,7 +47,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     };
 
                 scope.submit = function () {
-                    scope.waiting = true;
+                    scope.ready = false;
                     razError();
                     http.post(this.new ? "/new" : "/login", user).then(function (result) {
                         if (result.data && result.data.success) {
@@ -66,7 +55,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                         } else {
                             scope.error = result.data.error;
                             user.password = null;
-                            scope.waiting = false;
+                            scope.ready = true;
                         }
                     });
                 };
@@ -83,9 +72,9 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 });
                 angular.element(µ.one(".m")).on("click", function () {
                     razError();
-                    scope.waiting = true;
+                    scope.ready = false;
                     http.post("/mail", user).then(function (result) {
-                        scope.waiting = false;
+                        scope.ready = true;
                         scope.error = result.data.error;
                         scope.success = result.data.success;
                     });

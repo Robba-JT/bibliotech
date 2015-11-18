@@ -14,8 +14,8 @@
         </form>
     </div>
     <div class="filtre" ng-show="tags.last || search.last">
-        <span id="selectedTag" ng-show="tags.last" ng-bind="tags.last"></span>
-        <span id="selectedSearch" ng-show="search.last" ng-bind="search.last.search.substr(0, 50)"></span>
+        <span id="selectedTag" ng-show="tags.last"><span ng-bind="tags.last"></span></span>
+        <span id="selectedSearch" ng-show="search.last"><span ng-bind="search.last.search.substr(0, 50)"></soan></span>
     </div>
     <div id="newbook" class="button" ng-click="navbar.newbook()" title="{{trads.newBook}}"></div>
     <div id="contact" class="button" ng-click="windows.open('contacts')" title="{{trads.contacts}}"></div>

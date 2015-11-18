@@ -5,7 +5,9 @@ var mailsAPI = require("../tools/mails").MailsAPI(),
     admins = JSON.parse(fs.readFileSync("./tools/admins.json")).admins,
     _ = require("lodash"),
     passport = require("passport"),
-    googleConfig = JSON.parse(fs.readFileSync("google_client_config.json")).web,
+    googleConfig = JSON.parse(fs.readFileSync("google_client_config.json")),
+    googleKey = googleConfig.key,
+    googleWeb = googleConfig.web,
     trads = JSON.parse(fs.readFileSync("./tools/trads.json")),
     GoogleStrategy = require("passport-google-oauth").OAuth2Strategy,
     LocalStrategy = require("passport-local").Strategy,
@@ -26,8 +28,8 @@ module.exports = exports = function (app, mongoStore, io) {
     });
 
     passport.use(new GoogleStrategy({
-            "clientID": googleConfig.client_id,
-            "clientSecret": googleConfig.client_secret,
+            "clientID": googleWeb.client_id,
+            "clientSecret": googleWeb.client_secret,
             "callbackURL": "/googleAuth"
         },
         function(accessToken, refreshToken, params, profile, done) {
@@ -124,7 +126,9 @@ module.exports = exports = function (app, mongoStore, io) {
 		.get("*", function (req, res) { res.status(404).render("error", { error: "Error 404" });})
 
     //Trads
-        .post("/trad", function (req, res) { res.jsonp(getLang(req)[req.body.from]); })
+        .post("/trad", function (req, res) {
+            res.jsonp(getLang(req)[req.body.from]);
+        })
 
 	//Login
 		.post("/login", function (req, res, next) {
@@ -150,7 +154,7 @@ module.exports = exports = function (app, mongoStore, io) {
             usersAPI.findUser(req.body.email)
                 .then(function (user) {
                     var newPwd = Math.random().toString(24).slice(2);
-                    usersAPI.updateUser({ "_id": user._id }, { $set: { "password": usersAPI.encryptPwd(newPwd) }})
+                    usersAPI.updateUser({ "_id": user._id }, { "$set": { "password": usersAPI.encryptPwd(newPwd) }})
                         .then(function (result) {
                             console.info("new password request", user._id, newPwd, usersAPI.encryptPwd(newPwd));
                             mailsAPI.sendPassword(user._id, user.name, newPwd, function (error, response) {
@@ -162,7 +166,9 @@ module.exports = exports = function (app, mongoStore, io) {
 		})
 
     //Preview
-        .post("/preview", function (req, res, next) { res.render("preview", { bookid: req.body.previewid }); });
+        .post("/preview", function (req, res) {
+            res.render("preview", { "bookid": req.body.previewid });
+        });
 
     io.use(passportSocketIo.authorize({
         "cookieParser": require("cookie-parser"),
@@ -181,7 +187,10 @@ module.exports = exports = function (app, mongoStore, io) {
         socket.onevent = function () {
             var args = arguments;
             mongoStore.get(socket.request.sessionID, function (error, session) {
-                if (!!error || !session || !!session.cookie.expires && session.cookie.expires < new Date()) { console.error(error || new Error("No session find!!!")); return socket.emit("logout"); }
+                if (!!error || !session || !!session.cookie.expires && session.cookie.expires < new Date()) {
+                    console.error(error || new Error("No session find!!!"));
+                    return socket.emit("logout");
+                }
                 onEvent.apply(socket, args);
                 if (!!socket.request.user && !socket.request.user.active) {
                     var today = new Date();

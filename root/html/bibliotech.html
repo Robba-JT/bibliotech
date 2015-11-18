@@ -71,9 +71,9 @@
 
         <div navbar def-cloak></div>
 
-		<section class="window" search ng-show="!!windows.opened.search" ng-style="{ 'top': windows.top + 'px' }" def-cloak></section>
+		<section class="window" search ng-show="!!windows.opened.search" ng-style="{ 'top': windows.opened.search + 'px' }" def-cloak></section>
 
-        <section id="profileWindow" class="window" profile ng-show="!!windows.opened.profile" ng-style="{ 'top': windows.top + 'px' }" def-cloak></section>
+        <section id="profileWindow" class="window" profile ng-show="!!windows.opened.profile" ng-style="{ 'top': windows.opened.profile+ 'px' }" def-cloak></section>
 
         <section id="detailWindow" class="window" ng-class="(!detail.book.base64 && !detail.book.alternative) && 'noCover'" detail ng-show="!!windows.opened.detail" ng-style="{ 'top': windows.opened.detail + 'px' }" def-cloak></section>
 
@@ -83,7 +83,7 @@
             <iframe id="iPreview" name="iPreview" seamless=true></iframe>
         </section>
 
-        <section id="recommandWindow" class="window" ng-show="!!windows.opened.recommand" ng-style="{ 'top': windows.top + 'px' }" def-cloak>
+        <section id="recommandWindow" class="window" ng-show="!!windows.opened.recommand" ng-style="{ 'top': windows.opened.recommand + 'px' }" def-cloak>
             <header class="windowheader">&nbsp;[{trads.recommand}]<div class="closeWindow" title="[{trads.close}]" ng-click="windows.close('recommand')"></div></header>
             <form name="recommandForm" autocomplete="off" novalidate ng-submit="recommandForm.$valid && detail.recommand()">
                 <div>
