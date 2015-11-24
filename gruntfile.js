@@ -36,7 +36,7 @@ module.exports = function (grunt) {
                 "options": {
                     "nodeArgs": ["--debug"],
                     "cwd": __dirname,
-                    "ignore": ["node_modules/**", "root/**", "logs/**", "views/**", "gruntfile.js", "requests.js"]
+                    "ignore": ["node_modules/**", "root/**", "logs/**", "views/**", "requests.js"]
                 }
             },
             "prod": {
@@ -46,7 +46,7 @@ module.exports = function (grunt) {
                         "NODE_ENV": "production"
                     },
                     "cwd": __dirname,
-                    "ignore": ["node_modules/**", "root/**", "logs/**", "views/**", "gruntfile.js", "requests.js"]
+                    "ignore": ["node_modules/**", "root/**", "logs/**", "views/**", "requests.js"]
                 }
             }
         },
@@ -76,9 +76,9 @@ module.exports = function (grunt) {
             },
             "loginlib": {
                 "files": { "root/js/login.lib.js": [
+                    "root/lib/Promise.min.js",
                     "node_modules/angular/angular.min.js",
                     "node_modules/lodash/index.js",
-                    "root/lib/Promise.min.js",
                     "root/js/dev/bibliotech.proto.js"
                 ]}
             },
@@ -92,11 +92,11 @@ module.exports = function (grunt) {
             "bibliotechlib": {
                 "files": {
                     "root/js/bibliotech.lib.js": [
+                        "root/lib/Promise.min.js",
                         "node_modules/angular/angular.min.js",
                         "node_modules/lodash/index.js",
                         "node_modules/socket.io-client/socket.io.js",
                         "root/lib/color-thief.js",
-                        "root/lib/Promise.min.js",
                         "root/js/dev/bibliotech.proto.js"
                     ]
                 }

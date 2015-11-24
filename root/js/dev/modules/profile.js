@@ -4,7 +4,7 @@
         return {
             restrict: "A",
             templateUrl: "./html/profile.html",
-            controller: ["$scope", "$socket", "$idb", function (scope, socks, idb) {
+            controller: ["$scope", "$socket", "$idb", "$preloader", function (scope, socks, idb, preloader) {
                 var profile = scope.profile = {};
 
                 profile.reset = function () { _.assign(this.user, { "pwd": "", "newPwd": "", "confirmPwd": "", "error": false }); };
@@ -26,10 +26,13 @@
                 socks.on("user", function (data) {
                     scope.waiting.screen = false;
                     profile.user = data;
-                    if (data.link && data.picture && !µ.one("#picture").isVisible()) {
-                        µ.one("#picture").css({ "background-image": "url(" + data.picture + ")" }).setEvents("click", function () {
-                            window.open(data.link);
-                        }).toggleClass("notdisplayed", false);
+                    if (data.link && data.picture) {
+                        preloader.preloadImages(data.picture).then(function (result) {
+                            profile.gplus = true;
+                            angular.element(µ.one("#picture")).css("background-image", "url(" + data.picture + ")").bind("click", function () {
+                                window.open(data.link);
+                            });
+                        });
                     }
                     if (!data.connex) { scope.windows.open("help"); }
                     if (data.session) { idb.init(data.session); }

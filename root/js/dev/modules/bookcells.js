@@ -4,7 +4,7 @@
         return {
             restrict: "A",
             templateUrl: "./html/bookcells.html",
-            controller: ["$scope", "$socket", "$idb", function (scope, socks, idb) {
+            controller: ["$scope", "$socket", "$idb", "$preloader", function (scope, socks, idb, preloader) {
                 var bookcells = scope.bookcells = {},
                     cellsRender = function (cells, isCollection) {
                         if (!bookcells.cells) { bookcells.cells = []; }
@@ -23,11 +23,8 @@
                         });
                     };
 
-                bookcells.style = { "width": ~~(µ.one("[bookcells]").clientWidth / ~~(µ.one("[bookcells]").clientWidth / 256)) - ~~(µ.one("[bookcells]").clientWidth / 256) + "px" };
-                bookcells.cstyle = { "max-width": ~~(µ.one("[bookcells]").clientWidth / ~~(µ.one("[bookcells]").clientWidth / 256)) - ~~(µ.one("[bookcells]").clientWidth / 256) - 20 + "px" };
-
-                bookcells.width = ~~(µ.one("[bookcells]").clientWidth / ~~(µ.one("[bookcells]").clientWidth / 256)) - ~~(µ.one("[bookcells]").clientWidth / 256);
-
+                bookcells.width = ~~(µ.one("[bookcells]").clientWidth / ~~(µ.one("[bookcells]").clientWidth / 256)) - ~~(µ.one("[bookcells]").clientWidth / 256) + "px";
+                bookcells.iwidth = ~~(µ.one("[bookcells]").clientWidth / ~~(µ.one("[bookcells]").clientWidth / 256)) - ~~(µ.one("[bookcells]").clientWidth / 256) - 20 + "px";
                 bookcells.addBook = function (cell) {
                     if (_.findIndex(bookcells.collection, _.matchesProperty("id", cell.id)) === -1) {
                         if (!this.cell) { _.assign(_.find(bookcells.cells, _.matchesProperty("id", cell.id)), { "inCollection": true }); }
@@ -103,14 +100,17 @@
                 });
                 socks.on("cover", function (cover) {
                     if (!cover.id) { return console.error("cover", covers[jta]); }
-                    var inCollect = _.find(bookcells.collection, _.matchesProperty("id", cover.id)) || {},
-                        cell = _.find(bookcells.cells, _.matchesProperty("id", cover.id));
-                    inCollect.base64 = cell.base64 = cover.base64;
-                    cell.alternative = cover.alternative;
-                    if (scope.detail.book && scope.detail.book.id === cover.id) {
-                        scope.detail.book.base64 = cover.base64;
-                        scope.detail.book.alternative = cover.alternative;
-                    }
+                    preloader.preloadImages(cover.base64 || cover.alternative).then(function (result) {
+                        var inCollect = _.find(bookcells.collection, _.matchesProperty("id", cover.id)) || {},
+                            cell = _.find(bookcells.cells, _.matchesProperty("id", cover.id)) || {};
+
+                        inCollect.base64 = cell.base64 = cover.base64;
+                        cell.alternative = cover.alternative;
+                        if (scope.detail.book && scope.detail.book.id === cover.id) {
+                            scope.detail.book.base64 = cover.base64;
+                            scope.detail.book.alternative = cover.alternative;
+                        }
+                    });
                 });
                 socks.on("books", function (part) {
                     cellsRender(part);

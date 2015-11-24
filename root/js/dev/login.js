@@ -1,5 +1,5 @@
-if (!window.FileReader || !window.Promise || !("formNoValidate" in document.createElement("input"))) {
-    alert(document.body.getAttribute("error"));
+if (!window.FileReader || !("formNoValidate" in document.createElement("input"))) {
+    document.getElementsByClassName("k")[0].parentNode.style.display = "none";
 } else {
     var µ = document,
         app = angular.module("bibliotech", []);
@@ -60,17 +60,17 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     });
                 };
 
-                angular.element(µ.one("[type=button]")).on("click", function () {
+                angular.element(µ.one("[type=button]")).bind("click", function () {
                     razError();
                     user.name = null;
                     user.confirm = null;
                     scope.new = !scope.new;
                     scope.$apply();
                 });
-                angular.element(µ.one("#f")).on("click", function () {
+                angular.element(µ.one("#f")).bind("click", function () {
                     window.location = "/gAuth";
                 });
-                angular.element(µ.one(".m")).on("click", function () {
+                angular.element(µ.one(".m")).bind("click", function () {
                     razError();
                     scope.ready = false;
                     http.post("/mail", user).then(function (result) {

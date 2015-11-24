@@ -1,5 +1,5 @@
-if (!window.FileReader || !window.Promise || !("formNoValidate" in document.createElement("input"))) {
-    alert(document.body.getAttribute("error"));
+if (!window.FileReader || !("formNoValidate" in document.createElement("input"))) {
+    document.getElementsByClassName("roundIcon")[0].style.display = document.getElementsByClassName("waiting")[0].style.display = document.getElementsByClassName("waitAnim")[0].style.display = "none";
 } else {
     var start = new Date(),
         µ = document,
@@ -40,24 +40,26 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
             }
         };
         angular.element(win)
-            .on("selectstart", function (event) {
+            .bind("selectstart", function (event) {
                 event.preventDefault();
                 if (!!event.target.tagName && !_.includes(["input", "textarea"], event.target.tagName.toLowerCase())) { return false; }
             })
-            .on("contextmenu", function (event) {
+            .bind("contextmenu", function (event) {
                 event.preventDefault();
                 return false;
             })
-            .on("resize", function () {
-                scope.bookcells.style = { "width": ~~(µ.one("[bookcells]").clientWidth / ~~(µ.one("[bookcells]").clientWidth / 256)) - ~~(µ.one("[bookcells]").clientWidth / 256) + "px" };
-                scope.windows.close("*");
-                scope.navbar.height = µ.one("#navbar").clientHeight;
-                scope.tags.reset();
-                scope.$apply();
-                µ.one("[bookcells]").css({ "top": navbar.visible ? navbar.height : 0 });
-            }).on("scroll", function () {
+            .bind("resize", function () {
+                timeout(function () {
+                    scope.bookcells.width = ~~(µ.one("[bookcells]").clientWidth / ~~(µ.one("[bookcells]").clientWidth / 256)) - ~~(µ.one("[bookcells]").clientWidth / 256) + "px";
+                    scope.bookcells.iwidth = ~~(µ.one("[bookcells]").clientWidth / ~~(µ.one("[bookcells]").clientWidth / 256)) - ~~(µ.one("[bookcells]").clientWidth / 256) - 20 + "px";
+                    scope.windows.close("*");
+                    scope.tags.reset();
+                }).then(function () {
+                    scope.navbar.height = µ.one("#navbar").clientHeight;
+                });
+            }).bind("scroll", function () {
                 scope.$apply(scope.footer = (!!scope.windows.xcroll().top));
-            }).on("click", function (event) {
+            }).bind("click", function (event) {
                 scope.modal.navBottom = µ.one("#navbar").clientHeight + 5;
                 scope.modal.sortLeft = µ.one("#tris").offsetLeft;
                 scope.modal.notifsLeft = µ.one("#notifications").offsetLeft;
@@ -65,7 +67,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 if (event.target.id !== "notifications") { scope.modal.notifs = false; }
                 if (!event.target.getAttribute("nav")) { scope.context.show = false; }
                 scope.$apply();
-            }).on("keypress, keydown", function (event) {
+            }).bind("keypress, keydown", function (event) {
                 event = event || window.event;
                 var action;
                 if (!event.altKey) {
@@ -77,14 +79,14 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                     } else {
                         if ([77, 76, 82, 80, 66, 69, 73, 72].indexOf(event.keyCode) !== -1 && scope.waiting.anim) { action = true; } else {
                             switch (event.keyCode) {
-                                case 77: navbar.toggleMenu(); action = true; break;
+                                case 77: scope.navbar.toggleMenu(); action = true; break;
                                 case 76: scope.logout(); action = true; break;
-                                case 82: windows.open("search", true); action = true; break;
-                                case 80: windows.open("profile", true); action = true; break;
-                                case 66: navbar.collection(); action = true; break;
+                                case 82: scope.windows.open("search", true); action = true; break;
+                                case 80: scope.windows.open("profile", true); action = true; break;
+                                case 66: scope.navbar.collection(); action = true; break;
                                 case 69: scope.tags.show(); action = true; break;
-                                case 73: windows.open("contacts", true); action = true; break;
-                                case 72: windows.open("help", true); action = true; break;
+                                case 73: scope.windows.open("contacts", true); action = true; break;
+                                case 72: scope.windows.open("help", true); action = true; break;
                             }
                         }
                     }
@@ -96,7 +98,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 }
             });
 
-        angular.element(µ.one("#footer")).on("click", function () {
+        angular.element(µ.one("#footer")).bind("click", function () {
             var timer = setInterval(function () {
                 var scr = ((scope.windows.xcroll().top / 2) - 0.1).toFixed(1);
                 win.scroll(0, scr);
@@ -218,7 +220,7 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                                     root.windows.close("*");
                                     root.bookcells.reset();
                                     delete root.bookcells.collection;
-                                    µ.setEvents({ "mousemove": mouseMove });
+                                    angular.element(µ).bind("mousemove", mouseMove);
                                     setTimeout(function () { _.assign(root.waiting, { "connect": true }); }, 2000);
                                     root.$apply();
                                 });
@@ -266,6 +268,89 @@ if (!window.FileReader || !window.Promise || !("formNoValidate" in document.crea
                 };
             })();
         return $socket;
+    }]);
+    app.factory("$preloader", ["$q", "$rootScope", function (q,rootScope) {
+        var Preloader = function (imageLocations) {
+            this.imageLocations = imageLocations;
+            this.imageCount = this.imageLocations.length;
+            this.loadCount = 0;
+            this.errorCount = 0;
+            this.states = {
+                PENDING: 1,
+                LOADING: 2,
+                RESOLVED: 3,
+                REJECTED: 4
+            };
+            this.state = this.states.PENDING;
+            this.deferred = q.defer();
+            this.promise = this.deferred.promise;
+        };
+
+        Preloader.preloadImages = function (imageLocations) {
+            if (!Array.isArray(imageLocations)) { imageLocations = [imageLocations]; }
+            var preloader = new Preloader(imageLocations);
+            return(preloader.load());
+        };
+
+        Preloader.prototype = {
+            constructor: Preloader,
+            isInitiated: function isInitiated() {
+                return this.state !== this.states.PENDING;
+            },
+            isRejected: function isRejected() {
+                return this.state === this.states.REJECTED;
+            },
+            isResolved: function isResolved() {
+                return this.state === this.states.RESOLVED;
+            },
+            load: function load() {
+                if (this.isInitiated()) { return this.promise; }
+                this.state = this.states.LOADING;
+                for (var i = 0; i < this.imageCount; i++) { this.loadImageLocation(this.imageLocations[i]); }
+                return this.promise;
+            },
+            handleImageError: function handleImageError(imageLocation) {
+                this.errorCount++;
+                if (this.isRejected()) { return; }
+                this.state = this.states.REJECTED;
+                this.deferred.reject(imageLocation);
+            },
+            handleImageLoad: function handleImageLoad( imageLocation ) {
+                this.loadCount++;
+                if (this.isRejected()) { return; }
+                this.deferred.notify({
+                    percent: Math.ceil( this.loadCount / this.imageCount * 100 ),
+                    imageLocation: imageLocation
+                });
+                if (this.loadCount === this.imageCount) {
+                    this.state = this.states.RESOLVED;
+                    this.deferred.resolve(this.imageLocations);
+                }
+            },
+            loadImageLocation: function loadImageLocation(imageLocation) {
+                var preloader = this,
+                    image = new Image();
+
+                image.onload = function(event) {
+                    rootScope.$apply(
+                        function() {
+                            preloader.handleImageLoad(event.target.src);
+                            preloader = image = event = null;
+                        }
+                    );
+                };
+                image.onerror = function( event ) {
+                    rootScope.$apply(
+                        function() {
+                            preloader.handleImageError(event.target.src);
+                            preloader = image = event = null;
+                        }
+                    );
+                };
+                image.src = imageLocation;
+            }
+        };
+        return(Preloader);
     }]);
     app.directive("drag", ["$rootScope", function(root) {
         var dragStart = function (evt, element, dragStyle) {

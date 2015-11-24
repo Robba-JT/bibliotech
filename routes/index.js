@@ -134,12 +134,9 @@ module.exports = exports = function (app, mongoStore, io) {
 		.post("/login", function (req, res, next) {
             passport.authenticate("login", function(err, user) {
                 if (!user) { return res.jsonp({ "error": getLang(req).error.invalidCredential }); }
-                req.login(user, function(err) {
-                    return res.jsonp({ "success" : !!user });
-                });
+                req.login(user, function(err) { return res.jsonp({ "success" : !!user }); });
             })(req, res, next)
         })
-
 
 	//Nouvel utilisateur
 		.post("/new", function (req, res, next) {

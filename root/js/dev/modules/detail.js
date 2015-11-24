@@ -92,9 +92,7 @@
                 detail.setBack = function () {
                     if (!!detail.book.alternative || !!detail.book.base64) {
                         var backColor = getMainColor(µ.one("#detailCover")).hex;
-                        µ.one("[detail]").css(
-                            { "background": "radial-gradient(circle at 50%, whitesmoke 0%, " + backColor + " 100%)" }
-                        );
+                        µ.one("[detail]").css({ "background": "radial-gradient(circle at 50%, whitesmoke 0%, " + backColor + " 100%)" });
                     }
                 };
                 detail.show = function (data) {
@@ -186,7 +184,7 @@
                     }
                 });
 
-                angular.element(µ.one("[detail] article")).on("contextmenu", function (event) {
+                angular.element(µ.one("[detail] article")).bind("contextmenu", function (event) {
                     event.preventDefault();
                     context.show = true;
                     scope.$apply();
@@ -201,7 +199,7 @@
                     return false;
                 });
 
-                angular.element(µ.one("#uploadHidden [type=file]")).on("change", function () {
+                angular.element(µ.one("#uploadHidden [type=file]")).bind("change", function () {
                     var image = this.files[0];
                     if (!!image) {
                         var reader = new FileReader();
@@ -218,16 +216,16 @@
                         µ.one("#uploadHidden").reset();
                     }
                 });
-                angular.element(µ.one("#detailCover")).on("load", detail.setBack);
-                angular.element(µ.alls("[searchby]")).on("click", detail.searchBy);
+                angular.element(µ.one("#detailCover")).bind("load", detail.setBack);
+                angular.element(µ.alls("[searchby]")).bind("click", detail.searchBy);
                 angular.element(µ.alls(".note"))
-                    .on("click", function (event) {
+                    .bind("click", function (event) {
                         if (detail.book.userNote === "1" && event.target.getAttribute("note") === "1") { detail.book.userNote = "0"; } else {
                             detail.book.userNote = event.target.getAttribute("note");
                         }
                         scope.$apply();
                     })
-                    .on("mousehover, mouseenter", function (event) {
+                    .bind("mousehover, mouseenter", function (event) {
                         var hover = event.target.getAttribute("note"),
                             allNotes = µ.alls(".note");
 
@@ -239,10 +237,10 @@
                             }
                         }
                     })
-                    .on("mouseleave", function () {
+                    .bind("mouseleave", function () {
                         µ.alls(".note").toggleClass("plus", false).toggleClass("minus", false);
                     });
-                angular.element(µ.alls("#contextMenu [nav]")).on("click", function () {
+                angular.element(µ.alls("#contextMenu [nav]")).bind("click", function () {
                     var cells = _.filter(scope.bookcells.cells, function (cell) { return !cell.toHide && !cell.toFilter; }),
                         index = _.findIndex(cells, _.matchesProperty("id", detail.book.id)),
                         next = index,
