@@ -1,20 +1,20 @@
 <!doctype html>
-<html lang="[{trads.lang}]" ng-app="bibliotech" ng-class="(waiting.screen || tags.cloud) && 'overflown'" ng-init="version = {{version}}">
+<html lang="{{lang}}" ng-app="bibliotech" ng-class="(waiting.screen || tags.cloud) && 'overflown'" ng-init="version = '{{version}}'">
     <head>
-        <title>BiblioTech</title>
+        <title>{{title}}</title>
         <meta http-equiv="Content-type" content="text/html; charset=utf-8">
-        <meta name="description" content="[{trads.headDesc}]">
-        <meta name="author" content="Julien Tassin"/>
-        <meta name="keywords" content="bibliotech, bibliothèque, library, bibliothèque virtuelle, virtual library, bibliothèque personnelle, personnal library"/>
-        <meta property="og:title" content="Biblio.tech" />
-        <meta property="og:type" content="website" />
-        <meta property="og:description" content="[{trads.headDesc}]" />
-        <meta property="og:url" content="https://biblio.tech" />
-        <meta property="og:image" content="http://lh6.googleusercontent.com/-s--8k-h-7Ok/Vc3p0VuxE6I/AAAAAAAAAU4/bd7r1D0fA0c/s256-no/bold-icon-g%252B.png" />
+        <meta name="description" content="{{description}}">
+        <meta name="author" content="{{author}}"/>
+        <meta name="keywords" content="{{keywords}}"/>
+        <meta property="og:title" content="{{title}}" />
+        <meta property="og:type" content="{{type}}" />
+        <meta property="og:description" content="{{description}}" />
+        <meta property="og:url" content="{{url}}" />
+        <meta property="og:image" content="{{image}}" />
         <link rel="stylesheet" href="../css/bibliotech.css"/>
     </head>
 
-    <body>
+    <body page="{{page}}">
         <div class="waiting" ng-hide="!!waiting && !waiting.screen" ng-class="waiting.over && 'over'"></div>
         <div class="roundIcon" ng-hide="!!waiting && !waiting.icon"></div>
         <div class="waitAnim" ng-hide="!!waiting && !waiting.anim">
@@ -140,12 +140,16 @@
         <div id="noConnect" ng-show="!!waiting.connect" def-cloak><span>[{trads.noConnect}]</span><span>[{trads.waiting}]</span></div>
 
         <script src="js/bibliotech.lib.js"></script>
-        <script src="js/bibliotech.js"></script>
-        <!--<script src="js/dev/bibliotech.js"></script>
+        <!--<script src="js/bibliotech.js"></script>-->
+        <script src="js/dev/bibliotech.js"></script>
+        <script src="js/dev/modules/preloader.js"></script>
+        <script src="js/dev/modules/socket.js"></script>
+        <script src="js/dev/modules/idb.js"></script>
         <script src="js/dev/modules/navbar.js"></script>
         <script src="js/dev/modules/search.js"></script>
         <script src="js/dev/modules/profile.js"></script>
         <script src="js/dev/modules/bookcells.js"></script>
-        <script src="js/dev/modules/detail.js"></script>-->
+        <script src="js/dev/modules/detail.js"></script>
+        <script src="js/dev/modules/defcloak.js"></script>
     </body>
 </html>

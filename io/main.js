@@ -344,7 +344,8 @@ module.exports = function main (socket, allSessions) {
                         "from": thisUser.name + "<" + thisUser._id + ">",
                         "isNew": true,
                         "title": infos.title,
-                        "alt": infos.alt
+                        "alt": infos.alt,
+                        "date": new Date()
                     };
                     defBooks("updateNotif", notif);
                     var socketId = isConnected(data.recommand.toLowerCase());

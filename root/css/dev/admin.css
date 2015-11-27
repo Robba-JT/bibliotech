@@ -15,3 +15,170 @@ body {
 .notdisplayed {
     display: none !important;
 }
+
+#logout {
+    position: fixed;
+    top: 5px;
+    right: 5px;
+    width: 40px;
+    height: 40px;
+    background-image: url(../../images/white/eject-icon.png);
+    background-position: center;
+    background-repeat: no-repeat;
+    border-radius: 5px;
+    padding: 2px;
+    cursor: pointer;
+}
+
+#logout:hover {
+    background-image: url(../../images/black/eject-icon.png);
+    background-color: ghostwhite;
+}
+
+#footer {
+    position: fixed;
+    bottom: 5px;
+    right: 5px;
+    width: 40px;
+    height: 40px;
+    background-image: url(../../images/white/iconmonstr-arrow-31-top.png);
+    background-position: center;
+    background-repeat: no-repeat;
+    border-radius: 5px;
+    padding: 2px;
+    cursor: pointer;
+}
+
+#footer:hover {
+    background-image: url(../../images/alt/iconmonstr-arrow-31-top.png);
+    background-color: ghostwhite;
+}
+
+h2 > div {
+    display: inline-block;
+}
+
+h2 .titre {
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+h2 .waiting {
+    width: 24px;
+    height: 24px;
+    vertical-align: top;
+    background-image: url(../../images/iconmonstr-loading-12-icon-24.png);
+	animation: fullRotation 5s inFinite;
+}
+
+@keyframes fullRotation {
+	from {
+        -webkit-transform: rotate(0deg);
+        transform: rotate(0deg);
+    } to {
+        -webkit-transform: rotate(360deg);
+        transform: rotate(360deg);
+    }
+}
+
+[def\:cloak], [def-cloak], [data-def-cloak], [x-def-cloak], .def-cloak, .x-def-cloak {
+    visibility: hidden !important;
+}
+
+[type=covers] > div {
+    display: inline-block;
+    margin: 2px;
+    vertical-align: top;
+    text-align: center;
+    width: 256px;
+    height: 256px;
+    position: relative;
+}
+
+[type=covers] [delete] {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+}
+
+[cover] {
+    background-size: contain;
+    background-repeat: no-repeat;
+    height: 100%;
+    opacity: .5;
+}
+
+.tr {
+    display: table-row;
+}
+
+.tr div {
+    vertical-align: top;
+    display: table-cell;
+    border: 1px solid #493D26;
+    padding: 5px;
+}
+
+.header {
+    background-color: grey;
+    text-align: center;
+    cursor: default;
+}
+
+[field] {
+    cursor: pointer;
+}
+
+[field]:hover {
+    background-color: darkgrey;
+    color: black;
+}
+
+/*.header > *:not(.inactive) {
+    cursor: pointer;
+}
+
+.header > *:not(.inactive):hover {
+    background-color: darkgrey;
+    color: black;
+}*/
+
+.tr:not(.header) > * {
+    text-align: right;
+    background-color: whitesmoke;
+    color: #493D26;
+}
+
+.tr:not(.header) > *:first-child {
+    color: darkblue;
+    cursor: pointer;
+    text-decoration: underline;
+    font-weight: bold;
+}
+
+.tr:not(.header) > *:first-child:hover {
+    color: darkred;
+}
+
+[submit] {
+    width: 34px;
+    height: 34px;
+    background-image: url(../../images/iconmonstr-check-mark-7-icon-valid.png);
+    cursor: pointer;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+[submit][disabled] {
+    background-image: url(../../images/iconmonstr-check-mark-7-icon-invalid.png);
+    cursor: not-allowed;
+}
+
+[delete] {
+    width: 34px;
+    height: 34px;
+    background-image: url(../../images/iconmonstr-x-mark-5-icon-24.png);
+    background-position: center;
+    background-repeat: no-repeat;
+    cursor: pointer;
+}

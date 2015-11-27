@@ -18,15 +18,6 @@
                         this.toggleClass("sortBy", true);
                     };
 
-                scope.logout = function () {
-                    scope.waiting.screen = true;
-                    if (!!idb.indexedDB) { idb.indexedDB.deleteDatabase(scope.profile.user.session); }
-                    scope.profile.user = {};
-                    location.assign("/logout");
-                    socks.close();
-                    return false;
-                };
-
                 navbar.visible = true;
                 navbar.height = µ.one("#navbar").clientHeight;
                 navbar.newbook = function () {

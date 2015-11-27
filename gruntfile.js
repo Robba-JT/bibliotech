@@ -105,11 +105,15 @@ module.exports = function (grunt) {
                 "files": {
                     "root/js/bibliotech.js": [
                         "root/js/dev/bibliotech.js",
+                        "root/js/dev/modules/preloader.js",
+                        "root/js/dev/modules/socket.js",
+                        "root/js/dev/modules/idb.js",
                         "root/js/dev/modules/navbar.js",
                         "root/js/dev/modules/profile.js",
                         "root/js/dev/modules/search.js",
                         "root/js/dev/modules/bookcells.js",
-                        "root/js/dev/modules/detail.js"
+                        "root/js/dev/modules/detail.js",
+                        "root/js/dev/modules/defcloak.js"
                     ],
                     "root/js/admin.js": [ "root/js/dev/admin.js" ]
                 }
@@ -199,17 +203,17 @@ module.exports = function (grunt) {
                 "options": { "spawn": false }
             },
             "jsbibliotech": {
-                "files": [ "root/js/dev/bibliotech.proto.js", "root/js/dev/bibliotech.js", "root/js/dev/modules/*.js" ],
+                "files": [ "root/js/dev/bibliotech.proto.js", "root/js/dev/bibliotech.js", "root/js/dev/admin.js", "root/js/dev/modules/*.js" ],
                 "tasks": [ "jshint:bibliotech", "uglify:bibliotech" ],
                 "options": { "spawn": false }
             },
             "htmlbibliotech": {
-                "files": [ "root/html/bibliotech.html", "root/html/preview.html", "root/html/dev/*.html" ],
+                "files": [ "root/html/bibliotech.html", "root/html/admin.html", "root/html/preview.html", "root/html/dev/*.html" ],
                 "tasks": [ "htmlmin:bibliotech" ],
                 "options": { "spawn": false }
             },
             "cssbibliotech": {
-                "files": [ "root/css/dev/base.css", "root/css/dev/bookcells.css", "root/css/dev/detail.css", "root/css/dev/navbar.css", "root/css/dev/windows.css" ],
+                "files": [ "root/css/dev/base.css", "root/css/dev/bookcells.css", "root/css/dev/detail.css", "root/css/dev/navbar.css", "root/css/dev/windows.css", "root/css/dev/admin.css" ],
                 "tasks": [ "cssmin:bibliotech" ],
                 "options": { "spawn": false }
             }

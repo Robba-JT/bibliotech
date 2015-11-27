@@ -1,55 +1,165 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="{{lang}}" ng-app="admin" ng-init="version = '{{version}}'">
     <head>
-        <title>Bibliotech - Admin</title>
+        <title>{{title}} - Admin</title>
         <meta http-equiv="Content-type" content="text/html; charset=utf-8">
         <meta name="description" content="{{description}}">
-        <meta name="author" content="Julien Tassin"/>
-        <meta property="og:title" content="Biblio.tech" />
-        <meta property="og:type" content="website" />
+        <meta name="author" content="{{author}}"/>
+        <meta name="keywords" content="{{keywords}}"/>
+        <meta property="og:title" content="{{title}}" />
+        <meta property="og:type" content="{{type}}" />
         <meta property="og:description" content="{{description}}" />
-        <meta property="og:url" content="https://biblio.tech" />
-        <meta property="og:image" content="http://lh6.googleusercontent.com/-s--8k-h-7Ok/Vc3p0VuxE6I/AAAAAAAAAU4/bd7r1D0fA0c/s256-no/bold-icon-g%252B.png" />
+        <meta property="og:url" content="{{url}}" />
+        <meta property="og:image" content="{{image}}" />
         <link type="text/css" rel="stylesheet" href="../css/admin.css">
     </head>
 
-    <body>
+    <body page="{{page}}">
         <h1>Bibliotech - Admin</h1>
 
-        <section>
-            <h2>Users</h2>
-            <textarea>{{users}}</textarea>
+        <div id="logout"></div>
+        <div id="footer" ng-show="footer"></div>
+
+        <section type="users" def-cloak>
+            <h2><div class="titre">Users:</div>&nbsp;<div class="waiting" ng-hide="users"></div><div ng-show="users">[{users.length}]</div></h2>
+            <div class="tr header" ng-show="show.users">
+                <div field="_id">_id</div>
+                <div field="name">name</div>
+                <div field="creation">creation</div>
+                <div field="_last_connectid">last_connect</div>
+                <div field="connect_number">connect_number</div>
+                <div field="googleSignIn">googleSignIn</div>
+                <div field="books.length">books.length</div>
+                <div field="userbooks">userbooks</div>
+                <div>new password</div>
+                <div></div>
+                <div></div>
+            </div>
+            <div class="tr" ng-show="show.users" ng-repeat="user in users">
+                <div>[{user._id}]</div>
+                <div>[{user.name}]</div>
+                <div>[{user.creation | date:'dd/MM/yyyy @ hh:mm:ss'}]</div>
+                <div>[{user.last_connect | date:'dd/MM/yyyy @ hh:mm:ss'}]</div>
+                <div>[{user.connect_number}]</div>
+                <div><input type="checkbox" ng-checked="user.googleSignIn" disabled/></div>
+                <div>[{user.books.length}]</div>
+                <div>[{user.userbooks}]</div>
+                <div><input type="text" ng-minlength="4" ng-maxlength="12" ng-model="user.newPassword" ng-disabled="user.googleSignIn"/></div>
+                <div submit ng-disabled="!user.newPassword"></div>
+                <div delete></div>
+            </div>
         </section>
 
-        <section>
-            <h2>Sessions</h2>
-            <textarea>{{sessions}}</textarea>
+        <section type="sessions" def-cloak>
+            <h2><div class="titre">Sessions:</div>&nbsp;<div class="waiting" ng-hide="sessions"></div><div ng-show="sessions">[{sessions.length}]</div></h2>
+            <div class="tr header" ng-show="show.sessions">
+                <div field="session.passport.user._id">session.passport.user._id</div>
+                <div field="_id">_id</div>
+                <div field="expires">expires</div>
+                <div></div>
+            </div>
+            <div class="tr" ng-show="show.sessions" ng-repeat="session in sessions">
+                <div>[{session.session.passport.user._id}]</div>
+                <div>[{session._id}]</div>
+                <div>[{session.expires | date:'dd/MM/yyyy @ hh:mm:ss' }]</div>
+                <div delete></div>
+            </div>
         </section>
 
-        <section>
-            <h2>Books</h2>
-            <textarea>{{books}}</textarea>
+        <section type="books" def-cloak>
+            <h2><div class="titre">Books:</div>&nbsp;<div class="waiting" ng-hide="books || persos"></div><div ng-show="books || persos">[{books.length + persos.length}]</div></h2>
+            <div class="tr header" ng-show="show.books">
+                <div field="title">title</div>
+                <div field="id">id</div>
+                <div field="_id">_id</div>
+                <div field="nb">nb</div>
+                <div></div>
+            </div>
+            <div class="tr" ng-show="show.books" ng-repeat="book in books">
+                <div>[{book.title}]</div>
+                <div>[{book.id}]</div>
+                <div>[{book._id}]</div>
+                <div>[{book.nb}]</div>
+                <div delete></div>
+            </div>
+            <hr ng-show="books.length && persos.length && show.books" />
+            <article type="persos">
+                <div class="tr header" ng-show="show.books">
+                    <div field="title">title</div>
+                    <div field="id.user">id.user</div>
+                    <div field="_id">_id</div>
+                    <div field="nb">nb</div>
+                    <div></div>
+                </div>
+                <div class="tr" ng-show="show.books" ng-repeat="perso in persos">
+                    <div>[{perso.title}]</div>
+                    <div>[{perso.id.user}]</div>
+                    <div>[{perso._id}]</div>
+                    <div>[{perso.nb}]</div>
+                    <div delete></div>
+                </div>
+            </article>
         </section>
 
-        <section>
-            <h2>Covers</h2>
-            <textarea>{{covers}}</textarea>
+        <section type="covers" def-cloak>
+            <h2><div class="titre">Covers:</div>&nbsp;<div class="waiting" ng-hide="covers"></div><div ng-show="covers">[{covers.length}]</div></h2>
+            <div ng-show="show.covers" ng-repeat="cover in covers">
+                <div ng-show="cover.source" ng-style="cover.source" cover></div>
+                <div delete></div>
+            </div>
         </section>
 
-        <section>
-            <h2>Comments</h2>
-            <textarea>{{comments}}</textarea>
+        <section type="comments" def-cloak>
+            <h2><div class="titre">Comments:</div>&nbsp;<div class="waiting" ng-hide="comments"></div><div ng-show="comments">[{comments.length}]</div></h2>
+            <div class="tr header" ng-show="show.comments">
+                <div field="_id.user">_id.user</div>
+                <div field="title">title</div>
+                <div field="note">note</div>
+                <div field="comment">comment</div>
+                <div field="date">date</div>
+                <div></div>
+                <div></div>
+            </div>
+            <div class="tr" ng-show="show.comments" ng-repeat="comment in comments">
+                <div>[{comment._id.user}]</div>
+                <div>[{comment.title}]</div>
+                <div><input type="number" min="0" max="5" ng-maxlength="1" string-to-number ng-model="comment.note"/></div>
+                <div><textarea rows="5" cols="100" ng-model="comment.comment"></textarea></div>
+                <div>[{comment.date | date:'dd/MM/yyyy @ hh:mm:ss'}]</div>
+                <div submit disabled></div>
+                <div delete></div>
+            </div>
         </section>
 
-        <section>
-            <h2>Notifications</h2>
-            <textarea>{{notifications}}</textarea>
+        <section type="notifications" def-cloak>
+            <h2><div class="titre">Notifications:</div>&nbsp;<div class="waiting" ng-hide="notifications"></div><div ng-show="notifications">[{notifications.length}]</div></h2>
+            <div class="tr header" ng-show="show.notifications">
+                <div field="_id.to">_id.to</div>
+                <div field="from">from</div>
+                <div field="title">title</div>
+                <div field="isNew">isNew</div>
+                <div field="date">date</div>
+                <div></div>
+                <div></div>
+            </div>
+            <div class="tr" ng-show="show.notifications" ng-repeat="notification in notifications">
+                <div>[{notification._id.to}]</div>
+                <div>[{notification.from}]</div>
+                <div>[{notification.title}]</div>
+                <div><input type="checkbox" ng-model="notification.isNew" /></div>
+                <div>[{notification.date | date:'dd/MM/yyyy @ hh:mm:ss'}]</div>
+                <div submit ng-disabled="!notification.enable"></div>
+                <div delete></div>
+            </div>
         </section>
 
-        <script>
-            var µ = document;
 
-        </script>
+        <script src="js/bibliotech.lib.js"></script>
+        <!--<script src="js/bibliotech.js"></script>-->
+        <script src="js/dev/admin.js"></script>
+        <script src="js/dev/modules/preloader.js"></script>
+        <script src="js/dev/modules/socket.js"></script>
+        <script src="js/dev/modules/defcloak.js"></script>
 
     </body>
 

@@ -125,9 +125,6 @@
             "title": "BiblioTech",
             "valid": "Valider",
             "welcome": "BiblioTech"
-        },
-        "maintenance": {
-            "message": "Le site est actuellement en cours de maintenance."
         }
     },
     "en": {
@@ -256,9 +253,6 @@
             "title": "BiblioTech",
             "valid": "Valid",
             "welcome": "BiblioTech"
-        },
-        "maintenance": {
-            "message": "Site under maintenance"
         }
     }
 }

@@ -48,7 +48,6 @@ require("./db/database").init(mongoUrl, function (error) {
         .set("views", path.join(__dirname + "/views"))
         //.set("view cache", true)
         .set("json spaces", 1)
-        .set("x-powered-by", true)
         .enable("etag").set("etag", true)
         .use(require("compression")())
         .use(require("cors")())

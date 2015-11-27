@@ -9,13 +9,14 @@ var mailsAPI = require("../tools/mails").MailsAPI(),
     googleKey = googleConfig.key,
     googleWeb = googleConfig.web,
     trads = JSON.parse(fs.readFileSync("./tools/trads.json")),
+    meta = JSON.parse(fs.readFileSync("./tools/meta.json")),
     GoogleStrategy = require("passport-google-oauth").OAuth2Strategy,
     LocalStrategy = require("passport-local").Strategy,
-    passportSocketIo = require("passport.socketio");
+    passportSocketIo = require("passport.socketio"),
+    version = require("../package.json").version;
 
 module.exports = exports = function (app, mongoStore, io) {
     "use strict";
-    var getLang = function (request) { return trads[(!!trads[request.acceptsLanguages()[0]]) ? request.acceptsLanguages()[0] : "fr"]; };
 
     passport.serializeUser(function(user, done) {
         done(null, { "_id": user._id, "token": user.token, "infos": user.infos, "active": !!user.active });
@@ -83,26 +84,39 @@ module.exports = exports = function (app, mongoStore, io) {
     );
 
     //Errorhandler
-    app.use(function (err, req, res, next) {
-			console.error(err.message, err.stack);
-			res.status(500).render("error", { error: err });
-        })
-        .use(passport.initialize())
+    app.use(passport.initialize())
         .use(passport.session())
+        .use(function (req, res, next) {
+            var lang = req.acceptsLanguages()[0];
+            res.trads = trads[(!!trads[lang]) ? lang : "fr"];
+            res.biblioRender = function (view, labels, status) {
+                if (_.isNumber(labels) && !status) {
+                    status = labels;
+                    labels = {};
+                }
+                if (!labels) { labels = {}; }
+                _.assign(labels, _.merge(meta[(!!meta[lang]) ? lang : "fr"], { "version": version, "page": view }));
+                this.status(status || 200).render.apply(this, [view, labels]);
+            };
+            next();
+        }).use(function (err, req, res, next) {
+			console.error(err.message, err.stack);
+			res.biblioRender("error", { error: err }, 500);
+        })
 
 	//Maintenance url
-	//	.get("*", function (req, res) { res.status(503).render("maintenance", getLang(req).maintenance);})
+		//.get("*", function (req, res) { res.biblioRender("maintenance", 503); })
 
 	//Display pages
 		.get("/",
             function (req, res, next) {
                 if (!req.isAuthenticated()) {
                     res.clearCookie("_bsession");
-                    res.render("login");
+                    res.biblioRender("login");
                 } else { next(); }
             },
             function (req, res) {
-                res.render("bibliotech", { version: JSON.stringify(require("../package.json").version) });
+                res.biblioRender(req.user.admin ? "admin" : "bibliotech");
             }
 		)
 
@@ -123,17 +137,17 @@ module.exports = exports = function (app, mongoStore, io) {
         })
 
     //Erreur url
-		.get("*", function (req, res) { res.status(404).render("error", { error: "Error 404" });})
+		.get("*", function (req, res) { res.status(404).biblioRender("error", { error: "Error 404" });})
 
     //Trads
         .post("/trad", function (req, res) {
-            res.jsonp(getLang(req)[req.body.from]);
+            res.jsonp(res.trads[req.body.from]);
         })
 
 	//Login
 		.post("/login", function (req, res, next) {
             passport.authenticate("login", function(err, user) {
-                if (!user) { return res.jsonp({ "error": getLang(req).error.invalidCredential }); }
+                if (!user) { return res.jsonp({ "error": res.trads.error.invalidCredential }); }
                 req.login(user, function(err) { return res.jsonp({ "success" : !!user }); });
             })(req, res, next)
         })
@@ -141,7 +155,7 @@ module.exports = exports = function (app, mongoStore, io) {
 	//Nouvel utilisateur
 		.post("/new", function (req, res, next) {
             passport.authenticate("new", function(err, user) {
-                if (!user) { return res.jsonp({ "error": getLang(req).error.alreadyExist }); }
+                if (!user) { return res.jsonp({ "error": res.trads.error.alreadyExist }); }
                 req.login(user, function(err) { return res.jsonp({ success : !err }); });
             })(req, res, next)
 		})
@@ -155,11 +169,11 @@ module.exports = exports = function (app, mongoStore, io) {
                         .then(function (result) {
                             console.info("new password request", user._id, newPwd, usersAPI.encryptPwd(newPwd));
                             mailsAPI.sendPassword(user._id, user.name, newPwd, function (error, response) {
-                                if (!!error) { return res.jsonp({ "error": getLang(req).error.errorSendMail }); }
-                                return res.jsonp({ "success": getLang(req).error.successSendMail });
+                                if (!!error) { return res.jsonp({ "error": res.trads.error.errorSendMail }); }
+                                return res.jsonp({ "success": res.trads.error.successSendMail });
                             });
-                        }).catch(function (error) { return res.jsonp({ "error": getLang(req).error.errorSendMail }); });
-                }).catch(function (error) { return res.jsonp({ "error": getLang(req).error.invalidCredential }); });
+                        }).catch(function (error) { return res.jsonp({ "error": res.trads.error.errorSendMail }); });
+                }).catch(function (error) { return res.jsonp({ "error": res.trads.error.invalidCredential }); });
 		})
 
     //Preview
@@ -167,7 +181,7 @@ module.exports = exports = function (app, mongoStore, io) {
             res.render("preview", { "bookid": req.body.previewid });
         });
 
-    io.use(passportSocketIo.authorize({
+    io.of("/bibliotech").use(passportSocketIo.authorize({
         "cookieParser": require("cookie-parser"),
         "key": "_bsession",
         "secret": "robba1979",
@@ -197,5 +211,22 @@ module.exports = exports = function (app, mongoStore, io) {
             });
         };
         require("../io/main")(socket);
+    });
+
+    io.of("/admin").use(passportSocketIo.authorize({
+        "cookieParser": require("cookie-parser"),
+        "key": "_bsession",
+        "secret": "robba1979",
+        "store": mongoStore,
+        "fail": function (data, message, error, next) { next(error); },
+        "success": function (data, next) {
+            passportSocketIo.filterSocketsByUser(io, function(user) {
+                return user._id === data.user._id;
+            }).forEach(function(socket) { socket.emit("logout"); });
+            next();
+        }
+    })).on("connection", function (socket) {
+        if (!socket.request.user || !socket.request.user.admin) { return socket.emit("logout"); }
+        require("../io/admin")(socket);
     });
 };

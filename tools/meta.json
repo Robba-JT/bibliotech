@@ -1,0 +1,24 @@
+{
+    "fr": {
+        "author": "Julien Tassin <admin@biblio.tech>",
+        "description": "Gérer votre bibliothèque: notez, commentez et faites partager votre expérience de lecture à vos amis. Connectez-vous avec votre compte Google et mettez à jour votre bibliothèque.",
+        "image": "http://lh6.googleusercontent.com/-s--8k-h-7Ok/Vc3p0VuxE6I/AAAAAAAAAU4/bd7r1D0fA0c/s256-no/bold-icon-g%252B.png",
+        "keywords": "bibliotech, bibliothèque, library, bibliothèque virtuelle, virtual library, bibliothèque personnelle, personnal library",
+        "lang": "fr",
+        "maintenance": "Le site est actuellement en cours de maintenance.",
+        "title": "BiblioTech",
+        "type": "website",
+        "url": "https://biblio.tech"
+    },
+    "en": {
+        "author": "Julien Tassin <admin@biblio.tech>",
+        "description": "Manage your library : note , comment , and please share your reading experience to your friends. Sign in with your Google Account and update your library.",
+        "image": "http://lh6.googleusercontent.com/-s--8k-h-7Ok/Vc3p0VuxE6I/AAAAAAAAAU4/bd7r1D0fA0c/s256-no/bold-icon-g%252B.png",
+        "keywords": "bibliotech, bibliothèque, library, bibliothèque virtuelle, virtual library, bibliothèque personnelle, personnal library",
+        "lang": "en",
+        "maintenance": "Site under maintenance",
+        "title": "BiblioTech",
+        "type": "website",
+        "url": "https://biblio.tech"
+    }
+}

@@ -3,14 +3,14 @@ if (!window.FileReader || !("formNoValidate" in document.createElement("input"))
 } else {
     var start = new Date(),
         µ = document,
-        app = angular.module("bibliotech", ["navbar", "search", "profile", "bookcells", "detail"]);
+        app = angular.module("bibliotech", ["preloader", "socket", "idb", "defcloak", "navbar", "search", "profile", "bookcells", "detail"]);
 
-    app.config(["$interpolateProvider", "$sceProvider", function(interpolateProvider, sceProvider) {
+    app.config(["$interpolateProvider", "$sceProvider", function(interpolateProvider, sceProvider, socket) {
         interpolateProvider.startSymbol("[{");
         interpolateProvider.endSymbol("}]");
         sceProvider.enabled(false);
     }]);
-    app.run(["$rootScope", "$http", "$window", "$timeout", function (scope, http, win, timeout) {
+    app.run(["$rootScope", "$http", "$window", "$timeout", "$socket", function (scope, http, win, timeout, socks) {
         http.post("/trad", { "from": "bibliotech" }).then(function (result) { scope.trads = result.data; });
         scope.waiting = {
             "screen": true,
@@ -39,6 +39,34 @@ if (!window.FileReader || !("formNoValidate" in document.createElement("input"))
                 };
             }
         };
+
+        var mouseMove = function (event) {
+            µ.one("#noConnect").css({
+                "top": (noConnect.clientHeight + event.clientY > window.innerHeight) ? event.clientY - noConnect.clientHeight: event.clientY,
+                "left": (noConnect.clientWidth + event.clientX > window.innerWidth) ? event.clientX - noConnect.clientWidth: event.clientX
+            });
+        };
+        socks.connect(function () {
+            _.assign(scope.waiting, { "connect": false });
+            µ.removeEventListener("mousemove", mouseMove);
+        });
+        socks.disconnect(function () {
+            scope.windows.close("*");
+            scope.bookcells.reset();
+            delete scope.bookcells.collection;
+            angular.element(µ).bind("mousemove", mouseMove);
+            timeout(function () { _.assign(scope.waiting, { "connect": true }); }, 2000);
+            scope.$apply();
+        });
+        scope.logout = function () {
+            scope.waiting.screen = true;
+            if (!!idb.indexedDB) { idb.indexedDB.deleteDatabase(scope.profile.user.session); }
+            scope.profile.user = {};
+            location.assign("/logout");
+            socks.close();
+            return false;
+        };
+
         angular.element(win)
             .bind("selectstart", function (event) {
                 event.preventDefault();
@@ -115,243 +143,6 @@ if (!window.FileReader || !("formNoValidate" in document.createElement("input"))
             "getPalette": new ColorThief().getPalette
         };
     });
-    app.factory("$idb", function() {
-        return {
-            "deleteDetail": function (bookid) {
-                if (!this.db) { return; }
-                this.db.transaction(["details"], "readwrite").objectStore("details").delete(bookid);
-            },
-            "deleteQuery": function (key) {
-                if (!this.db) { return; }
-                this.db.transaction(["queries"], "readwrite").objectStore("queries").delete(key);
-            },
-            "getDetail": function (bookid) {
-                var self = this;
-                if (_.isPlainObject(bookid)) { bookid = JSON.stringify(bookid); }
-                return new Promise(function (resolve) {
-                    if (!self.db) { resolve(); }
-                    var request = self.db.transaction(["details"], "readwrite").objectStore("details").index("by_id").get(bookid);
-                    request.onsuccess = function () { if (!!this.result) { resolve(this.result); } else { resolve(); }};
-                    request.onerror = function () { resolve(); };
-                });
-            },
-            "getQuery": function (key) {
-                var self = this;
-                return new Promise(function (resolve, reject) {
-                    if (!self.db) { reject(); }
-                    var request = self.db.transaction(["queries"], "readwrite").objectStore("queries").index("by_query").get(JSON.stringify(key));
-                    request.onsuccess = function () {
-                        if (!!this.result && !!this.result.books && !!this.result.books.length) {
-                            resolve(this.result.books);
-                        } else {
-                            reject();
-                        }};
-                    request.onerror = reject;
-                });
-            },
-            "init": function (session) {
-                var self = this;
-                this.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
-                return new Promise(function (resolve, reject) {
-                    if (!!self.indexedDB) {
-                        var request = self.indexedDB.open(session, 1);
-                        request.onerror = function () { reject(); };
-                        request.onsuccess = function () {
-                            console.info("DB Opened", new Date().toLocaleString());
-                            self.db = this.result;
-                            resolve();
-                        };
-                        request.onupgradeneeded = function() {
-                            var db = this.result;
-                            db.createObjectStore("queries", { "keyPath": "query" }).createIndex("by_query", "query", { "unique": true });
-                            db.createObjectStore("details", { "keyPath": "id" }).createIndex("by_id", "id", { "unique": true });
-                            console.info("DB Updated", new Date().toLocaleString());
-                        };
-                    }
-                });
-            },
-            "setDetail": function (book) {
-                if (!this.db) { return; }
-                var request = this.db.transaction(["details"], "readwrite").objectStore("details").put(book);
-            },
-            "setQuery": function (key, value) {
-                if (!this.db) { return; }
-                var request = this.db.transaction(["queries"], "readwrite").objectStore("queries").put({ "query": JSON.stringify(key), "books": value });
-            }
-        };
-    });
-    app.factory("$socket", ["$rootScope", "$timeout", function(root, timeout) {
-        var mouseMove = function (event) {
-                µ.one("#noConnect").css({
-                    "top": (noConnect.clientHeight + event.clientY > window.innerHeight) ? event.clientY - noConnect.clientHeight: event.clientY,
-                    "left": (noConnect.clientWidth + event.clientX > window.innerWidth) ? event.clientX - noConnect.clientWidth: event.clientX
-                });
-            },
-            execEvent = function (socket, callback) {
-                return callback ? function () {
-                    var args = arguments;
-                    timeout(function () { callback.apply(socket, args); }, 0);
-                } : angular.noop;
-            },
-            onQueue = {
-                "on": [],
-                "emit": []
-            },
-            $socket = (function () {
-                var addListener = function (eventName, callback) {
-                        connection.on(eventName, function() {
-                            var args = arguments;
-                            root.$apply(function() { callback.apply(connection, args); });
-                        });
-                    },
-                    connect = function () {
-                        var conn = io.connect({ "secure": true, "multiplex": false });
-                        conn
-                            .on("error", function (error) { console.error("error", error); root.logout(); })
-                            .once("connect", function () {
-                                _.assign(root.waiting, { "connect": false });
-                                console.info("socket.connect", this, new Date().toLocaleString(), (new Date() - start) / 1000);
-                                this.emit("isConnected");
-                                µ.removeEventListener("mousemove", mouseMove);
-                                start = new Date();
-                                this.once("disconnect", function (data) {
-                                    console.info("socket.disconnect", this.id, new Object(this), new Date().toLocaleString(), data);
-                                    reconnect(this);
-                                    root.windows.close("*");
-                                    root.bookcells.reset();
-                                    delete root.bookcells.collection;
-                                    angular.element(µ).bind("mousemove", mouseMove);
-                                    setTimeout(function () { _.assign(root.waiting, { "connect": true }); }, 2000);
-                                    root.$apply();
-                                });
-                                this.on("logout", root.logout);
-                                for (var jta = 0, lg = onQueue.on.length; jta < lg; jta++) {
-                                    addListener(onQueue.on[jta].event, onQueue.on[jta].callback);
-                                }
-                                for (jta = 0, lg = onQueue.emit.length; jta < lg; jta++) {
-                                    connection.emit(onQueue.emit[jta].event, onQueue.emit[jta].data);
-                                }
-                                onQueue.emit.length = 0;
-                            });
-                        return conn;
-                    },
-                    reconnect = function (cur) {
-                        var connectTimeInterval = setInterval(function () {
-                            if (!!cur && !!cur.connected && cur.io.readyState === "open") {
-                                clearInterval(connectTimeInterval);
-                                cur.destroy();
-                                connection = connect();
-                            }
-                            try { cur.connect(); } catch(error) { }
-                        }, 3000);
-                    },
-                    connection = connect();
-
-                return {
-                    "on": function (eventName, callback) {
-                        if (!connection || !connection.connected) {
-                            onQueue.on.push({ "event": eventName, "callback": callback });
-                        } else {
-                            addListener(eventName, callback);
-                        }
-                    },
-                    "emit": function (eventName, data) {
-                        if (!connection || !connection.connected) {
-                            onQueue.emit.push({ "event": eventName, "data": data });
-                        } else {
-                            connection.emit(eventName, data);
-                        }
-                    },
-                    "close": function () {
-                        connection.close();
-                    }
-                };
-            })();
-        return $socket;
-    }]);
-    app.factory("$preloader", ["$q", "$rootScope", function (q,rootScope) {
-        var Preloader = function (imageLocations) {
-            this.imageLocations = imageLocations;
-            this.imageCount = this.imageLocations.length;
-            this.loadCount = 0;
-            this.errorCount = 0;
-            this.states = {
-                PENDING: 1,
-                LOADING: 2,
-                RESOLVED: 3,
-                REJECTED: 4
-            };
-            this.state = this.states.PENDING;
-            this.deferred = q.defer();
-            this.promise = this.deferred.promise;
-        };
-
-        Preloader.preloadImages = function (imageLocations) {
-            if (!Array.isArray(imageLocations)) { imageLocations = [imageLocations]; }
-            var preloader = new Preloader(imageLocations);
-            return(preloader.load());
-        };
-
-        Preloader.prototype = {
-            constructor: Preloader,
-            isInitiated: function isInitiated() {
-                return this.state !== this.states.PENDING;
-            },
-            isRejected: function isRejected() {
-                return this.state === this.states.REJECTED;
-            },
-            isResolved: function isResolved() {
-                return this.state === this.states.RESOLVED;
-            },
-            load: function load() {
-                if (this.isInitiated()) { return this.promise; }
-                this.state = this.states.LOADING;
-                for (var i = 0; i < this.imageCount; i++) { this.loadImageLocation(this.imageLocations[i]); }
-                return this.promise;
-            },
-            handleImageError: function handleImageError(imageLocation) {
-                this.errorCount++;
-                if (this.isRejected()) { return; }
-                this.state = this.states.REJECTED;
-                this.deferred.reject(imageLocation);
-            },
-            handleImageLoad: function handleImageLoad( imageLocation ) {
-                this.loadCount++;
-                if (this.isRejected()) { return; }
-                this.deferred.notify({
-                    percent: Math.ceil( this.loadCount / this.imageCount * 100 ),
-                    imageLocation: imageLocation
-                });
-                if (this.loadCount === this.imageCount) {
-                    this.state = this.states.RESOLVED;
-                    this.deferred.resolve(this.imageLocations);
-                }
-            },
-            loadImageLocation: function loadImageLocation(imageLocation) {
-                var preloader = this,
-                    image = new Image();
-
-                image.onload = function(event) {
-                    rootScope.$apply(
-                        function() {
-                            preloader.handleImageLoad(event.target.src);
-                            preloader = image = event = null;
-                        }
-                    );
-                };
-                image.onerror = function( event ) {
-                    rootScope.$apply(
-                        function() {
-                            preloader.handleImageError(event.target.src);
-                            preloader = image = event = null;
-                        }
-                    );
-                };
-                image.src = imageLocation;
-            }
-        };
-        return(Preloader);
-    }]);
     app.directive("drag", ["$rootScope", function(root) {
         var dragStart = function (evt, element, dragStyle) {
                 element.addClass(dragStyle);
@@ -491,17 +282,6 @@ if (!window.FileReader || !("formNoValidate" in document.createElement("input"))
                 element.on("mouseover", show);
                 element.on("mouseleave", hide);
             }
-        };
-    }]);
-    app.directive("defCloak", ["$timeout", function (timeout) {
-        return {
-            "restrict": "A",
-            "link": { "post": function (scope, element, attrs) {
-                timeout(function () {
-                    attrs.$set("defCloak", undefined);
-                    element.removeClass("def-cloak");
-                });
-            }}
         };
     }]);
 }
