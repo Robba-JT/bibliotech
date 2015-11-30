@@ -29,6 +29,7 @@
                 <div field="_last_connectid">last_connect</div>
                 <div field="connect_number">connect_number</div>
                 <div field="googleSignIn">googleSignIn</div>
+                <div field="admin">admin</div>
                 <div field="books.length">books.length</div>
                 <div field="userbooks">userbooks</div>
                 <div>new password</div>
@@ -38,14 +39,15 @@
             <div class="tr" ng-show="show.users" ng-repeat="user in users">
                 <div>[{user._id}]</div>
                 <div>[{user.name}]</div>
-                <div>[{user.creation | date:'dd/MM/yyyy @ hh:mm:ss'}]</div>
-                <div>[{user.last_connect | date:'dd/MM/yyyy @ hh:mm:ss'}]</div>
+                <div>[{user.creation | date:'dd/MM/yyyy @ hh:mm:ssa'}]</div>
+                <div>[{user.last_connect | date:'dd/MM/yyyy @ hh:mm:ssa'}]</div>
                 <div>[{user.connect_number}]</div>
                 <div><input type="checkbox" ng-checked="user.googleSignIn" disabled/></div>
+                <div><input type="checkbox" ng-model="user.admin"/></div>
                 <div>[{user.books.length}]</div>
                 <div>[{user.userbooks}]</div>
                 <div><input type="text" ng-minlength="4" ng-maxlength="12" ng-model="user.newPassword" ng-disabled="user.googleSignIn"/></div>
-                <div submit ng-disabled="!user.newPassword"></div>
+                <div submit ng-disabled="disable"></div>
                 <div delete></div>
             </div>
         </section>
@@ -61,18 +63,19 @@
             <div class="tr" ng-show="show.sessions" ng-repeat="session in sessions">
                 <div>[{session.session.passport.user._id}]</div>
                 <div>[{session._id}]</div>
-                <div>[{session.expires | date:'dd/MM/yyyy @ hh:mm:ss' }]</div>
+                <div>[{session.expires | date:'dd/MM/yyyy @ hh:mm:ssa' }]</div>
                 <div delete></div>
             </div>
         </section>
 
         <section type="books" def-cloak>
             <h2><div class="titre">Books:</div>&nbsp;<div class="waiting" ng-hide="books || persos"></div><div ng-show="books || persos">[{books.length + persos.length}]</div></h2>
-            <div class="tr header" ng-show="show.books">
+            <div class="tr header" ng-show="show.books && books.length">
                 <div field="title">title</div>
                 <div field="id">id</div>
                 <div field="_id">_id</div>
                 <div field="nb">nb</div>
+                <div field="date">date</div>
                 <div></div>
             </div>
             <div class="tr" ng-show="show.books" ng-repeat="book in books">
@@ -80,15 +83,17 @@
                 <div>[{book.id}]</div>
                 <div>[{book._id}]</div>
                 <div>[{book.nb}]</div>
+                <div>[{book.date | date:'dd/MM/yyyy @ hh:mm:ssa'}]</div>
                 <div delete></div>
             </div>
             <hr ng-show="books.length && persos.length && show.books" />
             <article type="persos">
-                <div class="tr header" ng-show="show.books">
+                <div class="tr header" ng-show="show.books && persos.length">
                     <div field="title">title</div>
                     <div field="id.user">id.user</div>
                     <div field="_id">_id</div>
                     <div field="nb">nb</div>
+                    <div field="date">date</div>
                     <div></div>
                 </div>
                 <div class="tr" ng-show="show.books" ng-repeat="perso in persos">
@@ -96,6 +101,7 @@
                     <div>[{perso.id.user}]</div>
                     <div>[{perso._id}]</div>
                     <div>[{perso.nb}]</div>
+                    <div>[{perso.date | date:'dd/MM/yyyy @ hh:mm:ssa'}]</div>
                     <div delete></div>
                 </div>
             </article>
@@ -125,8 +131,8 @@
                 <div>[{comment.title}]</div>
                 <div><input type="number" min="0" max="5" ng-maxlength="1" string-to-number ng-model="comment.note"/></div>
                 <div><textarea rows="5" cols="100" ng-model="comment.comment"></textarea></div>
-                <div>[{comment.date | date:'dd/MM/yyyy @ hh:mm:ss'}]</div>
-                <div submit disabled></div>
+                <div>[{comment.date | date:'dd/MM/yyyy @ hh:mm:ssa'}]</div>
+                <div submit ng-disabled="disable"></div>
                 <div delete></div>
             </div>
         </section>
@@ -146,20 +152,36 @@
                 <div>[{notification._id.to}]</div>
                 <div>[{notification.from}]</div>
                 <div>[{notification.title}]</div>
-                <div><input type="checkbox" ng-model="notification.isNew" /></div>
-                <div>[{notification.date | date:'dd/MM/yyyy @ hh:mm:ss'}]</div>
-                <div submit ng-disabled="!notification.enable"></div>
+                <div><input type="checkbox" ng-model="notification.isNew" ng-change="testRef()"/></div>
+                <div>[{notification.date | date:'dd/MM/yyyy @ hh:mm:ssa'}]</div>
+                <div submit ng-disabled="disable"></div>
                 <div delete></div>
+            </div>
+        </section>
+
+        <section type="logs" def-cloak>
+            <h2><div class="titre">Logs:</div>&nbsp;<div class="waiting" ng-hide="logs"></div><div ng-show="logs">[{logs.length}]</div></h2>
+            <div class="tr header" ng-show="show.logs">
+                <div field="_id">_id</div>
+                <div field="type">type</div>
+                <div field="date">date</div>
+                <div field="file">file</div>
+            </div>
+            <div class="tr" ng-show="show.logs" ng-repeat="log in logs">
+                <div>[{log._id}]</div>
+                <div>[{log.type}]</div>
+                <div>[{log.date | date:'dd/MM/yyyy'}]</div>
+                <div><textarea ng-model="log.file"></textarea></div>
             </div>
         </section>
 
 
         <script src="js/bibliotech.lib.js"></script>
-        <!--<script src="js/bibliotech.js"></script>-->
-        <script src="js/dev/admin.js"></script>
+        <script src="js/admin.js"></script>
+        <!--<script src="js/dev/admin.js"></script>
         <script src="js/dev/modules/preloader.js"></script>
         <script src="js/dev/modules/socket.js"></script>
-        <script src="js/dev/modules/defcloak.js"></script>
+        <script src="js/dev/modules/defcloak.js"></script>-->
 
     </body>
 

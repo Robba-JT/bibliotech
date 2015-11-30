@@ -5,14 +5,17 @@ if (!window.FileReader || !("formNoValidate" in document.createElement("input"))
         app = angular.module("bibliotech", []);
 
     app.config(["$interpolateProvider", "$sceProvider", function(interpolateProvider, sceProvider) {
+        "use strict";
         interpolateProvider.startSymbol("[{");
         interpolateProvider.endSymbol("}]");
         sceProvider.enabled(false);
     }]);
     app.run(["$rootScope", "$http", function (root, http) {
+        "use strict";
         http.post("/trad", { "from": "login" }).then(function (result) { root.trads = result.data; });
     }]);
     app.directive("compareTo", ["$rootScope", function (root) {
+        "use strict";
         return {
             "restrict": "A",
             "require": "ngModel",
@@ -30,6 +33,7 @@ if (!window.FileReader || !("formNoValidate" in document.createElement("input"))
         };
     }]);
     app.directive("login", ["$timeout", function (timeout) {
+        "use strict";
         return {
             "restrict": "A",
             templateUrl: "./html/form.html",

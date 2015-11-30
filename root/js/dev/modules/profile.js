@@ -1,4 +1,5 @@
 (function () {
+    "use strict";
     var app = angular.module("profile", []);
     app.directive("profile", function () {
         return {

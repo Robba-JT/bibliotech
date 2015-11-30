@@ -115,7 +115,12 @@ module.exports = function (grunt) {
                         "root/js/dev/modules/detail.js",
                         "root/js/dev/modules/defcloak.js"
                     ],
-                    "root/js/admin.js": [ "root/js/dev/admin.js" ]
+                    "root/js/admin.js": [
+                        "root/js/dev/admin.js",
+                        "root/js/dev/modules/preloader.js",
+                        "root/js/dev/modules/socket.js",
+                        "root/js/dev/modules/defcloak.js"
+                    ]
                 }
             }
         },

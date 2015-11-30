@@ -4,24 +4,30 @@ app.config(["$interpolateProvider", "$sceProvider", function(interpolateProvider
     interpolateProvider.endSymbol("}]");
     sceProvider.enabled(false);
 }]);
-app.run(["$rootScope", "$http", "$window", "$timeout", "$socket", "$preloader", "$window", function (scope, http, win, timeout, socks, preloader, win) {
-    scope.show = {};
+app.run(["$rootScope", "$http", "$window", "$timeout", "$socket", "$preloader", function (scope, http, win, timeout, socks, preloader) {
+    "use strict";
     scope.logout = function () {
         location.assign("/logout");
         socks.close();
         return false;
     };
     scope.orders = {};
+    scope.show = {};
 
     socks.on("users", function (users) {
-        scope.users = users;
+        scope.ref_user = users;
+        scope.users = angular.copy(users);
     });
     socks.on("sessions", function (sessions) {
-        scope.sessions = sessions;
+        scope.ref_session = sessions;
+        scope.sessions = angular.copy(sessions);
     });
     socks.on("books", function (books, persos) {
-        scope.books = books;
-        scope.persos = persos;
+        scope.ref_book = books;
+        scope.ref_perso = persos;
+        scope.books = angular.copy(books);
+        scope.persos = angular.copy(persos);
+        console.debug(persos);
     });
     socks.on("covers", function (covers) {
         scope.covers = covers;
@@ -30,14 +36,19 @@ app.run(["$rootScope", "$http", "$window", "$timeout", "$socket", "$preloader", 
         }); });
     });
     socks.on("comments", function (comments) {
-        scope.comments = comments;
+        scope.ref_comment = comments;
+        scope.comments = angular.copy(comments);
     });
     socks.on("notifications", function (notifications) {
+        scope.ref_notification = angular.copy(notifications);
         scope.notifications = notifications;
     });
+    socks.on("logs", function (logs) {
+        scope.logs = logs;
+    });
 
-    angular.element(µ.alls("h2")).bind("click", function () {
-        scope.$apply(scope.show[this.parentNode.getAttribute("type")] = !scope.show[this.parentNode.getAttribute("type")]);
+    angular.element(µ.alls("h2 .titre")).bind("click", function () {
+        scope.$apply(scope.show[this.parentNode.parentNode.getAttribute("type")] = !scope.show[this.parentNode.parentNode.getAttribute("type")]);
     });
 
     angular.element(µ.one("#logout")).bind("click", function () {
@@ -71,25 +82,34 @@ app.run(["$rootScope", "$http", "$window", "$timeout", "$socket", "$preloader", 
 
 }]);
 app.directive("submit", ["$socket", function (socks) {
+    "use strict";
     return {
         "restrict": "A",
         "link": { "post": function (scope, element, attrs) {
+            var type = _.find(_.keys(scope), function (key) { return !_.startsWith(key, "$"); }),
+                that = scope[type],
+                ref = _.find(scope.$parent["ref_" + type], _.matchesProperty("_id", scope[type]._id));
+
             element.on("click", function () {
-                var type = _.find(_.keys(scope), function (key) { return !_.startsWith(key, "$"); });
                 socks.emit("update", {
                     "collection": type + "s",
-                    "values": scope[type]
+                    "values": that
                 });
+                delete that.newPassword;
+                ref = angular.copy(that);
+                scope.$apply(scope.disable = true);
             });
+            scope.$watch(function () { return scope[type]; }, function () { scope.disable = angular.equals(that, ref); }, true);
         }}
     }
 }]);
 app.directive("delete", ["$socket", function (socks) {
+    "use strict";
     return {
         "restrict": "A",
         "link": function (scope, element, attrs) {
+            var type = _.find(_.keys(scope), function (key) { return !_.startsWith(key, "$"); });
             element.on("click", function () {
-                var type = _.find(_.keys(scope), function (key) { return !_.startsWith(key, "$"); });
                 socks.emit("delete", {
                     "collection": type + "s",
                     "_id": scope[type]._id

@@ -1,4 +1,5 @@
 (function () {
+    "use strict";
     var app = angular.module("detail", ["search"]);
     app.directive("detail", function () {
         return {

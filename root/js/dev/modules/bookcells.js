@@ -1,4 +1,5 @@
 (function () {
+    "use strict";
     var app = angular.module("bookcells", []);
     app.directive("bookcells", function () {
         return {

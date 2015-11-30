@@ -429,7 +429,7 @@ module.exports = function main (socket, allSessions) {
     });
 
     socket.on("newbook", function (data) {
-        var newbook = _.merge({ "id": { "user": thisUser._id, "book": thisUser.userbooks }, "isNew": true }, data);
+        var newbook = _.merge({ "id": { "user": thisUser._id, "book": thisUser.userbooks }, "isNew": true, "date": new Date() }, data);
         addBookToUser(newbook);
         return socket.emit("newbook", newbook);
     });

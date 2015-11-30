@@ -1,4 +1,5 @@
 (function () {
+    "use strict";
     var app = angular.module("navbar", []);
     app.directive("navbar", function () {
         return {

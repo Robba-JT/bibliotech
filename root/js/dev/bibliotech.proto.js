@@ -3,6 +3,7 @@
     return this;
 };*/
 Array.prototype.noSpace = function () {
+    "use strict";
     for (var jta=0, lg = this.length; jta < lg; jta++) { if (typeof this[jta] === "string") { this[jta] = this[jta].noSpace(); }}
     return this;
 };
@@ -13,6 +14,7 @@ Array.prototype.noSpace = function () {
     return null;
 };*/
 HTMLElement.prototype.css = function (style) {
+    "use strict";
     var self = this;
     if (_.isPlainObject(style)) { _.forEach(style, function (value, key) {
         if (_.includes(["width", "max-width", "height", "max-height", "top", "left", "bottom", "padding-top"], key) && value.toString().indexOf("%") === -1) { value += "px"; }
@@ -40,8 +42,12 @@ HTMLElement.prototype.css = function (style) {
         }});
     return values;
 };*/
-HTMLElement.prototype.hasClass = function (cl) { return this.classList.contains(cl); };
+HTMLElement.prototype.hasClass = function (cl) {
+    "use strict";
+    return this.classList.contains(cl);
+};
 HTMLElement.prototype.html = function (code) {
+    "use strict";
     if (typeof code === "undefined") { return this.innerHTML; }
     this.innerHTML = code;
     return this;
@@ -55,12 +61,14 @@ HTMLElement.prototype.html = function (code) {
 };*/
 /*HTMLElement.prototype.isVisible = function () { return this.offsetWidth > 0 && this.offsetHeight > 0; };*/
 HTMLElement.prototype.newElement = function (type, attributes) {
+    "use strict";
     var elt = document.createElement(type);
     if (_.isPlainObject(attributes)) { elt.setAttributes(attributes); }
     this.appendChild(elt);
     return elt;
 };
 StyleSheetList.prototype.removeAll = HTMLElement.prototype.removeAll = function () {
+    "use strict";
     if (this.remove) { this.remove(); } else { this.parentNode.removeChild(this); }
     return this;
 };
@@ -75,6 +83,7 @@ StyleSheetList.prototype.removeAll = HTMLElement.prototype.removeAll = function 
     return this;
 };*/
 HTMLElement.prototype.setAttributes = function (attrs) {
+    "use strict";
     var self = this;
     if (_.isPlainObject(attrs)) { _.forEach(attrs, function (value, key) { self.setAttribute(key, value); }); }
     return self;
@@ -115,6 +124,7 @@ HTMLElement.prototype.setAttributes = function (attrs) {
     return this;
 };*/
 HTMLElement.prototype.toggleClass = function (cls, bo) {
+    "use strict";
     var el = this;
     cls = cls.split(" ");
     var action = "toggle";
@@ -123,6 +133,7 @@ HTMLElement.prototype.toggleClass = function (cls, bo) {
     return el;
 };
 HTMLElement.prototype.trigger = function (evt) {
+    "use strict";
     var thisEvent;
     try { thisEvent = new Event(evt); }
     catch (e) {
@@ -134,14 +145,17 @@ HTMLElement.prototype.trigger = function (evt) {
 };
 
 HTMLElement.prototype.xposition = function () {
+    "use strict";
     return !!this.parentNode && !!this.parentNode.tagName ? this.parentNode.offsetLeft : this.offsetLeft;
 };
 
 HTMLElement.prototype.yposition = function () {
+    "use strict";
     return !!this.parentNode && !!this.parentNode.tagName ? this.parentNode.offsetTop : this.offsetTop;
 };
 
 HTMLDocument.prototype.alls = HTMLCollection.prototype.alls = HTMLElement.prototype.alls = NodeList.prototype.alls = function () {
+    "use strict";
     var selects,
         selector = arguments[0],
         first = selector.substr(0, 1),
@@ -169,6 +183,7 @@ HTMLDocument.prototype.alls = HTMLCollection.prototype.alls = HTMLElement.protot
     return selects;
 };
 HTMLCollection.prototype.css = NodeList.prototype.css = function (style) {
+    "use strict";
     this.forEach(function () { this.css(this); });
     return this;
 };
@@ -178,15 +193,18 @@ HTMLCollection.prototype.css = NodeList.prototype.css = function (style) {
     return Promise.all(p);
 };*/
 HTMLCollection.prototype.forEach = NodeList.prototype.forEach = function (fn) {
+    "use strict";
     [].forEach.call(this, function (elt) { fn.apply(elt); });
     return this;
 };
 HTMLCollection.prototype.html = NodeList.prototype.html = function (code) {
+    "use strict";
     if (typeof code === "undefined") { return this; }
     this.forEach(function () { this.html(code); });
     return this;
 };
 HTMLDocument.prototype.one = HTMLCollection.prototype.one = HTMLElement.prototype.one = NodeList.prototype.one = function () {
+    "use strict";
     var selects, selector = arguments[0],
         first = selector.substr(0, 1),
         follow = selector.substr(1, selector.length);
@@ -213,6 +231,7 @@ HTMLDocument.prototype.one = HTMLCollection.prototype.one = HTMLElement.prototyp
     return selects;
 };
 HTMLCollection.prototype.removeAll = NodeList.prototype.removeAll = function () {
+    "use strict";
     this.forEach(function () { this.removeAll(); });
     return this;
 };
@@ -226,6 +245,7 @@ HTMLCollection.prototype.removeAll = NodeList.prototype.removeAll = function () 
     return this;
 };*/
 HTMLCollection.prototype.setAttributes = NodeList.prototype.setAttributes = function (attrs) {
+    "use strict";
     this.forEach(function () { this.setAttributes(attrs); });
     return this;
 };
@@ -256,6 +276,7 @@ HTMLCollection.prototype.setAttributes = NodeList.prototype.setAttributes = func
     return this;
 };*/
 HTMLCollection.prototype.toggleClass = NodeList.prototype.toggleClass = function (cls, bo) {
+    "use strict";
     var self = this;
     self.forEach(function () { this.toggleClass(cls, bo); });
     return self;
@@ -271,9 +292,11 @@ HTMLCollection.prototype.toggleClass = NodeList.prototype.toggleClass = function
     return date;
 };*/
 String.prototype.multiSelect = function () {
+    "use strict";
     return this.indexOf(" ") !== -1 || this.indexOf(",") !== -1 || this.indexOf(".") !== -1 || this.indexOf("#") !== -1 || this.indexOf(":") !== -1 || this.indexOf("]") !== -1;
 };
 String.prototype.noAccent = function () {
+    "use strict";
     var accent = [
             /[\300-\306]/g, /[\340-\346]/g, // A, a
             /[\310-\313]/g, /[\350-\353]/g, // E, e
@@ -292,5 +315,6 @@ String.prototype.noAccent = function () {
     return str;
 };
 String.prototype.noSpace = function () {
+    "use strict";
     return this.replace(/^\s+/g,"").replace(/\s+$/g,"").replace(/\s{2,}/g, " ");
 };

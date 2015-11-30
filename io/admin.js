@@ -1,11 +1,29 @@
 var Q = require("q"),
     _ = require("lodash"),
     db = require("../db/database").client,
-    bcrypt = require("bcrypt-nodejs");
+    ObjectID = require("mongodb").ObjectID,
+    bcrypt = require("bcrypt-nodejs"),
+    fs = require("fs");
 
 module.exports = function main (socket) {
     "use strict";
     socket.on("isConnected", function () {
+        fs.readdir("./logs", function (error, files) {
+            var logs = [];
+            if (!!error) { console.error("logs", error); }
+            _.forEach(files, function (log) {
+                var under = log.indexOf(" "),
+                    extension = _.lastIndexOf(log, ".");
+
+                logs.push({
+                    _id: log,
+                    type: log.substr(0, under),
+                    date: log.substring(under + 1, extension),
+                    file: fs.readFileSync("./logs/" + log, "utf-8")/*.split(/\r\n|\r|\n/)*/
+                });
+            });
+            socket.emit("logs", logs);
+        });
         db.collection("users").find().sort({ "_id" : 1 }).toArray(function (error, users) {
             if (!!error) { console.error("users", error); }
             socket.emit("users", users);
@@ -49,7 +67,8 @@ module.exports = function main (socket) {
 
     socket.on("delete", function (record) {
         if (!record || !record.collection || !record._id) { return; }
-        db.collection(record.collection === "persos" ? "books" : record.collection).remove({ "_id": record._id}, function (error) {
+        if (!_.isPlainObject(record._id)) { record._id = new ObjectID(record._id); }
+        db.collection(record.collection === "persos" ? "books" : record.collection).remove({ "_id": record._id }, function (error) {
             if (!!error) { console.error("admin delete", record.collection, record._id, error); }
         });
     });
@@ -62,6 +81,7 @@ module.exports = function main (socket) {
             record.values.password = newPass;
             delete record.values.newPassword;
         }
+        delete record.values.$$hashKey;
         db.collection(record.collection).update({ "_id": record.values._id }, record.values, function (error) {
             if (!!error) { console.error("admin update", record.collection, record.values._id, error); }
         });

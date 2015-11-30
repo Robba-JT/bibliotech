@@ -26,7 +26,8 @@ module.exports.UsersAPI = UsersAPI = function (db) {
                 "books": [],
                 "orders": [],
                 "userbooks": 0,
-                "googleSignIn": !!googleSignIn
+                "googleSignIn": !!googleSignIn,
+                "admin": false
             };
             if (!!googleSignIn) { user.googleId = password; }
             insertUser(user, function (err, result) {

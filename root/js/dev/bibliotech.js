@@ -6,11 +6,13 @@ if (!window.FileReader || !("formNoValidate" in document.createElement("input"))
         app = angular.module("bibliotech", ["preloader", "socket", "idb", "defcloak", "navbar", "search", "profile", "bookcells", "detail"]);
 
     app.config(["$interpolateProvider", "$sceProvider", function(interpolateProvider, sceProvider, socket) {
+        "use strict";
         interpolateProvider.startSymbol("[{");
         interpolateProvider.endSymbol("}]");
         sceProvider.enabled(false);
     }]);
-    app.run(["$rootScope", "$http", "$window", "$timeout", "$socket", function (scope, http, win, timeout, socks) {
+    app.run(["$rootScope", "$http", "$window", "$timeout", "$socket", "$idb", function (scope, http, win, timeout, socks, idb) {
+        "use strict";
         http.post("/trad", { "from": "bibliotech" }).then(function (result) { scope.trads = result.data; });
         scope.waiting = {
             "screen": true,
@@ -138,12 +140,14 @@ if (!window.FileReader || !("formNoValidate" in document.createElement("input"))
         });
     }]);
     app.factory("$thief", function () {
+        "use strict";
         return {
             "getColor": new ColorThief().getColor,
             "getPalette": new ColorThief().getPalette
         };
     });
     app.directive("drag", ["$rootScope", function(root) {
+        "use strict";
         var dragStart = function (evt, element, dragStyle) {
                 element.addClass(dragStyle);
                 evt.dataTransfer.setData("id", evt.target.id);
@@ -170,6 +174,7 @@ if (!window.FileReader || !("formNoValidate" in document.createElement("input"))
         };
     }]);
     app.directive("drop", ["$rootScope", function(root) {
+        "use strict";
         var dragEnter = function (evt, element, dropStyle) {
                 evt.preventDefault();
                 element.addClass(dropStyle);
@@ -202,6 +207,7 @@ if (!window.FileReader || !("formNoValidate" in document.createElement("input"))
         };
     }]);
     app.directive("compareTo", ["$rootScope", function (root) {
+        "use strict";
         return {
             "restrict": "A",
             "require": "ngModel",
@@ -218,6 +224,7 @@ if (!window.FileReader || !("formNoValidate" in document.createElement("input"))
         };
     }]);
     app.directive("message", ["$rootScope", "$window", function (root, window) {
+        "use strict";
         return {
             "restrict": "A",
             "scope": {
@@ -239,12 +246,14 @@ if (!window.FileReader || !("formNoValidate" in document.createElement("input"))
         };
     }]);
     app.directive("autoFocus", ["$timeout", function(timeout) {
+        "use strict";
         return {
             "restrict": "A",
             "link": function (scope, element, attrs) { scope.$watch(attrs.autoFocus, function (test) { timeout(function () { if (!!test) { element[0].focus(); }}); }); }
         };
     }]);
     app.directive("description", ["$timeout", function (timeout) {
+        "use strict";
         return {
             "restrict": "A",
             "link": function (scope, element, attrs) {
