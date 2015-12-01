@@ -1,4 +1,4 @@
-var start = new Date(), µ = document, app = angular.module("admin", ["preloader", "socket", "defcloak"]);
+var start = new Date(), app = angular.module("admin", ["preloader", "socket", "defcloak"]);
 app.config(["$interpolateProvider", "$sceProvider", function(interpolateProvider, sceProvider, socket) {
     interpolateProvider.startSymbol("[{");
     interpolateProvider.endSymbol("}]");
@@ -47,17 +47,17 @@ app.run(["$rootScope", "$http", "$window", "$timeout", "$socket", "$preloader", 
         scope.logs = logs;
     });
 
-    angular.element(µ.alls("h2 .titre")).bind("click", function () {
+    angular.element(document.alls("h2 .titre")).bind("click", function () {
         scope.$apply(scope.show[this.parentNode.parentNode.getAttribute("type")] = !scope.show[this.parentNode.parentNode.getAttribute("type")]);
     });
 
-    angular.element(µ.one("#logout")).bind("click", function () {
+    angular.element(document.one("#logout")).bind("click", function () {
         scope.logout();
     });
 
-    angular.element(µ.one("#footer")).bind("click", function () {
+    angular.element(document.one("#footer")).bind("click", function () {
         var timer = setInterval(function () {
-            var scr = (((win.scrollY || µ.documentElement.scrollTop) / 2) - 0.1).toFixed(1);
+            var scr = (((win.scrollY || document.documentElement.scrollTop) / 2) - 0.1).toFixed(1);
             win.scroll(0, scr);
             if (scr <= 0.1) {
                 win.scroll(0, 0);
@@ -66,7 +66,7 @@ app.run(["$rootScope", "$http", "$window", "$timeout", "$socket", "$preloader", 
         }, 100);
     });
 
-    angular.element(µ.alls("[field]")).bind("click", function () {
+    angular.element(document.alls("[field]")).bind("click", function () {
         var collection = this.parentNode.parentNode.getAttribute("type"),
             field = this.getAttribute("field");
 
@@ -77,7 +77,7 @@ app.run(["$rootScope", "$http", "$window", "$timeout", "$socket", "$preloader", 
     });
 
     angular.element(win).bind("scroll", function () {
-        scope.$apply(scope.footer = win.scrollY || µ.documentElement.scrollTop);
+        scope.$apply(scope.footer = win.scrollY || document.documentElement.scrollTop);
     });
 
 }]);

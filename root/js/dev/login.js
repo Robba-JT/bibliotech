@@ -1,8 +1,8 @@
 if (!window.FileReader || !("formNoValidate" in document.createElement("input"))) {
     document.getElementsByClassName("k")[0].parentNode.style.display = "none";
 } else {
-    var µ = document,
-        app = angular.module("bibliotech", []);
+    var document = document,
+        app = angular.module("login", []);
 
     app.config(["$interpolateProvider", "$sceProvider", function(interpolateProvider, sceProvider) {
         "use strict";
@@ -12,7 +12,7 @@ if (!window.FileReader || !("formNoValidate" in document.createElement("input"))
     }]);
     app.run(["$rootScope", "$http", function (root, http) {
         "use strict";
-        http.post("/trad", { "from": "login" }).then(function (result) { root.trads = result.data; });
+        http.get(["trads", document.documentElement.lang || "fr", "login.json"].join("/")).then(function (result) { root.trads = result.data; });
     }]);
     app.directive("compareTo", ["$rootScope", function (root) {
         "use strict";
@@ -64,17 +64,17 @@ if (!window.FileReader || !("formNoValidate" in document.createElement("input"))
                     });
                 };
 
-                angular.element(µ.one("[type=button]")).bind("click", function () {
+                angular.element(document.one("[type=button]")).bind("click", function () {
                     razError();
                     user.name = null;
                     user.confirm = null;
                     scope.new = !scope.new;
                     scope.$apply();
                 });
-                angular.element(µ.one("#f")).bind("click", function () {
+                angular.element(document.one("#f")).bind("click", function () {
                     window.location = "/gAuth";
                 });
-                angular.element(µ.one(".m")).bind("click", function () {
+                angular.element(document.one(".m")).bind("click", function () {
                     razError();
                     scope.ready = false;
                     http.post("/mail", user).then(function (result) {

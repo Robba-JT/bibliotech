@@ -16,23 +16,29 @@ body {
     display: none !important;
 }
 
+#logout, #footer, h2 .waiting, [submit], [delete] {
+    background-image: url(../../images/spritesheet_admin.png);
+    background-repeat: no-repeat;
+}
+
 #logout {
     position: fixed;
     top: 5px;
     right: 5px;
     width: 40px;
     height: 40px;
-    background-image: url(../../images/white/eject-icon.png);
-    background-position: center;
-    background-repeat: no-repeat;
+    /*background-image: url(../../images/white/eject-icon.png);
+    background-repeat: no-repeat;*/
+    background-position: -6px -6px;
     border-radius: 5px;
     padding: 2px;
     cursor: pointer;
 }
 
 #logout:hover {
-    background-image: url(../../images/black/eject-icon.png);
+    /*background-image: url(../../images/black/eject-icon.png);*/
     background-color: ghostwhite;
+    background-position: -58px -6px;
 }
 
 #footer {
@@ -41,17 +47,19 @@ body {
     right: 5px;
     width: 40px;
     height: 40px;
-    background-image: url(../../images/white/iconmonstr-arrow-31-top.png);
+    /*background-image: url(../../images/white/iconmonstr-arrow-31-top.png);
     background-position: center;
-    background-repeat: no-repeat;
+    background-repeat: no-repeat;*/
+    background-position: -110px -6px;
     border-radius: 5px;
     padding: 2px;
     cursor: pointer;
 }
 
 #footer:hover {
-    background-image: url(../../images/black/iconmonstr-arrow-31-top.png);
+    /*background-image: url(../../images/black/iconmonstr-arrow-31-top.png);*/
     background-color: ghostwhite;
+    background-position: -162px -6px;
 }
 
 h2 > div {
@@ -67,7 +75,8 @@ h2 .waiting {
     width: 24px;
     height: 24px;
     vertical-align: top;
-    background-image: url(../../images/iconmonstr-loading-12-icon-24.png);
+    /*background-image: url(../../images/iconmonstr-loading-12-icon-24.png);*/
+    background-position: -306px -10px;
 	animation: fullRotation 5s inFinite;
 }
 
@@ -99,6 +108,7 @@ h2 .waiting {
     position: absolute;
     top: 5px;
     left: 5px;
+	border-radius: 15px;
 }
 
 [cover] {
@@ -112,7 +122,7 @@ h2 .waiting {
     display: table-row;
 }
 
-.tr div {
+.tr > div {
     vertical-align: top;
     display: table-cell;
     border: 1px solid #493D26;
@@ -163,22 +173,29 @@ h2 .waiting {
 [submit] {
     width: 34px;
     height: 34px;
-    background-image: url(../../images/iconmonstr-check-mark-7-icon-valid.png);
+    /*background-image: url(../../images/iconmonstr-check-mark-7-icon-valid.png);*/
     cursor: pointer;
-    background-position: center;
-    background-repeat: no-repeat;
+    /*background-position: center;
+    background-repeat: no-repeat;*/
+    background-position: -257px -5px;
 }
 
 [submit][disabled] {
-    background-image: url(../../images/iconmonstr-check-mark-7-icon-invalid.png);
+    /*background-image: url(../../images/iconmonstr-check-mark-7-icon-invalid.png);*/
     cursor: not-allowed;
+    background-position: -213px -5px;
 }
 
 [delete] {
     width: 34px;
     height: 34px;
-    background-image: url(../../images/iconmonstr-x-mark-5-icon-24.png);
+    /*background-image: url(../../images/iconmonstr-x-mark-5-icon-24.png);
     background-position: center;
-    background-repeat: no-repeat;
+    background-repeat: no-repeat;*/
+    background-position: -345px -5px;
     cursor: pointer;
+}
+
+[submit]:not([disabled]):hover, [delete]:hover {
+	background-color: lightgray;
 }

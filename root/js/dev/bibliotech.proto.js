@@ -1,3 +1,5 @@
+var ElementPrototype = typeof HTMLElement !== "undefined" ? HTMLElement.prototype : Element.prototype;
+var DocumentPrototype = typeof HTMLDocument !== "undefined" ? HTMLDocument.prototype : Document.prototype;
 /*Array.prototype.assign = function (tab) {
     this.push.apply(this, Array.isArray(tab) ? tab : [tab]);
     return this;
@@ -8,12 +10,12 @@ Array.prototype.noSpace = function () {
     return this;
 };
 
-/*HTMLElement.prototype.closest = function (classe) {
+/*ElementPrototype.closest = function (classe) {
     var parent = this;
     while (!!parent && !!parent.tagName && parent.tagName.toLowerCase() !== "body") { if (!!parent.hasClass(classe)) { return parent; } else { parent = parent.parentNode; }}
     return null;
 };*/
-HTMLElement.prototype.css = function (style) {
+ElementPrototype.css = function (style) {
     "use strict";
     var self = this;
     if (_.isPlainObject(style)) { _.forEach(style, function (value, key) {
@@ -22,7 +24,7 @@ HTMLElement.prototype.css = function (style) {
     });}
     return self;
 };
-/*HTMLElement.prototype.fade = function (display) {
+/*ElementPrototype.fade = function (display) {
     display = typeof display === "undefined" ? !this.isVisible() : display;
     var elt = this, cls = !!display ? "fadein" : "fadeout";
     return new Promise(function (resolve) {
@@ -34,7 +36,7 @@ HTMLElement.prototype.css = function (style) {
         }}).toggleClass(cls, true);
     });
 };*/
-/*HTMLElement.prototype.formToJson = function () {
+/*ElementPrototype.formToJson = function () {
     var values = {};
     this.querySelectorAll("input, textarea").forEach(function() {
         if (!!_.includes(["checkbox", "radio"], this.type.toLowerCase()) && !!this.checked || !_.includes(["checkbox", "radio"], this.type.toLowerCase()) && !!this.name) {
@@ -42,71 +44,71 @@ HTMLElement.prototype.css = function (style) {
         }});
     return values;
 };*/
-HTMLElement.prototype.hasClass = function (cl) {
+ElementPrototype.hasClass = function (cl) {
     "use strict";
     return this.classList.contains(cl);
 };
-HTMLElement.prototype.html = function (code) {
+ElementPrototype.html = function (code) {
     "use strict";
     if (typeof code === "undefined") { return this.innerHTML; }
     this.innerHTML = code;
     return this;
 };
-/*HTMLElement.prototype.index = function () {
+/*ElementPrototype.index = function () {
     var brothers = this.parentNode.childNodes;
     for (var jta = 0, lg = brothers.length; jta < lg; jta++) {
         if (brothers[jta] === this) { return jta; }
     }
     return -1;
 };*/
-/*HTMLElement.prototype.isVisible = function () { return this.offsetWidth > 0 && this.offsetHeight > 0; };*/
-HTMLElement.prototype.newElement = function (type, attributes) {
+/*ElementPrototype.isVisible = function () { return this.offsetWidth > 0 && this.offsetHeight > 0; };*/
+ElementPrototype.newElement = function (type, attributes) {
     "use strict";
     var elt = document.createElement(type);
     if (_.isPlainObject(attributes)) { elt.setAttributes(attributes); }
     this.appendChild(elt);
     return elt;
 };
-StyleSheetList.prototype.removeAll = HTMLElement.prototype.removeAll = function () {
+StyleSheetList.prototype.removeAll = ElementPrototype.removeAll = function () {
     "use strict";
     if (this.remove) { this.remove(); } else { this.parentNode.removeChild(this); }
     return this;
 };
-/*HTMLElement.prototype.removeAttributes = function (attrs) {
+/*ElementPrototype.removeAttributes = function (attrs) {
     var self = this;
     if (typeof attrs === "string") { attrs = [attrs]; }
     if (_.isArray(attrs)) { attrs.forEach(function (attr) { self.removeAttribute(attr); }); }
     return self;
 };*/
-/*HTMLElement.prototype.removeEvent = function (evt, fn) {
+/*ElementPrototype.removeEvent = function (evt, fn) {
     this.removeEventListener(evt, fn);
     return this;
 };*/
-HTMLElement.prototype.setAttributes = function (attrs) {
+ElementPrototype.setAttributes = function (attrs) {
     "use strict";
     var self = this;
     if (_.isPlainObject(attrs)) { _.forEach(attrs, function (value, key) { self.setAttribute(key, value); }); }
     return self;
 };
-/*Window.prototype.setEvents = HTMLDocument.prototype.setEvents = HTMLElement.prototype.setEvents = function (evts, listener, capt) {
+/*Window.prototype.setEvents = DocumentPrototype.setEvents = ElementPrototype.setEvents = function (evts, listener, capt) {
     var self = this;
     if (_.isPlainObject(evts)) { _.forEach(evts, function (value, key) { self.setEvents(key, value, capt); }); return self; }
     self.addEventListener(evts, listener, capt);
     return self;
 };*/
-/*HTMLElement.prototype.setValue = function (value) {
+/*ElementPrototype.setValue = function (value) {
     this.value = value;
     return this;
 };*/
-/*HTMLElement.prototype.siblings = function (selector) {
+/*ElementPrototype.siblings = function (selector) {
     return this.parentNode.alls(selector);
 };*/
-/*HTMLElement.prototype.text = function (code) {
+/*ElementPrototype.text = function (code) {
     if (typeof code === "undefined") { return this.textContent; }
     this.textContent = code;
     return this;
 };*/
-/*HTMLElement.prototype.toLeft = function (display) {
+/*ElementPrototype.toLeft = function (display) {
     display = typeof display === "undefined" ? !this.isVisible() : display;
     var elt = this, cls = !!display ? "leftin" : "leftout";
     return new Promise(function (resolve) {
@@ -118,12 +120,12 @@ HTMLElement.prototype.setAttributes = function (attrs) {
         }}).toggleClass(cls, true);
     });
 };*/
-/*HTMLElement.prototype.toggle = function (display) {
+/*ElementPrototype.toggle = function (display) {
     if (typeof display === "undefined" || display === null) { display = !this.isVisible(); }
     this.toggleClass("notdisplayed", !display);
     return this;
 };*/
-HTMLElement.prototype.toggleClass = function (cls, bo) {
+ElementPrototype.toggleClass = function (cls, bo) {
     "use strict";
     var el = this;
     cls = cls.split(" ");
@@ -132,7 +134,7 @@ HTMLElement.prototype.toggleClass = function (cls, bo) {
     cls.forEach(function (cl) { el.classList[action](cl); });
     return el;
 };
-HTMLElement.prototype.trigger = function (evt) {
+ElementPrototype.trigger = function (evt) {
     "use strict";
     var thisEvent;
     try { thisEvent = new Event(evt); }
@@ -144,17 +146,17 @@ HTMLElement.prototype.trigger = function (evt) {
     return this;
 };
 
-HTMLElement.prototype.xposition = function () {
+ElementPrototype.xposition = function () {
     "use strict";
     return !!this.parentNode && !!this.parentNode.tagName ? this.parentNode.offsetLeft : this.offsetLeft;
 };
 
-HTMLElement.prototype.yposition = function () {
+ElementPrototype.yposition = function () {
     "use strict";
     return !!this.parentNode && !!this.parentNode.tagName ? this.parentNode.offsetTop : this.offsetTop;
 };
 
-HTMLDocument.prototype.alls = HTMLCollection.prototype.alls = HTMLElement.prototype.alls = NodeList.prototype.alls = function () {
+DocumentPrototype.alls = HTMLCollection.prototype.alls = ElementPrototype.alls = NodeList.prototype.alls = function () {
     "use strict";
     var selects,
         selector = arguments[0],
@@ -203,7 +205,7 @@ HTMLCollection.prototype.html = NodeList.prototype.html = function (code) {
     this.forEach(function () { this.html(code); });
     return this;
 };
-HTMLDocument.prototype.one = HTMLCollection.prototype.one = HTMLElement.prototype.one = NodeList.prototype.one = function () {
+DocumentPrototype.one = HTMLCollection.prototype.one = ElementPrototype.one = NodeList.prototype.one = function () {
     "use strict";
     var selects, selector = arguments[0],
         first = selector.substr(0, 1),

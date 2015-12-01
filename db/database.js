@@ -34,7 +34,7 @@ module.exports.init = function (mongoUrl, callback) {
                     var toRemoved = [];
                     userBooks = _.flattenDeep(_.pluck(userBooks, "books"));
                     allCovers.forEach(function (result) { if (_.findIndex(userBooks, { cover: result._id }) === -1) { toRemoved.push(result._id); }});
-                    if (!!toRemoved.length) { removeCovers({ "_id": {$in: toRemoved }}); }
+                    if (!!toRemoved.length) { removeCovers({ "_id": {"$in": toRemoved }}); }
                     console.info("Covers removed", toRemoved.length);
                 });
             });
@@ -43,14 +43,14 @@ module.exports.init = function (mongoUrl, callback) {
                 if (!!error) { console.error("Error Update Books", error); }
                 if (!!result) {
                     var updated = 0, removed = 0, requests = [];
-                    result.forEach(function (oldOne) {
+                    _.forEach(result, function (oldOne) {
                         var params = _.merge({ volumeId: oldOne.id }, defParams);
                         requests.push(new Q.Promise(function () {
                             gBooks.volumes.get(params, function (error, response) {
                                 if (!!error) {
                                     console.error("Error Update One", oldOne.id, error);
                                     if (error.code === 404 && error.message === "The volume ID could not be found.") {
-                                        books.remove({ id: oldOne.id });
+                                        books.remove({ "id": oldOne.id });
                                         removed++;
                                     }
                                 } else {

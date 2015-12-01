@@ -1,5 +1,5 @@
 (function () {
-    "use strict";
+	"use strict";
     var app = angular.module("bookcells", []);
     app.directive("bookcells", function () {
         return {
@@ -24,8 +24,8 @@
                         });
                     };
 
-                bookcells.width = ~~(µ.one("[bookcells]").clientWidth / ~~(µ.one("[bookcells]").clientWidth / 256)) - ~~(µ.one("[bookcells]").clientWidth / 256) + "px";
-                bookcells.iwidth = ~~(µ.one("[bookcells]").clientWidth / ~~(µ.one("[bookcells]").clientWidth / 256)) - ~~(µ.one("[bookcells]").clientWidth / 256) - 20 + "px";
+                bookcells.width = ~~(document.one("[bookcells]").clientWidth / ~~(document.one("[bookcells]").clientWidth / 256)) - ~~(document.one("[bookcells]").clientWidth / 256) + "px";
+                bookcells.iwidth = ~~(document.one("[bookcells]").clientWidth / ~~(document.one("[bookcells]").clientWidth / 256)) - ~~(document.one("[bookcells]").clientWidth / 256) - 20 + "px";
                 bookcells.addBook = function (cell) {
                     if (_.findIndex(bookcells.collection, _.matchesProperty("id", cell.id)) === -1) {
                         if (!this.cell) { _.assign(_.find(bookcells.cells, _.matchesProperty("id", cell.id)), { "inCollection": true }); }
@@ -36,9 +36,9 @@
                             socks.emit("addBook", cell.id);
                         } else if (!!scope.navbar.isCollect) {
                             bookcells.cells.push(cell);
-                            if (!µ.one("#sort > div").hasClass("sortBy")) {
-                                µ.one(".sortBy").toggleClass("sortBy", false);
-                                µ.one("#sort > div").toggleClass("sortBy", true);
+                            if (!document.one("#sort > div").hasClass("sortBy")) {
+                                document.one(".sortBy").toggleClass("sortBy", false);
+                                document.one("#sort > div").toggleClass("sortBy", true);
                             }
                             bookcells.cells =  _.sortByOrder(bookcells.cells, "title");
                         }
@@ -63,7 +63,7 @@
                     return new Promise(function (resolve) {
                         delete bookcells.cells;
                         scope.tags.last = scope.search.last = scope.navbar.filtre = scope.navbar.last = null;
-                        µ.one("[bookcells]").css({ "top": µ.one("#navbar").clientHeight });
+                        document.one("[bookcells]").css({ "top": document.one("#navbar").clientHeight });
                         resolve();
                     });
                 };

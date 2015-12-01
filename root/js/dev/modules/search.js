@@ -1,5 +1,5 @@
 (function () {
-    "use strict";
+	"use strict";
     var app = angular.module("search", []);
     app.directive("search", function () {
         return {
@@ -12,7 +12,7 @@
                     scope.windows.close("*");
                     scope.navbar.isCollect = false;
                     scope.navbar.filtre = search.last = scope.tags.last = null;
-                    if (µ.one(".sortBy")) { µ.one(".sortBy").toggleClass("sortBy", false); }
+                    if (document.one(".sortBy")) { document.one(".sortBy").toggleClass("sortBy", false); }
                     if (!_.isEqual(this.result, this.last)) {
                         scope.bookcells.reset().then(function () {
                             search.last = search.result;
@@ -34,7 +34,7 @@
                     scope.windows.close("*");
                     scope.navbar.isCollect = false;
                     scope.navbar.filtre = search.last = scope.tags.last = null;
-                    if (µ.one(".sortBy")) { µ.one(".sortBy").toggleClass("sortBy", false); }
+                    if (document.one(".sortBy")) { document.one(".sortBy").toggleClass("sortBy", false); }
                     if (!_.isEqual(query, this.last)) {
                         scope.bookcells.reset().then(function () {
                             search.last = query;
@@ -56,7 +56,7 @@
                     scope.windows.close("*");
                     scope.navbar.isCollect = false;
                     scope.navbar.filtre = search.last = scope.tags.last = null;
-                    if (µ.one(".sortBy")) { µ.one(".sortBy").toggleClass("sortBy", false); }
+                    if (document.one(".sortBy")) { document.one(".sortBy").toggleClass("sortBy", false); }
                     if (!_.isEqual(query, search.last)) {
                         scope.bookcells.reset().then(function () {
                             search.last = query;

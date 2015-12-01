@@ -74,22 +74,28 @@ module.exports = function (grunt) {
                     "drop_console": true
                 }
             },
-            "loginlib": {
+            /*"loginlib": {
                 "files": { "root/js/login.lib.js": [
                     "root/lib/Promise.min.js",
                     "node_modules/angular/angular.min.js",
                     "node_modules/lodash/index.js",
                     "root/js/dev/bibliotech.proto.js"
                 ]}
-            },
+            },*/
             "login": {
                 "files": {
                     "root/js/login.js": [
                         "root/js/dev/login.js"
-                    ]
+                    ],
+					"root/js/login.lib.js": [
+						"root/lib/Promise.min.js",
+						"node_modules/angular/angular.min.js",
+						"node_modules/lodash/index.js",
+						"root/js/dev/bibliotech.proto.js"
+					]
                 }
             },
-            "bibliotechlib": {
+            /*"bibliotechlib": {
                 "files": {
                     "root/js/bibliotech.lib.js": [
                         "root/lib/Promise.min.js",
@@ -100,9 +106,17 @@ module.exports = function (grunt) {
                         "root/js/dev/bibliotech.proto.js"
                     ]
                 }
-            },
+            },*/
             "bibliotech": {
                 "files": {
+					"root/js/bibliotech.lib.js": [
+                        "root/lib/Promise.min.js",
+                        "node_modules/angular/angular.min.js",
+                        "node_modules/lodash/index.js",
+                        "node_modules/socket.io-client/socket.io.js",
+                        "root/lib/color-thief.js",
+                        "root/js/dev/bibliotech.proto.js"
+                    ],
                     "root/js/bibliotech.js": [
                         "root/js/dev/bibliotech.js",
                         "root/js/dev/modules/preloader.js",
@@ -225,11 +239,11 @@ module.exports = function (grunt) {
         }
 	});
 
-    grunt.registerTask("login", [ "jshint:login", "uglify:login", "uglify:loginlib", "htmlmin:login", "cssmin:login" ]);
+    grunt.registerTask("login", [ "jshint:login", "uglify:login", /*"uglify:loginlib", */"htmlmin:login", "cssmin:login" ]);
     grunt.registerTask("bibliotech", [
         "jshint:bibliotech",
         "uglify:bibliotech",
-        "uglify:bibliotechlib",
+        /*"uglify:bibliotechlib",*/
         "htmlmin:bibliotech",
         "cssmin:bibliotech"
     ]);
@@ -238,5 +252,5 @@ module.exports = function (grunt) {
     grunt.registerTask("ubuntu", [ "shell:ubuntu" ]);
 
     grunt.registerTask("server", [ "clean", "concurrent:dev" ]);
-    grunt.registerTask("prod", [ "clean", "concurrent:prod" ]);
+    grunt.registerTask("prod", [ /*"clean", */"concurrent:prod" ]);
 };

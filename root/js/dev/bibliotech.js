@@ -2,7 +2,6 @@ if (!window.FileReader || !("formNoValidate" in document.createElement("input"))
     document.getElementsByClassName("roundIcon")[0].style.display = document.getElementsByClassName("waiting")[0].style.display = document.getElementsByClassName("waitAnim")[0].style.display = "none";
 } else {
     var start = new Date(),
-        µ = document,
         app = angular.module("bibliotech", ["preloader", "socket", "idb", "defcloak", "navbar", "search", "profile", "bookcells", "detail"]);
 
     app.config(["$interpolateProvider", "$sceProvider", function(interpolateProvider, sceProvider, socket) {
@@ -13,7 +12,7 @@ if (!window.FileReader || !("formNoValidate" in document.createElement("input"))
     }]);
     app.run(["$rootScope", "$http", "$window", "$timeout", "$socket", "$idb", function (scope, http, win, timeout, socks, idb) {
         "use strict";
-        http.post("/trad", { "from": "bibliotech" }).then(function (result) { scope.trads = result.data; });
+        http.get(["trads", document.documentElement.lang || "fr", "bibliotech.json"].join("/")).then(function (result) { scope.trads = result.data; });
         scope.waiting = {
             "screen": true,
             "over": false,
@@ -36,27 +35,27 @@ if (!window.FileReader || !("formNoValidate" in document.createElement("input"))
             },
             "xcroll": function () {
                 return {
-                    "top": win.scrollY || µ.documentElement.scrollTop,
-                    "left": win.scrollX || µ.documentElement.scrollLeft
+                    "top": win.scrollY || document.documentElement.scrollTop,
+                    "left": win.scrollX || document.documentElement.scrollLeft
                 };
             }
         };
 
         var mouseMove = function (event) {
-            µ.one("#noConnect").css({
+            document.one("#noConnect").css({
                 "top": (noConnect.clientHeight + event.clientY > window.innerHeight) ? event.clientY - noConnect.clientHeight: event.clientY,
                 "left": (noConnect.clientWidth + event.clientX > window.innerWidth) ? event.clientX - noConnect.clientWidth: event.clientX
             });
         };
         socks.connect(function () {
             _.assign(scope.waiting, { "connect": false });
-            µ.removeEventListener("mousemove", mouseMove);
+            document.removeEventListener("mousemove", mouseMove);
         });
         socks.disconnect(function () {
             scope.windows.close("*");
             scope.bookcells.reset();
             delete scope.bookcells.collection;
-            angular.element(µ).bind("mousemove", mouseMove);
+            angular.element(document).bind("mousemove", mouseMove);
             timeout(function () { _.assign(scope.waiting, { "connect": true }); }, 2000);
             scope.$apply();
         });
@@ -80,19 +79,19 @@ if (!window.FileReader || !("formNoValidate" in document.createElement("input"))
             })
             .bind("resize", function () {
                 timeout(function () {
-                    scope.bookcells.width = ~~(µ.one("[bookcells]").clientWidth / ~~(µ.one("[bookcells]").clientWidth / 256)) - ~~(µ.one("[bookcells]").clientWidth / 256) + "px";
-                    scope.bookcells.iwidth = ~~(µ.one("[bookcells]").clientWidth / ~~(µ.one("[bookcells]").clientWidth / 256)) - ~~(µ.one("[bookcells]").clientWidth / 256) - 20 + "px";
+                    scope.bookcells.width = ~~(document.one("[bookcells]").clientWidth / ~~(document.one("[bookcells]").clientWidth / 256)) - ~~(document.one("[bookcells]").clientWidth / 256) + "px";
+                    scope.bookcells.iwidth = ~~(document.one("[bookcells]").clientWidth / ~~(document.one("[bookcells]").clientWidth / 256)) - ~~(document.one("[bookcells]").clientWidth / 256) - 20 + "px";
                     scope.windows.close("*");
                     scope.tags.reset();
                 }).then(function () {
-                    scope.navbar.height = µ.one("#navbar").clientHeight;
+                    scope.navbar.height = document.one("#navbar").clientHeight;
                 });
             }).bind("scroll", function () {
                 scope.$apply(scope.footer = (!!scope.windows.xcroll().top));
             }).bind("click", function (event) {
-                scope.modal.navBottom = µ.one("#navbar").clientHeight + 5;
-                scope.modal.sortLeft = µ.one("#tris").offsetLeft;
-                scope.modal.notifsLeft = µ.one("#notifications").offsetLeft;
+                scope.modal.navBottom = document.one("#navbar").clientHeight + 5;
+                scope.modal.sortLeft = document.one("#tris").offsetLeft;
+                scope.modal.notifsLeft = document.one("#notifications").offsetLeft;
                 if (event.target.id !== "tris") { scope.modal.sort = false; }
                 if (event.target.id !== "notifications") { scope.modal.notifs = false; }
                 if (!event.target.getAttribute("nav")) { scope.context.show = false; }
@@ -128,7 +127,7 @@ if (!window.FileReader || !("formNoValidate" in document.createElement("input"))
                 }
             });
 
-        angular.element(µ.one("#footer")).bind("click", function () {
+        angular.element(document.one("#footer")).bind("click", function () {
             var timer = setInterval(function () {
                 var scr = ((scope.windows.xcroll().top / 2) - 0.1).toFixed(1);
                 win.scroll(0, scr);
@@ -267,7 +266,7 @@ if (!window.FileReader || !("formNoValidate" in document.createElement("input"))
                             description = scope.cell.description.substr(0, Math.max(index, 500)) + ((index !== -1) ? "..." : ""),
                             width = self.clientWidth,
                             height = self.clientHeight,
-                            top = Math.max(window.innerHeight, µ.one("[bookcells]").clientHeight) - self.yposition() < height ? -(height / 3).toFixed(0) : (height / 3).toFixed(0),
+                            top = Math.max(window.innerHeight, document.one("[bookcells]").clientHeight) - self.yposition() < height ? -(height / 3).toFixed(0) : (height / 3).toFixed(0),
                             left = window.innerWidth - (self.xposition() + width) < width ? -(width / 3).toFixed(0) : (width / 3).toFixed(0),
                             style = "top: " + top + "px; left: " + left + "px; width: " + width + "px;",
                             div = angular.element("<div class=\"description notdisplayed\" style=\"" + style + "\"><span>" + title + "</span><div>" + description + "</div></div>");

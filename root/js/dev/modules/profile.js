@@ -1,5 +1,5 @@
 (function () {
-    "use strict";
+	"use strict";
     var app = angular.module("profile", []);
     app.directive("profile", function () {
         return {
@@ -7,7 +7,6 @@
             templateUrl: "./html/profile.html",
             controller: ["$scope", "$socket", "$idb", "$preloader", function (scope, socks, idb, preloader) {
                 var profile = scope.profile = {};
-
                 profile.reset = function () { _.assign(this.user, { "pwd": "", "newPwd": "", "confirmPwd": "", "error": false }); };
                 profile.send = function () { socks.emit("updateUser", this.user); };
                 profile.delete = function () {
@@ -30,7 +29,7 @@
                     if (data.link && data.picture) {
                         preloader.preloadImages(data.picture).then(function (result) {
                             profile.gplus = true;
-                            angular.element(µ.one("#picture")).css("background-image", "url(" + data.picture + ")").bind("click", function () {
+                            angular.element(document.one("#picture")).css("background-image", "url(" + data.picture + ")").bind("click", function () {
                                 window.open(data.link);
                             });
                         });

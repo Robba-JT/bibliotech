@@ -1,5 +1,5 @@
 (function () {
-    "use strict";
+	"use strict";
     var app = angular.module("navbar", []);
     app.directive("navbar", function () {
         return {
@@ -15,22 +15,22 @@
                         var by = this.getAttribute("by"), sort = this.getAttribute("sort");
                         scope.bookcells.cells = _.sortByOrder(scope.bookcells.cells, [by], sort !== "desc");
                         scope.$apply();
-                        if (µ.one(".sortBy")) { µ.one(".sortBy").toggleClass("sortBy", false); }
+                        if (document.one(".sortBy")) { document.one(".sortBy").toggleClass("sortBy", false); }
                         this.toggleClass("sortBy", true);
                     };
 
                 navbar.visible = true;
-                navbar.height = µ.one("#navbar").clientHeight;
+                navbar.height = document.one("#navbar").clientHeight;
                 navbar.newbook = function () {
                     scope.waiting.screen = true;
                     scope.detail.show({});
                 };
                 navbar.openUrl = function (url) { window.open(url); };
-                navbar.mailTo = function () { µ.location.href = "mailto:admin@biblio.tech?subject=Bibliotech"; };
+                navbar.mailTo = function () { document.location.href = "mailto:admin@biblio.tech?subject=Bibliotech"; };
                 navbar.collection = function () {
                     navbar.saveorder = false;
-                    if (µ.one(".sortBy") && !µ.one("#sort > div").hasClass("sortBy")) { µ.one(".sortBy").toggleClass("sortBy", false); }
-                    µ.one("#sort > div").toggleClass("sortBy", true);
+                    if (document.one(".sortBy") && !document.one("#sort > div").hasClass("sortBy")) { document.one(".sortBy").toggleClass("sortBy", false); }
+                    document.one("#sort > div").toggleClass("sortBy", true);
                     window.scroll(0, 0);
                     if (!navbar.isCollect) {
                         scope.bookcells.reset().then(function () {
@@ -67,7 +67,7 @@
                 };
                 navbar.toggleMenu = function () {
                     timeout(this.visible = !this.visible).then(function () {
-                        navbar.height = µ.one("#navbar").clientHeight;
+                        navbar.height = document.one("#navbar").clientHeight;
                     });
                 };
                 navbar.saveOrder = function () {
@@ -85,12 +85,12 @@
                 };
 
                 tags.generate = function () {
-                    var cloud = µ.one("#cloud"),
+                    var cloud = document.one("#cloud"),
                         height = ~~(cloud.clientHeight / 2),
                         width = ~~(cloud.clientWidth / 2),
                         ratio = width / height,
                         step = 3.0,
-                        µtags = [],
+                        documenttags = [],
                         isOver = function(elem, others) {
                             var overlap = function(a, b) {
                                 return (Math.abs(2.0 * a.offsetLeft + a.offsetWidth - 2.0 * b.offsetLeft - b.offsetWidth) < a.offsetWidth + b.offsetWidth) && (Math.abs(2.0 * a.offsetTop + a.offsetHeight - 2.0 * b.offsetTop - b.offsetHeight) < a.offsetHeight + b.offsetHeight);
@@ -101,27 +101,27 @@
 
                     for (var jta = 0, lg = scope.tags.tags.length; jta < lg; jta++) {
                         var tag = scope.tags.tags[jta],
-                            µtag = cloud.newElement("span", { "title": tag.weight, "class": "tag tag" + Math.min(~~(tag.weight / 5) + 1, 10) }).html(tag.text),
-                            top = height - (µtag.clientHeight / 2),
-                            left = width - (µtag.clientWidth / 2),
+                            documenttag = cloud.newElement("span", { "title": tag.weight, "class": "tag tag" + Math.min(~~(tag.weight / 5) + 1, 10) }).html(tag.text),
+                            top = height - (documenttag.clientHeight / 2),
+                            left = width - (documenttag.clientWidth / 2),
                             radius = 0,
                             angle = 6.28 * Math.random();
 
-                        µtag.css({ "top": top, "left": left });
-                        while(isOver(µtag, µtags)) {
+                        documenttag.css({ "top": top, "left": left });
+                        while(isOver(documenttag, documenttags)) {
                             radius += step;
                             angle += (jta % 2 === 0 ? 1 : -1) * step;
-                            top = height + radius * Math.sin(angle) - (µtag.clientHeight / 2.0);
-                            left = width - (µtag.clientWidth / 2.0) + (radius * Math.cos(angle)) * ratio;
-                            µtag.css({ "top": top, "left": left });
+                            top = height + radius * Math.sin(angle) - (documenttag.clientHeight / 2.0);
+                            left = width - (documenttag.clientWidth / 2.0) + (radius * Math.cos(angle)) * ratio;
+                            documenttag.css({ "top": top, "left": left });
                         }
-                        µtags.push(µtag);
+                        documenttags.push(documenttag);
                     }
                     angular.element(cloud.alls("span")).bind("click", scope.tags.click);
                 };
                 tags.show = function () {
                     new Promise(function (resolve) { resolve(scope.windows.open("cloud", true)); })
-                        .then(function () { if (!µ.alls("#cloud span").length) { scope.tags.generate(); } });
+                        .then(function () { if (!document.alls("#cloud span").length) { scope.tags.generate(); } });
                 };
                 tags.click = function () {
                     scope.windows.close("*");
@@ -156,12 +156,12 @@
                             alls.push({ "text": tag, "weight": nb });
                             tagOptions += "<option>" + tag + "</option>";
                         });
-                        µ.one("#tagsList").html(tagOptions);
+                        document.one("#tagsList").html(tagOptions);
                         this.tags = _.sortBy(alls, "weight").reverse();
                     }
-                    µ.alls("#cloud span").removeAll();
+                    document.alls("#cloud span").removeAll();
                 };
-                tags.reset = function () { µ.alls("#cloud span").removeAll(); };
+                tags.reset = function () { document.alls("#cloud span").removeAll(); };
 
                 socks.on("notifs", function (data) {
                     scope.notifs.notifs = data;
@@ -171,7 +171,7 @@
                     socks.emit("readNotif", _.pullAt(this.notifs, index)[0]);
                 };
 
-                angular.element(µ.alls("#sort > div")).bind("click", sortBy);
+                angular.element(document.alls("#sort > div")).bind("click", sortBy);
             }]
         };
     });

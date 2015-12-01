@@ -2,14 +2,13 @@ var mailsAPI = require("../tools/mails").MailsAPI(),
     db = require("../db/database").client,
     usersAPI = require("../db/users").UsersAPI(db),
     fs = require("fs"),
-    admins = JSON.parse(fs.readFileSync("./tools/admins.json")).admins,
     _ = require("lodash"),
     passport = require("passport"),
     googleConfig = JSON.parse(fs.readFileSync("google_client_config.json")),
     googleKey = googleConfig.key,
     googleWeb = googleConfig.web,
-    trads = JSON.parse(fs.readFileSync("./tools/trads.json")),
-    meta = JSON.parse(fs.readFileSync("./tools/meta.json")),
+    trads = JSON.parse(fs.readFileSync("./root/trads/trads.json")),
+    meta = JSON.parse(fs.readFileSync("./root/trads/meta.json")),
     GoogleStrategy = require("passport-google-oauth").OAuth2Strategy,
     LocalStrategy = require("passport-local").Strategy,
     passportSocketIo = require("passport.socketio"),
@@ -210,7 +209,7 @@ module.exports = exports = function (app, mongoStore, io) {
                 }
             });
         };
-        require("../io/main")(socket);
+        require("../io/bibliotech")(socket);
     });
 
     io.of("/admin").use(passportSocketIo.authorize({

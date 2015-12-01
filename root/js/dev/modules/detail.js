@@ -1,5 +1,5 @@
 (function () {
-    "use strict";
+	"use strict";
     var app = angular.module("detail", ["search"]);
     app.directive("detail", function () {
         return {
@@ -9,17 +9,17 @@
                 scope.$watch("windows.opened.detail", function (isVis) {
                     if (!isVis) {
                         scope.detail.reset();
-                        if (!!µ.one("#iPreview").contentWindow.document.body) {
-                            µ.one("#iPreview").contentWindow.document.body.parentNode.removeChild(µ.one("#iPreview").contentWindow.document.body);
+                        if (!!document.one("#iPreview").contentWindow.document.body) {
+                            document.one("#iPreview").contentWindow.document.body.parentNode.removeChild(document.one("#iPreview").contentWindow.document.body);
                         }
                     }
                 });
                 scope.$watch("windows.opened.preview", function (isVis) {
                     if (!!isVis) {
-                        if (!µ.one("#iPreview").contentWindow.document.getElementById("viewer")) {
-                            µ.one("[target]").submit();
-                        } else if (!!µ.one("#iPreview").contentWindow.document.querySelector("[dir=ltr]")) {
-                            µ.one("#iPreview").contentWindow.document.querySelector("[dir=ltr]").scrollTop = 0;
+                        if (!document.one("#iPreview").contentWindow.document.getElementById("viewer")) {
+                            document.one("[target]").submit();
+                        } else if (!!document.one("#iPreview").contentWindow.document.querySelector("[dir=ltr]")) {
+                            document.one("#iPreview").contentWindow.document.querySelector("[dir=ltr]").scrollTop = 0;
                         }
                     }
                 });
@@ -68,7 +68,7 @@
                     scope.search.result = { "by": evt.target.getAttribute("searchby"), "search": evt.target.html(), lang: "fr" };
                     scope.search.send();
                 };
-                detail.uploadCover = function () { µ.one("[type=file]").trigger("click"); };
+                detail.uploadCover = function () { document.one("[type=file]").trigger("click"); };
                 detail.prepare = function (index) {
                     var cell = scope.bookcells.cells[index],
                         book = angular.copy(_.find(scope.bookcells.collection, _.matchesProperty("id", cell.id)));
@@ -92,14 +92,14 @@
                 };
                 detail.setBack = function () {
                     if (!!detail.book.alternative || !!detail.book.base64) {
-                        var backColor = getMainColor(µ.one("#detailCover")).hex;
-                        µ.one("[detail]").css({ "background": "radial-gradient(circle at 50%, whitesmoke 0%, " + backColor + " 100%)" });
+                        var backColor = getMainColor(document.one("#detailCover")).hex;
+                        document.one("[detail]").css({ "background": "radial-gradient(circle at 50%, whitesmoke 0%, " + backColor + " 100%)" });
                     }
                 };
                 detail.show = function (data) {
                     detail.reset();
                     if (!data.alternative && !data.base64) {
-                        µ.one("[detail]").css({ "background": "radial-gradient(circle at 50%, whitesmoke 0%, #909090 100%)" });
+                        document.one("[detail]").css({ "background": "radial-gradient(circle at 50%, whitesmoke 0%, #909090 100%)" });
                     }
                     scope.waiting.icon = false;
                     detail.ref = angular.copy(data);
@@ -108,8 +108,8 @@
                     detail.edit.able = _.isPlainObject(detail.book.id) && detail.book.id.user === scope.profile.user.id;
                     if (_.isEmpty(detail.book)) { _.assign(detail.edit, { "able": true, "new": true }); }
                     timeout(scope.windows.open("detail")).then(function () {
-                        detail.height = µ.one("[detail]").clientHeight - µ.one("[detail] header").clientHeight;
-                        µ.one(".detailBook").scrollTop = 0;
+                        detail.height = document.one("[detail]").clientHeight - document.one("[detail] header").clientHeight;
+                        document.one(".detailBook").scrollTop = 0;
                     });
                     if (!!data.id && !data.id.user) { socks.emit("mostAdded", data.id); }
                 };
@@ -119,7 +119,7 @@
                     delete this.mostAdded;
                     this.edit = { "able": false, "new": false };
                     this.tag = null;
-                    if (µ.alls(".new")) { µ.alls(".new").toggleClass("new", false); }
+                    if (document.alls(".new")) { document.alls(".new").toggleClass("new", false); }
                 };
                 detail.parseAuthors = function () {
                     this.book.authors = _.uniq(this.book.authors.noSpace().split(","));
@@ -185,11 +185,11 @@
                     }
                 });
 
-                angular.element(µ.one("[detail] article")).bind("contextmenu", function (event) {
+                angular.element(document.one("[detail] article")).bind("contextmenu", function (event) {
                     event.preventDefault();
                     context.show = true;
                     scope.$apply();
-                    var ctx = µ.one("#contextMenu");
+                    var ctx = document.one("#contextMenu");
                     if (ctx.clientHeight > this.clientHeight) { context.show = false; } else {
                         context.style = {
                             "top": ((event.clientY + ctx.clientHeight > window.innerHeight) ? event.clientY - ctx.clientHeight : event.clientY) + "px",
@@ -200,13 +200,13 @@
                     return false;
                 });
 
-                angular.element(µ.one("#uploadHidden [type=file]")).bind("change", function () {
+                angular.element(document.one("#uploadHidden [type=file]")).bind("change", function () {
                     var image = this.files[0];
                     if (!!image) {
                         var reader = new FileReader();
                         reader.onload = function(e) {
                             if (!image.type.match(/image.*/) || image.size > 100000) {
-                                µ.one("#uploadHidden [type=hidden]").click();
+                                document.one("#uploadHidden [type=hidden]").click();
                                 return false;
                             } else {
                                 detail.book.alternative = e.target.result;
@@ -214,12 +214,12 @@
                             }
                         };
                         reader.readAsDataURL(image);
-                        µ.one("#uploadHidden").reset();
+                        document.one("#uploadHidden").reset();
                     }
                 });
-                angular.element(µ.one("#detailCover")).bind("load", detail.setBack);
-                angular.element(µ.alls("[searchby]")).bind("click", detail.searchBy);
-                angular.element(µ.alls(".note"))
+                angular.element(document.one("#detailCover")).bind("load", detail.setBack);
+                angular.element(document.alls("[searchby]")).bind("click", detail.searchBy);
+                angular.element(document.alls(".note"))
                     .bind("click", function (event) {
                         if (detail.book.userNote === "1" && event.target.getAttribute("note") === "1") { detail.book.userNote = "0"; } else {
                             detail.book.userNote = event.target.getAttribute("note");
@@ -228,7 +228,7 @@
                     })
                     .bind("mousehover, mouseenter", function (event) {
                         var hover = event.target.getAttribute("note"),
-                            allNotes = µ.alls(".note");
+                            allNotes = document.alls(".note");
 
                         for (var jta = Math.min(detail.book.userNote, hover); jta < Math.max(detail.book.userNote, hover); jta++) {
                             if (allNotes[jta].hasClass("select")) {
@@ -239,14 +239,14 @@
                         }
                     })
                     .bind("mouseleave", function () {
-                        µ.alls(".note").toggleClass("plus", false).toggleClass("minus", false);
+                        document.alls(".note").toggleClass("plus", false).toggleClass("minus", false);
                     });
-                angular.element(µ.alls("#contextMenu [nav]")).bind("click", function () {
+                angular.element(document.alls("#contextMenu [nav]")).bind("click", function () {
                     var cells = _.filter(scope.bookcells.cells, function (cell) { return !cell.toHide && !cell.toFilter; }),
                         index = _.findIndex(cells, _.matchesProperty("id", detail.book.id)),
                         next = index,
-                        cellByRow = ~~(µ.one("[bookcells]").clientWidth / 256),
-                        bookcells = µ.alls(".bookcell:not(.ng-hide)");
+                        cellByRow = ~~(document.one("[bookcells]").clientWidth / 256),
+                        bookcells = document.alls(".bookcell:not(.ng-hide)");
 
                     if (index === -1) { return; }
 
