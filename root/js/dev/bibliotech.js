@@ -63,7 +63,7 @@ if (!window.FileReader || !("formNoValidate" in document.createElement("input"))
             scope.waiting.screen = true;
             if (!!idb.indexedDB) { idb.indexedDB.deleteDatabase(scope.profile.user.session); }
             scope.profile.user = {};
-            location.assign("/logout");
+            win.location.assign("/logout");
             socks.close();
             return false;
         };

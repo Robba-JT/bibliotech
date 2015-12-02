@@ -80,6 +80,19 @@ app.run(["$rootScope", "$http", "$window", "$timeout", "$socket", "$preloader", 
         scope.$apply(scope.footer = win.scrollY || document.documentElement.scrollTop);
     });
 
+	angular.element(document.one("h1 div")).bind("click", function () {
+		timeout(function () {
+			delete scope.users;
+			delete scope.sessions;
+			delete scope.books;
+			delete scope.persos;
+			delete scope.covers;
+			delete scope.comments;
+			delete scope.notifications;
+			delete scope.logs;
+		}).then(function () { socks.emit("isConnected"); });
+	});
+
 }]);
 app.directive("submit", ["$socket", function (socks) {
     "use strict";

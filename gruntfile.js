@@ -145,9 +145,9 @@ module.exports = function (grunt) {
                     "collapseWhitespace": true
                 },
                 "files": {
-                    "views/login.html": "root/html/login.html",
-                    "views/error.html": "root/html/error.html",
-                    "views/maintenance.html": "root/html/maintenance.html"
+                    "views/desktop/login.html": "root/html/login.html",
+                    "views/desktop/error.html": "root/html/error.html",
+                    "views/desktop/maintenance.html": "root/html/maintenance.html"
                 }
             },
             "bibliotech": {
@@ -156,8 +156,8 @@ module.exports = function (grunt) {
                     "collapseWhitespace": true
                 },
                 "files": {
-                    "views/bibliotech.html": "root/html/bibliotech.html",
-                    "views/admin.html": "root/html/admin.html",
+                    "views/desktop/bibliotech.html": "root/html/bibliotech.html",
+                    "views/desktop/admin.html": "root/html/admin.html",
                     "views/preview.html": "root/html/preview.html",
                     "root/html/bookcells.html": "root/html/dev/bookcells.html",
                     "root/html/detail.html": "root/html/dev/detail.html",

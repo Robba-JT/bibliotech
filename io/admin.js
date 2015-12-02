@@ -67,7 +67,7 @@ module.exports = function main (socket) {
 
     socket.on("delete", function (record) {
         if (!record || !record.collection || !record._id) { return; }
-        if (!_.isPlainObject(record._id)) { record._id = new ObjectID(record._id); }
+        if (record.collection === "covers") { record._id = new ObjectID(record._id); }
         db.collection(record.collection === "persos" ? "books" : record.collection).remove({ "_id": record._id }, function (error) {
             if (!!error) { console.error("admin delete", record.collection, record._id, error); }
         });

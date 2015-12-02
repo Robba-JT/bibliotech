@@ -16,7 +16,7 @@ body {
     display: none !important;
 }
 
-#logout, #footer, h2 .waiting, [submit], [delete] {
+#logout, #footer, h2 .waiting, h1 div, [submit], [delete] {
     background-image: url(../../images/spritesheet_admin.png);
     background-repeat: no-repeat;
 }
@@ -29,7 +29,7 @@ body {
     height: 40px;
     /*background-image: url(../../images/white/eject-icon.png);
     background-repeat: no-repeat;*/
-    background-position: -6px -6px;
+    background-position: -136px -6px;
     border-radius: 5px;
     padding: 2px;
     cursor: pointer;
@@ -38,7 +38,7 @@ body {
 #logout:hover {
     /*background-image: url(../../images/black/eject-icon.png);*/
     background-color: ghostwhite;
-    background-position: -58px -6px;
+    background-position: -188px -6px;
 }
 
 #footer {
@@ -50,7 +50,7 @@ body {
     /*background-image: url(../../images/white/iconmonstr-arrow-31-top.png);
     background-position: center;
     background-repeat: no-repeat;*/
-    background-position: -110px -6px;
+    background-position: -240px -6px;
     border-radius: 5px;
     padding: 2px;
     cursor: pointer;
@@ -59,7 +59,7 @@ body {
 #footer:hover {
     /*background-image: url(../../images/black/iconmonstr-arrow-31-top.png);*/
     background-color: ghostwhite;
-    background-position: -162px -6px;
+    background-position: -292px -6px;
 }
 
 h2 > div {
@@ -71,13 +71,32 @@ h2 .titre {
     text-decoration: underline;
 }
 
+h1 div, h2 .waiting {
+    /*background-image: url(../../images/iconmonstr-loading-12-icon-24.png);*/
+}
+
+h1 div {
+	cursor: pointer;
+    vertical-align: middle;
+	border-radius: 50%;
+    width: 68px;
+    height: 68px;
+	display: inline-block;
+    background-position: -62px 0px;
+}
+
+h1 div:hover {
+	background-color: ghostwhite;
+    background-position: 0px 0px;
+}
+
 h2 .waiting {
     width: 24px;
     height: 24px;
     vertical-align: top;
-    /*background-image: url(../../images/iconmonstr-loading-12-icon-24.png);*/
-    background-position: -306px -10px;
+    vertical-align: top;
 	animation: fullRotation 5s inFinite;
+    background-position: -436px -10px;
 }
 
 @keyframes fullRotation {
@@ -177,13 +196,13 @@ h2 .waiting {
     cursor: pointer;
     /*background-position: center;
     background-repeat: no-repeat;*/
-    background-position: -257px -5px;
+    background-position: -387px -5px;
 }
 
 [submit][disabled] {
     /*background-image: url(../../images/iconmonstr-check-mark-7-icon-invalid.png);*/
     cursor: not-allowed;
-    background-position: -213px -5px;
+    background-position: -343px -5px;
 }
 
 [delete] {
@@ -192,7 +211,7 @@ h2 .waiting {
     /*background-image: url(../../images/iconmonstr-x-mark-5-icon-24.png);
     background-position: center;
     background-repeat: no-repeat;*/
-    background-position: -345px -5px;
+    background-position: -475px -5px;
     cursor: pointer;
 }
 

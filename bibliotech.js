@@ -15,6 +15,9 @@ var express = require("express"),
     sServer = https.Server(options, app).listen(sPort),
     mongoUrl = "mongodb://" + config.mongoHost + ":" + config.mongoPort + "/" + config.mongoDB,
     device = require("express-device"),
+	compress = require("compression"),
+	cors = require("cors"),
+	expjson = require("express-json"),
     io = require("socket.io")(sServer);
 
 require("./tools/console")(app);
@@ -49,9 +52,9 @@ require("./db/database").init(mongoUrl, function (error) {
         //.set("view cache", true)
         .set("json spaces", 1)
         .enable("etag").set("etag", true)
-        .use(require("compression")())
-        .use(require("cors")())
-        .use(require("express-json")())
+        .use(compress())
+        .use(cors())
+        .use(expjson())
         .use(require("serve-static")(path.join(__dirname, "root"), { maxAge: require("ms")("10 days") }))
         .use(require("serve-favicon")(path.join(__dirname, "root/images/bold-icon-24.png")))
         .use(require("errorhandler")(config.errorHandlerOptions))
