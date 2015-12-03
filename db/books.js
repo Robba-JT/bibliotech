@@ -83,7 +83,7 @@ module.exports.BooksAPI = BooksAPI = function (db, token) {
         googleRequest = function (fonction, params, callback) {
             var gFunction = _.get(gBooks, fonction);
             if (typeof params === "function") { callback = params; params = {}; }
-            if (!_.isEmpty(auth.credentials)) { _.assign(params, { "auth": auth }); } else { _.assign(params, { "key": googleConfig.key }); }
+            if (!_.isEmpty(auth.credentials)) { _.assign(params, { "auth": auth }); } /*else { _.assign(params, { "key": googleConfig.key }); }*/
             if (typeof gFunction !== "function") { return callback ? callback(new Error("Invalid Call!!!")) : new Error("Invalid Call!!!"); }
             gFunction(params, function (error, success) {
                 if (!!error && error.code !== 401) { return callback ? callback(error) : error; }

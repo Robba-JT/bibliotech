@@ -83,10 +83,7 @@
                 });
                 socks.on("covers", function (covers) {
                     for (var jta = 0, lg = covers.length; jta < lg; jta++) {
-                        if (!covers[jta].id) {
-                            console.error("cover", covers[jta]);
-                            continue;
-                        }
+                        if (!covers[jta].id) { continue; }
                         var cell = _.find(bookcells.cells, _.matchesProperty("id", covers[jta].id)) || {},
                             inCollect = _.find(bookcells.collection, _.matchesProperty("id", covers[jta].id)) || {};
 
@@ -97,7 +94,7 @@
                             scope.detail.book.alternative = covers[jta].alternative;
                         }
                     }
-                    console.debug("end load cover", (new Date()).toString());
+                    console.debug("end load covers", (new Date()).toString(), covers.length);
                 });
                 socks.on("cover", function (cover) {
                     if (!cover.id) { return console.error("cover", covers[jta]); }

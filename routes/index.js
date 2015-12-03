@@ -133,16 +133,16 @@ module.exports = exports = function (app, mongoStore, io) {
     //Logout
 		.get("/logout", function (req, res) {
             req.logout();
-            req.session.destroy(function (err) { res.status(205).redirect("/"); });
+            req.session.destroy(function (err) { res.redirect("/"); });
         })
 
     //Erreur url
 		.get("*", function (req, res) { res.status(404).biblioRender("error", { error: "Error 404" });})
 
     //Trads
-        .post("/trad", function (req, res) {
+        /*.post("/trad", function (req, res) {
             res.jsonp(res.trads[req.body.from]);
-        })
+        })*/
 
 	//Login
 		.post("/login", function (req, res, next) {
@@ -227,6 +227,17 @@ module.exports = exports = function (app, mongoStore, io) {
         }
     })).on("connection", function (socket) {
         if (!socket.request.user || !socket.request.user.admin) { return socket.emit("logout"); }
+        var onEvent = socket.onevent;
+        socket.onevent = function () {
+            var args = arguments;
+            mongoStore.get(socket.request.sessionID, function (error, session) {
+                if (!!error || !session || !!session.cookie.expires && session.cookie.expires < new Date()) {
+                    console.error(error || new Error("No session find!!!"));
+                    return socket.emit("logout");
+                }
+                onEvent.apply(socket, args);
+            });
+        };
         require("../io/admin")(socket);
     });
 };

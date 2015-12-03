@@ -178,8 +178,8 @@ module.exports = function main (socket, allSessions) {
                         bookAPI.removeCovers({ "_id": { "user": thisUser._id , "book": books[book].id }});
                         userAPI.updateUser({ "_id": thisUser._id, "books.book": books[book].id }, {"$unset": { "books.$.cover" : true }});
                     } else {
-                        //sendCovers.push({ "id": books[book].id, "alternative": cover.cover });
-                        books[book].alternative = cover.cover;
+                        sendCovers.push({ "id": books[book].id, "alternative": cover.cover });
+                        //books[book].alternative = cover.cover;
                     }
                 }
                 if (!!books[book].cover) {
@@ -192,6 +192,7 @@ module.exports = function main (socket, allSessions) {
                     toSend = [];
                 }
             }
+			socket.emit("covers", sendCovers);
             socket.emit("endCollect", toSend);
             thisBooks = books;
             Q.allSettled(def64).then(function (results) {
