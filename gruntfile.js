@@ -24,7 +24,7 @@ module.exports = function (grunt) {
                 }
             },
             "prod": {
-                "tasks": ["nodemon:prod", "watch"],
+                "tasks": ["nodemon:prod"/*, "watch"*/],
                 "options": {
                     "logConcurrentOutput": true
                 }
