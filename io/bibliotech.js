@@ -192,12 +192,12 @@ module.exports = function main (socket, allSessions) {
                     toSend = [];
                 }
             }
-			socket.emit("covers", sendCovers);
             socket.emit("endCollect", toSend);
+			socket.emit("covers", sendCovers);
             thisBooks = books;
             Q.allSettled(def64).then(function (results) {
                 if (!!results.length) { sendCovers.push(_.map(results, "value")); }
-                sendCovers = _.flatten(sendCovers);
+                sendCovers = _.flattenDeep(sendCovers);
                 //socket.emit("covers", sendCovers);
                 for (var jta = 0, lg = sendCovers.length; jta < lg; jta++) {
                     _.assign(_.find(thisBooks, _.matchesProperty("id", sendCovers[jta].id)), sendCovers[jta]);
