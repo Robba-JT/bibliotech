@@ -11,11 +11,10 @@
         <meta property="og:description" content="{{description}}" />
         <meta property="og:url" content="{{url}}" />
         <meta property="og:image" content="{{image}}" />
-        <link rel="stylesheet" href="../css/login.css" type="text/css" />
+        <link rel="stylesheet" href="../css/m.login.css" type="text/css" />
     </head>
     <body>
 		<div ng-hide="ready" class="w"></div>
-		<div class="k" alt="[{trads.waiting}]" ng-hide="ready"></div>
         <section login class="notdisplayed">
 		<h1>[{trads.welcome}]</h1>
 			<form name="login" autocomplete="off" novalidate ng-submit="login.$valid && submit()">
@@ -27,7 +26,6 @@
 				<span class="error" ng-show="login.password.$error.minlength || login.password.$error.maxlength">[{trads.errPwd}]</span>
 				<input type="password" name="confirm" ng-model="user.confirm" ng-minlength="4" ng-maxlength="12" placeholder="[{trads.confirmed}]" ng-show="new" ng-required="new" data-h title="[{trads.confirmed}]" compare-to="user.password" defCloak/>
 				<span class="error" ng-show="!!user.password && login.password.$valid && login.confirm.$error.compareTo">[{trads.errConfirmed}]</span>
-				<label>[{trads.active}]<input type="checkbox" ng-model="user.active"/></label>
 				<span class="g" ng-show="error" ng-bind="error"></span>
 				<span class="n" ng-show="success" ng-bind="success"></span>
 				<BR>

@@ -16,6 +16,12 @@ body {
     display: none !important;
 }
 
+.alert {
+	background-color: red !important;
+	color: whitesmoke !important;
+	font-weight: bold !important;
+}
+
 #logout, #footer, h2 .waiting, h1 div, [submit], [delete] {
     background-image: url(../../images/spritesheet_admin.png);
     background-repeat: no-repeat;
@@ -125,7 +131,7 @@ h2 .waiting {
 
 [type=covers] [delete] {
     position: absolute;
-    top: 5px;
+    bottom: 5px;
     left: 5px;
 	border-radius: 15px;
 }
@@ -137,8 +143,18 @@ h2 .waiting {
     opacity: .5;
 }
 
+.used {
+	position: absolute;
+    top: 10px;
+    left: 10px;
+    font-weight: bold;
+    padding: 2px;
+    border-radius: 5px;
+}
+
 .tr {
     display: table-row;
+	max-width: 98%;
 }
 
 .tr > div {
@@ -217,4 +233,8 @@ h2 .waiting {
 
 [submit]:not([disabled]):hover, [delete]:hover {
 	background-color: lightgray;
+}
+
+textarea {
+	width: 100%;
 }

@@ -94,7 +94,7 @@ module.exports = exports = function (app, mongoStore, io) {
                     labels = {};
                 }
                 if (!labels) { labels = {}; }
-				var path = [!!_.get(req.device, "type") && _.get(req.device, "type") !== "desktop" ? "mobile" : "desktop", view].join("/");
+				var path = [/* !!_.get(req.device, "type") && _.get(req.device, "type") === "phone" ? "mobile" :*/ "desktop", view].join("/");
                 _.assign(labels, _.merge(meta[(!!meta[lang]) ? lang : "fr"], { "version": version, "page": view }));
                 this.status(status || 200).render.apply(this, [path, labels]);
             };
@@ -116,6 +116,10 @@ module.exports = exports = function (app, mongoStore, io) {
                 } else { next(); }
             },
             function (req, res) {
+				if (!!req.user.admin) {
+					var today = new Date();
+					req.session.expires = req.session.cookie.expires = new Date(today.getTime() + 600000);
+				}
                 res.biblioRender(req.user.admin ? "admin" : "bibliotech");
             }
 		)

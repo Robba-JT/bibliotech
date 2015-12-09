@@ -40,11 +40,11 @@
                 <div>[{user._id}]</div>
                 <div>[{user.name}]</div>
                 <div>[{user.creation | date:'dd/MM/yyyy @ hh:mm:ssa'}]</div>
-                <div>[{user.last_connect | date:'dd/MM/yyyy @ hh:mm:ssa'}]</div>
+                <div ng-class="!!user.old && 'alert'">[{user.last_connect | date:'dd/MM/yyyy @ hh:mm:ssa'}]</div>
                 <div>[{user.connect_number}]</div>
                 <div><input type="checkbox" ng-checked="user.googleSignIn" disabled/></div>
                 <div><input type="checkbox" ng-model="user.admin"/></div>
-                <div>[{user.books.length}]</div>
+                <div ng-class="!user.books.length && 'alert'">[{user.books.length}]</div>
                 <div>[{user.userbooks}]</div>
                 <div><input type="text" ng-minlength="4" ng-maxlength="12" ng-model="user.newPassword" ng-disabled="user.googleSignIn"/></div>
                 <div submit ng-disabled="disable"></div>
@@ -82,7 +82,7 @@
                 <div>[{book.title}]</div>
                 <div>[{book.id}]</div>
                 <div>[{book._id}]</div>
-                <div>[{book.nb}]</div>
+                <div ng-class="!book.nb && 'alert'">[{book.nb}]</div>
                 <div>[{book.date | date:'dd/MM/yyyy @ hh:mm:ssa'}]</div>
                 <div delete></div>
             </div>
@@ -111,6 +111,7 @@
             <h2><div class="titre">Covers:</div>&nbsp;<div class="waiting" ng-hide="covers"></div><div ng-show="covers">[{covers.length}]</div></h2>
             <div ng-show="show.covers" ng-repeat="cover in covers">
                 <div ng-show="cover.source" ng-style="cover.source" cover></div>
+                <div class="used" ng-class="!cover.nb && 'alert'"><u>Used:</u>&nbsp;[{cover.nb}]</div>
                 <div delete></div>
             </div>
         </section>
@@ -124,15 +125,13 @@
                 <div field="comment">comment</div>
                 <div field="date">date</div>
                 <div></div>
-                <div></div>
             </div>
             <div class="tr" ng-show="show.comments" ng-repeat="comment in comments">
                 <div>[{comment._id.user}]</div>
                 <div>[{comment.title}]</div>
-                <div><input type="number" min="0" max="5" ng-maxlength="1" string-to-number ng-model="comment.note"/></div>
-                <div><textarea rows="5" cols="100" ng-model="comment.comment"></textarea></div>
+                <div>[{comment.note}]</div>
+                <div><textarea ng-model="comment.comment" disabled></textarea></div>
                 <div>[{comment.date | date:'dd/MM/yyyy @ hh:mm:ssa'}]</div>
-                <div submit ng-disabled="disable"></div>
                 <div delete></div>
             </div>
         </section>
@@ -177,11 +176,11 @@
 
 
         <script src="js/bibliotech.lib.js"></script>
-        <script src="js/admin.js"></script>
-        <!--<script src="js/dev/admin.js"></script>
+        <!--<script src="js/admin.js"></script>-->
+        <script src="js/dev/admin.js"></script>
         <script src="js/dev/modules/preloader.js"></script>
         <script src="js/dev/modules/socket.js"></script>
-        <script src="js/dev/modules/defcloak.js"></script>-->
+        <script src="js/dev/modules/defcloak.js"></script>
 
     </body>
 

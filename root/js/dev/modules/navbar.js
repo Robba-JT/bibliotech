@@ -5,7 +5,7 @@
         return {
             restrict: "A",
             templateUrl: "./html/navbar.html",
-            controller: ["$socket", "$scope", "$window", "$idb", "$timeout", function (socks, scope, window, idb, timeout) {
+            controller: ["$socket", "$scope", "$window", "$timeout", function (socks, scope, window, timeout) {
                 var navbar = scope.navbar = {},
                     tags = scope.tags = { "cloud": false },
                     modal = scope.modal = { "sort": false, "notifs": false },

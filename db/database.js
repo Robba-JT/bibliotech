@@ -60,13 +60,15 @@ module.exports.init = function (mongoUrl, callback) {
 				covers = db.collection("covers"),
 				users = db.collection("users");
 
-            covers.find({}, function (error, allCovers) {
+            covers.find().toArray(function (error, allCovers) {
                 if (!!error) { return console.error("Covers removed", error); }
                 users.find({}, { "books.cover": true }).toArray(function (error, userBooks) {
                     if (!!error) { return console.error(error); }
                     var toRemoved = [];
                     userBooks = _.flattenDeep(_.pluck(userBooks, "books"));
-                    allCovers.forEach(function (result) { if (_.findIndex(userBooks, { cover: result._id }) === -1) { toRemoved.push(result._id); }});
+                    _.forEach(allCovers, function (cover) {
+						if (_.findIndex(userBooks, { cover: cover._id }) === -1) { toRemoved.push(cover._id); }
+					});
                     if (!!toRemoved.length) { covers.remove({ "_id": {"$in": toRemoved }}); }
                     console.info("Covers removed", toRemoved.length);
                 });
@@ -94,7 +96,7 @@ module.exports.init = function (mongoUrl, callback) {
                             });
                         }));
                     });
-                    Q.allSettled(requests).then(function () { console.info("Books updated", updated, "removed", removed); });
+                    Q.allSettled(requests).done(function () { console.info("Books updated", updated, "removed", removed); });
                 }
             });
         }

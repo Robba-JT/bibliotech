@@ -7,8 +7,8 @@ app.config(["$interpolateProvider", "$sceProvider", function(interpolateProvider
 app.run(["$rootScope", "$http", "$window", "$timeout", "$socket", "$preloader", function (scope, http, win, timeout, socks, preloader) {
     "use strict";
     scope.logout = function () {
-        location.assign("/logout");
         socks.close();
+        location.assign("/logout");
         return false;
     };
     scope.orders = {};
@@ -27,7 +27,6 @@ app.run(["$rootScope", "$http", "$window", "$timeout", "$socket", "$preloader", 
         scope.ref_perso = persos;
         scope.books = angular.copy(books);
         scope.persos = angular.copy(persos);
-        console.debug(persos);
     });
     socks.on("covers", function (covers) {
         scope.covers = covers;

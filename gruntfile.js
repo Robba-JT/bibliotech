@@ -129,6 +129,17 @@ module.exports = function (grunt) {
                         "root/js/dev/modules/detail.js",
                         "root/js/dev/modules/defcloak.js"
                     ],
+                    "root/js/m.bibliotech.js": [
+                        "root/js/dev/m.bibliotech.js",
+                        "root/js/dev/modules/preloader.js",
+                        "root/js/dev/modules/socket.js",
+                        "root/js/dev/modules/menu.js",
+                        "root/js/dev/modules/m.profile.js",
+                        "root/js/dev/modules/m.search.js",
+                        "root/js/dev/modules/m.bookcells.js",
+                        "root/js/dev/modules/m.detail.js",
+                        "root/js/dev/modules/defcloak.js"
+                    ],
                     "root/js/admin.js": [
                         "root/js/dev/admin.js",
                         "root/js/dev/modules/preloader.js",
@@ -147,7 +158,10 @@ module.exports = function (grunt) {
                 "files": {
                     "views/desktop/login.html": "root/html/login.html",
                     "views/desktop/error.html": "root/html/error.html",
-                    "views/desktop/maintenance.html": "root/html/maintenance.html"
+                    "views/desktop/maintenance.html": "root/html/maintenance.html",
+                    "views/mobile/login.html": "root/html/m.login.html",
+                    "views/mobile/error.html": "root/html/m.error.html",
+                    "views/mobile/maintenance.html": "root/html/m.maintenance.html"
                 }
             },
             "bibliotech": {
@@ -157,11 +171,14 @@ module.exports = function (grunt) {
                 },
                 "files": {
                     "views/desktop/bibliotech.html": "root/html/bibliotech.html",
+                    "views/mobile/bibliotech.html": "root/html/m.bibliotech.html",
                     "views/desktop/admin.html": "root/html/admin.html",
+                    "views/mobile/admin.html": "root/html/admin.html",
                     "views/preview.html": "root/html/preview.html",
                     "root/html/bookcells.html": "root/html/dev/bookcells.html",
                     "root/html/detail.html": "root/html/dev/detail.html",
                     "root/html/navbar.html": "root/html/dev/navbar.html",
+                    "root/html/menu.html": "root/html/dev/menu.html",
                     "root/html/profile.html": "root/html/dev/profile.html",
                     "root/html/search.html": "root/html/dev/search.html"
                 }
@@ -171,18 +188,15 @@ module.exports = function (grunt) {
             "login": {
                 "files": {
                     "root/css/login.css": [ "root/css/dev/login.css" ],
-                    "root/css/error.css": [ "root/css/dev/error.css" ]
+                    "root/css/m.login.css": [ "root/css/dev/m.login.css" ],
+                    "root/css/error.css": [ "root/css/dev/error.css" ],
+                    "root/css/m.error.css": [ "root/css/dev/m.error.css" ]
                 }
             },
             "bibliotech": {
                 "files": {
-                    "root/css/bibliotech.css": [
-                        "root/css/dev/base.css",
-                        "root/css/dev/bookcells.css",
-                        "root/css/dev/detail.css",
-                        "root/css/dev/navbar.css",
-                        "root/css/dev/windows.css"
-                    ],
+                    "root/css/bibliotech.css": [ "root/css/dev/bibliotech.css" ],
+                    "root/css/m.bibliotech.css": [ "root/css/dev/m.bibliotech.css" ],
                     "root/css/admin.css": [ "root/css/dev/admin.css" ]
                 }
             }
@@ -211,27 +225,45 @@ module.exports = function (grunt) {
                 "options": { "spawn": false }
             },
             "htmllogin": {
-                "files": [ "root/html/login.html", "root/html/error.html" ],
+                "files": [
+					"root/html/login.html",
+					"root/html/error.html",
+					"root/html/maintenance.html",
+					"root/html/m.login.html",
+					"root/html/m.error.html",
+					"root/html/m.maintenance.html"
+				],
                 "tasks": [ "htmlmin:login" ],
                 "options": { "spawn": false }
             },
             "csslogin": {
-                "files": [ "root/css/dev/login.css", "root/css/dev/error.css" ],
+                "files": [ "root/css/dev/login.css", "root/css/dev/error.css", "root/css/dev/m.login.css", "root/css/dev/m.error.css" ],
                 "tasks": [ "cssmin:login" ],
                 "options": { "spawn": false }
             },
             "jsbibliotech": {
-                "files": [ "root/js/dev/bibliotech.proto.js", "root/js/dev/bibliotech.js", "root/js/dev/admin.js", "root/js/dev/modules/*.js" ],
+                "files": [
+					"root/js/dev/bibliotech.proto.js",
+					"root/js/dev/bibliotech.js",
+					"root/js/dev/m.bibliotech.js",
+					"root/js/dev/admin.js",
+					"root/js/dev/modules/*.js"
+				],
                 "tasks": [ "jshint:bibliotech", "uglify:bibliotech" ],
                 "options": { "spawn": false }
             },
             "htmlbibliotech": {
-                "files": [ "root/html/bibliotech.html", "root/html/admin.html", "root/html/preview.html", "root/html/dev/*.html" ],
+                "files": [ "root/html/bibliotech.html",
+						  "root/html/m.bibliotech.html",
+						  "root/html/admin.html",
+						  "root/html/preview.html",
+						  "root/html/dev/*.html"
+						 ],
                 "tasks": [ "htmlmin:bibliotech" ],
                 "options": { "spawn": false }
             },
             "cssbibliotech": {
-                "files": [ "root/css/dev/base.css", "root/css/dev/bookcells.css", "root/css/dev/detail.css", "root/css/dev/navbar.css", "root/css/dev/windows.css", "root/css/dev/admin.css" ],
+                "files": [ "root/css/dev/bibliotech.css", "root/css/dev/m.bibliotech.css", "root/css/dev/admin.css" ],
                 "tasks": [ "cssmin:bibliotech" ],
                 "options": { "spawn": false }
             }

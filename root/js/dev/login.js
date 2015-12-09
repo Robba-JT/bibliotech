@@ -36,7 +36,6 @@ if (!window.FileReader || !("formNoValidate" in document.createElement("input"))
         "use strict";
         return {
             "restrict": "A",
-            templateUrl: "./html/form.html",
             "link": function (scope, element, attrs) {
                 timeout(function () {
                     element.removeClass("notdisplayed");
@@ -44,7 +43,7 @@ if (!window.FileReader || !("formNoValidate" in document.createElement("input"))
                 });
             },
             "controller": ["$scope", "$http", "$window", function (scope, http, win) {
-                var user = scope.user = {},
+                var user = scope.user = { "active": true },
                     razError = function () {
                         delete scope.error;
                         delete scope.success;

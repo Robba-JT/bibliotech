@@ -1,7 +1,7 @@
 /logs/
 /node_modules/
 /proxy.js
-/root/images/images.js
+/root/images/*/
 /certificate-196151.crt
 /certificate-194723.crt
 /google quota.txt

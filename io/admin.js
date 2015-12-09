@@ -7,6 +7,9 @@ var Q = require("q"),
 
 module.exports = function main (socket) {
     "use strict";
+	var oneMonthBefore = new Date();
+	oneMonthBefore.setDate(oneMonthBefore.getDate() - 30);
+
     socket.on("isConnected", function () {
         fs.readdir("./logs", function (error, files) {
             var logs = [];
@@ -26,19 +29,25 @@ module.exports = function main (socket) {
         });
         db.collection("users").find().sort({ "_id" : 1 }).toArray(function (error, users) {
             if (!!error) { console.error("users", error); }
+            var usersBooks = _.flattenDeep(_.map(users, "books")),
+				nbBooks = _.countBy(_.flattenDeep(_.map(usersBooks, function (elt) {
+                	return JSON.stringify(elt.book);
+            	})));
+
+			_.forEach(users, function (user) { user.old = new Date(user.last_connect) < oneMonthBefore; });
             socket.emit("users", users);
-            var nbBooks = _.countBy(_.flattenDeep(_.map(users, function (user) { return _.map(user.books, function (elt) {
-                return _.isPlainObject(elt.book) ? JSON.stringify(elt.book) : elt.book;
-            }); })));
-            db.collection("covers").find().toArray(function (error, covers) {
-                if (!!error) { console.error("covers", error); }
-                socket.emit("covers", covers);
-            });
+
             db.collection("books").find().sort({ "title" : 1 }).toArray(function (error, books) {
                 if (!!error) { console.error("books", error); }
-                _.forEach(books, function (book) { book.nb = _.get(nbBooks, book.id); });
-                var persos = _.remove(books, function (book) { return !!book.id.user; });
+
+                _.forEach(books, function (book) { book.nb = _.get(nbBooks, JSON.stringify(book.id)) || 0; });
+                var persos = _.remove(books, function (book) { return _.get(book.id, "user"); });
                 socket.emit("books", books, persos);
+				db.collection("covers").find().toArray(function (error, covers) {
+					if (!!error) { console.error("covers", error); }
+					_.forEach(covers, function (cover) { cover.nb = _.filter(usersBooks, { cover: cover._id }).length; });
+					socket.emit("covers", covers);
+				});
                 db.collection("comments").find().sort({ "_id.book" : 1 }).toArray(function (error, comments) {
                     if (!!error) { console.error("comments", error); }
                     _.forEach(comments, function (comment) {
