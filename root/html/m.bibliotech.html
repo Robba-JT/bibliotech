@@ -55,37 +55,9 @@
             </article>
         </section>
 
-        <section id="contextMenu" ng-style="context.style" ng-show="context.show" def-cloak>
-            <div class="navgrid">
-                <div>
-                    <span nav="top" source="arrow-24-icon-top" blur="white" hover="alt" width="32" height="32"></span>
-                </div>
-                <div>
-                    <span nav="left" source="arrow-24-icon-left" blur="white" hover="alt" width="32" height="32"></span>
-                    <span nav="right" source="arrow-24-icon-right" blur="white" hover="alt" width="32" height="32"></span>
-                </div>
-                <div>
-                    <span nav="bottom" source="arrow-24-icon-bottom" blur="white" hover="alt" width="32" height="32"></span>
-                </div>
-            </div>
-            <div>
-                <div ng-show="detail.book.inCollection" ng-click="windows.open('recommand')">[{trads.torecommand}]&nbsp;</div>
-                <div ng-show="detail.book.access === 'SAMPLE'" ng-click="windows.open('preview')">[{trads.preview}]&nbsp;</div>
-                <div ng-show="detail.book.link" ng-click="search.associated()">[{trads.connex}]&nbsp;</div>
-                <div ng-show="detail.book.link" ng-click="navbar.openUrl(detail.book.link)">[{trads.gbooks}]&nbsp;</div>
-                <div ng-show="detail.book.inCollection && !detail.book.cover" ng-click="detail.uploadCover()">[{trads.upload}]&nbsp;</div>
-                <hr ng-hide="!detail.book" />
-                <div ng-hide="!detail.book || detail.book.inCollection" ng-click="detail.addBook()">[{trads.add}]&nbsp;</div>
-                <div ng-show="detail.book.inCollection" ng-click="detail.updateBook()">[{trads.save}]&nbsp;</div>
-                <div ng-hide="!detail.book" ng-click="windows.close('detail')">[{trads.close}]&nbsp;</div>
-            </div>
-        </section>
-
-        <div ng-style="{ 'top': navbar.height + 'px' }" bookcells></div>
+        <div bookcells></div>
 
         <footer id="footer" title="Top" ng-show="footer" def-cloak></footer>
-
-        <div id="noConnect" ng-show="!!waiting.connect" def-cloak><span>[{trads.noConnect}]</span><span>[{trads.waiting}]</span></div>
 
         <script src="js/bibliotech.lib.js"></script>
         <!--<script src="js/m.bibliotech.js"></script>-->

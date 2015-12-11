@@ -1,6 +1,4 @@
-* {
-    box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 html {
     position: relative;
@@ -54,17 +52,19 @@ img {
     visibility: hidden !important;
 }
 
+footer .personnal, footer .previewable, footer .recommanded, [search] footer, .navbar .button, .help aside, #selectedTag::before, #selectedSearch::before, #contactsWindow div, .help #helpHelp, #sort span, #footer, .altCover, #cloud > div, .imgAction .upload, .windowheader div, .note, .closePreview, #noCover, .googlePreview, .navgrid [nav], .roundIcon {
+    background-image: url(/images/spritesheet.png);
+    background-repeat: no-repeat;
+}
+
 footer .personnal {
     width: 48px;
     height: 48px;
     cursor: pointer;
-    /*background-image: url(/images/alt/iconmonstr-plus-4-icon.png);*/
-    background-image: url(/images/spritesheet.png);
     background-position: -418px -486px;
 }
 
 .bookcell:hover footer .personnal {
-    /*background-image: url(/images/black/iconmonstr-plus-4-icon.png);*/
     background-position: -486px -486px;
 }
 
@@ -72,13 +72,10 @@ footer .previewable {
     width: 48px;
     height: 48px;
     cursor: pointer;
-    /*background-image: url(/images/alt/iconmonstr-book-22-icon.png);*/
-    background-image: url(/images/spritesheet.png);
     background-position: -468px -62px;
 }
 
 .bookcell:hover footer .previewable {
-    /*background-image: url(/images/black/iconmonstr-book-22-icon.png);*/
     background-position: -10px -130px;
 }
 
@@ -86,13 +83,10 @@ footer .recommanded {
     width: 48px;
     height: 48px;
     cursor: pointer;
-    /*background-image: url(/images/alt/iconmonstr-info-7-icon.png);*/
-    background-image: url(/images/spritesheet.png);
     background-position: -178px -434px;
 }
 
 .bookcell:hover footer .recommanded {
-    /*background-image: url(/images/black/iconmonstr-info-8-icon.png);*/
     background-position: -246px -434px;
 }
 
@@ -129,8 +123,6 @@ footer .recommanded {
     width: 62px;
     height: 30px;
     float: right;
-    /*background-image: url(/images/poweredby.png);*/
-    background-image: url(/images/spritesheet.png);
     background-position: -630px -538px;
 }
 
@@ -163,10 +155,6 @@ footer .recommanded {
 }
 
 .navbar .button {
-    /*background-size: 32px 32px;
-    background-position: center;*/
-    background-image: url(/images/spritesheet.png);
-    background-repeat: no-repeat;
     border-radius: 5px 15px;
     text-align: center;
     cursor: pointer;
@@ -209,8 +197,6 @@ footer .recommanded {
 .help aside {
     width: 48px;
     height: 48px;
-    background-image: url(/images/spritesheet.png);
-    background-repeat: no-repeat;
 }
 
 .help span {
@@ -218,12 +204,10 @@ footer .recommanded {
 }
 
 #affichToggle, .help #helpMenu, #altAffichToggle {
-    /*background-image: url(/images/white/iconmonstr-menu-2-icon.png);*/
     background-position: -498px -426px;
 }
 
 #affichToggle:hover {
-    /*background-image: url(/images/black/iconmonstr-menu-2-icon.png);*/
     background-position: -550px -426px;
 }
 
@@ -232,102 +216,82 @@ footer .recommanded {
 }
 
 #logout, .help #helpLogout {
-    /*background-image: url(/images/white/eject-icon.png);*/
     background-position: -252px -2px;
 }
 
 #logout:hover {
-    /*background-image: url(/images/black/eject-icon.png);*/
     background-position: -200px -2px;
 }
 
 #recherche, .help #helpSearch {
-    /*background-image: url(/images/white/iconmonstr-magnifier-5-icon.png);*/
     background-position: -342px -426px;
 }
 
 #recherche:not(.active):hover {
-    /*background-image: url(/images/black/iconmonstr-magnifier-5-icon.png);*/
     background-position: -446px -426px;
 }
 
 #recherche.active {
-    /*background-image: url(/images/alt/iconmonstr-magnifier-5-icon.png);*/
     background-position: -394px -428px;
 }
 
 #profile, .help #helpProfile {
-    /*background-image: url(/images/white/iconmonstr-user-icon.png);*/
     background-position: -653px -70px;
 }
 
 #profile:hover {
-    /*background-image: url(/images/black/iconmonstr-user-icon.png);*/
     background-position: -2px -70px;
 }
 
 #collection, .help #helpCollection {
-    /*background-image: url(/images/white/iconmonstr-layer-20-icon.png);*/
     background-position: -398px -206px;
 }
 
 #collection:not(.active):hover {
-    /*background-image: url(/images/black/iconmonstr-layer-20-icon.png);*/
     background-position: -346px -206px;
 }
 
 #collection.active {
-    /*background-image: url(/images/alt/iconmonstr-layer-20-icon.png);*/
     background-position: -566px -206px;
 }
 
 #tags, .help #helpTags {
-    /*background-image: url(/images/white/iconmonstr-tags-6-icon.png);*/
     background-position: -598px -258px;
 }
 
 #tags:hover {
-    /*background-image: url(/images/black/iconmonstr-tags-6-icon.png);*/
     background-position: -601px -38px;
 }
 
 #notifications, .help #helpNotifs {
-    /*background-image: url(/images/white/iconmonstr-info-7-icon.png);*/
     background-position: -2px -206px;
 }
 
 #notifications:hover {
-    /*background-image: url(/images/black/iconmonstr-info-7-icon.png);*/
     background-position: -581px -159px;
 }
 
 #tris {
-    /*background-image: url(/images/white/iconmonstr-sort-2-icon.png);*/
     background-position: -498px -546px;
 }
 
 #tris:hover {
-    /*background-image: url(/images/black/iconmonstr-sort-2-icon.png);*/
     background-position: -446px -546px;
 }
 
 #newbook, .help #helpAdd {
-    /*background-image: url(/images/white/iconmonstr-note-25.png);*/
     background-position: -358px -478px;
 }
 
 #newbook:hover {
-    /*background-image: url(/images/black/iconmonstr-note-25.png);*/
     background-position: -306px -478px;
 }
 
 #saveorder {
-    /*background-image: url(/images/white/iconmonstr-save-9-icon.png);*/
     background-position: -122px -546px;
 }
 
 #saveorder:hover {
-    /*background-image: url(/images/black/iconmonstr-save-9-icon.png);*/
     background-position: -70px -546px;
 }
 
@@ -338,12 +302,10 @@ footer .recommanded {
 }
 
 #contact, .help #helpContacts {
-    /*background-image: url(/images/white/iconmonstr-email-11-icon.png);*/
     background-position: -482px -122px;
 }
 
 #contact:hover {
-    /*background-image: url(/images/black/iconmonstr-email-11-icon.png);*/
     background-position: -534px -122px;
 }
 
@@ -431,9 +393,7 @@ footer .recommanded {
 }
 
 #selectedTag::before {
-    /*content: url(/images/white/iconmonstr-tag-2-icon.png);*/
     content: "";
-    background-image: url(/images/spritesheet.png);
     width: 16px;
     height: 16px;
     background-position: -609px -10px;
@@ -442,9 +402,7 @@ footer .recommanded {
 }
 
 #selectedSearch::before {
-    /*content: url(/images/white/iconmonstr-magnifier-4-icon.png);*/
     content: "";
-    background: url(/images/spritesheet.png);
     width: 16px;
     height: 16px;
     background-position: -314px -434px;
@@ -453,7 +411,6 @@ footer .recommanded {
 }
 
 #contactsWindow div {
-    background-image: url(/images/spritesheet.png);
     cursor: pointer;
 }
 
@@ -466,48 +423,38 @@ footer .recommanded {
 }
 
 .help #helpHelp {
-    /*background-image: url(/images/white/iconmonstr-help-2-icon.png);*/
-    background-image: url(/images/spritesheet.png);
     background-position: -581px -117px;
 }
 
 #googleLink {
-    /*background-image: url(/images/black/iconmonstr-google-plus-4-icon.png);*/
     background-position: -354px -350px;
 }
 
 #googleLink:hover {
-    /*background-image: url(/images/alt/iconmonstr-google-plus-4-icon.png);*/
     background-position: -438px -350px;
 }
 
 #facebookLink {
-    /*background-image: url(/images/black/iconmonstr-facebook-4-icon.png);*/
     background-position: -522px -266px;
 }
 
 #facebookLink:hover {
-    /*background-image: url(/images/alt/iconmonstr-facebook-4-icon.png);*/
     background-position: -438px -266px;
 }
 
 #mailLink {
-    /*background-image: url(/images/black/iconmonstr-email-12-icon.png);*/
     background-position: -490px -182px;
 }
 
 #mailLink:hover {
-    /*background-image: url(/images/alt/iconmonstr-email-12-icon.png);*/
     background-position: -354px -266px;
 }
 
 #helpLink {
-    /*background-image: url(/images/black/iconmonstr-help-2-icon.png);*/
     background-position: -94px -434px;
 }
 
 #helpLink:hover {
-    /*background-image: url(/images/alt/iconmonstr-help-2-icon.png);*/
     background-position: -522px -350px;
 }
 
@@ -516,15 +463,10 @@ footer .recommanded {
     height: 39px;
     float: right;
     margin: 5px;
-    /*background-image: url(/images/GANDI_SSL_logo_A_std_fr.png);
-    background-size: 79px 39px;
-    background-position: center;
-    background-repeat: no-repeat;*/
     background-position: -10px -10px;
 }
 
 #gandiLink:hover {
-    /*background-image: url(/images/GANDI_SSL_logo_B_std_fr.png);*/
     background-position: -109px -10px;
 }
 
@@ -545,35 +487,24 @@ footer .recommanded {
 }
 
 #sort span {
-    /*background-position: center;
-    background-size: 16px 16px;*/
-    background-image: url(/images/spritesheet.png);
     width: 16px;
     height: 16px;
     display: inline-block;
 }
 
-/*#sort > div {
-    background-image: url(/images/spritesheet.png);
-}*/
-
 #sort > div:not(.sortBy) .asc {
-    /*background-image: url(/images/black/iconmonstr-sort-24-icon-asc.png);*/
     background-position: -594px -590px;
 }
 
 #sort > div:hover .asc, .sortBy .asc {
-    /*background-image: url(/images/alt/iconmonstr-sort-24-icon-asc.png);*/
     background-position: -558px -590px;
 }
 
 #sort > div:not(.sortBy) .desc {
-    /*background-image: url(/images/black/iconmonstr-sort-23-icon-desc.png);*/
     background-position: -558px -554px;
 }
 
 #sort >div:hover .desc, .sortBy .desc {
-    /*background-image: url(/images/alt/iconmonstr-sort-23-icon-desc.png);*/
     background-position: -594px -554px;
 }
 
@@ -594,11 +525,6 @@ input[type=submit]:disabled, input[type=button]:disabled, button:disabled {
 }
 
 #footer {
-    /*background-image: url(/images/white/iconmonstr-arrow-31-top.png);
-    background-position: center;
-    background-size: 32px 32px;
-    background-repeat: no-repeat;*/
-    background-image: url(/images/spritesheet.png);
     background-position: -411px -57px;
     position: fixed;
     cursor: pointer;
@@ -701,7 +627,6 @@ input[type=submit]:disabled, input[type=button]:disabled, button:disabled {
 .altCover {
     width: 128px;
     height: 128px;
-    background-image: url(/images/spritesheet.png);
     background-position: -510px -660px;
     display: inline-block;
     margin-top: 5px;
@@ -772,7 +697,7 @@ button.remove {
     border: 2px solid darkgoldenrod;
     border-radius: 5px;
     padding: 5px;
-    cursor: url(/images/white/iconmonstr-x-mark-2-icon.png), pointer;
+    cursor: url(/images/iconmonstr-x-mark-2-icon.png), pointer;
     overflow: hidden;
     font-size: 15px;
 }
@@ -852,16 +777,11 @@ button.remove {
     z-index: 8;
     width: 64px;
     height: 64px;
-    /*background-image: url(/images/alt/iconmonstr-x-mark-3-icon.png);
-    background-size: 64px 64px;
-    background-position: center;*/
-    background-image: url(/images/spritesheet.png);
     background-position: -658px -214px;
     border-radius: 45%;
 }
 
 #cloud > div:hover {
-    /*background-image: url(/images/white/iconmonstr-x-mark-3-icon.png);*/
     background-position: -636px -130px;
 }
 
@@ -926,7 +846,6 @@ button.remove {
     left: 10px;
     border-bottom-right-radius: 10px;
     border-bottom-left-radius: 10px;
-    /*opacity: 0;*/
 }
 
 [detail] > * {
@@ -950,13 +869,10 @@ button.remove {
     width: 48px;
     height: 48px;
     cursor: pointer;
-    /*background-image: url(/images/black/iconmonstr-upload-10-icon.png);*/
-    background-image: url(/images/spritesheet.png);
     background-position: -606px -318px;
 }
 
 .imgAction .upload:hover {
-    /*background-image: url(/images/alt/iconmonstr-upload-10-icon.png);*/
     background-position: -661px -10px;
 }
 
@@ -970,7 +886,6 @@ button.remove {
 }
 
 .windowheader div {
-    background-image: url(/images/spritesheet.png);
     float: right;
     cursor: pointer;
     width: 48px;
@@ -979,66 +894,52 @@ button.remove {
 }
 
 .windowheader .closeWindow {
-    /*background-image: url(/images/white/iconmonstr-x-mark-icon.png);*/
     background-position: -622px -470px;
 }
 
 .windowheader .closeWindow:hover {
-    /*background-image: url(/images/black/iconmonstr-x-mark-icon.png);*/
     background-position: -674px -298px;
 }
 
 .windowheader .detailSave {
-    /*background-image: url(/images/white/iconmonstr-check-mark-icon.png);*/
     background-position: -354px -130px;
 }
 .windowheader .detailSave:hover {
-    /*background-image: url(/images/black/iconmonstr-check-mark-icon.png);*/
     background-position: -422px -130px;
 }
 
 .windowheader .detailAdd {
-    /*background-image: url(/images/white/iconmonstr-plus-icon.png);*/
     background-position: -10px -554px;
 }
 .windowheader .detailAdd:hover {
-    /*background-image: url(/images/black/iconmonstr-plus-icon.png);*/
     background-position: -554px -486px;
 }
 
 .windowheader .detailGbooks {
-    /*background-image: url(/images/white/iconmonstr-google-plus-icon.png);*/
     background-position: -10px -350px;
 }
 .windowheader .detailGbooks:hover {
-    /*background-image: url(/images/black/iconmonstr-google-plus-icon.png);*/
     background-position: -10px -266px;
 }
 
 .windowheader .detailConnex {
-    /*background-image: url(/images/white/iconmonstr-share-3-icon.png);*/
     background-position: -250px -554px;
 }
 .windowheader .detailConnex:hover {
-    /*background-image: url(/images/black/iconmonstr-share-3-icon.png);*/
     background-position: -182px -554px;
 }
 
 .windowheader .detailPreview {
-    /*background-image: url(/images/white/iconmonstr-book-22-icon.png);*/
     background-position: -536px -62px;
 }
 .windowheader .detailPreview:hover {
-    /*background-image: url(/images/black/iconmonstr-book-22-icon.png);*/
     background-position: -10px -130px;
 }
 
 .windowheader .detailRecommand {
-    /*background-image: url(/images/white/iconmonstr-share-icon.png);*/
     background-position: -318px -554px;
 }
 .windowheader .detailRecommand:hover {
-    /*background-image: url(/images/black/iconmonstr-share-icon.png);*/
     background-position: -386px -554px;
 }
 
@@ -1047,26 +948,21 @@ button.remove {
     height: 48px;
     display: inline-block;
     cursor: pointer;
-    background-image: url(/images/spritesheet.png);
 }
 
 .empty {
-    /*background-image: url(/images/black/star_nok.png);*/
     background-position: -78px -656px;
 }
 
 .select {
-    /*background-image: url(/images/black/star_ok.png);*/
     background-position: -146px -656px;
 }
 
 .empty.plus {
-    /*background-image: url(/images/black/star_hover_+.png);*/
     background-position: -10px -656px;
 }
 
 .select.minus {
-    /*background-image: url(/images/black/star_hover_-.png);*/
     background-position: -630px -588px;
 }
 
@@ -1077,13 +973,10 @@ button.remove {
     top: 15px;
     left: 15px;
     cursor: pointer;
-    /*background-image: url(/images/alt/iconmonstr-x-mark-3-icon.png);*/
-    background-image: url(/images/spritesheet.png);
     background-position: -658px -214px;
 }
 
 .closePreview:hover {
-    /*background-image: url(/images/black/iconmonstr-x-mark-3-icon.png);*/
     background-position: -610px -386px;
 }
 
@@ -1096,18 +989,11 @@ button.remove {
     height: 276px;
     max-width: 100%;
     max-height: 100%;
-    /*background-image: url(/images/black/iconmonstr-book-4-icon.png);
-    background-position: top;
-    background-size: 100%;
-    background-repeat: no-repeat;*/
-    background-image: url(/images/spritesheet.png);
     background-position: -78px -114px;
     margin-top: 10px;
 }
 
 .googlePreview {
-    /*background-image: url(/images/gbs_preview_sticker.png);*/
-    background-image: url(/images/spritesheet.png);
     background-position: -312px -10px;
     width: 69px;
     height: 23px;
@@ -1599,49 +1485,40 @@ div.tag button:not(.libelle):hover {
     height: 32px;
     display: inline-block;
     cursor: pointer;
-    background-image: url(/images/spritesheet.png);
 }
 
 [nav=top] {
-    /*background-image: url(/images/white/iconmonstr-arrow-24-icon-top.png);*/
     background-position: -312px -62px;
 }
 
 [nav=top]:hover {
-    /*background-image: url(/images/alt/iconmonstr-arrow-24-icon-top.png);*/
     background-position: -364px -62px;
 }
 
 [nav=bottom] {
-    /*background-image: url(/images/white/iconmonstr-arrow-24-icon-bottom.png);*/
     background-position: -401px -10px;
 }
 [nav=bottom]:hover {
-    /*background-image: url(/images/alt/iconmonstr-arrow-24-icon-bottom.png);*/
     background-position: -453px -10px;
 }
 
 [nav=left] {
     position: relative;
     right: 32px;
-    /*background-image: url(/images/white/iconmonstr-arrow-24-icon-left.png);*/
     background-position: -505px -10px;
 }
 
 [nav=left]:hover {
-    /*background-image: url(/images/alt/iconmonstr-arrow-24-icon-left.png);*/
     background-position: -557px -10px;
 }
 
 [nav=right] {
     position: relative;
     left: 32px;
-    /*background-image: url(/images/white/iconmonstr-arrow-24-icon-right.png);*/
     background-position: -208px -62px;
 }
 
 [nav=right]:hover {
-    /*background-image: url(/images/alt/iconmonstr-arrow-24-icon-right.png);*/
     background-position: -260px -62px;
 }
 
@@ -1687,8 +1564,6 @@ div.tag button:not(.libelle):hover {
 	-o-animation: fullRotation 5s inFinite;
 	-ms-animation: fullRotation 5s inFinite;
 	animation: fullRotation 5s inFinite;
-    /*background-image: url(/images/loading-12-icon.png);*/
-    background-image: url(/images/spritesheet.png);
     background-position: -227px -628px;
 }
 

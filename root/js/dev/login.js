@@ -43,7 +43,7 @@ if (!window.FileReader || !("formNoValidate" in document.createElement("input"))
                 });
             },
             "controller": ["$scope", "$http", "$window", function (scope, http, win) {
-                var user = scope.user = { "active": true },
+                var user = scope.user = {},
                     razError = function () {
                         delete scope.error;
                         delete scope.success;

@@ -25,6 +25,7 @@
 				<input type="password" name="password" ng-model="user.password" ng-minlength="4" ng-maxlength="12" placeholder="[{trads.password}]" data-m="[{trads.errPwd}]" required title="[{trads.password}]" />
 				<span class="error" ng-show="login.password.$error.minlength || login.password.$error.maxlength">[{trads.errPwd}]</span>
 				<input type="password" name="confirm" ng-model="user.confirm" ng-minlength="4" ng-maxlength="12" placeholder="[{trads.confirmed}]" ng-show="new" ng-required="new" data-h title="[{trads.confirmed}]" compare-to="user.password" defCloak/>
+				<input type="hidden" ng-model="user.active" ng-init="user.active = true"/>
 				<span class="error" ng-show="!!user.password && login.password.$valid && login.confirm.$error.compareTo">[{trads.errConfirmed}]</span>
 				<span class="g" ng-show="error" ng-bind="error"></span>
 				<span class="n" ng-show="success" ng-bind="success"></span>
