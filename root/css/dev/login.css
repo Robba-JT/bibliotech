@@ -26,8 +26,10 @@ section, .k, #f {
 }
 
 section {
-    background-position: -10px -10px;
-    width: 492px;
+    background-position: 0 0;
+    background-size: cover;
+    background-attachment: inherit;
+	width: 492px;
     max-width: 96%;
     margin: 2%;
     padding: 5px;

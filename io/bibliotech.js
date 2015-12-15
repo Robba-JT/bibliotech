@@ -149,7 +149,7 @@ module.exports = function main (socket, allSessions) {
                 returnCover = function (cover) { return _.isEqual(cover._id.book, books[book].id); },
                 loadCover = function (id, cover) {
                     return bookAPI.loadBase64(cover, id).then(function (base64) {
-                        socket.emit("cover", base64);
+                        //socket.emit("cover", base64);
                         return base64;
                     });
                 };
@@ -189,16 +189,17 @@ module.exports = function main (socket, allSessions) {
                 toSend.push(books[book]);
                 if (toSend.length % 40 === 0) {
                     socket.emit("initCollect", toSend);
+                	socket.emit("covers", sendCovers);
                     toSend = [];
+					sendCovers = [];
                 }
             }
             socket.emit("endCollect", toSend);
-			socket.emit("covers", sendCovers);
             thisBooks = books;
             Q.allSettled(def64).then(function (results) {
                 if (!!results.length) { sendCovers.push(_.map(results, "value")); }
                 sendCovers = _.flattenDeep(sendCovers);
-                //socket.emit("covers", sendCovers);
+                socket.emit("covers", sendCovers);
                 for (var jta = 0, lg = sendCovers.length; jta < lg; jta++) {
                     _.assign(_.find(thisBooks, _.matchesProperty("id", sendCovers[jta].id)), sendCovers[jta]);
                 }

@@ -11,7 +11,7 @@
     <div class="detailCover" dir="rtl">
         <div id="noCover" ng-hide="detail.book.base64 || detail.book.alternative"></div>
         <div>
-            <img id="detailCover" ng-show="detail.book.base64 || detail.book.alternative" ng-src="[{detail.book.base64 || detail.book.alternative}]":>
+            <img id="detailCover" ng-show="detail.book.base64 || detail.book.alternative" ng-src="[{detail.book.base64 || detail.book.alternative}]"/>
         </div>
         <div class="imgAction">
             <div class="upload" ng-show="detail.book.inCollection && !detail.book.cover" ng-click="detail.uploadCover()"></div>

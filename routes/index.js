@@ -101,7 +101,7 @@ module.exports = exports = function (app, mongoStore, io) {
             next();
         }).use(function (err, req, res, next) {
 			console.error(err.message, err.stack);
-			res.biblioRender("error", { error: err }, 500);
+			res.biblioRender("error", { "error": err }, 500);
         })
 
 	//Maintenance url
@@ -144,9 +144,9 @@ module.exports = exports = function (app, mongoStore, io) {
 		.get("*", function (req, res) { res.status(404).biblioRender("error", { error: "Error 404" });})
 
     //Trads
-        /*.post("/trad", function (req, res) {
-            res.jsonp(res.trads[req.body.from]);
-        })*/
+        .post("/trad", function (req, res) {
+            res.jsonp(fs.readFileSync(["./root/trads", req.body.lang, req.body.page + ".json"].join("/")));
+        })
 
 	//Login
 		.post("/login", function (req, res, next) {

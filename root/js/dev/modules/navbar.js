@@ -52,7 +52,6 @@
                         lg = filtre.length;
 
                     if (_.isEqual(filtre, this.last)) { return; }
-                    this.last = filtre;
                     _.forEach(scope.bookcells.cells, function (cell) {
                         if (_.isEqual(filtre, [""])) { cell.toFilter = false; return; }
                         var test = (cell.title + " " +
@@ -64,6 +63,7 @@
                         }
                         cell.toFilter = false;
                     });
+					timeout(this.last = filtre);
                 };
                 navbar.toggleMenu = function () {
                     timeout(this.visible = !this.visible).then(function () {

@@ -101,7 +101,10 @@ if (!window.FileReader || !("formNoValidate" in document.createElement("input"))
                 var action;
                 if (!event.altKey) {
                     if (!event.ctrlKey) {
-                        if (event.keyCode === 27) {
+						if (event.keyCode === 8 && ["INPUT", "TEXTAREA"].indexOf(event.target.nodeName) === -1) {
+							action = true;
+						}
+                        else if (event.keyCode === 27) {
                             scope.windows.close("*");
                             action = true;
                         }
