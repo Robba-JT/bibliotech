@@ -22,7 +22,19 @@
                             }
                             if (isCollection && isIn === -1) { bookcells.collection.push(angular.copy(cell)); }
                         });
-                    };
+                    },
+					loadCover = function (cover) {
+						if (!cover) { return; }
+						var inCollect = _.find(bookcells.collection, _.matchesProperty("id", cover.id)) || {},
+							cell = _.find(bookcells.cells, _.matchesProperty("id", cover.id)) || {};
+
+						inCollect.base64 = cell.base64 = cover.base64;
+						inCollect.alternative = cell.alternative = cover.alternative;
+						if (scope.detail.book && scope.detail.book.id === cover.id) {
+							scope.detail.book.base64 = cover.base64;
+							scope.detail.book.alternative = cover.alternative;
+						}
+					};
 
                 bookcells.width = ~~(document.one("[bookcells]").clientWidth / ~~(document.one("[bookcells]").clientWidth / 256)) - ~~(document.one("[bookcells]").clientWidth / 256) + "px";
                 bookcells.iwidth = ~~(document.one("[bookcells]").clientWidth / ~~(document.one("[bookcells]").clientWidth / 256)) - ~~(document.one("[bookcells]").clientWidth / 256) - 20 + "px";
@@ -30,7 +42,7 @@
                     if (_.findIndex(bookcells.collection, _.matchesProperty("id", cell.id)) === -1) {
                         if (!this.cell) { _.assign(_.find(bookcells.cells, _.matchesProperty("id", cell.id)), { "inCollection": true }); }
                         bookcells.collection.push(cell);
-                        bookcells.collection = _.sortByOrder(bookcells.collection, "title");
+                        bookcells.collection = _.sortBy(bookcells.collection, function (book) { return book.title.toLowerCase(); });
                         _.assign(cell, { "inCollection": true, "index": bookcells.collection.length - 1 });
                         if (!cell.new) {
                             socks.emit("addBook", cell.id);
@@ -40,7 +52,7 @@
                                 document.one(".sortBy").toggleClass("sortBy", false);
                                 document.one("#sort > div").toggleClass("sortBy", true);
                             }
-                            bookcells.cells =  _.sortByOrder(bookcells.cells, "title");
+                            bookcells.cells = _.sortBy(bookcells.cells, function (cell) { return cell.title.toLowerCase(); });
                         }
                     }
                 };
@@ -78,21 +90,12 @@
                     scope.tags.init();
                     cellsRender(part, true);
                     _.assign(scope.waiting, { "icon": false, "anim": false });
-                    if (!!bookcells.cells) { bookcells.cells =  _.sortByOrder(bookcells.cells, "title"); }
+                    if (!!bookcells.cells) { bookcells.cells = _.sortBy(bookcells.cells, function (cell) { return cell.title.toLowerCase(); }); }
                     if (!scope.windows.opened || _.isEmpty(scope.windows.opened)) { _.assign(scope.waiting,  { "screen": false }); }
                 });
+                socks.on("cover", loadCover);
                 socks.on("covers", function (covers) {
-						for (var jta = 0, lg = covers.length; jta < lg; jta++) {
-							var inCollect = _.find(bookcells.collection, _.matchesProperty("id", covers[jta].id)) || {},
-								cell = _.find(bookcells.cells, _.matchesProperty("id", covers[jta].id)) || {};
-
-							inCollect.base64 = cell.base64 = covers[jta].base64;
-							inCollect.alternative = cell.alternative = covers[jta].alternative;
-							if (scope.detail.book && scope.detail.book.id === covers[jta].id) {
-								scope.detail.book.base64 = covers[jta].base64;
-								scope.detail.book.alternative = covers[jta].alternative;
-							}
-						}
+					for (var jta = 0, lg = covers.length; jta < lg; jta++) { loadCover(covers[jta]); }
                 });
                 socks.on("books", function (part) {
                     cellsRender(part);
@@ -131,12 +134,16 @@
 		return {
 			restrict: "A",
 			link: function (scope, element, attrs) {
-				scope.$watch("cell.alternative || cell.base64", function (value) {
-					if (value) {
+				delete scope.cell.source;
+				scope.$watch("cell.alternative || cell.base64", function (newValue, oldValue) {
+					if (!!newValue) {
 						scope.$watch(function () {
-							return !scope.cell.source && !!element[0].getBoundingClientRect().top && win.innerHeight > element[0].getBoundingClientRect().top;
+							return (newValue !== oldValue || !scope.cell.source) && !!element[0].getBoundingClientRect().top && win.innerHeight > element[0].getBoundingClientRect().top;
 						}, function (toShow) {
-							if (!!toShow) {	preloader.preloadImages(value).then(function (result) { scope.cell.source = value; }); }
+							if (!!toShow) {	preloader.preloadImages(newValue).then(function (result) {
+								element[0].one(".cover").src = newValue;
+								scope.cell.source = true;
+							}); }
 						});
 					}
 				});

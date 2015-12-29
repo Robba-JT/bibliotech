@@ -12,7 +12,13 @@ var mailsAPI = require("../tools/mails").MailsAPI(),
     GoogleStrategy = require("passport-google-oauth").OAuth2Strategy,
     LocalStrategy = require("passport-local").Strategy,
     passportSocketIo = require("passport.socketio"),
-    version = require("../package.json").version;
+    version = require("../package.json").version,
+	reqOptions = { "gzip": true, "timeout": 5000, "headers": { "Content-Type": "image" } },
+	request = require("request"),
+	url = require("url");
+
+if (require("ip").address() === "128.1.236.11") { reqOptions.proxy = "http://CGDM-EMEA\jtassin:password_4@isp-ceg.emea.cegedim.grp:3128/"; }
+
 
 module.exports = exports = function (app, mongoStore, io) {
     "use strict";

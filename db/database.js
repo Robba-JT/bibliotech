@@ -80,23 +80,23 @@ module.exports.init = function (mongoUrl, callback) {
                     var updated = 0, removed = 0, requests = [];
                     _.forEach(result, function (oldOne) {
                         var params = _.merge({ "volumeId": oldOne.id }, defParams);
-                        requests.push(new Q.Promise(function () {
+                        requests.push(new Q.Promise(function (resolve, reject) {
                             gBooks.volumes.get(params, function (error, response) {
                                 if (!!error) {
                                     console.error("Error Update One", oldOne.id, error);
                                     if (error.code === 404 && error.message === "The volume ID could not be found.") {
-                                        books.remove({ "id": oldOne.id });
+                                        books.remove({ "id": oldOne.id }, reject);
                                         removed++;
                                     }
                                 } else {
                                     var newOne = formatOne(response);
                                     if (!booksEqual(oldOne, newOne)) { updated++; }
-                                    books.update({ "id": newOne.id }, newOne, { "upsert": true });
+                                    books.update({ "id": newOne.id }, newOne, { "upsert": true }, resolve);
                                 }
                             });
                         }));
                     });
-                    Q.allSettled(requests).done(function () { console.info("Books updated", updated, "removed", removed); });
+                    Q.allSettled(requests).then(function () { console.info("Books updated", updated, "removed", removed); });
                 }
             });
         }

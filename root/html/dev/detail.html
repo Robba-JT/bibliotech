@@ -74,7 +74,7 @@
             </form>
         </div>
         <div ng-show="detail.book.inCollection">
-            <div class="tag" ng-repeat="tag in detail.book.tags"><button class="libelle" ng-class="(!detail.ref.tags || detail.ref.tags.indexOf('[{tag}]') === -1) && 'new'" title=[{trads.filter}] ng-click="detail.byTag($index)">[{tag}]</button><button title=[{trads.remove}] ng-click="detail.removeTag($index)"><b>x</b></button></div>
+            <div class="tag" ng-repeat="tag in detail.book.tags"><button class="libelle" ng-class='(!detail.ref.tags || detail.ref.tags.indexOf("[{tag}]") === -1) && "new"' title=[{trads.filter}] ng-click="detail.byTag($index)">[{tag}]</button><button title=[{trads.remove}] ng-click="detail.removeTag($index)"><b>x</b></button></div>
         </div>
         <div id="userNote" class="inCollection" ng-show="detail.book.inCollection">
             <div note=1 class="note" ng-class="detail.book.userNote >= 1 ? 'select' : 'empty'"></div>

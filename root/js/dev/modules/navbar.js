@@ -13,7 +13,9 @@
                     sortBy = function () {
                         if (this.hasClass("sortBy")) { return; }
                         var by = this.getAttribute("by"), sort = this.getAttribute("sort");
-                        scope.bookcells.cells = _.sortByOrder(scope.bookcells.cells, [by], sort !== "desc");
+                        //scope.bookcells.cells = _.sortByOrder(scope.bookcells.cells, [by], sort !== "desc");
+                        scope.bookcells.cells = _.sortBy(scope.bookcells.cells, function (cell) { return cell[by].toLowerCase(); });
+						if (sort === "desc") { scope.bookcells.cells.reverse(); }
                         scope.$apply();
                         if (document.one(".sortBy")) { document.one(".sortBy").toggleClass("sortBy", false); }
                         this.toggleClass("sortBy", true);

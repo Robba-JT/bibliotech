@@ -85,6 +85,7 @@ module.exports.BooksAPI = BooksAPI = function (db, token) {
             if (!_.isEmpty(auth.credentials)) { _.assign(params, { "auth": auth }); } /*else { _.assign(params, { "key": googleConfig.key }); }*/
             if (typeof gFunction !== "function") { return callback ? callback(new Error("Invalid Call!!!")) : new Error("Invalid Call!!!"); }
             gFunction(params, function (error, success) {
+				console.error("googleRequest", error);
                 if (!!error && error.code !== 401) { return callback ? callback(error) : error; }
                 if (!!error && error.code === 401) {
                     refreshCredentials()
@@ -96,18 +97,18 @@ module.exports.BooksAPI = BooksAPI = function (db, token) {
             });
         },
         loadBase64 = function (url, bookid) {
-            var defColor = Q.defer(), params = reqOptions;
-            if (!url) { defColor.reject(); }
+            var defReq = Q.defer(), params = reqOptions;
+            if (!url) { defReq.reject(); }
             params.url = url;
             params.encoding = "binary";
             request.get(params, function (error, response, body) {
                 if (!!error || response.statusCode !== 200) {
-                    defColor.reject(error || new Error("status: " + response.statusCode));
+                    defReq.reject(error || new Error("status: " + response.statusCode));
                 } else {
-                    defColor.resolve({ "base64": "data:" + response.headers["content-type"] + ";base64," + new Buffer(body, "binary").toString("base64"), "id": bookid });
+                    defReq.resolve({ "base64": "data:" + response.headers["content-type"] + ";base64," + new Buffer(body, "binary").toString("base64"), "id": bookid });
                 }
             });
-            return defColor.promise;
+            return defReq.promise;
         },
         loadComments = function (filter, callback) {
             comments.find(filter).toArray(callback);
@@ -151,6 +152,7 @@ module.exports.BooksAPI = BooksAPI = function (db, token) {
                     if (!!book.cover) {
                         loadBase64(book.cover).done(function (response) {
                             if (!!response && !!response.base64) { book.base64 = response.base64; }
+							delete book.cover;
                             callback(null, book);
                         });
                     } else {
@@ -242,7 +244,7 @@ module.exports.BooksAPI = BooksAPI = function (db, token) {
     };
     this.loadBase64 = loadBase64;
     this.loadBooks = function (filter, callback) {
-        books.find(filter).sort({ "title" : 1 }).toArray(callback);
+        books.find(filter).toArray(callback);
     };
     this.loadComments = loadComments;
     this.loadCover = loadCover;
