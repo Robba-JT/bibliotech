@@ -152,7 +152,6 @@ module.exports.BooksAPI = BooksAPI = function (db, token) {
                     if (!!book.cover) {
                         loadBase64(book.cover).done(function (response) {
                             if (!!response && !!response.base64) { book.base64 = response.base64; }
-							delete book.cover;
                             callback(null, book);
                         });
                     } else {
