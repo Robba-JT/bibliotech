@@ -92,6 +92,7 @@
                     _.assign(scope.waiting, { "icon": false, "anim": false });
                     if (!!bookcells.cells) { bookcells.cells = _.sortBy(bookcells.cells, function (cell) { return cell.title.toLowerCase(); }); }
                     if (!scope.windows.opened || _.isEmpty(scope.windows.opened)) { _.assign(scope.waiting,  { "screen": false }); }
+					socks.emit("endCollect");
                 });
                 socks.on("cover", loadCover);
                 socks.on("covers", function (covers) {

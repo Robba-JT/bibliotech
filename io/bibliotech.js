@@ -189,16 +189,18 @@ module.exports = function main (socket, allSessions) {
 					sendCovers = [];
                 }
             }
-            socket.emit("endCollect", toSend);
             thisBooks = books;
-            Q.allSettled(def64).then(function (results) {
-                if (!!results.length) { sendCovers.push(_.map(results, "value")); }
-                sendCovers = _.flattenDeep(sendCovers);
-                for (var jta = 0, lg = sendCovers.length; jta < lg; jta++) {
-                	socket.emit("cover", sendCovers[jta]);
-                    _.assign(_.find(thisBooks, _.matchesProperty("id", sendCovers[jta].id)), sendCovers[jta]);
-                }
-            }).catch(function (error) { console.error(thisUser._id, "isConnected - Q.allSettled(def64)", error); });
+			socket.on("endCollect", function () {
+				Q.allSettled(def64).then(function (results) {
+					if (!!results.length) { sendCovers.push(_.map(results, "value")); }
+					sendCovers = _.flattenDeep(sendCovers);
+					for (var jta = 0, lg = sendCovers.length; jta < lg; jta++) {
+						socket.emit("cover", sendCovers[jta]);
+						_.assign(_.find(thisBooks, _.matchesProperty("id", sendCovers[jta].id)), sendCovers[jta]);
+					}
+				}).catch(function (error) { console.error(thisUser._id, "isConnected - Q.allSettled(def64)", error); });
+			});
+            socket.emit("endCollect", toSend);
         });
     });
 
