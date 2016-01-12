@@ -204,6 +204,7 @@ module.exports = exports = function (app, mongoStore, io) {
             next();
         }
     })).on("connection", function (socket) {
+		console.log("socket.request.connection.remoteAddress", socket.request.connection.remoteAddress);
         var onEvent = socket.onevent;
         socket.onevent = function () {
             var args = arguments;

@@ -444,7 +444,8 @@ module.exports = function main (socket, allSessions) {
                 Q.allSettled(def).then(function (results) {
                     var mostAdded = [];
                     for (jta = 0, lg = results.length; jta < lg; jta++) {
-                        if (results[jta].state === "fulfilled") { mostAdded.push(results[jta].value); }
+						console.log(results[jta].value);
+                        if (results[jta].state === "fulfilled" && !!results[jta].value) { mostAdded.push(results[jta].value); }
                     }
                     if (mostAdded.length) { socket.emit("mostAdded", { "book": bookid, "mostAdded": mostAdded }); }
                 });

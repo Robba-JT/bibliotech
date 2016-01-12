@@ -59,7 +59,8 @@
     "socket.io": "^1.3.7",
     "socket.io-client": "^1.3.7",
     "swig": "*",
-    "validator": "^3.43.0"
+    "validator": "^3.43.0",
+    "websocket": "^1.0.22"
   },
   "devDependencies": {
     "grunt": "^0.4.5",

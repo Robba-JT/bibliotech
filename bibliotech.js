@@ -11,6 +11,7 @@ var express = require("express"),
     MongoStore = require("connect-mongo")(Session),
     http = require("http"),
     https = require("https"),
+	io,
     server = http.Server(app).listen(port),
     sServer = https.Server(options, app).listen(sPort),
     mongoUrl = "mongodb://" + config.mongoHost + ":" + config.mongoPort + "/" + config.mongoDB,
@@ -18,9 +19,13 @@ var express = require("express"),
 	compress = require("compression"),
 	cors = require("cors"),
 	expjson = require("express-json"),
-    io = require("socket.io")(sServer);
+	WebSocketServer = require("websocket").server,
+	wsServer = new WebSocketServer({ "httpServer": sServer }),
+	io = require("socket.io")(sServer);
 
 require("./tools/console")(app);
+
+wsServer.on("request", function(request) { console.log("request.httpRequest.headers", request.httpRequest.headers); });
 
 require("./db/database").init(mongoUrl, function (error) {
     if (!!error) { console.error("Database Error", error); throw error; }
@@ -64,7 +69,8 @@ require("./db/database").init(mongoUrl, function (error) {
         .use(session)
         .use(function (req, res, next) { if (req.secure) { next(); } else { res.redirect("https://" + req.headers.host + req.url); }})
         .use(function (req, res, next) {
-            res.setHeader("Access-Control-Allow-Origin", "https://biblio.tech");
+			res.setHeader("Connection", "*");
+            res.setHeader("Access-Control-Allow-Origin", "http://biblio.tech,https://biblio.tech");
             res.setHeader("X-Frame-Options", "sameorigin");
             res.setHeader("X-Content-Type-Options", "nosniff");
             res.setHeader("X-XSS-Protection", "1;mode=block");
@@ -82,4 +88,5 @@ require("./db/database").init(mongoUrl, function (error) {
     require("./routes")(app, mongoStore, io);
 
     console.info("Environment" ,app.settings.env, "Server deployé sur les ports https:", sPort, "http:", port);
+
 });

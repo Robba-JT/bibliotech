@@ -36,14 +36,19 @@ module.exports = function (grunt) {
                 "options": {
                     "nodeArgs": ["--debug"],
                     "cwd": __dirname,
-                    "ignore": ["node_modules/**", "root/**", "logs/**", "views/**", "requests.js"]
+                    "ignore": ["node_modules/**", "root/**", "logs/**", "views/**", "requests.js"],
+					"env": {
+                        "NODE_ENV": "development",
+						"ROOT_URL": "https://localhost"
+					}
                 }
             },
             "prod": {
                 "script": "bibliotech.js",
                 "options": {
                     "env": {
-                        "NODE_ENV": "production"
+                        "NODE_ENV": "production",
+						"ROOT_URL": "https://biblio.tech"
                     },
                     "cwd": __dirname,
                     "ignore": ["node_modules/**", "root/**", "logs/**", "views/**", "requests.js"]
