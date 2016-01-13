@@ -200,11 +200,14 @@ module.exports = exports = function (app, mongoStore, io) {
         "success": function (data, next) {
             passportSocketIo.filterSocketsByUser(io, function(user) {
                 return user._id === data.user._id;
-            }).forEach(function(socket) { socket.emit("logout"); });
+            }).forEach(function(socket) {
+				if (socket.request.sessionID !== data.sessionID) {
+					socket.emit("logout");
+				}
+			});
             next();
         }
     })).on("connection", function (socket) {
-		console.log("socket.request.connection.remoteAddress", socket.request.connection.remoteAddress);
         var onEvent = socket.onevent;
         socket.onevent = function () {
             var args = arguments;

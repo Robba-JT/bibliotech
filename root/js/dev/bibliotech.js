@@ -47,19 +47,8 @@ if (!window.FileReader || !("formNoValidate" in document.createElement("input"))
                 "left": (noConnect.clientWidth + event.clientX > window.innerWidth) ? event.clientX - noConnect.clientWidth: event.clientX
             });
         };
-        socks.connect(function () {
-            _.assign(scope.waiting, { "connect": false });
-            document.removeEventListener("mousemove", mouseMove);
-        });
-        socks.disconnect(function () {
-            scope.windows.close("*");
-            scope.bookcells.reset();
-            delete scope.bookcells.collection;
-            angular.element(document).bind("mousemove", mouseMove);
-            timeout(function () { _.assign(scope.waiting, { "connect": true }); }, 2000);
-            scope.$apply();
-        });
         scope.logout = function () {
+							alert("logout");
             scope.waiting.screen = true;
             if (!!idb.indexedDB) { idb.indexedDB.deleteDatabase(scope.profile.user.session); }
             scope.profile.user = {};
@@ -67,6 +56,19 @@ if (!window.FileReader || !("formNoValidate" in document.createElement("input"))
             socks.close();
             return false;
         };
+
+        socks.connect(function () {
+            _.assign(scope.waiting, { "connect": false });
+            document.removeEventListener("mousemove", mouseMove);
+        });
+		socks.disconnect(function () {
+            scope.windows.close("*");
+            scope.bookcells.reset();
+            delete scope.bookcells.collection;
+            angular.element(document).bind("mousemove", mouseMove);
+            timeout(function () { _.assign(scope.waiting, { "connect": true }); }, 2000);
+            scope.$apply();
+        });
 
         angular.element(win)
             .bind("selectstart", function (event) {

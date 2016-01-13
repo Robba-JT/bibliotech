@@ -2,8 +2,8 @@ var express = require("express"),
     app = express(),
     path = require("path"),
     fs = require("fs"),
-    options = { "pfx": fs.readFileSync("./ssl/biblio.tech.pfx") },
-    config = JSON.parse(fs.readFileSync("config.json"))[app.settings.env],
+    options = { "pfx": fs.readFileSync(__dirname + "/ssl/biblio.tech.pfx") },
+    config = JSON.parse(fs.readFileSync(__dirname + "/config.json"))[app.settings.env],
     port = config.port,
     sPort = config.sPort,
     bodyParser = require("body-parser"),
@@ -23,11 +23,12 @@ var express = require("express"),
 	wsServer = new WebSocketServer({ "httpServer": sServer }),
 	io = require("socket.io")(sServer);
 
-require("./tools/console")(app);
+require(__dirname + "/tools/console")(app);
 
-wsServer.on("request", function(request) { console.log("request.httpRequest.headers", request.httpRequest.headers); });
+require("ssl-root-cas").inject().addFile(__dirname + "/ssl/biblio.tech.pfx");
 
-require("./db/database").init(mongoUrl, function (error) {
+
+require(__dirname + "/db/database").init(mongoUrl, function (error) {
     if (!!error) { console.error("Database Error", error); throw error; }
 
     var mongoStore = new MongoStore({
@@ -51,6 +52,13 @@ require("./db/database").init(mongoUrl, function (error) {
             }
         });
 
+	wsServer.on("request", function(request) {
+		if (request.origin !== process.env.ROOT_URL) {
+		  console.error("Websocket connection rejected:", process.env.NODE_ENV, "/ origin:", request.origin);
+		  return request.reject();
+		}
+	});
+
     app.engine("html", require("consolidate").swig)
         .set("view engine", "html")
         .set("views", path.join(__dirname + "/views"))
@@ -70,7 +78,7 @@ require("./db/database").init(mongoUrl, function (error) {
         .use(function (req, res, next) { if (req.secure) { next(); } else { res.redirect("https://" + req.headers.host + req.url); }})
         .use(function (req, res, next) {
 			res.setHeader("Connection", "*");
-            res.setHeader("Access-Control-Allow-Origin", "http://biblio.tech,https://biblio.tech");
+            res.setHeader("Access-Control-Allow-Origin", "https://biblio.tech");
             res.setHeader("X-Frame-Options", "sameorigin");
             res.setHeader("X-Content-Type-Options", "nosniff");
             res.setHeader("X-XSS-Protection", "1;mode=block");
@@ -85,7 +93,7 @@ require("./db/database").init(mongoUrl, function (error) {
 
     device.enableDeviceHelpers(app);
 
-    require("./routes")(app, mongoStore, io);
+    require(__dirname + "/routes")(app, mongoStore, io);
 
     console.info("Environment" ,app.settings.env, "Server deployé sur les ports https:", sPort, "http:", port);
 
