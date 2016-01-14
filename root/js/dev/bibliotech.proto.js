@@ -136,10 +136,10 @@ ElementPrototype.toggleClass = function (cls, bo) {
 };
 ElementPrototype.trigger = function (evt) {
     "use strict";
-    var thisEvent;
-    try { thisEvent = new Event(evt); }
+    var thisEvent, isMouse = _.includes(["click", "mouseenter", "mouseleave", "mouseup", "mousedown"], evt);
+    try { thisEvent = isMouse ? new MouseEvent(evt) : new Event(evt); }
     catch (e) {
-        thisEvent = document.createEvent(_.includes(["click", "mouseenter", "mouseleave", "mouseup", "mousedown"], evt) ? "MouseEvents" : "HTMLEvents");
+        thisEvent = document.createEvent(isMouse ? "MouseEvents" : "HTMLEvents");
         thisEvent.initEvent(evt, true, true);
     }
     this.dispatchEvent(thisEvent);

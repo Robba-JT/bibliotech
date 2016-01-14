@@ -48,13 +48,12 @@ if (!window.FileReader || !("formNoValidate" in document.createElement("input"))
             });
         };
         scope.logout = function () {
-							alert("logout");
-            scope.waiting.screen = true;
-            if (!!idb.indexedDB) { idb.indexedDB.deleteDatabase(scope.profile.user.session); }
-            scope.profile.user = {};
-            win.location.assign("/logout");
-            socks.close();
-            return false;
+			scope.waiting.screen = true;
+			if (!!idb.indexedDB) { idb.indexedDB.deleteDatabase(scope.profile.user.session); }
+			scope.profile.user = {};
+			win.location.assign("/logout");
+			//socks.close();
+			return false;
         };
 
         socks.connect(function () {
@@ -91,13 +90,20 @@ if (!window.FileReader || !("formNoValidate" in document.createElement("input"))
             }).bind("scroll", function () {
                 scope.$apply(scope.footer = (!!scope.windows.xcroll().top));
             }).bind("click", function (event) {
-                scope.modal.navBottom = document.one("#navbar").clientHeight + 5;
+                /*scope.modal.navBottom = document.one("#navbar").clientHeight + 5;
                 scope.modal.sortLeft = document.one("#tris").offsetLeft;
                 scope.modal.notifsLeft = document.one("#notifications").offsetLeft;
                 if (event.target.id !== "tris") { scope.modal.sort = false; }
                 if (event.target.id !== "notifications") { scope.modal.notifs = false; }
-                if (!event.target.getAttribute("nav")) { scope.context.show = false; }
-                scope.$apply();
+                if (!event.target.getAttribute("nav")) { scope.context.show = false; }*/
+                scope.$apply(function () {
+					scope.modal.navBottom = document.one("#navbar").clientHeight + 5;
+					scope.modal.sortLeft = document.one("#tris").offsetLeft;
+					scope.modal.notifsLeft = document.one("#notifications").offsetLeft;
+					if (event.target.id !== "tris") { scope.modal.sort = false; }
+					if (event.target.id !== "notifications") { scope.modal.notifs = false; }
+					if (!event.target.getAttribute("nav")) { scope.context.show = false; }
+				});
             }).bind("keypress, keydown", function (event) {
                 event = event || window.event;
                 var action;

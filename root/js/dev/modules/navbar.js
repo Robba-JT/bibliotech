@@ -12,13 +12,17 @@
                     notifs = scope.notifs = {},
                     sortBy = function () {
                         if (this.hasClass("sortBy")) { return; }
-                        var by = this.getAttribute("by"), sort = this.getAttribute("sort");
-                        scope.bookcells.cells = _.sortBy(scope.bookcells.cells, function (cell) { return cell[by].toLowerCase(); });
-						if (sort === "desc") { scope.bookcells.cells.reverse(); }
+                        scope.bookcells.cells = arraySort(scope.bookcells.cells, this.getAttribute("by"), this.getAttribute("sort") === "desc");
                         scope.$apply();
                         if (document.one(".sortBy")) { document.one(".sortBy").toggleClass("sortBy", false); }
                         this.toggleClass("sortBy", true);
-                    };
+                    },
+					arraySort = function (cells, by, desc) {
+						var ret = _.sortBy(cells, function (cell) {
+							return typeof cell[by] === "string" ? cell[by].toLowerCase() : cell[by];
+						});
+						return !!desc ? ret.reverse() : ret;
+					};
 
                 navbar.visible = true;
                 navbar.height = document.one("#navbar").clientHeight;
@@ -27,7 +31,13 @@
                     scope.detail.show({});
                 };
                 navbar.openUrl = function (url) { window.open(url); };
-                navbar.mailTo = function () { document.location.href = "mailto:admin@biblio.tech?subject=Bibliotech"; };
+                navbar.mailTo = function () {
+					timeout(function () {
+						//location.href = "mailto:admin@biblio.tech?subject=Bibliotech";
+						var win = window.open("mailto:admin@biblio.tech?subject=Bibliotech");
+						if (win && win.open && !win.closed) { win.close(); }
+					});
+				};
                 navbar.collection = function () {
                     navbar.saveorder = false;
                     if (document.one(".sortBy") && !document.one("#sort > div").hasClass("sortBy")) { document.one(".sortBy").toggleClass("sortBy", false); }
@@ -36,7 +46,7 @@
                     if (!navbar.isCollect) {
                         scope.bookcells.reset().then(function () {
                             timeout(function () {
-                                scope.bookcells.cells = angular.copy(_.sortByOrder(scope.bookcells.collection, "title"));
+                                scope.bookcells.cells = angular.copy(arraySort(scope.bookcells.collection, "title"));
                                 navbar.isCollect = true;
                             }).then(function () {
                                 _.assign(scope.waiting, { "screen": false, "icon": false, "anim": false });
@@ -44,7 +54,7 @@
                         });
                     } else {
                         navbar.filtre = navbar.last = scope.search.last = scope.tags.last = null;
-                        scope.bookcells.cells = _.sortByOrder(scope.bookcells.cells, "title");
+                        scope.bookcells.cells = arraySort(scope.bookcells.cells, "title");
                         _.forEach(scope.bookcells.cells, function (cell) { _.assign(cell, { "toHide": false, "toFilter": false}); });
                     }
                 };
@@ -158,7 +168,7 @@
                             tagOptions += "<option>" + tag + "</option>";
                         });
                         document.one("#tagsList").html(tagOptions);
-                        this.tags = _.sortBy(alls, "weight").reverse();
+                        this.tags = arraySort(alls, "weight", true);
                     }
                     document.alls("#cloud span").removeAll();
                 };

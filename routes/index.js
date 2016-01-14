@@ -12,13 +12,7 @@ var mailsAPI = require("../tools/mails").MailsAPI(),
     GoogleStrategy = require("passport-google-oauth").OAuth2Strategy,
     LocalStrategy = require("passport-local").Strategy,
     passportSocketIo = require("passport.socketio"),
-    version = require("../package.json").version,
-	reqOptions = { "gzip": true, "timeout": 5000, "headers": { "Content-Type": "image" } },
-	request = require("request"),
-	url = require("url");
-
-if (require("ip").address() === "128.1.236.11") { reqOptions.proxy = "http://CGDM-EMEA\jtassin:password_4@isp-ceg.emea.cegedim.grp:3128/"; }
-
+    version = require("../package.json").version;
 
 module.exports = exports = function (app, mongoStore, io) {
     "use strict";
@@ -139,15 +133,22 @@ module.exports = exports = function (app, mongoStore, io) {
             })
         )
         .get("/googleAuth", passport.authenticate("google", { "failureRedirect": "/", "successRedirect": "/" }))
+		/*.get("/googleAuth", function (req, res, next) {
+            passport.authenticate("google", function(err, user) {
+                if (!user) { return res.redirect("/"); }
+                req.login(user, function(err) { return res.status(205).redirect("/"); });
+            })(req, res, next)
+        })*/
 
     //Logout
 		.get("/logout", function (req, res) {
             req.logout();
-            req.session.destroy(function (err) { res.redirect("/"); });
+			res.clearCookie("_bsession");
+			req.session.destroy(function (err) { res.redirect("/"); });
         })
 
     //Erreur url
-		.get("*", function (req, res) { res.status(404).biblioRender("error", { error: "Error 404" });})
+		.get("*", function (req, res) { res.biblioRender("error", { error: "Error 404" }, 404);})
 
     //Trads
         .post("/trad", function (req, res) {
@@ -191,6 +192,7 @@ module.exports = exports = function (app, mongoStore, io) {
             res.render("preview", { "bookid": req.body.previewid });
         });
 
+	//IO Connection
     io.of("/bibliotech").use(passportSocketIo.authorize({
         "cookieParser": require("cookie-parser"),
         "key": "_bsession",
@@ -201,9 +203,7 @@ module.exports = exports = function (app, mongoStore, io) {
             passportSocketIo.filterSocketsByUser(io, function(user) {
                 return user._id === data.user._id;
             }).forEach(function(socket) {
-				if (socket.request.sessionID !== data.sessionID) {
-					socket.emit("logout");
-				}
+				if (socket.request.sessionID !== data.sessionID) { socket.server.nsps["/bibliotech"].emit("logout"); }
 			});
             next();
         }
@@ -236,7 +236,7 @@ module.exports = exports = function (app, mongoStore, io) {
         "success": function (data, next) {
             passportSocketIo.filterSocketsByUser(io, function(user) {
                 return user._id === data.user._id;
-            }).forEach(function(socket) { socket.emit("logout"); });
+            }).forEach(function(socket) { if (socket.request.sessionID !== data.sessionID) { socket.server.nsps["/admin"].emit("logout"); }});
             next();
         }
     })).on("connection", function (socket) {

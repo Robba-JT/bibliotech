@@ -68,7 +68,9 @@
                     scope.search.result = { "by": evt.target.getAttribute("searchby"), "search": evt.target.html(), lang: "fr" };
                     scope.search.send();
                 };
-                detail.uploadCover = function () { document.one("[type=file]").trigger("click"); };
+                detail.uploadCover = function () {
+					document.one("[type=file]").trigger("click");
+				};
                 detail.prepare = function (index) {
                     var cell = scope.bookcells.cells[index],
                         book = angular.copy(_.find(scope.bookcells.collection, _.matchesProperty("id", cell.id)));
@@ -252,7 +254,7 @@
 
                     switch (this.getAttribute("nav")) {
                         case "top":
-                            if (index > cellByRow) { next -= cellByRow; }
+                            if (index >= cellByRow) { next -= cellByRow; }
                             break;
                         case "bottom":
                             if (index + cellByRow < cells.length) { next += cellByRow; }

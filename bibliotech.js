@@ -11,7 +11,6 @@ var express = require("express"),
     MongoStore = require("connect-mongo")(Session),
     http = require("http"),
     https = require("https"),
-	io,
     server = http.Server(app).listen(port),
     sServer = https.Server(options, app).listen(sPort),
     mongoUrl = "mongodb://" + config.mongoHost + ":" + config.mongoPort + "/" + config.mongoDB,
@@ -19,14 +18,9 @@ var express = require("express"),
 	compress = require("compression"),
 	cors = require("cors"),
 	expjson = require("express-json"),
-	WebSocketServer = require("websocket").server,
-	wsServer = new WebSocketServer({ "httpServer": sServer }),
-	io = require("socket.io")(sServer);
+	io = require("socket.io")(sServer, { "secure": true });
 
 require(__dirname + "/tools/console")(app);
-
-require("ssl-root-cas").inject().addFile(__dirname + "/ssl/biblio.tech.pfx");
-
 
 require(__dirname + "/db/database").init(mongoUrl, function (error) {
     if (!!error) { console.error("Database Error", error); throw error; }
@@ -51,13 +45,6 @@ require(__dirname + "/db/database").init(mongoUrl, function (error) {
                 "httpOnly": true
             }
         });
-
-	wsServer.on("request", function(request) {
-		if (request.origin !== process.env.ROOT_URL) {
-		  console.error("Websocket connection rejected:", process.env.NODE_ENV, "/ origin:", request.origin);
-		  return request.reject();
-		}
-	});
 
     app.engine("html", require("consolidate").swig)
         .set("view engine", "html")
@@ -92,9 +79,6 @@ require(__dirname + "/db/database").init(mongoUrl, function (error) {
         });
 
     device.enableDeviceHelpers(app);
-
     require(__dirname + "/routes")(app, mongoStore, io);
-
     console.info("Environment" ,app.settings.env, "Server deployé sur les ports https:", sPort, "http:", port);
-
 });

@@ -54,7 +54,7 @@ if (!window.FileReader || !("formNoValidate" in document.createElement("input"))
                     razError();
                     http.post(this.new ? "/new" : "/login", user).then(function (result) {
                         if (result.data && result.data.success) {
-                            win.location.reload(true);
+							win.location.reload(true);
                         } else {
                             scope.error = result.data.error;
                             user.password = null;
