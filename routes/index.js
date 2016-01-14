@@ -136,7 +136,7 @@ module.exports = exports = function (app, mongoStore, io) {
 		/*.get("/googleAuth", function (req, res, next) {
             passport.authenticate("google", function(err, user) {
                 if (!user) { return res.redirect("/"); }
-                req.login(user, function(err) { return res.status(205).redirect("/"); });
+                req.login(user, function(err) { return res.redirect("/"); });
             })(req, res, next)
         })*/
 
