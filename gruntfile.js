@@ -57,13 +57,13 @@ module.exports = function (grunt) {
         },
         "jshint": {
             "login": [
-                "root/js/dev/bibliotech.proto.js",
-                "root/js/dev/login.js"
+                "root/dev/js/bibliotech.proto.js",
+                "root/dev/js/login.js"
             ],
             "bibliotech": [
-                "root/js/dev/bibliotech.proto.js",
-                "root/js/dev/bibliotech.js",
-                "root/js/dev/modules/*.js"
+                "root/dev/js/bibliotech.proto.js",
+                "root/dev/js/bibliotech.js",
+                "root/dev/js/modules/*.js"
             ],
             "server": [
                 "bibliotech.js",
@@ -84,19 +84,19 @@ module.exports = function (grunt) {
                     "root/lib/Promise.min.js",
                     "node_modules/angular/angular.min.js",
                     "node_modules/lodash/index.js",
-                    "root/js/dev/bibliotech.proto.js"
+                    "root/dev/js/bibliotech.proto.js"
                 ]}
             },*/
             "login": {
                 "files": {
                     "root/js/login.js": [
-                        "root/js/dev/login.js"
+                        "root/dev/js/login.js"
                     ],
 					"root/js/login.lib.js": [
 						"root/lib/Promise.min.js",
 						"node_modules/angular/angular.min.js",
 						"node_modules/lodash/index.js",
-						"root/js/dev/bibliotech.proto.js"
+						"root/dev/js/bibliotech.proto.js"
 					]
                 }
             },
@@ -108,7 +108,7 @@ module.exports = function (grunt) {
                         "node_modules/lodash/index.js",
                         "node_modules/socket.io-client/socket.io.js",
                         "root/lib/color-thief.js",
-                        "root/js/dev/bibliotech.proto.js"
+                        "root/dev/js/bibliotech.proto.js"
                     ]
                 }
             },*/
@@ -120,36 +120,36 @@ module.exports = function (grunt) {
                         "node_modules/lodash/index.js",
                         "node_modules/socket.io-client/socket.io.js",
                         "root/lib/color-thief.js",
-                        "root/js/dev/bibliotech.proto.js"
+                        "root/dev/js/bibliotech.proto.js"
                     ],
                     "root/js/bibliotech.js": [
-                        "root/js/dev/bibliotech.js",
-                        "root/js/dev/modules/preloader.js",
-                        "root/js/dev/modules/socket.js",
-                        "root/js/dev/modules/idb.js",
-                        "root/js/dev/modules/navbar.js",
-                        "root/js/dev/modules/profile.js",
-                        "root/js/dev/modules/search.js",
-                        "root/js/dev/modules/bookcells.js",
-                        "root/js/dev/modules/detail.js",
-                        "root/js/dev/modules/defcloak.js"
+                        "root/dev/js/bibliotech.js",
+                        "root/dev/js/modules/preloader.js",
+                        "root/dev/js/modules/socket.js",
+                        "root/dev/js/modules/idb.js",
+                        "root/dev/js/modules/navbar.js",
+                        "root/dev/js/modules/profile.js",
+                        "root/dev/js/modules/search.js",
+                        "root/dev/js/modules/bookcells.js",
+                        "root/dev/js/modules/detail.js",
+                        "root/dev/js/modules/defcloak.js"
                     ],
                     "root/js/m.bibliotech.js": [
-                        "root/js/dev/m.bibliotech.js",
-                        "root/js/dev/modules/preloader.js",
-                        "root/js/dev/modules/socket.js",
-                        "root/js/dev/modules/menu.js",
-                        "root/js/dev/modules/m.profile.js",
-                        "root/js/dev/modules/m.search.js",
-                        "root/js/dev/modules/m.bookcells.js",
-                        "root/js/dev/modules/m.detail.js",
-                        "root/js/dev/modules/defcloak.js"
+                        "root/dev/js/m.bibliotech.js",
+                        "root/dev/js/modules/preloader.js",
+                        "root/dev/js/modules/socket.js",
+                        "root/dev/js/modules/menu.js",
+                        "root/dev/js/modules/m.profile.js",
+                        "root/dev/js/modules/m.search.js",
+                        "root/dev/js/modules/m.bookcells.js",
+                        "root/dev/js/modules/m.detail.js",
+                        "root/dev/js/modules/defcloak.js"
                     ],
                     "root/js/admin.js": [
-                        "root/js/dev/admin.js",
-                        "root/js/dev/modules/preloader.js",
-                        "root/js/dev/modules/socket.js",
-                        "root/js/dev/modules/defcloak.js"
+                        "root/dev/js/admin.js",
+                        "root/dev/js/modules/preloader.js",
+                        "root/dev/js/modules/socket.js",
+                        "root/dev/js/modules/defcloak.js"
                     ]
                 }
             }
@@ -161,12 +161,12 @@ module.exports = function (grunt) {
                     "collapseWhitespace": true
                 },
                 "files": {
-                    "views/desktop/login.html": "root/html/login.html",
-                    "views/desktop/error.html": "root/html/error.html",
-                    "views/desktop/maintenance.html": "root/html/maintenance.html",
-                    "views/mobile/login.html": "root/html/m.login.html",
-                    "views/mobile/error.html": "root/html/m.error.html",
-                    "views/mobile/maintenance.html": "root/html/m.maintenance.html"
+                    "views/desktop/login.html": "root/dev/html/login.html",
+                    "views/desktop/error.html": "root/dev/html/error.html",
+                    "views/desktop/maintenance.html": "root/dev/html/maintenance.html",
+                    "views/mobile/login.html": "root/dev/html/m.login.html",
+                    "views/mobile/error.html": "root/dev/html/m.error.html",
+                    "views/mobile/maintenance.html": "root/dev/html/m.maintenance.html"
                 }
             },
             "bibliotech": {
@@ -175,34 +175,34 @@ module.exports = function (grunt) {
                     "collapseWhitespace": true
                 },
                 "files": {
-                    "views/desktop/bibliotech.html": "root/html/bibliotech.html",
-                    "views/mobile/bibliotech.html": "root/html/m.bibliotech.html",
-                    "views/desktop/admin.html": "root/html/admin.html",
-                    "views/mobile/admin.html": "root/html/admin.html",
-                    "views/preview.html": "root/html/preview.html",
-                    "root/html/bookcells.html": "root/html/dev/bookcells.html",
-                    "root/html/detail.html": "root/html/dev/detail.html",
-                    "root/html/navbar.html": "root/html/dev/navbar.html",
-                    "root/html/menu.html": "root/html/dev/menu.html",
-                    "root/html/profile.html": "root/html/dev/profile.html",
-                    "root/html/search.html": "root/html/dev/search.html"
+                    "views/desktop/bibliotech.html": "root/dev/html/bibliotech.html",
+                    "views/mobile/bibliotech.html": "root/dev/html/m.bibliotech.html",
+                    "views/desktop/admin.html": "root/dev/html/admin.html",
+                    "views/mobile/admin.html": "root/dev/html/admin.html",
+                    "views/preview.html": "root/dev/html/preview.html",
+                    "root/html/bookcells.html": "root/dev/html/bookcells.html",
+                    "root/html/detail.html": "root/dev/html/detail.html",
+                    "root/html/navbar.html": "root/dev/html/navbar.html",
+                    "root/html/menu.html": "root/dev/html/menu.html",
+                    "root/html/profile.html": "root/dev/html/profile.html",
+                    "root/html/search.html": "root/dev/html/search.html"
                 }
             }
         },
         "cssmin": {
             "login": {
                 "files": {
-                    "root/css/login.css": [ "root/css/dev/login.css" ],
-                    "root/css/m.login.css": [ "root/css/dev/m.login.css" ],
-                    "root/css/error.css": [ "root/css/dev/error.css" ],
-                    "root/css/m.error.css": [ "root/css/dev/m.error.css" ]
+                    "root/css/login.css": [ "root/dev/css/login.css" ],
+                    "root/css/m.login.css": [ "root/dev/css/m.login.css" ],
+                    "root/css/error.css": [ "root/dev/css/error.css" ],
+                    "root/css/m.error.css": [ "root/dev/css/m.error.css" ]
                 }
             },
             "bibliotech": {
                 "files": {
-                    "root/css/bibliotech.css": [ "root/css/dev/bibliotech.css" ],
-                    "root/css/m.bibliotech.css": [ "root/css/dev/m.bibliotech.css" ],
-                    "root/css/admin.css": [ "root/css/dev/admin.css" ]
+                    "root/css/bibliotech.css": [ "root/dev/css/bibliotech.css" ],
+                    "root/css/m.bibliotech.css": [ "root/dev/css/m.bibliotech.css" ],
+                    "root/css/admin.css": [ "root/dev/css/admin.css" ]
                 }
             }
         },
@@ -225,50 +225,45 @@ module.exports = function (grunt) {
                 "options": { "spawn": false }
             },
             "jslogin": {
-                "files": [ "root/js/dev/bibliotech.proto.js", "root/js/dev/login.js", "root/js/dev/m.login.js" ],
+                "files": [ "root/dev/js/bibliotech.proto.js", "root/dev/js/login.js", "root/dev/js/m.login.js" ],
                 "tasks": [ "jshint:login", "uglify:login" ],
                 "options": { "spawn": false }
             },
             "htmllogin": {
                 "files": [
-					"root/html/login.html",
-					"root/html/error.html",
-					"root/html/maintenance.html",
-					"root/html/m.login.html",
-					"root/html/m.error.html",
-					"root/html/m.maintenance.html"
+					"root/dev/html/login.html",
+					"root/dev/html/error.html",
+					"root/dev/html/maintenance.html",
+					"root/dev/html/m.login.html",
+					"root/dev/html/m.error.html",
+					"root/dev/html/m.maintenance.html"
 				],
                 "tasks": [ "htmlmin:login" ],
                 "options": { "spawn": false }
             },
             "csslogin": {
-                "files": [ "root/css/dev/login.css", "root/css/dev/error.css", "root/css/dev/m.login.css", "root/css/dev/m.error.css" ],
+                "files": [ "root/dev/css/login.css", "root/dev/css/error.css", "root/dev/css/m.login.css", "root/dev/css/m.error.css" ],
                 "tasks": [ "cssmin:login" ],
                 "options": { "spawn": false }
             },
             "jsbibliotech": {
                 "files": [
-					"root/js/dev/bibliotech.proto.js",
-					"root/js/dev/bibliotech.js",
-					"root/js/dev/m.bibliotech.js",
-					"root/js/dev/admin.js",
-					"root/js/dev/modules/*.js"
+					"root/dev/js/bibliotech.proto.js",
+					"root/dev/js/bibliotech.js",
+					"root/dev/js/m.bibliotech.js",
+					"root/dev/js/admin.js",
+					"root/dev/js/modules/*.js"
 				],
                 "tasks": [ "jshint:bibliotech", "uglify:bibliotech" ],
                 "options": { "spawn": false }
             },
             "htmlbibliotech": {
-                "files": [ "root/html/bibliotech.html",
-						  "root/html/m.bibliotech.html",
-						  "root/html/admin.html",
-						  "root/html/preview.html",
-						  "root/html/dev/*.html"
-						 ],
+                "files": [ "root/dev/html/*.html" ],
                 "tasks": [ "htmlmin:bibliotech" ],
                 "options": { "spawn": false }
             },
             "cssbibliotech": {
-                "files": [ "root/css/dev/bibliotech.css", "root/css/dev/m.bibliotech.css", "root/css/dev/admin.css" ],
+                "files": [ "root/dev/css/bibliotech.css", "root/dev/css/m.bibliotech.css", "root/dev/css/admin.css" ],
                 "tasks": [ "cssmin:bibliotech" ],
                 "options": { "spawn": false }
             }

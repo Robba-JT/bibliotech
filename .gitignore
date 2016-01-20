@@ -2,15 +2,11 @@
 /node_modules/
 /proxy.js
 /root/images/*/
-/certificate-196151.crt
-/certificate-194723.crt
 /google quota.txt
 /google_client_config.json
 /ssl/
 /config.json
-/root/css/dev/
-/root/html/dev/
-/root/js/dev/
 /.rebooted
 /requests.js
 /tools/admins.js
+/root/dev/
