@@ -97,18 +97,20 @@ module.exports.BooksAPI = BooksAPI = function (db, token) {
             });
         },
         loadBase64 = function (url, bookid) {
-            var defReq = Q.defer(), params = reqOptions;
-            if (!url) { defReq.reject(); }
-            params.url = url;
-            params.encoding = "binary";
-            request.get(params, function (error, response, body) {
-                if (!!error || response.statusCode !== 200) {
-                    defReq.reject(error || new Error("status: " + response.statusCode));
+			return new Q.Promise(function (resolve, reject) {
+				if (!url) { return reject(); }
+				var params = _.assign(reqOptions, { "url": url, "encoding": "binary" });
+				request.get(params, function (error, response, body) {
+					if (!!error || response.statusCode !== 200) {
+                    reject(error || new Error("status: " + response.statusCode));
                 } else {
-                    defReq.resolve({ "base64": "data:" + response.headers["content-type"] + ";base64," + new Buffer(body, "binary").toString("base64"), "id": bookid });
+                    resolve({
+						"id": bookid,
+						"base64": "data:" + response.headers["content-type"] + ";base64," + new Buffer(body, "binary").toString("base64")
+					});
                 }
-            });
-            return defReq.promise;
+				});
+			});
         },
         loadComments = function (filter, callback) {
             comments.find(filter).toArray(callback);

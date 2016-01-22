@@ -194,9 +194,12 @@ module.exports = function main (socket, allSessions) {
 				Q.allSettled(def64).then(function (results) {
 					if (!!results.length) { sendCovers.push(_.map(results, "value")); }
 					sendCovers = _.flattenDeep(sendCovers);
-					for (var jta = 0, lg = sendCovers.length; jta < lg; jta++) {
-						socket.emit("cover", sendCovers[jta]);
-						_.assign(_.find(thisBooks, _.matchesProperty("id", sendCovers[jta].id)), sendCovers[jta]);
+					for (var jta = 0, lg = sendCovers.length; jta < lg; jta += 10) {
+						var sliced = _.slice(sendCovers, jta, jta + 10);
+						socket.emit("covers", sliced);
+						_.forEach(sliced, function (slicedOne) {
+							_.assign(_.find(thisBooks, _.matchesProperty("id", slicedOne.id)), slicedOne);
+						});
 					}
 				}).catch(function (error) { console.error(thisUser._id, "isConnected - Q.allSettled(def64)", error); });
 			});

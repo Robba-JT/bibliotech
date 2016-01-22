@@ -30,6 +30,11 @@ module.exports = function (app) {
         "info": clc.greenBright.bold
     };
 
+	process.on("uncaughtException", function(err) {
+	  console.error("An uncaughtException was found, the program will end. " + err + ", stacktrace: " + err.stack);
+	  return process.exit(1);
+	});
+
     ["log", "info", "warn", "error"].forEach(function(name) {
         var fn = console[name];
         console[name] = function () {

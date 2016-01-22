@@ -18,7 +18,7 @@ module.exports = function (grunt) {
         },
         "concurrent": {
             "dev": {
-                "tasks": ["nodemon:dev", "watch"],
+                "tasks": ["nodemon:dev"/*, "watch"*/],
                 "options": {
                     "logConcurrentOutput": true
                 }
@@ -41,7 +41,12 @@ module.exports = function (grunt) {
                         "NODE_ENV": "development",
 						"ROOT_URL": "https://localhost"
 					}
-                }
+                },
+				"callback": function (nodemon) {
+					nodemon.on("log", function (event) {
+						console.log(event.colour);
+					});
+				}
             },
             "prod": {
                 "script": "bibliotech.js",
