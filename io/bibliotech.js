@@ -191,15 +191,14 @@ module.exports = function main (socket, allSessions) {
             }
             thisBooks = books;
 			socket.on("endCollect", function () {
+				var assignCover = function (slicedOne) { _.assign(_.find(thisBooks, _.matchesProperty("id", slicedOne.id)), slicedOne); };
 				Q.allSettled(def64).then(function (results) {
 					if (!!results.length) { sendCovers.push(_.map(results, "value")); }
 					sendCovers = _.flattenDeep(sendCovers);
 					for (var jta = 0, lg = sendCovers.length; jta < lg; jta += 10) {
 						var sliced = _.slice(sendCovers, jta, jta + 10);
 						socket.emit("covers", sliced);
-						_.forEach(sliced, function (slicedOne) {
-							_.assign(_.find(thisBooks, _.matchesProperty("id", slicedOne.id)), slicedOne);
-						});
+						_.forEach(sliced, assignCover);
 					}
 				}).catch(function (error) { console.error(thisUser._id, "isConnected - Q.allSettled(def64)", error); });
 			});
@@ -447,7 +446,6 @@ module.exports = function main (socket, allSessions) {
                 Q.allSettled(def).then(function (results) {
                     var mostAdded = [];
                     for (jta = 0, lg = results.length; jta < lg; jta++) {
-						console.log(results[jta].value);
                         if (results[jta].state === "fulfilled" && !!results[jta].value) { mostAdded.push(results[jta].value); }
                     }
                     if (mostAdded.length) { socket.emit("mostAdded", { "book": bookid, "mostAdded": mostAdded }); }

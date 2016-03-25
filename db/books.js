@@ -1,5 +1,5 @@
 var Q = require("q"),
-    request = require("request"),
+    request,
     reqOptions = { "gzip": true, "timeout": 5000 },
     fs = require("fs"),
     googleConfig = JSON.parse(fs.readFileSync("google_client_config.json")),
@@ -15,6 +15,7 @@ var Q = require("q"),
         }
     };
 
+request = require("request").defaults(reqOptions);
 google.options(gOptions);
 
 module.exports.BooksAPI = BooksAPI = function (db, token) {
@@ -99,8 +100,9 @@ module.exports.BooksAPI = BooksAPI = function (db, token) {
         loadBase64 = function (url, bookid) {
 			return new Q.Promise(function (resolve, reject) {
 				if (!url) { return reject(); }
-				var params = _.assign(reqOptions, { "url": url, "encoding": "binary" });
-				request.get(params, function (error, response, body) {
+				//var params = _.assign(reqOptions, { "url": url, "encoding": "binary" });
+				//request.get(params, function (error, response, body) {
+				request.get({ "url": url, "encoding": "binary" }, function (error, response, body) {
 					if (!!error || response.statusCode !== 200) {
                     reject(error || new Error("status: " + response.statusCode));
                 } else {
@@ -259,7 +261,7 @@ module.exports.BooksAPI = BooksAPI = function (db, token) {
     };
     this.removeOne = removeOne;
     this.searchBooks = function (params, callback) {
-        params = _.merge(params, reqOptions);
+        //params = _.merge(params, reqOptions);
         googleRequest("volumes.list", _.merge(params, reqParams.search), callback);
     };
     this.searchOne = searchOne;
