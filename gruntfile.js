@@ -229,7 +229,7 @@ module.exports = function (grunt) {
                 "path": "https://biblio.tech"
             }
         },
-        "clean": [ "logs/*.log" ],
+        "clean": [ "/logs/*.log" ],
         "watch": {
             "options": {
                 "livereload": true

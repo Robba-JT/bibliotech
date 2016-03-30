@@ -193,10 +193,8 @@ module.exports = function main (socket, allSessions) {
             thisBooks = books;
 			socket.on("endCollect", function () {
 				var assignCover = function (slicedOne) {
-					if (!!slicedOne.id) {
+					if (!!slicedOne && !!slicedOne.id) {
 						_.assign(_.find(thisBooks, _.matchesProperty("id", slicedOne.id)), slicedOne);
-					} else {
-						console.error("assignCover", slicedOne);
 					}
 				};
 				Q.allSettled(def64).then(function (results) {
