@@ -3,6 +3,7 @@ module.exports = function (grunt) {
     require("load-grunt-tasks")(grunt);
 
 	grunt.initConfig({
+		"pkg": grunt.file.readJSON("package.json"),
         "shell": {
             "options": {
                 "stdout": true,
@@ -18,7 +19,7 @@ module.exports = function (grunt) {
         },
         "concurrent": {
             "dev": {
-                "tasks": ["nodemon:dev"/*, "watch"*/],
+                "tasks": ["nodemon:dev", "watch"],
                 "options": {
                     "logConcurrentOutput": true
                 }
@@ -36,16 +37,25 @@ module.exports = function (grunt) {
                 "options": {
                     "nodeArgs": ["--debug"],
                     "cwd": __dirname,
-                    "ignore": ["node_modules/**", "root/**", "logs/**", "views/**", "requests.js"],
+                    "ignore": [
+						"node_modules/**",
+						"root/css/**",
+						"root/html/**",
+						"root/images/**",
+						"root/js/**",
+						"root/lib/**",
+						"root/trads/**",
+						"logs/**",
+						"views/**",
+						"requests.js"
+					],
 					"env": {
                         "NODE_ENV": "development",
 						"ROOT_URL": "https://localhost"
 					}
                 },
 				"callback": function (nodemon) {
-					nodemon.on("log", function (event) {
-						console.log(event.colour);
-					});
+					nodemon.on("log", function (event) { console.log(event.colour); });
 				}
             },
             "prod": {

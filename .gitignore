@@ -11,3 +11,5 @@
 /tools/admins.js
 /root/dev/
 npm-debug.log
+/.npmrc
+/.brackets.json
