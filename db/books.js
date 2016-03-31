@@ -5,7 +5,6 @@ var Q = require("q"),
     googleConfig = JSON.parse(fs.readFileSync("google_client_config.json")),
     _ = require("lodash"),
     google = require("googleapis"),
-    gBooks = google.books("v1"),
     gAuth = google.auth.OAuth2,
     gOptions = {
         "gzip": true,
@@ -23,7 +22,8 @@ module.exports.BooksAPI = BooksAPI = function (db, token) {
 
     if (!(this instanceof BooksAPI)) { return new BooksAPI(db); }
 
-    var auth = new gAuth(googleConfig.web.client_id, googleConfig.web.client_secret, "postmessage"),
+    var auth = {},
+		gBooks = google.books("v1"),
         books = db.collection("books"),
         comments = db.collection("comments"),
         covers = db.collection("covers"),
@@ -86,9 +86,8 @@ module.exports.BooksAPI = BooksAPI = function (db, token) {
             if (!_.isEmpty(auth.credentials)) { _.assign(params, { "auth": auth }); } /*else { _.assign(params, { "key": googleConfig.key }); }*/
             if (typeof gFunction !== "function") { return callback ? callback(new Error("Invalid Call!!!")) : new Error("Invalid Call!!!"); }
             gFunction(params, function (error, success) {
-				console.error("googleRequest", error);
                 if (!!error && error.code !== 401) { return callback ? callback(error) : error; }
-                if (!!error && error.code === 401) {
+                if (!!error && error.code === 401 && !!_.keys(auth).length) {
                     refreshCredentials()
                         .then(function () { gFunction(params, callback); })
                         .catch(callback);
@@ -165,7 +164,11 @@ module.exports.BooksAPI = BooksAPI = function (db, token) {
             });
         },
         setCredentials = function (token) {
+			if (!_.keys(auth).length && !!token) {
+				auth = new gAuth(googleConfig.web.client_id, googleConfig.web.client_secret, "postmessage");
+			}
             _.assign(auth.credentials, token);
+			console.log("auth", auth);
         },
         unusedCovers = function () {
             loadCovers({}, function (error, allCovers) {

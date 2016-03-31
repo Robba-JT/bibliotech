@@ -21,7 +21,6 @@ module.exports = function main (socket, allSessions) {
             return new Q.Promise(function (resolve, reject) {
                 searchDetail(bookid, function (error, book) {
                     if (!!error) { reject(error); }
-					console.log(book);
                     if (!!book) {
                         resolve(book);
                         addBookToUser(book);
