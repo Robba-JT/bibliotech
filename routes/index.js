@@ -111,7 +111,7 @@ module.exports = exports = function (app, mongoStore, io) {
 		.get("/",
             function (req, res, next) {
                 if (!req.isAuthenticated()) {
-                    res.clearCookie("_bsession");
+                    res.clearCookie();
                     res.biblioRender("login");
                 } else { next(); }
             },
@@ -136,7 +136,9 @@ module.exports = exports = function (app, mongoStore, io) {
 		/*.get("/googleAuth", function (req, res, next) {
             passport.authenticate("google", function(err, user) {
                 if (!user) { return res.redirect("/"); }
-                req.login(user, function(err) { return res.redirect("/"); });
+                req.login(user, function(err) {
+					res.redirect("/");
+				});
             })(req, res, next)
         })*/
 

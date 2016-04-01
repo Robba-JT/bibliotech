@@ -99,8 +99,6 @@ module.exports.BooksAPI = BooksAPI = function (db, token) {
         loadBase64 = function (url, bookid) {
 			return new Q.Promise(function (resolve, reject) {
 				if (!url) { return reject(); }
-				//var params = _.assign(reqOptions, { "url": url, "encoding": "binary" });
-				//request.get(params, function (error, response, body) {
 				request.get({ "url": url, "encoding": "binary" }, function (error, response, body) {
 					if (!!error || response.statusCode !== 200) {
                     reject(error || new Error("status: " + response.statusCode));
@@ -166,9 +164,8 @@ module.exports.BooksAPI = BooksAPI = function (db, token) {
         setCredentials = function (token) {
 			if (!_.keys(auth).length && !!token) {
 				auth = new gAuth(googleConfig.web.client_id, googleConfig.web.client_secret, "postmessage");
+				_.assign(auth.credentials, token);
 			}
-            _.assign(auth.credentials, token);
-			console.log("auth", auth);
         },
         unusedCovers = function () {
             loadCovers({}, function (error, allCovers) {
