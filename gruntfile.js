@@ -197,6 +197,7 @@ module.exports = function (grunt) {
                     "views/preview.html": "root/dev/html/preview.html",
                     "root/html/bookcells.html": "root/dev/html/bookcells.html",
                     "root/html/detail.html": "root/dev/html/detail.html",
+                    "root/html/m.detail.html": "root/dev/html/m.detail.html",
                     "root/html/navbar.html": "root/dev/html/navbar.html",
                     "root/html/menu.html": "root/dev/html/menu.html",
                     "root/html/profile.html": "root/dev/html/profile.html",

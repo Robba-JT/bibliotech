@@ -170,18 +170,19 @@ module.exports = function main (socket, allSessions) {
                     books[book].userNote = userComment[0].note;
                     books[book].userDate = userComment[0].date;
                 }
+                toSend.push(_.clone(books[book]));
                 if (!!cover) {
                     if (!!books[book].cover) {
                         bookAPI.removeCovers({ "_id": { "user": thisUser._id , "book": books[book].id }});
                         userAPI.updateUser({ "_id": thisUser._id, "books.book": books[book].id }, {"$unset": { "books.$.cover" : true }});
                     } else {
                         sendCovers.push({ "id": books[book].id, "alternative": cover.cover });
+						books[book].alternative = cover.cover;
                     }
                 }
                 if (!!books[book].cover) {
                     def64.push(loadCover(books[book].id, books[book].cover));
 				}
-                toSend.push(books[book]);
                 if (toSend.length % 40 === 0) {
                     socket.emit("initCollect", toSend);
                 	socket.emit("covers", sendCovers);
@@ -318,7 +319,7 @@ module.exports = function main (socket, allSessions) {
                 if (!response) {
                     var notif = {
                         "_id": { "to": data.recommand.toLowerCase(), "book": data.id },
-                        "from": thisUser.name + "<" + thisUser._id + ">",
+                        "from": thisUser.name + " <" + thisUser._id + ">",
                         "isNew": true,
                         "title": infos.title,
                         "alt": infos.alt,

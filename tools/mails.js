@@ -49,7 +49,6 @@ module.exports.MailsAPI = MailsAPI = function () {
     };
 
     this.sendToFriend = function (name, mail, friend, book, callback) {
-
         var sendOptions = Object.create(mailFriend),
             index = book.description.indexOf(" ", 500),
             notifHtml = swig.renderFile("./tools/notif.html", {
@@ -62,7 +61,7 @@ module.exports.MailsAPI = MailsAPI = function () {
             });
 
         sendOptions.to = friend;
-        sendOptions.subject = name + "<" + mail + ">" + sendOptions.subject + book.title;
+        sendOptions.subject = name + " <" + mail + ">" + sendOptions.subject + book.title;
         sendOptions.html = notifHtml;
         sendOptions.text = sendOptions.subject + ". Rendez-vous à l'adresse: \"https://biblio.tech\"";
 
