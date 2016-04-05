@@ -94,7 +94,7 @@ module.exports = exports = function (app, mongoStore, io) {
                     labels = {};
                 }
                 if (!labels) { labels = {}; }
-				var path = [/* !!_.get(req.device, "type") && _.get(req.device, "type") === "phone" ? "mobile" :*/ "desktop", view].join("/");
+				var path = [ !!_.get(req.device, "type") && _.get(req.device, "type") === "phone" ? "mobile" : "desktop", view].join("/");
                 _.assign(labels, _.merge(meta[(!!meta[lang]) ? lang : "fr"], { "version": version, "page": view }));
                 this.status(status || 200).render.apply(this, [path, labels]);
             };
