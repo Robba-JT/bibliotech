@@ -55,6 +55,7 @@
     "serve-static": "^1.10.2",
     "socket.io": "^1.4.5",
     "socket.io-client": "^1.4.5",
+	"supervisor": "^0.10.0",
     "swig": "^1.4.2",
     "validator": "^3.43.0"
   },
