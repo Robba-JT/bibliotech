@@ -18,7 +18,7 @@ module.exports = exports = function (app, mongoStore, io) {
     "use strict";
 
     passport.serializeUser(function(user, done) {
-        done(null, { "_id": user._id, "token": user.token, "infos": user.infos, "active": !!user.active });
+        done(null, { "_id": user._id, "token": user.token, "infos": user.infos, "active": !!user.active, "browser_type": user.browser_type });
     });
 
     passport.deserializeUser(function(data, done) {
@@ -94,7 +94,7 @@ module.exports = exports = function (app, mongoStore, io) {
                     labels = {};
                 }
                 if (!labels) { labels = {}; }
-				var path = [ !!_.get(req.device, "type") && _.get(req.device, "type") === "phone" ? "mobile" : "desktop", view].join("/");
+				var path = [ !!_.get(req.device, "type") && ["phone", "tablet"].indexOf(_.get(req.device, "type")) !== -1 ? "mobile" : "desktop", view].join("/");
                 _.assign(labels, _.merge(meta[(!!meta[lang]) ? lang : "fr"], { "version": version, "page": view }));
                 this.status(status || 200).render.apply(this, [path, labels]);
             };
@@ -132,15 +132,16 @@ module.exports = exports = function (app, mongoStore, io) {
                 "accessType": "offline"
             })
         )
-        .get("/googleAuth", passport.authenticate("google", { "failureRedirect": "/", "successRedirect": "/" }))
-		/*.get("/googleAuth", function (req, res, next) {
+        /*.get("/googleAuth", passport.authenticate("google", { "failureRedirect": "/", "successRedirect": "/" }))*/
+		.get("/googleAuth", function (req, res, next) {
             passport.authenticate("google", function(err, user) {
                 if (!user) { return res.redirect("/"); }
+				user.browser_type = !!_.get(req.device, "type") && ["phone", "tablet"].indexOf(_.get(req.device, "type")) !== -1 ? "mobile" : "desktop";
                 req.login(user, function(err) {
 					res.redirect("/");
 				});
             })(req, res, next)
-        })*/
+        })
 
     //Logout
 		.get("/logout", function (req, res) {
@@ -161,6 +162,7 @@ module.exports = exports = function (app, mongoStore, io) {
 		.post("/login", function (req, res, next) {
             passport.authenticate("login", function(err, user) {
                 if (!user) { return res.jsonp({ "error": res.trads.error.invalidCredential }); }
+				user.browser_type = !!_.get(req.device, "type") && ["phone", "tablet"].indexOf(_.get(req.device, "type")) !== -1 ? "mobile" : "desktop";
                 req.login(user, function(err) { return res.jsonp({ "success" : !!user }); });
             })(req, res, next)
         })

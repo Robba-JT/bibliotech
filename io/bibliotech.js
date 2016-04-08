@@ -116,7 +116,9 @@ module.exports = function main (socket, allSessions) {
     socket.on("isConnected", function () {
         console.info("Connexion", thisUser._id, "@", new Date().toString("yyyy/MM/dd"));
         var booksList = _.pluck(thisUser.books, "book"),
-            coverList = _.compact(_.pluck(thisUser.books, "cover"));
+            coverList = _.compact(_.pluck(thisUser.books, "cover")),
+			sendingLg = !!thisUser.browser_type && thisUser.browser_type !== "mobile" ? 10 : 40;
+
 
         userAPI.updateUser({ "_id": thisUser._id }, { "$set": { "last_connect": new Date() }, "$inc": { "connect_number": 1 }});
         socket.emit("user", {
@@ -183,7 +185,7 @@ module.exports = function main (socket, allSessions) {
                 if (!!books[book].cover) {
                     def64.push(loadCover(books[book].id, books[book].cover));
 				}
-                if (toSend.length % 40 === 0) {
+                if (toSend.length % sendingLg === 0) {
                     socket.emit("initCollect", toSend);
                 	socket.emit("covers", sendCovers);
                     toSend = [];
