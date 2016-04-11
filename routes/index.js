@@ -132,16 +132,17 @@ module.exports = exports = function (app, mongoStore, io) {
                 "accessType": "offline"
             })
         )
-        /*.get("/googleAuth", passport.authenticate("google", { "failureRedirect": "/", "successRedirect": "/" }))*/
-		.get("/googleAuth", function (req, res, next) {
+        .get("/googleAuth", passport.authenticate("google", { "failureRedirect": "/", "successRedirect": "/" }))
+		/*.get("/googleAuth", function (req, res, next) {
             passport.authenticate("google", function(err, user) {
                 if (!user) { return res.redirect("/"); }
 				user.browser_type = !!_.get(req.device, "type") && ["phone", "tablet"].indexOf(_.get(req.device, "type")) !== -1 ? "mobile" : "desktop";
+                console.log(req.device);
                 req.login(user, function(err) {
 					res.redirect("/");
 				});
             })(req, res, next)
-        })
+        })*/
 
     //Logout
 		.get("/logout", function (req, res) {
@@ -162,7 +163,8 @@ module.exports = exports = function (app, mongoStore, io) {
 		.post("/login", function (req, res, next) {
             passport.authenticate("login", function(err, user) {
                 if (!user) { return res.jsonp({ "error": res.trads.error.invalidCredential }); }
-				user.browser_type = !!_.get(req.device, "type") && ["phone", "tablet"].indexOf(_.get(req.device, "type")) !== -1 ? "mobile" : "desktop";
+				/*user.browser_type = !!_.get(req.device, "type") && ["phone", "tablet"].indexOf(_.get(req.device, "type")) !== -1 ? "mobile" : "desktop";
+                console.log("req.device", req.device);*/
                 req.login(user, function(err) { return res.jsonp({ "success" : !!user }); });
             })(req, res, next)
         })

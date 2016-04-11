@@ -14,7 +14,7 @@ module.exports = function (grunt) {
                 "command": "F:/MongoDB/Server/3.0/bin/mongod --port 29017 --dbpath ../MongoDB/Data/db"
             },
             "ubuntu": {
-                "command": "mongod --port 29017 --dbpath ../bibliodata/db"
+                "command": "mongod --port 29017 --dbpath ../MongoDB/Data/db"
             }
         },
         "concurrent": {
@@ -231,7 +231,7 @@ module.exports = function (grunt) {
                 "path": "https://biblio.tech"
             }
         },
-        "clean": [ "./logs/*.log" ],
+        "clean": [ ".logs/*.log" ],
         "watch": {
             "options": {
                 "livereload": true

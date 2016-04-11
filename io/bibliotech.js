@@ -3,6 +3,7 @@ var Q = require("q"),
 	url = require("url"),
     db = require("../db/database").client,
 	fs = require("fs"),
+    UAParser = require("ua-parser-js"),
     ObjectID = require("mongodb").ObjectID,
     UsersAPI = require("../db/users").UsersAPI,
     BooksAPI = require("../db/books").BooksAPI,
@@ -108,17 +109,16 @@ module.exports = function main (socket, allSessions) {
             _.assign(param, { startIndex: 0 });
             loop();
             return defLoop.promise;
-        };
-
+        },
+        browser_type = new UAParser().setUA(socket.handshake.headers["user-agent"]).getDevice().type || "desktop";
 
     if (_.isEmpty(thisUser) || !thisUser._id) { socket.emit("logout"); }
 
     socket.on("isConnected", function () {
-        console.info("Connexion", thisUser._id, "@", new Date().toString("yyyy/MM/dd"));
+        console.info("Connexion", thisUser._id, "@", new Date().toString("yyyy/MM/dd"), browser_type);
         var booksList = _.pluck(thisUser.books, "book"),
             coverList = _.compact(_.pluck(thisUser.books, "cover")),
-			sendingLg = !!thisUser.browser_type && thisUser.browser_type !== "mobile" ? 10 : 40;
-
+			sendingLg = browser_type !== "mobile" ? 10 : 40;
 
         userAPI.updateUser({ "_id": thisUser._id }, { "$set": { "last_connect": new Date() }, "$inc": { "connect_number": 1 }});
         socket.emit("user", {
@@ -185,7 +185,7 @@ module.exports = function main (socket, allSessions) {
                 if (!!books[book].cover) {
                     def64.push(loadCover(books[book].id, books[book].cover));
 				}
-                if (toSend.length % sendingLg === 0) {
+                if (browser_type !== "mobile" && toSend.length % sendingLg === 0) {
                     socket.emit("initCollect", toSend);
                 	socket.emit("covers", sendCovers);
                     toSend = [];
@@ -193,6 +193,14 @@ module.exports = function main (socket, allSessions) {
                 }
             }
             thisBooks = books;
+
+            socket.on("tenmore", function () {
+                if (!toSend.length) { return socket.emit("endCollect"); }
+                socket.emit("moreten", toSend.splice(0, 10));
+            });
+
+            if (browser_type === "mobile") { socket.emit("initCollect", toSend.splice(0, 10)); } else { socket.emit("endCollect", toSend); }
+
 			socket.on("endCollect", function () {
 				var assignCover = function (slicedOne) {
 					if (!!slicedOne && !!slicedOne.id) {
@@ -209,7 +217,6 @@ module.exports = function main (socket, allSessions) {
 					}
 				}).catch(function (error) { console.error(thisUser._id, "isConnected - Q.allSettled(def64)", error); });
 			});
-            socket.emit("endCollect", toSend);
         });
     });
 
