@@ -13,4 +13,4 @@
 npm-debug.log
 /.npmrc
 /.brackets.json
-
+pm2.json
