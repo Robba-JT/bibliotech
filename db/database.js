@@ -50,7 +50,7 @@ module.exports.init = function (mongoUrl, callback) {
 						"categories": (!!bookinfos.categories) ? bookinfos.categories[0] : "",
 						"isbn10": (!!bookinfos.industryIdentifiers && !!_.find(bookinfos.industryIdentifiers, { type: "ISBN_10" })) ? _.find(bookinfos.industryIdentifiers, { type: "ISBN_10" }).identifier : "",
 						"isbn13": (!!bookinfos.industryIdentifiers && !!_.find(bookinfos.industryIdentifiers, { type: "ISBN_13" })) ? _.find(bookinfos.industryIdentifiers, { type: "ISBN_13" }).identifier : "",
-						"cover": (!!bookinfos.imageLinks) ? bookinfos.imageLinks.small || bookinfos.imageLinks.medium || bookinfos.imageLinks.large || bookinfos.imageLinks.extraLarge || bookinfos.imageLinks.thumbnail || bookinfos.imageLinks.smallThumbnail : "",
+						"cover": (!!bookinfos.imageLinks) ? /*bookinfos.imageLinks.small || bookinfos.imageLinks.medium || bookinfos.imageLinks.large ||*/ bookinfos.imageLinks.extraLarge || bookinfos.imageLinks.thumbnail || bookinfos.imageLinks.smallThumbnail : "",
 						"access": (!!book.accessInfo) ? book.accessInfo.accessViewStatus : "NONE",
 						"preview": (!!book.accessInfo) ? book.accessInfo.webReaderLink : "",
 						"date": new Date()
