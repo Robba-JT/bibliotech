@@ -2,11 +2,7 @@ var express = require("express"),
     app = express(),
     path = require("path"),
     fs = require("fs"),
-    //options = { "pfx": fs.readFileSync(__dirname + "/ssl/biblio.tech.pfx") },
-    options = {
-    	"key" : fs.readFileSync(__dirname.concat("/ssl/biblio.tech.key")),
-	"cert" : fs.readFileSync(__dirname.concat("/ssl/biblio.tech.pem"))
-    },
+    options = { "pfx": fs.readFileSync(__dirname + "/ssl/biblio.tech.pfx") },
     config = JSON.parse(fs.readFileSync(__dirname + "/config.json"))[app.settings.env],
     port = config.port,
     sPort = config.sPort,
