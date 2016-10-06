@@ -79,7 +79,7 @@ module.exports = function main (socket) {
                     if (!infos || !infos.id) { return; }
                     var subs = [];
                     subs.push(defBooks("loadComments", { "_id.book" : infos.id }));
-                    if (!!infos.cover) { subs.push(bookAPI.loadBase64(infos.cover)); }
+                    if (!!infos.cover || !!infos.thumbnail) { subs.push(bookAPI.loadBase64(infos.cover || infos.thumbnail)); }
                     Q.allSettled(subs)
                         .spread(function (comments, cover) {
                             if (!!comments && !!comments.value) { infos.comments = comments.value; }
@@ -107,8 +107,8 @@ module.exports = function main (socket) {
                                         socket.emit("cover", cover);
                                     }));
                                 }*/
-                                if (book.thumbnail) {
-                                    defCovers.push(bookAPI.loadBase64(book.thumbnail, book.id).then((cover) => {
+                                if (book.thumbnail || book.cover) {
+                                    defCovers.push(bookAPI.loadBase64(book.thumbnail || book.cover, book.id).then((cover) => {
                                         socket.emit("cover", cover);
                                     }));
                                 }

@@ -6,7 +6,7 @@
 /.rebooted
 /tools/admins.js
 /root/dev/
-npm-debug.log
+/npm-debug.log
 /.npmrc
 /bibliotech_service_account.json
 /bibliotech.json
@@ -15,3 +15,4 @@ npm-debug.log
 /google_client_config.json
 /.brackets.json
 /gruntfile.js
+/vips-8.3.3/
