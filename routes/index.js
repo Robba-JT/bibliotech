@@ -1,57 +1,88 @@
-var mailsAPI = require("../tools/mails").MailsAPI(),
-    db = require("../db/database").client,
-    usersAPI = require("../db/users").UsersAPI(db),
+const mailsAPI = require("../tools/mails")(),
     fs = require("fs"),
     _ = require("lodash"),
     passport = require("passport"),
-    googleConfig = JSON.parse(fs.readFileSync("google_client_config.json")),
+    googleConfig = require("../google_client_config"),
     googleKey = googleConfig.key,
     googleWeb = googleConfig.web,
-    trads = JSON.parse(fs.readFileSync("./root/trads/trads.json")),
-    meta = JSON.parse(fs.readFileSync("./root/trads/meta.json")),
+    trads = require("../tools/trads"),
+    meta = require("../tools/meta"),
     GoogleStrategy = require("passport-google-oauth").OAuth2Strategy,
     LocalStrategy = require("passport-local").Strategy,
     passportSocketIo = require("passport.socketio"),
-    version = require("../package.json").version;
+    version = require("../package").version,
+    Io = require("socket.io"),
+    express = require("../tools/express"),
+    config = require("nconf").get("config");
 
-module.exports = exports = function (app, mongoStore, io) {
+module.exports = exports = function (secure_server) {
     "use strict";
 
-    passport.serializeUser(function(user, done) {
+    const usersAPI = require("../db/users")(),
+        io = new Io(secure_server, { "secure": true }),
+        app = express.app,
+        Session = require("express-session"),
+        MongoStore = require("connect-mongo")(Session),
+        mongoStore = new MongoStore({
+            "url": config.database,
+            "autoRemove": "native",
+            "touchAfter": config.maxAge
+        }),
+        session = Session({
+            "key": "_bsession",
+            "proxy": false,
+            "resave": false,
+            "unset": "destroy",
+            "saveUninitialized": false,
+            "rolling": false,
+            "store": mongoStore,
+            "secret": "robba1979",
+            "cookie": {
+                "expires": false,
+                "secure": true,
+                "httpOnly": true
+            }
+        });
+
+    app.use(session);
+
+    passport.serializeUser((user, done) => {
         done(null, { "_id": user._id, "token": user.token, "infos": user.infos, "active": !!user.active, "browser_type": user.browser_type });
     });
 
-    passport.deserializeUser(function(data, done) {
-        usersAPI.findUser(data._id)
-            .then(function (user) { done(null, _.assign(user, data)); })
-            .catch(function (error) { done(null, false); });
+    passport.deserializeUser((data, done) => {
+        usersAPI.findUser(data._id).then((user) => {
+            done(null, _.assign(user, data));
+        }).catch(done);
     });
 
     passport.use(new GoogleStrategy({
             "clientID": googleWeb.client_id,
             "clientSecret": googleWeb.client_secret,
             "callbackURL": "/googleAuth"
-        },
-        function(accessToken, refreshToken, params, profile, done) {
+        }, (accessToken, refreshToken, params, profile, done) => {
             var email = _.find(profile.emails, _.matchesProperty("type", "account")),
                 raw = JSON.parse(profile._raw),
                 gInfos = { "token": _.merge(params, { "refresh_token": refreshToken })};
 
-            if (!email || !email.value) { return done(new Error("Invalid profile")); }
-            if (!!raw && !!raw.image && !!raw.image.url && !!raw.url) { _.assign(gInfos, { "infos": { "picture": raw.image.url, "link": raw.url }}); }
-            usersAPI.validateLogin(email.value, raw.id)
-                .then(function (user) {
-                    _.assign(user, gInfos);
-                    done(null, user); }
-                )
-                .catch(function (error) {
-                    if (!!error) { return done(null, false); }
-                    usersAPI.addUser(email.value, raw.id, raw.displayName, true)
-                        .then(function (newUser) {
-                            _.assign(newUser, gInfos);
-                            done(null, newUser);
-                        }).catch(function (error) { done(null, false); });
+            if (!email || !email.value) {
+                done(new Error("Invalid profile"));
+            } else {
+                if (!!raw && !!raw.image && !!raw.image.url && !!raw.url) {
+                    _.assign(gInfos, { "infos": { "picture": raw.image.url, "link": raw.url }});
+                }
+                usersAPI.validateLogin(email.value, raw.id).then((user) => {
+                    done(null, _.assign(user, gInfos));
+                }).catch((error) => {
+                    if (!!error) {
+                        done(error, false);
+                    } else {
+                        usersAPI.addUser(email.value, raw.id, raw.displayName, true).then((newUser) => {
+                            done(null, _.assign(newUser, gInfos));
+                        }).catch(done);
+                    }
                 });
+            }
         }
     ));
 
@@ -60,11 +91,10 @@ module.exports = exports = function (app, mongoStore, io) {
             passwordField: "password",
             session: false,
             passReqToCallback: true
-        },
-        function (req, username, password, done) {
-            usersAPI.validateLogin(username, password)
-                .then(function (user) { done(null, _.merge(user, { "active": req.body.active })); })
-                .catch(function (error) { done(null, false); });
+        }, (req, username, password, done) => {
+            usersAPI.validateLogin(username, password).then((user) => {
+                done(null, _.assign(user, { "active": req.body.active }));
+            }).catch(done);
         })
     );
 
@@ -73,22 +103,20 @@ module.exports = exports = function (app, mongoStore, io) {
             passwordField: "password",
             session: false,
             passReqToCallback: true
-        },
-        function (req, username, password, done) {
-            usersAPI.addUser(username, password, req.body.name)
-                .then(function (user) { done(null, _.merge(user, { "active": req.body.active })); })
-                .catch(function (error) { done(null, false); });
-
+        }, (req, username, password, done) => {
+            usersAPI.addUser(username, password, req.body.name).then((user) => {
+                done(null, _.assign(user, { "active": req.body.active }));
+            }).catch(done);
         })
     );
 
     //Errorhandler
     app.use(passport.initialize())
         .use(passport.session())
-        .use(function (req, res, next) {
+        .use((req, res, next) => {
             var lang = req.acceptsLanguages()[0];
-            res.trads = trads[(!!trads[lang]) ? lang : "fr"];
-            res.biblioRender = function (view, labels, status) {
+            req.trads = trads[(!!trads[lang]) ? lang : "fr"];
+            req.biblioRender = (view, labels, status) => {
                 if (_.isNumber(labels) && !status) {
                     status = labels;
                     labels = {};
@@ -96,107 +124,97 @@ module.exports = exports = function (app, mongoStore, io) {
                 if (!labels) { labels = {}; }
 				var path = [ !!_.get(req.device, "type") && ["phone", "tablet"].indexOf(_.get(req.device, "type")) !== -1 ? "mobile" : "desktop", view].join("/");
                 _.assign(labels, _.merge(meta[(!!meta[lang]) ? lang : "fr"], { "version": version, "page": view }));
-                this.status(status || 200).render.apply(this, [path, labels]);
+                res.status(status || 200).render.apply(res, [path, labels]);
             };
             next();
-        }).use(function (err, req, res, next) {
+        }).use((err, req, res, next) => {
 			console.error(err.message, err.stack);
-			res.biblioRender("error", { "error": err }, 500);
+			req.biblioRender("error", { "error": err }, 500);
         })
 
 	//Maintenance url
-		//.get("*", function (req, res) { res.biblioRender("maintenance", 503); })
+		//.get("*", function (req, res) { req.biblioRender("maintenance", 503); })
 
 	//Display pages
 		.get("/",
-            function (req, res, next) {
+            [(req, res, next) => {
                 if (!req.isAuthenticated()) {
                     res.clearCookie();
-                    res.biblioRender("login");
+                    req.biblioRender("login");
                 } else { next(); }
-            },
-            function (req, res) {
+            }, (req, res) => {
 				if (!!req.user.admin) {
 					var today = new Date();
 					req.session.expires = req.session.cookie.expires = new Date(today.getTime() + 600000);
 				}
-                res.biblioRender(req.user.admin ? "admin" : "bibliotech");
-            }
+                req.biblioRender(req.user.admin ? "admin" : "bibliotech");
+            }]
 		)
 
     //Google OAuth
-        .get("/gAuth",
-            passport.authenticate("google", {
-                "approvalPrompt": "force",
-                "scope": "email https://www.googleapis.com/auth/books",
-                "accessType": "offline"
-            })
-        )
+        .get("/gAuth", passport.authenticate("google", {
+            "approvalPrompt": "force",
+            "scope": "email https://www.googleapis.com/auth/books",
+            "accessType": "offline"
+        }))
         .get("/googleAuth", passport.authenticate("google", { "failureRedirect": "/", "successRedirect": "/" }))
-		/*.get("/googleAuth", function (req, res, next) {
-            passport.authenticate("google", function(err, user) {
-                if (!user) { return res.redirect("/"); }
-				user.browser_type = !!_.get(req.device, "type") && ["phone", "tablet"].indexOf(_.get(req.device, "type")) !== -1 ? "mobile" : "desktop";
-                console.log(req.device);
-                req.login(user, function(err) {
-					res.redirect("/");
-				});
-            })(req, res, next)
-        })*/
 
     //Logout
-		.get("/logout", function (req, res) {
+		.get("/logout", (req, res) => {
             req.logout();
 			res.clearCookie("_bsession");
-			req.session.destroy(function (err) { res.redirect("/"); });
+			req.session.destroy((err) => { res.redirect("/"); });
         })
 
     //Erreur url
-		.get("*", function (req, res) { res.biblioRender("error", { error: "Error 404" }, 404);})
+		.get("*", (req, res) => { req.biblioRender("error", { error: "Error 404" }, 404);})
 
     //Trads
-        .post("/trad", function (req, res) {
+        .post("/trad", (req, res) => {
             res.jsonp(fs.readFileSync(["./root/trads", req.body.lang, req.body.page + ".json"].join("/")));
         })
 
 	//Login
-		.post("/login", function (req, res, next) {
-            passport.authenticate("login", function(err, user) {
-                if (!user) { return res.jsonp({ "error": res.trads.error.invalidCredential }); }
-				/*user.browser_type = !!_.get(req.device, "type") && ["phone", "tablet"].indexOf(_.get(req.device, "type")) !== -1 ? "mobile" : "desktop";
-                console.log("req.device", req.device);*/
-                req.login(user, function(err) { return res.jsonp({ "success" : !!user }); });
-            })(req, res, next)
+		.post("/login", (req, res, next) => {
+            passport.authenticate("login", (err, user) => {
+                if (!user) {
+                    res.jsonp({ "error": req.trads.error.invalidCredential });
+                } else {
+                    req.login(user, (err) => { return res.jsonp({ "success" : !!user }); });
+                }
+            })(req, res, next);
         })
 
 	//Nouvel utilisateur
-		.post("/new", function (req, res, next) {
-            passport.authenticate("new", function(err, user) {
-                if (!user) { return res.jsonp({ "error": res.trads.error.alreadyExist }); }
-                req.login(user, function(err) { return res.jsonp({ success : !err }); });
-            })(req, res, next)
+		.post("/new", (req, res, next) => {
+            passport.authenticate("new", (err, user) => {
+                if (!user) {
+                    res.jsonp({ "error": req.trads.error.alreadyExist });
+                } else {
+                    req.login(user, (err) => { return res.jsonp({ success : !err }); });
+                }
+            })(req, res, next);
 		})
 
 	//Mot de passe oublié
-		.post("/mail", function (req, res) {
-            usersAPI.findUser(req.body.email)
-                .then(function (user) {
-                    var newPwd = Math.random().toString(24).slice(2);
-                    usersAPI.updateUser({ "_id": user._id }, { "$set": { "password": usersAPI.encryptPwd(newPwd) }})
-                        .then(function (result) {
-                            console.info("new password request", user._id, newPwd, usersAPI.encryptPwd(newPwd));
-                            mailsAPI.sendPassword(user._id, user.name, newPwd, function (error, response) {
-                                if (!!error) { return res.jsonp({ "error": res.trads.error.errorSendMail }); }
-                                return res.jsonp({ "success": res.trads.error.successSendMail });
-                            });
-                        }).catch(function (error) { return res.jsonp({ "error": res.trads.error.errorSendMail }); });
-                }).catch(function (error) { return res.jsonp({ "error": res.trads.error.invalidCredential }); });
+		.post("/mail", (req, res) => {
+            usersAPI.findUser(req.body.email).then((user) => {
+                var newPwd = Math.random().toString(24).slice(2);
+                usersAPI.updateUser({ "_id": user._id }, { "$set": { "password": usersAPI.encryptPwd(newPwd) }}).then((result) => {
+                    console.info("new password request", user._id, newPwd, usersAPI.encryptPwd(newPwd));
+                    mailsAPI.sendPassword(user._id, user.name, newPwd, (error, response) => {
+                        if (!!error) {
+                            res.jsonp({ "error": req.trads.error.errorSendMail });
+                        } else {
+                            res.jsonp({ "success": req.trads.error.successSendMail });
+                        }
+                    });
+                }).catch((error) => { res.jsonp({ "error": req.trads.error.errorSendMail }); });
+            }).catch((error) => { res.jsonp({ "error": req.trads.error.invalidCredential }); });
 		})
 
     //Preview
-        .post("/preview", function (req, res) {
-            res.render("preview", { "bookid": req.body.previewid });
-        });
+        .post("/preview", (req, res) => { res.render("preview", { "bookid": req.body.previewid }); });
 
 	//IO Connection
     io.of("/bibliotech").use(passportSocketIo.authorize({
@@ -204,20 +222,21 @@ module.exports = exports = function (app, mongoStore, io) {
         "key": "_bsession",
         "secret": "robba1979",
         "store": mongoStore,
-        "fail": function (data, message, error, next) { next(error); },
-        "success": function (data, next) {
-            passportSocketIo.filterSocketsByUser(io, function(user) {
+        "fail": (data, message, error, next) => { next(error); },
+        "success": (data, next) => {
+            passportSocketIo.filterSocketsByUser(io, (user) => {
                 return user._id === data.user._id;
-            }).forEach(function(socket) {
+            }).forEach((socket) => {
 				if (socket.request.sessionID !== data.sessionID) { socket.server.nsps["/bibliotech"].emit("logout"); }
 			});
             next();
         }
-    })).on("connection", function (socket) {
+    })).on("connection", (socket) => {
         var onEvent = socket.onevent;
+
         socket.onevent = function () {
             var args = arguments;
-            mongoStore.get(socket.request.sessionID, function (error, session) {
+            mongoStore.get(socket.request.sessionID, (error, session) => {
                 if (!!error || !session || !!session.cookie.expires && session.cookie.expires < new Date()) {
                     console.error(error || new Error("No session find!!!"));
                     return socket.emit("logout");
@@ -230,6 +249,7 @@ module.exports = exports = function (app, mongoStore, io) {
                 }
             });
         };
+
         require("../io/bibliotech")(socket);
     });
 
@@ -238,19 +258,19 @@ module.exports = exports = function (app, mongoStore, io) {
         "key": "_bsession",
         "secret": "robba1979",
         "store": mongoStore,
-        "fail": function (data, message, error, next) { next(error); },
-        "success": function (data, next) {
-            passportSocketIo.filterSocketsByUser(io, function(user) {
+        "fail": (data, message, error, next) => { next(error); },
+        "success": (data, next) => {
+            passportSocketIo.filterSocketsByUser(io, (user) => {
                 return user._id === data.user._id;
-            }).forEach(function(socket) { if (socket.request.sessionID !== data.sessionID) { socket.server.nsps["/admin"].emit("logout"); }});
+            }).forEach((socket) => { if (socket.request.sessionID !== data.sessionID) { socket.server.nsps["/admin"].emit("logout"); }});
             next();
         }
-    })).on("connection", function (socket) {
+    })).on("connection", (socket) => {
         if (!socket.request.user || !socket.request.user.admin) { return socket.emit("logout"); }
         var onEvent = socket.onevent;
         socket.onevent = function () {
             var args = arguments;
-            mongoStore.get(socket.request.sessionID, function (error, session) {
+            mongoStore.get(socket.request.sessionID, (error, session) => {
                 if (!!error || !session || !!session.cookie.expires && session.cookie.expires < new Date()) {
                     console.error(error || new Error("No session find!!!"));
                     return socket.emit("logout");

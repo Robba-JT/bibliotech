@@ -1,6 +1,6 @@
 var Q = require("q"),
     _ = require("lodash"),
-    db = require("../db/database").client,
+    db = require("../tools/mongo").client,
     ObjectID = require("mongodb").ObjectID,
     bcrypt = require("bcrypt-nodejs"),
     fs = require("fs");

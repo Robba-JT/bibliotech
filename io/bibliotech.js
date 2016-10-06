@@ -1,22 +1,22 @@
-var Q = require("q"),
+const Q = require("q"),
     _ = require("lodash"),
 	url = require("url"),
-    db = require("../db/database").client,
 	fs = require("fs"),
+    console = require("../tools/console"),
     UAParser = require("ua-parser-js"),
     ObjectID = require("mongodb").ObjectID,
-    UsersAPI = require("../db/users").UsersAPI,
-    BooksAPI = require("../db/books").BooksAPI,
-    MailsAPI = require("../tools/mails").MailsAPI;
+    UsersAPI = require("../db/users"),
+    BooksAPI = require("../db/books"),
+    MailsAPI = require("../tools/mails");
 
-module.exports = function main (socket, allSessions) {
+module.exports = function main (socket) {
     "use strict";
     var thisUser = socket.request.user,
         token = thisUser.token,
         sessionId = socket.request.sessionID,
-        userAPI = new UsersAPI(db),
-        bookAPI = new BooksAPI(db, token),
-        mailAPI = new MailsAPI(),
+        userAPI = UsersAPI(),
+        bookAPI = BooksAPI(token),
+        mailAPI = MailsAPI(),
         thisBooks = [], lastSearch = {}, lastDetail = {},
         addBook = function (bookid) {
             return new Q.Promise(function (resolve, reject) {
@@ -38,7 +38,11 @@ module.exports = function main (socket, allSessions) {
                 if (!_.isObject(book.id) && !!thisUser.googleSync) { bookAPI.googleAdd({ "volumeId": book.id }); }
             }
             if (!!book.from) { update.$addToSet.books.from = book.from; }
-            if (!!book.alt) { update.$addToSet.books.cover = new ObjectID(book.alt); }
+            if (!!book.alt) {
+                update.$addToSet.books.cover = new ObjectID(book.alt);
+            } else {
+
+            }
             userAPI.updateUser({ "_id": thisUser._id }, update);
             thisBooks.push(book);
             if (!!book.isNew) {
@@ -85,27 +89,51 @@ module.exports = function main (socket, allSessions) {
                 }).catch(function (error) { console.error(thisUser._id, "error", error); });
         },
         searchLoop = function (fn, param, callback) {
-            var defLoop = Q.defer(), listBooks = [],
+            bookAPI.clearRequests();
+            var defLoop = Q.defer(),
+                listBooks = [],
+                defCovers = [],
                 loop = function () {
                     bookAPI[fn](param, function (error, response) {
                         if (!!error) { console.error(thisUser._id, "searchLoop", error); }
                         if (!!response && !!response.items) {
-                            var books = bookAPI.formatBooks(response.items), defCovers = [];
-                            _.forEach(books, function (book) { defCovers.push(bookAPI.loadBase64(book.cover, book.id)); });
-                            Q.allSettled(defCovers).then(function (results) {
-                                results.forEach(function (result) {
-                                    if (result.state === "fulfilled") {
-                                        _.assign(_.find(books, _.matchesProperty("id", result.value.id)), { base64: result.value.base64 });
-                                    }
-                                });
-                                listBooks.push(books);
-                                param.startIndex += books.length;
-                                if (_.isFunction(callback)) { callback(books); }
-                                if (books.length === 40 && param.startIndex < 400) { loop(); } else { defLoop.resolve(_.flattenDeep(listBooks)); }
+                            var books = bookAPI.formatBooks(response.items);
+                            listBooks.push(books);
+                            param.startIndex += books.length;
+                            if (_.isFunction(callback)) { callback(books); }
+                            _.forEach(books, function (book) {
+                                /*if (book.cover) {
+                                    defCovers.push(bookAPI.loadBase64(book.cover, book.id).then((cover) => {
+                                        socket.emit("cover", cover);
+                                    }));
+                                }*/
+                                if (book.thumbnail) {
+                                    defCovers.push(bookAPI.loadBase64(book.thumbnail, book.id).then((cover) => {
+                                        socket.emit("cover", cover);
+                                    }));
+                                }
                             });
-                        } else { defLoop.resolve(_.flattenDeep(listBooks)); }
+                            if (books.length === 40 && param.startIndex < 400) {
+                                loop();
+                            } else {
+                                beforeResolve();
+                            }
+                        } else { beforeResolve(); }
+                    });
+                },
+                beforeResolve = function () {
+                    listBooks = _.flattenDeep(listBooks);
+                    socket.emit("endRequest", listBooks.length);
+                    Q.allSettled(defCovers).then((results) => {
+                        _.forEach(results, (result) => {
+                            if (result.state === "fulfilled") {
+                                _.assign(_.find(listBooks, _.matchesProperty("id", result.value.id)), result.value);
+                            }
+                        });
+                        defLoop.resolve(listBooks);
                     });
                 };
+
             _.assign(param, { startIndex: 0 });
             loop();
             return defLoop.promise;
@@ -116,8 +144,8 @@ module.exports = function main (socket, allSessions) {
 
     socket.on("isConnected", function () {
         console.info("Connexion", thisUser._id, "@", new Date().toString("yyyy/MM/dd"), browser_type);
-        var booksList = _.pluck(thisUser.books, "book"),
-            coverList = _.compact(_.pluck(thisUser.books, "cover")),
+        var booksList = _.map(thisUser.books, "book"),
+            coverList = _.compact(_.map(thisUser.books, "cover")),
 			sendingLg = browser_type !== "mobile" ? 10 : 40;
 
         userAPI.updateUser({ "_id": thisUser._id }, { "$set": { "last_connect": new Date() }, "$inc": { "connect_number": 1 }});
@@ -226,12 +254,14 @@ module.exports = function main (socket, allSessions) {
             socket.emit("books", lastSearch.books);
             socket.emit("endRequest", (!!lastSearch.books) ? lastSearch.books.length : 0);
         } else {
-            searchLoop("searchBooks", param, function (books) { socket.emit("books", books); })
-                .catch(function (error) { console.error(thisUser._id, "searchBooks", error); })
-                .done(function (books) {
-                    if (!!books) { lastSearch = { "param": param, "books": books }; }
-                    socket.emit("endRequest", (!!books) ? books.length : 0);
-                });
+            searchLoop("searchBooks", param, (books) => {
+                socket.emit("books", books);
+            }).catch((error) => {
+                console.error(thisUser._id, "searchBooks", error);
+            }).done((books) => {
+                //socket.emit("endRequest", books.length);
+                if (!!books) { lastSearch = { "param": param, "books": books }; }
+            });
         }
     });
 
@@ -369,9 +399,15 @@ module.exports = function main (socket, allSessions) {
     });
 
     socket.on("recommanded", function () {
-        searchLoop("myGoogleBooks", { "search": true, "shelf": 8 }, function (books) { socket.emit("books", books); })
-            .catch(function (error) { console.error(thisUser._id, "recommanded", error); })
-            .done(function (books) { socket.emit("endRequest", (!!books) ? books.length : 0); });
+        console.log("recommanded", new Date());
+        searchLoop("myGoogleBooks", { "search": true, "shelf": 8 }, function (books) {
+            socket.emit("books", books);
+        }).catch(function (error) {
+            console.error(thisUser._id, "recommanded", error);
+        }).done(function (books) {
+            console.log("recommanded", new Date(), books.length || 0);
+            socket.emit("endRequest", (!!books) ? books.length : 0);
+        });
     });
 
     socket.on("importNow", function () {
@@ -434,7 +470,7 @@ module.exports = function main (socket, allSessions) {
     });
 
     socket.on("mostAdded", function (bookid) {
-        userAPI.mostAdded(bookid, thisUser._id, _.pluck(thisUser.books, "book"))
+        userAPI.mostAdded(bookid, thisUser._id, _.map(thisUser.books, "book"))
             .then(function (result) {
                 var def = [],
                     fullLoad = function (id) {

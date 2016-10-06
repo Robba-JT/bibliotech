@@ -1,17 +1,17 @@
 /logs/
 /node_modules/
-/proxy.js
 /root/images/*/
-/google quota.txt
-/google_client_config.json
 /ssl/
 /config.json
 /.rebooted
-/requests.js
 /tools/admins.js
 /root/dev/
 npm-debug.log
 /.npmrc
+/bibliotech_service_account.json
+/bibliotech.json
+/start_bibliotech_dev
+/stop_bibliotech_dev
+/google_client_config.json
 /.brackets.json
-pm2.json
-bibliotech-8aa52eacf581.json
+/gruntfile.js

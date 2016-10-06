@@ -18,7 +18,7 @@ var nodemailer = require("nodemailer"),
 
 smtpTransport.use("compile", require("nodemailer-plugin-inline-base64"));
 
-module.exports.MailsAPI = MailsAPI = function () {
+module.exports = MailsAPI = function () {
     "use strict";
 
     if (!(this instanceof MailsAPI)) { return new MailsAPI(); }
@@ -36,7 +36,7 @@ module.exports.MailsAPI = MailsAPI = function () {
 
     this.sendPassword = function (user, name, pwd, callback) {
         var sendOptions = Object.create(mailLogin),
-            pwdHtml = swig.renderFile("./tools/password.html", {
+            pwdHtml = swig.renderFile("./mails/password.html", {
                 "name": name,
                 "password": pwd
             });
@@ -51,7 +51,7 @@ module.exports.MailsAPI = MailsAPI = function () {
     this.sendToFriend = function (name, mail, friend, book, callback) {
         var sendOptions = Object.create(mailFriend),
             index = book.description.indexOf(" ", 500),
-            notifHtml = swig.renderFile("./tools/notif.html", {
+            notifHtml = swig.renderFile("./mails/notif.html", {
                 "title": book.title,
                 "description": book.description.substr(0, Math.max(index, 500)) + ((index !== -1) ? "..." : ""),
                 "source": book.base64 || book.alternative,

@@ -2,12 +2,13 @@ var bcrypt = require("bcrypt-nodejs"),
     Q = require("q"),
     _ = require("lodash");
 
-module.exports.UsersAPI = UsersAPI = function (db) {
+module.exports = UsersAPI = function () {
     "use strict";
 
-    if (!(this instanceof UsersAPI)) { return new UsersAPI(db); }
+    if (!(this instanceof UsersAPI)) { return new UsersAPI(); }
 
-    var users = db.collection("users"),
+    var db = require("./../tools/mongo").client,
+        users = db.collection("users"),
         encryptPwd = function (password) { return bcrypt.hashSync(password); },
         findUser = function (query, callback) { users.findOne(query, callback); },
         insertUser = function (data, callback) { users.insert(data, callback); },
