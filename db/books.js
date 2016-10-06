@@ -48,7 +48,7 @@ requests.on("change", function (event) {
                 options = record.options,
                 callback = record.callback,
                 exec = record.exec || 0,
-                interval = 250 * index;
+                interval = 100 * index;
 
             exec++;
             send_request(options, interval).then((base64) => {
