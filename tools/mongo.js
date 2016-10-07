@@ -23,12 +23,12 @@ module.exports.init = function () {
                 module.exports.client = db;
                 resolve();
 
-                if (process.env.NODE_ENV === "production") {
+                /*if (process.env.NODE_ENV === "production") {
                     var last = (new Date(((new Date()).setDate((new Date()).getDate() - 30)))),
                         defParams = {
                             "fields": "id, etag, accessInfo(accessViewStatus), volumeInfo(title, subtitle, authors, publisher, publishedDate, description, industryIdentifiers, pageCount, categories, imageLinks, canonicalVolumeLink)",
-                            "projection": "full"/*,
-                            "key": "AIzaSyBw0Wgo4DDJ48-dd7pC8DpryvOm_z8515A"*/
+                            "projection": "full",
+                            //"key": "AIzaSyBw0Wgo4DDJ48-dd7pC8DpryvOm_z8515A"
                         },
                         booksEqual = function (a, b) {
                             var aII = Object.create(a), bII = Object.create(b);
@@ -53,7 +53,7 @@ module.exports.init = function () {
                                 "categories": (!!bookinfos.categories) ? bookinfos.categories[0] : "",
                                 "isbn10": (!!bookinfos.industryIdentifiers && !!_.find(bookinfos.industryIdentifiers, { type: "ISBN_10" })) ? _.find(bookinfos.industryIdentifiers, { type: "ISBN_10" }).identifier : "",
                                 "isbn13": (!!bookinfos.industryIdentifiers && !!_.find(bookinfos.industryIdentifiers, { type: "ISBN_13" })) ? _.find(bookinfos.industryIdentifiers, { type: "ISBN_13" }).identifier : "",
-                                "cover": (!!bookinfos.imageLinks) ? /*bookinfos.imageLinks.small || bookinfos.imageLinks.medium || bookinfos.imageLinks.large ||*/ bookinfos.imageLinks.extraLarge || bookinfos.imageLinks.thumbnail || bookinfos.imageLinks.smallThumbnail : "",
+                                "cover": (!!bookinfos.imageLinks) ? bookinfos.imageLinks.extraLarge || bookinfos.imageLinks.thumbnail || bookinfos.imageLinks.smallThumbnail : "",
                                 "access": (!!book.accessInfo) ? book.accessInfo.accessViewStatus : "NONE",
                                 "preview": (!!book.accessInfo) ? book.accessInfo.webReaderLink : "",
                                 "date": new Date()
@@ -102,7 +102,7 @@ module.exports.init = function () {
                             Q.allSettled(requests).then(function () { console.info("Books updated", updated, "removed", removed); });
                         }
                     });
-                }
+                }*/
             }
         });
     });

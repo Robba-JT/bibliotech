@@ -15,64 +15,7 @@ const Q = require("q"),
             "Content-Type": "application/json"
         }
     },
-    images = require("../tools/images"),
-    EventedArray = require("array-events"),
-    requests = new EventedArray(),
-    send_request = function (options, interval) {
-        return new Q.Promise((resolve, reject) => {
-            var timeout = setTimeout(() => {
-                var req = request.get(options);
-                req.on("error", reject);
-                req.on("response", (response) => {
-                    if (response.statusCode !== 200) {
-                        reject("Invalid request");
-                    } else {
-                        var chunk = [];
-                        response.on("data", (data) => { chunk.push(new Buffer(data, options.encoding)); });
-                        response.on("end", () => {
-                            resolve({ "mime": response.headers["content-type"], "content": Buffer.concat(chunk) });
-                        });
-                    }
-                });
-                req.on("end", () => { clearTimeout(timeout); });
-            }, interval);
-        });
-    };
-
-requests.on("change", function (event) {
-    if (event.type === "add" || event.type === "alter") {
-        var index = Math.min(requests.length, 10) - 1;
-        if (index > -1 && !requests[index].running) {
-            _.set(requests[index], "running", true);
-            var record = requests[index],
-                options = record.options,
-                callback = record.callback,
-                exec = record.exec || 0,
-                interval = 100 * index;
-
-            exec++;
-            send_request(options, interval).then((base64) => {
-                callback.call(callback, null, base64);
-                return;
-            }).catch((error) => {
-                if (exec < 4) {
-                    _.set(record, "running", false);
-                    _.set(record, "exec", exec);
-                    var timeout = setTimeout(function () {
-                        requests.push(record);
-                        clearTimeout(timeout);
-                    }, 1000);
-                    console.error("exec", exec, error, options.url);
-                } else {
-                    callback.call(callback, error);
-                }
-                return;
-            }).done(() => {
-                requests.splice(_.indexOf(requests, record), 1);
-            });
-        }
-    }
-});
+    images = require("../tools/images");
 
 google.options(gOptions);
 
@@ -84,10 +27,11 @@ exports = module.exports = BooksAPI = function (token) {
     var auth = {},
         db = require("../tools/mongo").client,
 		gBooks = google.books("v1"),
-        books = db.collection("books"),
-        comments = db.collection("comments"),
-        covers = db.collection("covers"),
-        notifs = db.collection("notifications"),
+        db_books = db.collection("books"),
+        db_comments = db.collection("comments"),
+        db_covers = db.collection("covers"),
+        db_alternatives = db.collection("alternatives"),
+        db_notifs = db.collection("notifications"),
         reqParams = {
             "searchOne": {
                 "fields": "id, etag, accessInfo(accessViewStatus, webReaderLink), volumeInfo(title, subtitle, authors, publisher, publishedDate, description, industryIdentifiers, pageCount, categories, imageLinks, canonicalVolumeLink)",
@@ -108,8 +52,8 @@ exports = module.exports = BooksAPI = function (token) {
                 "printType": "books"
             }
         },
-        anonimiseComments = function (userId, callback) {
-            comments.update({ "_id.user": userId }, {"$set": { "name": "**********" }}, { "multi": true }, callback);
+        anonimiseComments = function (userId) {
+            return db_comments.update({ "_id.user": userId }, {"$set": { "name": "**********" }}, { "multi": true });
         },
         booksEqual = function (a, b) {
             var aII = Object.create(a), bII = Object.create(b);
@@ -141,54 +85,30 @@ exports = module.exports = BooksAPI = function (token) {
                 "date": new Date()
             };
         },
-        googleRequest = function (fonction, params, callback) {
-            var gFunction = _.get(gBooks, fonction);
-            if (typeof params === "function") { callback = params; params = {}; }
-            if (!_.isEmpty(auth.credentials)) { _.assign(params, { "auth": auth }); } else { _.assign(params, { "key": googleConfig.key }); }
-            if (typeof gFunction !== "function") { return callback ? callback(new Error("Invalid Call!!!")) : new Error("Invalid Call!!!"); }
-            gFunction(params, function (error, success) {
-                if (!!error && error.code !== 401) { return callback ? callback(error) : error; }
-                if (!!error && error.code === 401 && !!_.keys(auth).length) {
-                    refreshCredentials()
-                        .then(function () { gFunction(params, callback); })
-                        .catch(callback);
-                } else {
-                    return callback ? callback(null, success) : success;
-                }
-            });
-        },
-        loadBase64 = function (url, bookid) {
+        googleRequest = function (fonction, params) {
             return new Q.Promise((resolve, reject) => {
-                requests.push({
-                    "options": { "url": url.replace("https:", "http:"), "encoding": "binary" },
-                    "callback": function (error, result) {
-                        if (!!error) {
-                            console.error("base64", bookid, error, url);
+                var gFunction = _.get(gBooks, fonction);
+                if (!_.isEmpty(auth.credentials)) { _.assign(params, { "auth": auth }); } else { _.assign(params, { "key": googleConfig.key }); }
+                if (typeof gFunction !== "function") {
+                    reject("Invalid Call!!!");
+                } else {
+                    gFunction(params, function (error, success) {
+                        if (!!error && error.code !== 401) {
                             reject(error);
+                        } else if (!!error && error.code === 401 && !!_.keys(auth).length) {
+                            refreshCredentials().then(function () { gFunction(params, (error, result) => {
+                                    if (!!error) {
+                                        reject(error);
+                                    } else {
+                                        resolve(result);
+                                    }
+                                });
+                            }).catch(reject);
                         } else {
-                            images.reduce(result.content).then((cover) => {
-                                resolve({ "id": bookid, "base64": "data:".concat(result.mime).concat(";base64,").concat(cover.toString("base64")) });
-                            }).catch((error) => {
-                                console.error("reduce error", error);
-                                resolve({ "id": bookid, "base64": "data:".concat(result.mime).concat(";base64,").concat(result.content.toString("base64")) });
-                            });
+                            resolve(success);
                         }
-                    }
-                });
-            });
-        },
-        loadComments = function (filter, callback) {
-            comments.find(filter).toArray(callback);
-        },
-        loadCover = function (filter, callback) {
-            covers.findOne(filter, callback);
-        },
-        loadCovers = function (filter, callback) {
-            covers.find(filter).toArray(callback);
-        },
-        loadOne = function (filter, callback) {
-            books.findOne(filter, function (error, book) {
-                if (!!error || !book) { callback(error || new Error("No book")); } else { callback(null, book); }
+                    });
+                }
             });
         },
         refreshCredentials = function () {
@@ -201,45 +121,16 @@ exports = module.exports = BooksAPI = function (token) {
                 });
             });
         },
-        removeOne = function (filter, callback) {
-            books.remove(filter, callback);
-        },
-        removeNotifs = function (filter, callback) {
-            notifs.remove(filter, callback);
-        },
-        removeCovers = function (filter, callback) {
-            covers.remove(filter, callback);
-        },
-        resolve_requests = function (options) {
-            requests.push(options);
-        },
-        searchOne = function (bookid, callback) {
-            var params = _.merge({ volumeId: bookid }, reqParams.searchOne);
-            googleRequest("volumes.get", params, function (error, response) {
-                if (!!error || !response) { callback(error || new Error("Bad Single Request!!!")); } else {
-                    var book = formatOne(response);
-                    book.isNew = true;
-                    if (!!book.cover) {
-                        loadBase64(book.cover).done(function (response) {
-                            if (!!response && !!response.base64) { book.base64 = response.base64; }
-                            callback(null, book);
-                        });
-                    } else {
-                        callback(null, book);
-                    }
-                }
-            });
-        },
         setCredentials = function (token) {
 			if (!_.keys(auth).length && !!token) {
 				auth = new gAuth(googleConfig.web.client_id, googleConfig.web.client_secret, "postmessage");
 				_.assign(auth.credentials, token);
 			}
-        },
+        };/*,
         unusedCovers = function () {
             loadCovers({}, function (error, allCovers) {
                 if (!!error) { return console.error("Covers removed", error); }
-                db.collection("users").find({}, { "books.cover": true }).toArray(function (error, userBooks) {
+                db.collection("users").find({}, { "db_books.cover": true }).toArray(function (error, userBooks) {
                     if (!!error) { return console.error(error); }
                     var toRemoved = [];
                     userBooks = _.flattenDeep(_.map(userBooks, "books"));
@@ -248,10 +139,10 @@ exports = module.exports = BooksAPI = function (token) {
                     console.info("Covers removed", toRemoved.length);
                 });
             });
-        },
-        updateAllBooks = function () {
+        },*/
+        /*updateAllBooks = function () {
             var last = (new Date(((new Date()).setDate((new Date()).getDate() - 30))));
-            books.find({ "date": { "$lte": last }, "id.user": { "$exists": false }}, { "_id": false }).toArray(function (error, result) {
+            db_books.find({ "date": { "$lte": last }, "id.user": { "$exists": false }}, { "_id": false }).toArray(function (error, result) {
                 if (!!error) { console.error("Error Update Books", error); }
                 if (!!result) {
                     var updated = 0, removed = 0, requests = [];
@@ -262,7 +153,7 @@ exports = module.exports = BooksAPI = function (token) {
                                 if (!!error) {
                                     console.error("Error Update One", oldOne.id, error);
                                     if (error.code === 404 && error.message === "The volume ID could not be found.") {
-                                        books.remove({ "id": oldOne.id });
+                                        db_books.remove({ "id": oldOne.id });
                                         removed++;
                                     }
                                 } else {
@@ -278,102 +169,136 @@ exports = module.exports = BooksAPI = function (token) {
                     Q.allSettled(requests).then(function () { console.info("Books updated", updated, "removed", removed); });
                 }
             });
-        },
-        updateBook = function (book, callback) {
-            var newbook = _.omit(book, "base64");
-            books.update({ "id": newbook.id }, { "$set": newbook }, { "upsert": true }, callback);
-        };
+        };*/
 
     setCredentials(token);
 
-    this.addCover = function (data, callback) {
-        loadCover({ cover: data.cover }, function (error, result) {
-            if (!!error) {
-                callback(error);
-            } else if (!!result) {
-                callback(null, result._id);
-            } else {
-                images.reduce(data.cover).then((cover) => {
-                    covers.insert({ "_id": data._id, "cover": cover }, function (error, result) {
-                        if (!!error) { return callback(error); }
-                        return callback(null, data._id);
-                    });
-                }).catch(callback);
-            }
-            /*covers.insert(data, function (error, result) {
-                if (!!error) { return callback(error); }
-                return callback(null, data._id);
-            });*/
-
+    this.addCover = (data) => {
+        return new Q.Promise((resolve, reject) => {
+            this.loadCover({ cover: data.cover }, function (error, result) {
+                if (!!error) {
+                    reject(error);
+                } else if (!!result) {
+                    resolve(result._id);
+                } else {
+                    images.reduce(data.cover).then((cover) => {
+                        db_covers.insert({ "_id": data._id, "cover": cover }, function (error, result) {
+                            if (!!error) {
+                                reject(error);
+                            } else {
+                                resolve(data._id);
+                            }
+                        });
+                    }).catch(reject);
+                }
+            });
         });
     };
-    this.associatedBooks = function (params, callback) {
-        googleRequest("volumes.associated.list", _.merge(params, reqParams.search), callback);
-    };
-    this.clearRequests = function () {
-        requests.length = 0;
-        console.log("requests", requests);
-    };
-    this.formatBooks = function (books) {
-        var retbooks = [];
+
+    this.associatedBooks = (params) => { return googleRequest("volumes.associated.list", _.merge(params, reqParams.search)); };
+
+    this.formatBooks = (books) => {
+        var ret_books = [];
         if (!_.isArray(books)) { return formatOne(books); }
-        for (var book in books) {
-            retbooks.push(formatOne(books[book]));
-        }
-        return retbooks;
+        for (var book in books) { ret_books.push(formatOne(books[book])); }
+        return ret_books;
     };
-    this.googleAdd = function (params, callback) {
+
+    this.googleAdd = (params) => {
         params.shelf = 7;
-        googleRequest("mylibrary.bookshelves.addVolume", params, callback);
+        return googleRequest("mylibrary.bookshelves.addVolume", params);
     };
-    this.loadAllBooks = function (filter, projection, callback) {
-        books.find(filter, projection).toArray(callback);
+
+    this.loadAllBooks = (filter, projection) => { return db_books.find(filter, projection).toArray(callback); };
+
+    this.loadAlt = (filter) => { return db_alternatives.findOne(filter); };
+
+    this.loadAlts = (filter) => { return db_alternatives.find(filter).toArray(); };
+
+    this.loadBase64 = (bookid, url) => {
+        return new Q.Promise((resolve, reject) => {
+            if (!url) { reject("No url!"); } else {
+                var req = request.get({ "url": url, "encoding": "binary" });
+                req.on("error", reject);
+                req.on("response", (response) => {
+                    if (response.statusCode !== 200) {
+                        reject("Invalid request");
+                    } else {
+                        var chunk = [];
+                        response.on("data", (data) => { chunk.push(new Buffer(data, "binary")); });
+                        response.on("end", () => {
+                            var content = Buffer.concat(chunk);
+                            images.reduce(content).catch((error) => {
+                                console.error("reduce error", error);
+                                return content;
+                            }).then((cover) => {
+                                console.log("reduce", content.length, cover.length);
+                                resolve({ "id": bookid, "base64": "data:".concat(response.headers["content-type"]).concat(";base64,").concat(cover.toString("base64")) });
+                            });
+                        });
+                    }
+                });
+            }
+        });
     };
-    this.loadBase64 = loadBase64;
-    this.loadBooks = function (filter, callback) {
-        books.find(filter).toArray(callback);
+
+    this.loadBooks = (filter) => { return db_books.find(filter).toArray(); };
+
+    this.loadComments = (filter) => { return db_comments.find(filter).toArray(); };
+
+    this.loadCover = (filter) => { return db_covers.findOne(filter); };
+
+    this.loadCovers = (filter) => { return db_covers.find(filter).toArray(); };
+
+    this.loadNotifs = function (filter) { return db_notifs.find(filter).sort({ "date": 1 }).toArray(); };
+
+    this.loadOne = (filter) => { return db_books.findOne(filter); };
+
+    this.myGoogleBooks = (params) => { return googleRequest("mylibrary.bookshelves.volumes.list", !!params.search ? _.merge(params, reqParams.search) : _.merge(params, reqParams.import)); };
+
+    this.removeOne = (filter) => { return db_books.remove(filter); };
+
+    this.searchBooks = (params) => { return googleRequest("volumes.list", _.merge(params, reqParams.search)); };
+
+    this.searchOne = (bookid) => {
+        return new Q.Promise((resolve, reject) => {
+            var params = _.merge({ volumeId: bookid }, reqParams.searchOne);
+            googleRequest("volumes.get", params).then((response) => {
+                var book = formatOne(response);
+                book.isNew = true;
+                this.loadBase64(bookid, book.cover).then((response) => {
+                    book.base64 = response.base64;
+                }).done(() => { resolve(book); });
+            }).catch(reject);
+        });
     };
-    this.loadComments = loadComments;
-    this.loadCover = loadCover;
-    this.loadCovers = loadCovers;
-    this.loadNotifs = function (filter, callback) {
-        notifs.find(filter).sort({ "date": 1 }).toArray(callback);
-    };
-    this.loadOne = loadOne;
-    this.myGoogleBooks = function (params, callback) {
-        googleRequest("mylibrary.bookshelves.volumes.list", !!params.search ? _.merge(params, reqParams.search) : _.merge(params, reqParams.import), callback);
-    };
-    this.removeOne = removeOne;
-    this.searchBooks = function (params, callback) {
-        //params = _.merge(params, reqOptions);
-        googleRequest("volumes.list", _.merge(params, reqParams.search), callback);
-    };
-    this.searchOne = searchOne;
-    this.googleRemove = function (params, callback) {
+
+    this.googleRemove = (params) => {
         params.shelf = 7;
-        googleRequest("mylibrary.bookshelves.removeVolume", params, callback);
+        return googleRequest("mylibrary.bookshelves.removeVolume", params);
     };
-    this.removeComment = function (comment, callback) {
-        comments.remove({ "_id": comment._id }, callback);
+
+    this.removeComment = (comment) => { return db_comments.remove({ "_id": comment._id }); };
+
+    this.removeAllComments = (userId) => { return db_comments.remove({ "_id.user": userId }); };
+
+    this.removeCovers = (filter) => { return db_covers.remove(filter); };
+
+    this.removeNotifs = (filter) => { return db_notifs.remove(filter); };
+
+    this.removeUserData = (userId) => {
+        this.removeNotifs({ "_id.to": userId });
+        this.removeAllComments(userId);
     };
-    this.removeAllComments = function (userId, callback) {
-        comments.remove({ "_id.user": userId }, callback);
+
+    this.updateBook = (book) => {
+        var newbook = _.omit(book, ["alt", "base64", "isNew"]);
+        return db_books.update({ "id": newbook.id }, { "$set": newbook }, { "upsert": true });
     };
-    this.removeCovers = removeCovers;
-    this.removeNotifs = removeNotifs;
-    this.removeUserData = function (userId) {
-        removeNotifs({ "_id.to": userId });
-        //anonimiseComments(userId);
-        removeAllComments(userId);
-    };
-    this.updateBook = updateBook;
-    this.updateComment = function (data, callback) {
-        comments.update({ "_id": data._id }, {"$set": data }, { "upsert": true }, callback);
-    };
-    this.updateCover = function (data, callback) {
-        covers.update({ "_id": data._id }, {"$set": data }, { "upsert": true }, callback);
-    };
-    this.updateNotif = function (data, callback) {
-        notifs.update({ "_id": data._id }, { "$set": data }, { "upsert": true }, callback);
-    };
+
+    this.updateComment = (data) => { return db_comments.update({ "_id": data._id }, {"$set": data }, { "upsert": true }); };
+
+    this.updateCover = (data) => { return db_covers.update({ "_id": data._id }, {"$set": data }, { "upsert": true }); };
+
+    this.updateNotif = (data) => { return db_notifs.update({ "_id": data._id }, { "$set": data }, { "upsert": true }); };
 };
