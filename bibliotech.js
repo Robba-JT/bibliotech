@@ -5,7 +5,7 @@ require("nconf").argv().env().defaults({ "config": require("./config")[process.e
 const express = require("./tools/express"),
 	app = express(),
     secure_server = require("https").Server({
-        "pfx": require("fs").readFileSync(require("path").join(__dirname, "/ssl/bibliotech.pfx")),
+        "pfx": require("fs").readFileSync(require("path").join(__dirname, "/ssl/biblio.tech.pfx")),
         "passphrase": require("nconf").get("config").pass_phrase
     }, app),
     console = require("./tools/console"),
