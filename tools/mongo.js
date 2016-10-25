@@ -22,6 +22,7 @@ module.exports.init = function () {
             if (err) { reject(err); } else {
                 module.exports.client = db;
                 resolve();
+                
                 /*if (process.env.NODE_ENV === "production") {
                     var last = (new Date(((new Date()).setDate((new Date()).getDate() - 30)))),
                         defParams = {
