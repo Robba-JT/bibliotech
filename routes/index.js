@@ -1,5 +1,4 @@
 const mailsAPI = require("../tools/mails")(),
-    console = require("./../tools/console"),
     fs = require("fs"),
     _ = require("lodash"),
     passport = require("passport"),
