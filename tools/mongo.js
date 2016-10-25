@@ -1,8 +1,8 @@
 const MongoClient = require("mongodb").MongoClient,
     google = require("googleapis"),
-    gBooks = google.books("v1"),
-    _ = require("lodash"),
-    Q = require("q"),
+    //gBooks = google.books("v1"),
+    //_ = require("lodash"),
+    //Q = require("q"),
     gOptions = {
         "gzip": true,
         "headers": {
@@ -19,7 +19,7 @@ module.exports.init = function () {
     return new Promise((resolve, reject) => {
         MongoClient.connect(config.database, function (err, db) {
             "use strict";
-            if (!!err) { reject(err); } else {
+            if (err) { reject(err); } else {
                 module.exports.client = db;
                 resolve();
 

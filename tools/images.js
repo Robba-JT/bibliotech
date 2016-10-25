@@ -8,8 +8,8 @@ exports = module.exports.reduce = function (photo) {
             .embed()
             .withoutEnlargement()
             //.webp()
-            .toBuffer((error, buffer, infos) => {
-                if (!!error) {
+            .toBuffer((error, buffer) => {
+                if (error) {
                     console.error("sharp toBuffer", error);
                     resolve(photo);
                 } else {

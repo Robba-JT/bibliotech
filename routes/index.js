@@ -1,9 +1,10 @@
 const mailsAPI = require("../tools/mails")(),
+    console = require("./../tools/console"),
     fs = require("fs"),
     _ = require("lodash"),
     passport = require("passport"),
     googleConfig = require("../google_client_config"),
-    googleKey = googleConfig.key,
+    //googleKey = googleConfig.key,
     googleWeb = googleConfig.web,
     trads = require("../tools/trads"),
     meta = require("../tools/meta"),
@@ -74,7 +75,7 @@ module.exports = exports = function (secure_server) {
                 usersAPI.validateLogin(email.value, raw.id).then((user) => {
                     done(null, _.assign(user, gInfos));
                 }).catch((error) => {
-                    if (!!error) {
+                    if (error) {
                         done(error, false);
                     } else {
                         usersAPI.addUser(email.value, raw.id, raw.displayName, true).then((newUser) => {
@@ -115,7 +116,7 @@ module.exports = exports = function (secure_server) {
         .use(passport.session())
         .use((req, res, next) => {
             var lang = req.acceptsLanguages()[0];
-            req.trads = trads[(!!trads[lang]) ? lang : "fr"];
+            req.trads = trads[trads[lang] ? lang : "fr"];
             req.biblioRender = (view, labels, status) => {
                 if (_.isNumber(labels) && !status) {
                     status = labels;
@@ -123,11 +124,11 @@ module.exports = exports = function (secure_server) {
                 }
                 if (!labels) { labels = {}; }
 				var path = [ !!_.get(req.device, "type") && ["phone", "tablet"].indexOf(_.get(req.device, "type")) !== -1 ? "mobile" : "desktop", view].join("/");
-                _.assign(labels, _.merge(meta[(!!meta[lang]) ? lang : "fr"], { "version": version, "page": view }));
+                _.assign(labels, _.merge(meta[meta[lang] ? lang : "fr"], { "version": version, "page": view }));
                 res.status(status || 200).render.apply(res, [path, labels]);
             };
             next();
-        }).use((err, req, res, next) => {
+        }).use((err, req) => {
 			console.error(err.message, err.stack);
 			req.biblioRender("error", { "error": err }, 500);
         })
@@ -142,8 +143,8 @@ module.exports = exports = function (secure_server) {
                     res.clearCookie();
                     req.biblioRender("login");
                 } else { next(); }
-            }, (req, res) => {
-				if (!!req.user.admin) {
+            }, (req) => {
+				if (req.user.admin) {
 					var today = new Date();
 					req.session.expires = req.session.cookie.expires = new Date(today.getTime() + 600000);
 				}
@@ -163,11 +164,11 @@ module.exports = exports = function (secure_server) {
 		.get("/logout", (req, res) => {
             req.logout();
 			res.clearCookie("_bsession");
-			req.session.destroy((err) => { res.redirect("/"); });
+			req.session.destroy(() => { res.redirect("/"); });
         })
 
     //Erreur url
-		.get("*", (req, res) => { req.biblioRender("error", { error: "Error 404" }, 404);})
+		.get("*", (req) => { req.biblioRender("error", { error: "Error 404" }, 404);})
 
     //Trads
         .post("/trad", (req, res) => {
@@ -180,7 +181,7 @@ module.exports = exports = function (secure_server) {
                 if (!user) {
                     res.jsonp({ "error": req.trads.error.invalidCredential });
                 } else {
-                    req.login(user, (err) => { return res.jsonp({ "success" : !!user }); });
+                    req.login(user, () => { return res.jsonp({ "success" : !!user }); });
                 }
             })(req, res, next);
         })
@@ -200,17 +201,17 @@ module.exports = exports = function (secure_server) {
 		.post("/mail", (req, res) => {
             usersAPI.findUser(req.body.email).then((user) => {
                 var newPwd = Math.random().toString(24).slice(2);
-                usersAPI.updateUser({ "_id": user._id }, { "$set": { "password": usersAPI.encryptPwd(newPwd) }}).then((result) => {
+                usersAPI.updateUser({ "_id": user._id }, { "$set": { "password": usersAPI.encryptPwd(newPwd) }}).then(() => {
                     console.info("new password request", user._id, newPwd, usersAPI.encryptPwd(newPwd));
-                    mailsAPI.sendPassword(user._id, user.name, newPwd, (error, response) => {
-                        if (!!error) {
+                    mailsAPI.sendPassword(user._id, user.name, newPwd, (error) => {
+                        if (error) {
                             res.jsonp({ "error": req.trads.error.errorSendMail });
                         } else {
                             res.jsonp({ "success": req.trads.error.successSendMail });
                         }
                     });
-                }).catch((error) => { res.jsonp({ "error": req.trads.error.errorSendMail }); });
-            }).catch((error) => { res.jsonp({ "error": req.trads.error.invalidCredential }); });
+                }).catch(() => { res.jsonp({ "error": req.trads.error.errorSendMail }); });
+            }).catch(() => { res.jsonp({ "error": req.trads.error.invalidCredential }); });
 		})
 
     //Preview

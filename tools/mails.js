@@ -1,4 +1,5 @@
-var nodemailer = require("nodemailer"),
+const nodemailer = require("nodemailer"),
+    console = require("./console"),
     smtpTransport = nodemailer.createTransport(require("nodemailer-smtp-transport")({
         "service": "gmail",
         "auth": { "user": "robba.jt@gmail.com", "pass": "robba1979" },
@@ -18,19 +19,19 @@ var nodemailer = require("nodemailer"),
 
 smtpTransport.use("compile", require("nodemailer-plugin-inline-base64"));
 
-module.exports = MailsAPI = function () {
+var MailsAPI = exports = module.exports = function () {
     "use strict";
 
     if (!(this instanceof MailsAPI)) { return new MailsAPI(); }
 
     var sendMail = function (options, callback) {
         smtpTransport.sendMail(options, function (error, success) {
-            if (!!error) {
+            if (error) {
                 console.error("sendMail error", error);
-                return !!callback ? callback(error) : false;
+                return callback ? callback(error) : false;
             }
             console.log("sendMail success", success);
-            return !!callback ? callback(null, success) : true;
+            return callback ? callback(null, success) : true;
         });
     };
 
@@ -56,8 +57,8 @@ module.exports = MailsAPI = function () {
                 "description": book.description.substr(0, Math.max(index, 500)) + ((index !== -1) ? "..." : ""),
                 "source": book.base64 || book.alternative,
                 "name": !!book.userComment || !!book.userNote ? name + ":" : "",
-                "note": !!book.userNote ? "Note: " + book.userNote : "",
-                "comment": !!book.userComment ? "\"" + book.userComment + "\"" : ""
+                "note": book.userNote ? "Note: " + book.userNote : "",
+                "comment": book.userComment ? "\"" + book.userComment + "\"" : ""
             });
 
         sendOptions.to = friend;

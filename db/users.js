@@ -1,8 +1,8 @@
-var bcrypt = require("bcrypt-nodejs"),
+const bcrypt = require("bcrypt-nodejs"),
     Q = require("q"),
     _ = require("lodash");
 
-module.exports = UsersAPI = function () {
+var UsersAPI = exports = module.exports = function () {
     "use strict";
 
     if (!(this instanceof UsersAPI)) { return new UsersAPI(); }
@@ -30,7 +30,7 @@ module.exports = UsersAPI = function () {
                 "googleSignIn": !!googleSignIn,
                 "admin": false
             };
-            if (!!googleSignIn) { user.googleId = password; }
+            if (googleSignIn) { user.googleId = password; }
             insertUser(user, function (err, result) {
                 if (!!err || !result) { reject(err || new Error("Error Database")); } else { resolve(user); }
             });
@@ -47,7 +47,7 @@ module.exports = UsersAPI = function () {
     this.hasBook = function (user, book) {
         return new Q.Promise(function (resolve, reject) {
             users.findOne({ _id: user, "books.book": book }, function (error, success) {
-                if (!!error) { return reject(error); }
+                if (error) { return reject(error); }
                 resolve(success);
             });
         });
@@ -65,7 +65,7 @@ module.exports = UsersAPI = function () {
                     { "$match": { "_id": { "$nin": books }}},
                     { "$match": { "_id.user": { "$exists": false }}}
                 ]).toArray(function (error, result) {
-                    if (!!error) { return reject(error); }
+                    if (error) { return reject(error); }
                     var books = _.groupBy(result, "count"),
                         keys = _.keys(_.groupBy(result, "count")).sort(),
                         most = [],
@@ -84,7 +84,7 @@ module.exports = UsersAPI = function () {
     this.updateUser = function (query, data) {
         return new Q.Promise(function (resolve, reject) {
             updateUser(query, data, function (err, result) {
-                if (!!err) { reject(err); } else { resolve(result); }
+                if (err) { reject(err); } else { resolve(result); }
             });
         });
     };
