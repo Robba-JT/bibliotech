@@ -129,7 +129,7 @@ module.exports = exports = function (secure_server) {
             next();
         }).use((err, req) => {
 			console.error(err.message, err.stack);
-			req.biblioRender("error", { "error": err }, 500);
+			//req.biblioRender("error", { "error": err }, 500);
         })
 
 	//Maintenance url
