@@ -14,6 +14,7 @@ const Q = require("q"),
             "Content-Type": "application/json"
         }
     },
+    file_type = require("file-type"),
     images = require("../tools/images");
 
 google.options(gOptions);
@@ -226,6 +227,7 @@ var BooksAPI = exports = module.exports = function (token) {
                         var chunk = [];
                         response.on("data", (data) => { chunk.push(new Buffer(data, "binary")); });
                         response.on("end", () => {
+                            console.log("file type books", file_type(Buffer.concat(chunk)));
                             var content = new Buffer(Buffer.concat(chunk).toString("base64"), "base64");
                             images.reduce(content).then((cover) => {
                                 console.log("images.reduce", content.length, cover.length);

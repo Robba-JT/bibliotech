@@ -34,6 +34,7 @@
     "express-device": "^0.3.13",
     "express-json": "^1.0.0",
     "express-session": "^1.13.0",
+    "file-type": "^3.9.0",
     "googleapis": "^1.1.5",
     "https-proxy-agent": "^1.0.0",
     "https-server": "^0.1.2",
