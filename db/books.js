@@ -251,11 +251,10 @@ var BooksAPI = exports = module.exports = function (token) {
             googleRequest("volumes.get", params).then((response) => {
                 var book = formatOne(response);
                 book.isNew = true;
-                console.log("searchOne", book);
                 this.loadBase64(bookid, book.cover || book.thumbnail).then((response) => {
                     book.base64 = response.base64;
                 }).catch((error) => {
-                    console.error("serachOne loadBase64", book, error);
+                    console.error("serachOne loadBase64", book.id, book.title, book.cover, book.thumbnail, error);
                 }).done(() => { resolve(book); });
             }).catch(reject);
         });
