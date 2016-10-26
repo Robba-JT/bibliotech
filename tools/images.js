@@ -1,20 +1,18 @@
-const sharp = require("sharp"),
-    console = require("./console"),
+const console = require("./console"),
+    //sharp = require("sharp"),
     file_type = require("file-type"),
     Q = require("q");
-
-sharp("./root/images/background_login.jpg").toFile("./temp/output-jpeg-from-buffer.jpg");
 
 exports = module.exports.reduce = function (img) {
     console.log("file type images", file_type(img));
     return new Q.Promise((resolve, reject) => {
-        sharp(img)
-            .resize(require("nconf").get("config").photos_max_width)
-            .embed()
-            .withoutEnlargement()
-            //.webp()
-            .toBuffer()
-            .then(resolve)
-            .on("error", reject);
+        // sharp(img)
+        //     .resize(require("nconf").get("config").photos_max_width)
+        //     .embed()
+        //     .withoutEnlargement()
+        //     .toBuffer()
+        //     .then(resolve)
+        //     .on("error", reject);
+        resolve(img);
     });
 };
