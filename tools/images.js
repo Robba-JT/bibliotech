@@ -1,7 +1,8 @@
-const sharp = require("sharp");
+const sharp = require("sharp"),
+    Q = require("q");
 
 exports = module.exports.reduce = function (photo) {
-    return new Promise((resolve, reject) => {
+    return new Q.Promise((resolve, reject) => {
         sharp(photo)
             .resize(require("nconf").get("config").photos_max_width)
             .embed()
