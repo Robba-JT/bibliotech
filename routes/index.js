@@ -127,9 +127,9 @@ module.exports = exports = function (secure_server) {
                 res.status(status || 200).render.apply(res, [path, labels]);
             };
             next();
-        }).use((err, req) => {
-			console.error(err.message, err.stack);
-			//req.biblioRender("error", { "error": err }, 500);
+        }).use((error, req, res, next) => {
+			console.error(error.message, error.stack);
+			req.biblioRender("error", { "error": error }, 500);
         })
 
 	//Maintenance url
