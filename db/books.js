@@ -180,15 +180,15 @@ var BooksAPI = exports = module.exports = function (token) {
                 } else if (result) {
                     resolve(result._id);
                 } else {
-                    images.reduce(data.cover).then((cover) => {
-                        db_covers.insert({ "_id": data._id, "cover": cover }, function (error) {
-                            if (error) {
-                                reject(error);
-                            } else {
-                                resolve(data._id);
-                            }
-                        });
-                    }).catch(reject);
+                    var this_cover = data.cover;
+                    images.reduce(this_cover).then((cover) => {
+                        console.log("images.reduce", this_cover.length, cover.length);
+                        this_cover = cover;
+                    }).done(() => {
+                        db_covers.insert({ "_id": data._id, "cover": this_cover }).then(() => {
+                            resolve(data._id);
+                        }).catch(reject);
+                    });
                 }
             });
         });
@@ -227,12 +227,13 @@ var BooksAPI = exports = module.exports = function (token) {
                         response.on("data", (data) => { chunk.push(new Buffer(data, "binary")); });
                         response.on("end", () => {
                             var content = Buffer.concat(chunk);
-                            images.reduce(content).catch((error) => {
-                                console.error("reduce error", error);
-                                return content;
-                            }).then((cover) => {
-                                console.log("reduce", content.length, cover.length);
-                                resolve({ "id": bookid, "base64": "data:".concat(response.headers["content-type"]).concat(";base64,").concat(cover.toString("base64")) });
+                            images.reduce(content).then((cover) => {
+                                console.log("images.reduce", content.length, cover.length);
+                                content = cover;
+                            }).catch((error) => {
+                                console.error("images.reduce", error);
+                            }).done(() => {
+                                resolve({ "id": bookid, "base64": "data:".concat(response.headers["content-type"]).concat(";base64,").concat(content.toString("base64")) });
                             });
                         });
                     }

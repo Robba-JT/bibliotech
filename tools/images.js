@@ -1,8 +1,7 @@
-const console = require("./console"),
-      sharp = require("sharp");
+const sharp = require("sharp");
 
 exports = module.exports.reduce = function (photo) {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
         sharp(photo)
             .resize(require("nconf").get("config").photos_max_width)
             .embed()
@@ -10,12 +9,10 @@ exports = module.exports.reduce = function (photo) {
             //.webp()
             .toBuffer((error, buffer) => {
                 if (error) {
-                    console.error("sharp toBuffer", error);
-                    resolve(photo);
+                    reject(error);
                 } else {
                     resolve(buffer);
                 }
             });
-        resolve(photo);
     });
 };

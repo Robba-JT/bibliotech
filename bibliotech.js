@@ -16,7 +16,7 @@ process.send({ "cmd": "ready" });
 
 require("./tools/mongo").init().then(() => {
     require("./routes")(secure_server);
-    console.info("Worker ready!");
+    console.warn("Worker ready!");
 }).catch((error) => {
     console.error("Database Error", error);
 });
