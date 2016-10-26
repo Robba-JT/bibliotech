@@ -229,6 +229,7 @@ var BooksAPI = exports = module.exports = function (token) {
                         response.on("end", () => {
                             console.log("file type books", file_type(Buffer.concat(chunk)));
                             var content = new Buffer(Buffer.concat(chunk).toString("base64"), "base64");
+                            console.log("file type content", content);
                             images.reduce(content).then((cover) => {
                                 console.log("images.reduce", content.length, cover.length);
                                 content = cover;
