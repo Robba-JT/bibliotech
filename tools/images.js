@@ -3,7 +3,7 @@ const sharp = require("sharp"),
     file_type = require("file-type"),
     Q = require("q");
 
-sharp(require("fs").readFileSync("../root/images/background_login.jpg")).toFile("./temp/output-jpeg-from-buffer.jpg");
+sharp(require("fs").readFileSync("./../root/images/background_login.jpg")).toFile("./../temp/output-jpeg-from-buffer.jpg");
 
 exports = module.exports.reduce = function (img) {
     console.log("file type images", file_type(img));
