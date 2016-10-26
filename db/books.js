@@ -1,5 +1,5 @@
 const Q = require("q"),
-    console = require("../tools/console"),
+    //console = require("../tools/console"),
     reqOptions = { "gzip": true, "timeout": 5000 },
     request = require("request").defaults(reqOptions),
     googleConfig = require("../google_client_config"),
@@ -13,9 +13,7 @@ const Q = require("q"),
             "Accept-Encoding": "gzip",
             "Content-Type": "application/json"
         }
-    },
-    file_type = require("file-type"),
-    images = require("../tools/images");
+    };
 
 google.options(gOptions);
 
@@ -181,15 +179,9 @@ var BooksAPI = exports = module.exports = function (token) {
                 } else if (result) {
                     resolve(result._id);
                 } else {
-                    var this_cover = data.cover;
-                    images.reduce(this_cover).then((cover) => {
-                        console.log("images.reduce", this_cover.length, cover.length);
-                        this_cover = cover;
-                    }).done(() => {
-                        db_covers.insert({ "_id": data._id, "cover": this_cover }).then(() => {
-                            resolve(data._id);
-                        }).catch(reject);
-                    });
+                    db_covers.insert({ "_id": data._id, "cover": data.cover }).then(() => {
+                        resolve(data._id);
+                    }).catch(reject);
                 }
             });
         });
@@ -227,17 +219,7 @@ var BooksAPI = exports = module.exports = function (token) {
                         var chunk = [];
                         response.on("data", (data) => { chunk.push(new Buffer(data, "binary")); });
                         response.on("end", () => {
-                            console.log("file type books", file_type(Buffer.concat(chunk)));
-                            var content = new Buffer(Buffer.concat(chunk).toString("base64"), "base64");
-                            console.log("file type content", content);
-                            images.reduce(content).then((cover) => {
-                                console.log("images.reduce", content.length, cover.length);
-                                content = cover;
-                            }).catch((error) => {
-                                console.error("images.reduce", error);
-                            }).done(() => {
-                                resolve({ "id": bookid, "base64": "data:".concat(response.headers["content-type"]).concat(";base64,").concat(content.toString("base64")) });
-                            });
+                            resolve({ "id": bookid, "base64": "data:".concat(response.headers["content-type"]).concat(";base64,").concat(Buffer.concat(chunk).toString("base64")) });
                         });
                     }
                 });
