@@ -224,16 +224,16 @@ var BooksAPI = exports = module.exports = function (token) {
                         reject("Invalid request");
                     } else {
                         var chunk = [];
-                        response.on("data", (data) => { chunk.push(new Buffer(data, "binary")); });
+                        response.on("data", (data) => { chunk.push(new Buffer(data)); });
                         response.on("end", () => {
-                            var content = Buffer.concat(chunk);
+                            var content = Buffer.concat(chunk).toString("base64");
                             images.reduce(content).then((cover) => {
                                 console.log("images.reduce", content.length, cover.length);
-                                content = cover;
+                                content = cover.toString("base64");
                             }).catch((error) => {
                                 console.error("images.reduce", error);
                             }).done(() => {
-                                resolve({ "id": bookid, "base64": "data:".concat(response.headers["content-type"]).concat(";base64,").concat(content.toString("base64")) });
+                                resolve({ "id": bookid, "base64": "data:".concat(response.headers["content-type"]).concat(";base64,").concat(content) });
                             });
                         });
                     }

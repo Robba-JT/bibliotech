@@ -6,7 +6,7 @@ const console = require("./tools/console"),
       config = require(path.join(__dirname, "./config"))[process.env.NODE_ENV || "production"];
 
 process.stdout.write("\u001b[2J\u001b[0;0H");
-console.info(new Date(), "Starting environment:", process.env.NODE_ENV);
+console.info("Starting environment:", process.env.NODE_ENV);
 
 require("express")().get("*", (req, res) => {
     res.redirect(require("url").format({ "protocol": "https", "hostname": req.hostname, "port": config.secure_port }));
