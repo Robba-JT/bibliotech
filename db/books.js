@@ -146,7 +146,7 @@ var BooksAPI = exports = module.exports = function (token) {
                     var updated = 0, removed = 0, requests = [];
                     result.forEach(function (oldOne) {
                         var params = _.merge({ "volumeId": oldOne.id }, reqParams.searchOne);
-                        requests.push(new Promise(function () {
+                        requests.push(new Q.Promise(function () {
                             googleRequest("volumes.get", params, function (error, response) {
                                 if (!!error) {
                                     console.error("Error Update One", oldOne.id, error);
