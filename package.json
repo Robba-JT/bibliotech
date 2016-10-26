@@ -16,7 +16,6 @@
     "url": "https://github.com/Robba-JT/bibliotech/issues"
   },
   "dependencies": {
-    "array-events": "^0.2.0",
     "async": "^1.5.2",
     "bcrypt-nodejs": "0.0.3",
     "better-console": "^0.2.4",

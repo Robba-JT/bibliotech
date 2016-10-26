@@ -251,6 +251,7 @@ var BooksAPI = exports = module.exports = function (token) {
             googleRequest("volumes.get", params).then((response) => {
                 var book = formatOne(response);
                 book.isNew = true;
+                console.log("searchOne", book);
                 this.loadBase64(bookid, book.cover).then((response) => {
                     book.base64 = response.base64;
                 }).done(() => { resolve(book); });

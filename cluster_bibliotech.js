@@ -7,6 +7,7 @@ const console = require("./tools/console"),
 
 process.stdout.write("\u001b[2J\u001b[0;0H");
 console.info("Starting environment:", process.env.NODE_ENV);
+
 require("pmx").init({ "http" : true });
 
 require("express")().get("*", (req, res) => {
