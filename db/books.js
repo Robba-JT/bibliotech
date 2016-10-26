@@ -252,8 +252,10 @@ var BooksAPI = exports = module.exports = function (token) {
                 var book = formatOne(response);
                 book.isNew = true;
                 console.log("searchOne", book);
-                this.loadBase64(bookid, book.cover).then((response) => {
+                this.loadBase64(bookid, book.cover || book.thumbnail).then((response) => {
                     book.base64 = response.base64;
+                }).catch((error) => {
+                    console.error("serachOne loadBase64", book, error);
                 }).done(() => { resolve(book); });
             }).catch(reject);
         });
