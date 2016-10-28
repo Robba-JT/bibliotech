@@ -159,7 +159,7 @@ exports = module.exports = function main (socket) {
                 returnComments = function (elt) { return elt._id.user !== thisUser._id; },
                 returnUserComments = function (elt) { return elt._id.user === thisUser._id; },
                 //returnCover = function (cover) { return _.isEqual(cover._id.book, books[book].id); },
-                loadCover = function (id, cover) { return bookAPI.loadBase64(id, cover).then(function (base64) { return base64; }); };
+                loadCover = function (id, cover) { return bookAPI.loadBase64(id, cover) };
 
             if (notifs.length) { socket.emit("notifs", notifs); }
 
@@ -191,7 +191,7 @@ exports = module.exports = function main (socket) {
                     }
                 }
                 if (books[book].cover || books[book].thumbnail) {
-                    def64.push(loadCover(books[book].id, books[book].cover || books[book].thumbnail));
+                    def64.push(bookAPI.loadBase64(books[book].id, books[book].cover || books[book].thumbnail));
 				}
                 if (browser_type !== "mobile" && toSend.length % sendingLg === 0) {
                     socket.emit("initCollect", toSend);
