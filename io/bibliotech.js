@@ -191,6 +191,7 @@ exports = module.exports = function main (socket) {
                     }
                 }
                 if (books[book].cover || books[book].thumbnail) {
+                    console.log(books[book].cover || books[book].thumbnail);
                     def64.push(bookAPI.loadBase64(books[book].id, books[book].cover || books[book].thumbnail));
 				}
                 if (browser_type !== "mobile" && toSend.length % sendingLg === 0) {
