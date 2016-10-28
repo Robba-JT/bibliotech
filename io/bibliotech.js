@@ -167,8 +167,7 @@ exports = module.exports = function main (socket) {
                 var infos = _.find(thisUser.books, returnInfo),
                     comment = _.filter(comments[JSON.stringify(books[book].id)], returnComments),
                     userComment = _.filter(comments[JSON.stringify(books[book].id)], returnUserComments),
-                    thumbnail = _.find(covers, { _id: _.result(infos, "thumbnail")}),
-                    cover = _.find(covers, { _id: _.result(infos, "cover")});
+                    cover = _.find(covers, { _id: _.result(infos, "cover")}) || _.find(covers, { _id: _.result(infos, "thumbnail")});
 
                 books[book].tags = _.result(infos, "tags");
                 books[book].from = _.result(infos, "from");
@@ -217,6 +216,7 @@ exports = module.exports = function main (socket) {
 					}
 				};
 				Q.allSettled(def64).then(function (results) {
+                    console.log("results def64", results);
 					if (results.length) { sendCovers.push(_.map(results, "value")); }
 					sendCovers = _.flattenDeep(sendCovers);
                     console.log("sendCovers", sendCovers);
