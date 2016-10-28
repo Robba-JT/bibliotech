@@ -191,8 +191,8 @@ exports = module.exports = function main (socket) {
 						books[book].alternative = cover.cover;
                     }
                 }
-                if (books[book].cover) {
-                    def64.push(loadCover(books[book].id, books[book].cover));
+                if (books[book].cover || books[book].thumbnail) {
+                    def64.push(loadCover(books[book].id, books[book].cover || books[book].thumbnail));
 				}
                 if (browser_type !== "mobile" && toSend.length % sendingLg === 0) {
                     socket.emit("initCollect", toSend);
