@@ -167,6 +167,7 @@ exports = module.exports = function main (socket) {
                 var infos = _.find(thisUser.books, returnInfo),
                     comment = _.filter(comments[JSON.stringify(books[book].id)], returnComments),
                     userComment = _.filter(comments[JSON.stringify(books[book].id)], returnUserComments),
+                    thumbnail = _.find(covers, { _id: _.result(infos, "thumbnail")}),
                     cover = _.find(covers, { _id: _.result(infos, "cover")});
 
                 books[book].tags = _.result(infos, "tags");
@@ -181,7 +182,7 @@ exports = module.exports = function main (socket) {
                     books[book].userDate = userComment[0].date;
                 }
                 toSend.push(_.clone(books[book]));
-                if (cover) {
+                if (cover || thumbnail) {
                     if (books[book].cover) {
                         bookAPI.removeCovers({ "_id": { "user": thisUser._id , "book": books[book].id }});
                         userAPI.updateUser({ "_id": thisUser._id, "books.book": books[book].id }, {"$unset": { "books.$.cover" : true }});
@@ -386,7 +387,6 @@ exports = module.exports = function main (socket) {
     });
 
     socket.on("recommanded", function () {
-        console.log("recommanded", new Date());
         searchLoop("myGoogleBooks", { "search": true, "shelf": 8 }, function (books) {
             socket.emit("books", books);
         }).catch(function (error) {
