@@ -36,7 +36,7 @@ module.exports = exports = function (secure_server) {
             "saveUninitialized": false,
             "rolling": false,
             "store": mongoStore,
-            "secret": "robba1979",
+            "secret": config.pass_phrase,
             "cookie": {
                 "expires": false,
                 "secure": true,
@@ -220,7 +220,7 @@ module.exports = exports = function (secure_server) {
     io.of("/bibliotech").use(passportSocketIo.authorize({
         "cookieParser": require("cookie-parser"),
         "key": "_bsession",
-        "secret": "robba1979",
+        "secret": config.pass_phrase,
         "store": mongoStore,
         "fail": (data, message, error, next) => { next(error); },
         "success": (data, next) => {
@@ -256,7 +256,7 @@ module.exports = exports = function (secure_server) {
     io.of("/admin").use(passportSocketIo.authorize({
         "cookieParser": require("cookie-parser"),
         "key": "_bsession",
-        "secret": "robba1979",
+        "secret": config.pass_phrase,
         "store": mongoStore,
         "fail": (data, message, error, next) => { next(error); },
         "success": (data, next) => {

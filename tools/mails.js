@@ -1,8 +1,9 @@
 const nodemailer = require("nodemailer"),
     console = require("./console"),
+    config = require("nconf").get("config"),
     smtpTransport = nodemailer.createTransport(require("nodemailer-smtp-transport")({
         "service": "gmail",
-        "auth": { "user": "robba.jt@gmail.com", "pass": "robba1979" },
+        "auth": { "user": "robba.jt@gmail.com", "pass": config.pass_phrase },
         "debug" : true
     })),
     mailLogin = {
