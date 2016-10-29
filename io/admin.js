@@ -25,7 +25,7 @@ exports = module.exports = function main (socket) {
                     _id: log,
                     type: log.substr(0, under),
                     date: log.substring(under + 1, extension),
-                    file: fs.readFileSync(log_path.concat("/").concat("log"), "utf-8")/*.split(/\r\n|\r|\n/)*/
+                    file: fs.readFileSync(log_path.concat("/").concat(log), "utf-8")/*.split(/\r\n|\r|\n/)*/
                 });
             });
             socket.emit("logs", logs);
