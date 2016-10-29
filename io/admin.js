@@ -11,7 +11,7 @@ exports = module.exports = function main (socket) {
 	oneMonthBefore.setDate(oneMonthBefore.getDate() - 30);
 
     socket.on("isConnected", function () {
-        fs.readdir("./logs", function (error, files) {
+        fs.readdir("../bibliologs", function (error, files) {
             var logs = [];
             if (error) {
               console.error("logs", error);
