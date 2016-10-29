@@ -1,5 +1,5 @@
 const _ = require("lodash"),
-    console = require("./tools/console"),
+    console = require("../tools/console"),
     db = require("../tools/mongo").client,
     ObjectID = require("mongodb").ObjectID,
     bcrypt = require("bcrypt-nodejs"),
