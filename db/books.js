@@ -28,7 +28,6 @@ var BooksAPI = exports = module.exports = function (token) {
         db_books = db.collection("books"),
         db_comments = db.collection("comments"),
         db_covers = db.collection("covers"),
-        db_alternatives = db.collection("alternatives"),
         db_notifs = db.collection("notifications"),
         reqParams = {
             "searchOne": {
@@ -76,8 +75,9 @@ var BooksAPI = exports = module.exports = function (token) {
                 "categories": (bookinfos.categories) ? bookinfos.categories[0] : "",
                 "isbn10": (bookinfos.industryIdentifiers && !!_.find(bookinfos.industryIdentifiers, { type: "ISBN_10" })) ? _.find(bookinfos.industryIdentifiers, { type: "ISBN_10" }).identifier : "",
                 "isbn13": (bookinfos.industryIdentifiers && !!_.find(bookinfos.industryIdentifiers, { type: "ISBN_13" })) ? _.find(bookinfos.industryIdentifiers, { type: "ISBN_13" }).identifier : "",
-                "thumbnail": bookinfos.imageLinks && (bookinfos.imageLinks.thumbnail || bookinfos.imageLinks.smallThumbnail) || "",
-                "cover": bookinfos.imageLinks && (bookinfos.imageLinks.small || bookinfos.imageLinks.medium || bookinfos.imageLinks.large || bookinfos.imageLinks.extraLarge) || "",
+                //"thumbnail": bookinfos.imageLinks && (bookinfos.imageLinks.thumbnail || bookinfos.imageLinks.smallThumbnail) || "",
+                //"cover": bookinfos.imageLinks && (bookinfos.imageLinks.small || bookinfos.imageLinks.medium || bookinfos.imageLinks.large || bookinfos.imageLinks.extraLarge) || "",
+                "cover": bookinfos.imageLinks ? bookinfos.imageLinks.small || bookinfos.imageLinks.medium || bookinfos.imageLinks.large || bookinfos.imageLinks.extraLarge || bookinfos.imageLinks.thumbnail || bookinfos.imageLinks.smallThumbnail : false,
                 "access": (book.accessInfo) ? book.accessInfo.accessViewStatus : "NONE",
                 "preview": (book.accessInfo) ? book.accessInfo.webReaderLink : "",
                 "date": new Date()
@@ -173,17 +173,27 @@ var BooksAPI = exports = module.exports = function (token) {
 
     this.addCover = (data) => {
         return new Q.Promise((resolve, reject) => {
-            this.loadCover({ cover: data.cover }, function (error, result) {
-                if (error) {
-                    reject(error);
-                } else if (result) {
-                    resolve(result._id);
-                } else {
-                    db_covers.insert({ "_id": data._id, "cover": data.cover }).then(() => {
-                        resolve(data._id);
+            // this.loadCover({ cover: data.cover }, function (error, result) {
+            //     if (error) {
+            //         reject(error);
+            //     } else if (result) {
+            //         resolve(result._id);
+            //     } else {
+            //         db_covers.insert({ "cover": data.cover }).then((result) => {
+            //             resolve(result.insertedId);
+            //         }).catch(reject);
+            //     }
+            // });
+            this.loadCover({ "cover": data.cover }).then((cover) => {
+                if (!cover) {
+                    db_covers.insertOne(data).then((result) => {
+                        console.log("result", result, _.get(result.ops[0], "_id"));
+                        resolve(result.insertedId);
                     }).catch(reject);
+                } else {
+                    resolve(cover._id);
                 }
-            });
+            }).catch()
         });
     };
 
@@ -203,9 +213,7 @@ var BooksAPI = exports = module.exports = function (token) {
 
     this.loadAllBooks = (filter, projection) => { return db_books.find(filter, projection).toArray(); };
 
-    this.loadAlt = (filter) => { return db_alternatives.findOne(filter); };
-
-    this.loadAlts = (filter) => { return db_alternatives.find(filter).toArray(); };
+    this.loadAlt = (filter) => { return db_covers.findOne(filter); };
 
     this.loadBase64 = (bookid, url) => {
         return new Q.Promise((resolve, reject) => {
