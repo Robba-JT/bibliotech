@@ -42,7 +42,10 @@ module.exports = function (grunt) {
                 "files": {
 					"./root/js/bibliotech.lib.js": [
                         "./root/lib/Promise.min.js",
-                        "./root/lib/color-thief.js",
+                        "./root/lib/color-thief.min.js",
+                        "./root/lib/socket.io.min.js",
+                        "./root/lib/lodash.min.js",
+                        "./root/lib/angular.min.js",
                         "./root/dev/js/bibliotech.proto.js"
                     ],
                     "./root/js/bibliotech.js": [
