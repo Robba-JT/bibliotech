@@ -11,7 +11,8 @@ exports = module.exports = function main (socket) {
 	oneMonthBefore.setDate(oneMonthBefore.getDate() - 30);
 
     socket.on("isConnected", function () {
-        fs.readdir("../bibliologs", function (error, files) {
+        var log_path = "../bibliologs";
+        fs.readdir(log_path, function (error, files) {
             var logs = [];
             if (error) {
               console.error("logs", error);
@@ -24,7 +25,7 @@ exports = module.exports = function main (socket) {
                     _id: log,
                     type: log.substr(0, under),
                     date: log.substring(under + 1, extension),
-                    file: fs.readFileSync("./logs/" + log, "utf-8")/*.split(/\r\n|\r|\n/)*/
+                    file: fs.readFileSync(log_path.concat("/").concat("log"), "utf-8")/*.split(/\r\n|\r|\n/)*/
                 });
             });
             socket.emit("logs", logs);
