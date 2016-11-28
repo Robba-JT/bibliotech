@@ -3,48 +3,19 @@ const mailsAPI = require("../tools/mails")(),
     _ = require("lodash"),
     passport = require("passport"),
     googleConfig = require("../google_client_config"),
-    //googleKey = googleConfig.key,
     googleWeb = googleConfig.web,
     trads = require("../tools/trads"),
     meta = require("../tools/meta"),
     GoogleStrategy = require("passport-google-oauth").OAuth2Strategy,
     LocalStrategy = require("passport-local").Strategy,
-    passportSocketIo = require("passport.socketio"),
     version = require("../package").version,
-    Io = require("socket.io"),
-    express = require("../tools/express"),
-    config = require("nconf").get("config");
+    express = require("../tools/express");
 
-module.exports = exports = function (secure_server) {
+module.exports = exports = function () {
     "use strict";
 
     const usersAPI = require("../db/users")(),
-        io = new Io(secure_server, { "secure": true }),
-        app = express.app,
-        Session = require("express-session"),
-        MongoStore = require("connect-mongo")(Session),
-        mongoStore = new MongoStore({
-            "url": config.database,
-            "autoRemove": "native",
-            "touchAfter": config.maxAge
-        }),
-        session = Session({
-            "key": "_bsession",
-            "proxy": false,
-            "resave": false,
-            "unset": "destroy",
-            "saveUninitialized": false,
-            "rolling": false,
-            "store": mongoStore,
-            "secret": config.pass_phrase,
-            "cookie": {
-                "expires": false,
-                "secure": true,
-                "httpOnly": true
-            }
-        });
-
-    app.use(session);
+        app = express.app;
 
     passport.serializeUser((user, done) => {
         done(null, { "_id": user._id, "token": user.token, "infos": user.infos, "active": !!user.active, "browser_type": user.browser_type });
@@ -191,7 +162,7 @@ module.exports = exports = function (secure_server) {
                 if (!user) {
                     res.jsonp({ "error": req.trads.error.alreadyExist });
                 } else {
-                    req.login(user, (err) => { return res.jsonp({ success : !err }); });
+                    req.login(user, (err) => { return res.jsonp({ "success" : !err }); });
                 }
             })(req, res, next);
 		})
@@ -215,69 +186,4 @@ module.exports = exports = function (secure_server) {
 
     //Preview
         .post("/preview", (req, res) => { res.render("preview", { "bookid": req.body.previewid }); });
-
-	//IO Connection
-    io.of("/bibliotech").use(passportSocketIo.authorize({
-        "cookieParser": require("cookie-parser"),
-        "key": "_bsession",
-        "secret": config.pass_phrase,
-        "store": mongoStore,
-        "fail": (data, message, error, next) => { next(error); },
-        "success": (data, next) => {
-            passportSocketIo.filterSocketsByUser(io, (user) => {
-                return user._id === data.user._id;
-            }).forEach((socket) => {
-				if (socket.request.sessionID !== data.sessionID) { socket.server.nsps["/bibliotech"].emit("logout"); }
-			});
-            next();
-        }
-    })).on("connection", (socket) => {
-        var onEvent = socket.onevent;
-
-        socket.onevent = function () {
-            var args = arguments;
-            mongoStore.get(socket.request.sessionID, (error, session) => {
-                if (!!error || !session || !!session.cookie.expires && session.cookie.expires < new Date()) {
-                    console.error(error || new Error("No session find!!!"));
-                    return socket.emit("logout");
-                }
-                onEvent.apply(socket, args);
-                if (!!socket.request.user && !socket.request.user.active) {
-                    var today = new Date();
-                    session.cookie.expires = today.setSeconds(today.getSeconds() + 3600);
-                    mongoStore.set(socket.request.sessionID, session);
-                }
-            });
-        };
-
-        require("../io/bibliotech")(socket);
-    });
-
-    io.of("/admin").use(passportSocketIo.authorize({
-        "cookieParser": require("cookie-parser"),
-        "key": "_bsession",
-        "secret": config.pass_phrase,
-        "store": mongoStore,
-        "fail": (data, message, error, next) => { next(error); },
-        "success": (data, next) => {
-            passportSocketIo.filterSocketsByUser(io, (user) => {
-                return user._id === data.user._id;
-            }).forEach((socket) => { if (socket.request.sessionID !== data.sessionID) { socket.server.nsps["/admin"].emit("logout"); }});
-            next();
-        }
-    })).on("connection", (socket) => {
-        if (!socket.request.user || !socket.request.user.admin) { return socket.emit("logout"); }
-        var onEvent = socket.onevent;
-        socket.onevent = function () {
-            var args = arguments;
-            mongoStore.get(socket.request.sessionID, (error, session) => {
-                if (!!error || !session || !!session.cookie.expires && session.cookie.expires < new Date()) {
-                    console.error(error || new Error("No session find!!!"));
-                    return socket.emit("logout");
-                }
-                onEvent.apply(socket, args);
-            });
-        };
-        require("../io/admin")(socket);
-    });
 };

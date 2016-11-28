@@ -15,7 +15,8 @@ sticky.listen(secure_server);
 process.send({ "cmd": "ready" });
 
 require("./tools/mongo").init().then(() => {
-    require("./routes")(secure_server);
+    require("./tools/routes")();
+	require("./tools/socket")(secure_server);
     console.warn("Worker ready!");
 }).catch((error) => {
     console.error("Database Error", error);

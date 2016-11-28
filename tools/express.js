@@ -5,10 +5,34 @@ const express = require("express"),
     path = require("path"),
     device = require("express-device");
 
-
 exports = module.exports = function () {
     const app = express(),
-        config = require("nconf").get("config");
+        config = require("nconf").get("config"),
+        Session = require("express-session"),
+        MongoStore = require("connect-mongo")(Session),
+        mongoStore = new MongoStore({
+            "url": config.database,
+            "autoRemove": "native",
+            "touchAfter": config.maxAge
+        }),
+        session = Session({
+            "key": "_bsession",
+            "proxy": false,
+            "resave": false,
+            "unset": "destroy",
+            "saveUninitialized": false,
+            "rolling": false,
+            "store": mongoStore,
+            "secret": config.pass_phrase,
+            "cookie": {
+                "expires": false,
+                "secure": true,
+                "httpOnly": true
+            }
+        });
+
+    module.exports.app = app;
+    module.exports.mongoStore = mongoStore;
 
     app.engine("html", require("consolidate").swig)
         .set("view engine", "html")
@@ -76,7 +100,7 @@ exports = module.exports = function () {
 
                 next();
             }
-        });
+        }).use(session);
 
     if (app.get("env") === "production") {
         app.use(require("errorhandler")(config.errorHandlerOptions));
@@ -84,16 +108,14 @@ exports = module.exports = function () {
         app.use(require("errorhandler")(config.errorHandlerOptions))
             .use(require("morgan")("dev"))
             .use((req, res, next) => {
-                require("on-finished")(res, (err) => {
+                require("on-finished")(res, () => {
                     console.log(req.connection.remoteAddress, "finished request");
                 });
                 next();
-	       });
+            });
     }
 
     device.enableDeviceHelpers(app);
-
-    module.exports.app = app;
 
     return app;
 };
