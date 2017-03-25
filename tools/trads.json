@@ -1,6 +1,6 @@
 {
     "fr": {
-         "error": {
+        "error": {
             "invalidCredential": "Identifiants incorrects!",
             "alreadyExist": "Utilisateur déjà créé!",
             "errorSendMail": "Une erreur est survenue durant l'envoi de l'email, veuillez réessayer ultérieurement ou nous envoyer un mail à: admin@biblio.tech.",

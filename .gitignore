@@ -5,7 +5,6 @@
 /config.json
 /.rebooted
 /tools/admins.js
-/root/dev/
 /npm-debug.log
 /.npmrc
 /bibliotech_service_account.json
@@ -14,5 +13,4 @@
 /stop_bibliotech_dev
 /google_client_config.json
 /.brackets.json
-/gruntfile.js
-/.eslintrc.js
+/old_dev/

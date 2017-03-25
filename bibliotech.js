@@ -1,22 +1,23 @@
-"use strict";
+require("nconf").argv().env().defaults({
+    "config": require("./config")[process.env.NODE_ENV || "production"]
+});
 
-require("nconf").argv().env().defaults({ "config": require("./config")[process.env.NODE_ENV || "production"] });
-
-const express = require("./tools/express"),
-	app = express(),
-    secure_server = require("https").Server({
+const app = require("./tools/express").app,
+    secureServer = require("https").Server({
         "pfx": require("fs").readFileSync(require("path").join(__dirname, "/ssl/bibliotech.pfx")),
-        "passphrase": require("nconf").get("config").pass_phrase
+        "passphrase": require("nconf").get("config").passPhrase
     }, app),
     console = require("./tools/console"),
     sticky = require("sticky-listen");
 
-sticky.listen(secure_server);
-process.send({ "cmd": "ready" });
+sticky.listen(secureServer);
+process.send({
+    "cmd": "ready"
+});
 
 require("./tools/mongo").init().then(() => {
-    require("./tools/routes")();
-	require("./tools/socket")(secure_server);
+    require("./tools/routes");
+    require("./tools/socket")(secureServer);
     console.warn("Worker ready!");
 }).catch((error) => {
     console.error("Database Error", error);

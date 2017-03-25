@@ -1,0 +1,41 @@
+<header class="windowheader">&nbsp;{{search}}
+    <div class="closeWindow" title="{{close}}"></div>
+</header>
+<form autocomplete="off" name="searchForm">
+    <div>
+        <input name="search" minlength="3" error="{{error}}" type="search" autocomplete="on" required placeholder="{{search}}" auto-focus/>
+        <input type="submit" value="{{valid}}"/>
+    </div>
+    <div id="recommand4u"><input type="button" value="{{recommand4u}}"></div>
+    <div>
+        <div class="radio">{{searchby}}:</div>
+        <label>&nbsp;{{all}}
+            <input type="radio" name="by" value="" checked/>
+        </label>
+        <label>&nbsp;{{isbn}}
+            <input type="radio" name="by" value="isbn:"/>
+        </label>
+        <label>&nbsp;{{title}}
+            <input type="radio" name="by" value="intitle:"/>
+        </label>
+        <label>&nbsp;{{author}}
+            <input type="radio" name="by" value="inauthor:"/>
+        </label>
+        <label>&nbsp;{{publisher}}
+            <input type="radio" name="by" value="inpublisher:"/>
+        </label>
+    </div>
+    <div>
+        <div class="radio">{{language}}:</div>
+        <label>&nbsp;{{alls}}
+            <input type="radio" name="lang" value="all" checked/>
+        </label>
+        <label>&nbsp;{{english}}
+            <input type="radio" name="lang" value="en"/>
+        </label>
+        <label>&nbsp;{{french}}
+            <input type="radio" name="lang" value="fr"/>
+        </label>
+    </div>
+</form>
+<footer title="Powered by Google"></footer>

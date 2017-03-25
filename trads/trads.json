@@ -1,0 +1,110 @@
+{
+    "fr": {
+        "Cell": {
+            "add": "Ajouter",
+            "remove": "Supprimer"
+        },
+        "error": {
+            "invalidCredential": "Identifiants incorrects!",
+            "alreadyExist": "Utilisateur déjà créé!",
+            "errorSendMail": "Une erreur est survenue durant l'envoi de l'email, veuillez réessayer ultérieurement ou nous envoyer un mail à: admin@biblio.tech.",
+            "successSendMail": "Un email contenant votre nouveau mot de passe vient de vous être envoyé."
+        },
+        "login": {
+            "active": "Garder la session active",
+            "author": "Julien Tassin <admin@biblio.tech>",
+            "confirmed": "Confirmez votre mot de passe",
+            "create": "Créer Compte",
+            "cancel": "Annuler",
+            "description": "Gérer votre bibliothèque: notez, commentez et faites partager votre expérience de lecture à vos amis. Connectez-vous avec votre compte Google et mettez à jour votre bibliothèque.",
+            "email": "exemple@mail.com",
+            "errConfirmed": "Les mots de passe ne sont pas identiques!",
+            "errName": "Le nom doit contenir au moins 4 caractères!",
+            "errPwd": "Le mot de passe doit contenir entre 4 et 12 caractères!",
+            "forgetPassword": "Mot de passe oublié!",
+            "image": "http://lh6.googleusercontent.com/-s--8k-h-7Ok/Vc3p0VuxE6I/AAAAAAAAAU4/bd7r1D0fA0c/s256-no/bold-icon-g%252B.png",
+            "keywords": "bibliotech, bibliothèque, library, bibliothèque virtuelle, virtual library, bibliothèque personnelle, personnal library",
+            "lang": "fr",
+            "maintenance": "Le site est actuellement en cours de maintenance.",
+            "name": "Nom",
+            "password": "Mot de passe",
+            "title": "BiblioTech",
+            "type": "website",
+            "url": "https://biblio.tech",
+            "waiting": "Veuillez patienter...",
+            "welcome": "BiblioTech"
+        },
+        "maintenance": {
+            "message": "Le site est actuellement en cours de maintenance."
+        },
+        "search": {
+            "all": "Tous",
+            "alls": "Toutes",
+            "author": "Auteur",
+            "close": "Fermer",
+            "english": "Anglais",
+            "error": "Erreur",
+            "french": "Français",
+            "isbn": "ISBN",
+            "language": "Langue",
+            "publisher": "Editeur",
+            "recommand4u": "Recommandés pour vous",
+            "search": "Recherche",
+            "searchby": "Rechercher par",
+            "title": "Titre",
+            "valid": "Valider"
+        }
+    },
+    "en": {
+        "Cell": {
+            "add": "Add",
+            "remove": "Remove"
+        },
+        "error": {
+            "invalidCredential": "Invalid credentials!",
+            "alreadyExist": "User already exist!",
+            "errorSendMail": "An error occured while sending the email, please try again later or send us an email to: admin@biblio.tech.",
+            "successSendMail": "An email containing your new password has been sent to you."
+        },
+        "login": {
+            "active": "Stay connected",
+            "cancel": "Cancel",
+            "confirmed": "Confirm password",
+            "connection": "Connection",
+            "create": "New Account",
+            "description": "Manage your library : note , comment , and please share your reading experience to your friends. Sign in with your Google Account and update your library.",
+            "email": "someone@mail.com",
+            "errConfirmed": "Password fields are not identical!",
+            "errName": "Name field must contain at least 4 characters!",
+            "errPwd": "Password field must contain between 4 and 12 characters!",
+            "forgetPassword": "Forget Password",
+            "incorrectCredentials": "Incorrect credentials",
+            "lang": "en",
+            "name": "Name",
+            "password": "Password",
+            "title": "BiblioTech",
+            "valid": "Valid",
+            "welcome": "BiblioTech"
+        },
+        "maintenance": {
+            "message": "Site under maintenance"
+        },
+        "search": {
+            "all": "All",
+            "alls": "All",
+            "author": "Author",
+            "close": "Close",
+            "english": "English",
+            "error": "Error",
+            "french": "French",
+            "isbn": "ISBN",
+            "language": "Language",
+            "publisher": "Publisher",
+            "recommand4u": "Recommand 4 u",
+            "search": "Search",
+            "searchby": "Search by",
+            "title": "Title",
+            "valid": "Valid"
+        }
+    }
+}

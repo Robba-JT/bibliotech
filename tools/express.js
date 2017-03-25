@@ -3,9 +3,12 @@ const express = require("express"),
     body_parser = require("body-parser"),
     _ = require("lodash"),
     path = require("path"),
-    device = require("express-device");
+    trads = require("../trads/trads"),
+    version = require("../package").version,
+    device = require("express-device"),
+    pathStatic = path.join(__dirname, "../dev");
 
-exports = module.exports = function () {
+exports = module.exports = (() => {
     const app = express(),
         config = require("nconf").get("config"),
         Session = require("express-session"),
@@ -15,28 +18,27 @@ exports = module.exports = function () {
             "autoRemove": "native",
             "touchAfter": config.maxAge
         }),
+        router = express.Router(),
         session = Session({
             "key": "_bsession",
             "proxy": false,
             "resave": false,
             "unset": "destroy",
             "saveUninitialized": false,
-            "rolling": false,
+            "rolling": true,
             "store": mongoStore,
-            "secret": config.pass_phrase,
+            "secret": config.passPhrase,
             "cookie": {
                 "expires": false,
                 "secure": true,
-                "httpOnly": true
+                "httpOnly": true,
+                "maxAge": config.maxAge
             }
         });
 
-    module.exports.app = app;
-    module.exports.mongoStore = mongoStore;
-
     app.engine("html", require("consolidate").swig)
         .set("view engine", "html")
-        .set("views", path.join(__dirname, "../views"))
+        .set("views", path.join(__dirname, "../dev/views"))
         //.set("view cache", true)
         .set("json spaces", 1)
         .enable("etag").set("etag", true)
@@ -45,77 +47,126 @@ exports = module.exports = function () {
         .use(require("response-time")())
         .use(require("express-json")())
         .use(require("cors")())
-        .use(body_parser.json({ "limit": "50mb" }))
-        .use(body_parser.urlencoded({ "extended": true, "limit": "50mb" }))
-        .use(require("serve-static")(path.join(__dirname, "../root"), { maxAge: require("ms")("10 days") }))
-        .use(require("serve-favicon")(path.join(__dirname, "../root/images/bold-icon-24.png")))
+        .use(body_parser.json({
+            "limit": "50mb"
+        }))
+        .use(body_parser.urlencoded({
+            "extended": true,
+            "limit": "50mb"
+        }))
+        .use(require("serve-static")(pathStatic, {
+            "maxAge": require("ms")("10 days")
+        }))
+        .use(require("serve-favicon")(path.join(__dirname, "../static/images/favicon.png")))
+        .use(session)
         .use(device.capture())
         .use((req, res, next) => {
-            if (req.secure) { next(); } else {
+            if (req.secure) {
+                next();
+            } else {
                 console.warn("Switch to secure port", req.connection.remoteAddress);
                 res.redirect("https://".concat(req.get("host")).concat(req.url));
             }
         })
         .use((req, res, next) => {
-            res.setHeader("Connection", "*");
-            res.setHeader("X-Content-Type-Options", "nosniff");
-            res.setHeader("X-XSS-Protection", "1;mode=block");
-            res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
-            res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-            if (req.method == "OPTIONS") { req.status(200).end(); } else {
+            res.set({
+                "Connection": "*",
+                "X-Content-Type-Options": "nosniff",
+                "X-XSS-Protection": "1;mode=block",
+                "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS",
+                "Access-Control-Allow-Headers": "Content-Type"
+            });
+            if (req.method == "OPTIONS") {
+                req.status(200).end();
+            } else {
+                //Gestion écran
+                const lang = req.acceptsLanguages()[0];
+                req.trads = trads[_.has(trads, lang) ? lang : "fr"];
+                req.render = (page, labels = {}, status) => {
+                    if (_.isNumber(labels) && !status) {
+                        status = labels;
+                        labels = {};
+                    }
+                    const type = _.get(req, "device.type") || "desktop",
+                        reqPath = [_.includes(["phone", "tablet"], type) ? "mobile" : "desktop", page].join("/");
 
-            //Gestion réponse
+                    _.assign(labels, _.get(req.trads, page), {
+                        version,
+                        page
+                    });
+                    res.status(status || 200).render(reqPath, labels);
+                };
+                //Gestion réponse
                 req.response = (result, status) => {
-                    if (typeof result === "number" && !status) {
+                    if (_.isNumber(result) && !status) {
                         status = result;
                         result = null;
                     }
                     if (!result) {
                         res.status(status || 204).end();
-                    } else if (typeof result === "string") {
+                    } else if (_.isString(result)) {
                         res.status(status || 200).send(result);
                     } else {
                         res.status(status || 200).jsonp(result);
                     }
                 };
-
-            //Gestion error
-                req.error = (error) => {
-                    var code = _.isNumber(error) ? error : _.get(error, "code");
+                //Gestion error
+                req.error = (code, error) => {
+                    code = _.isNumber(code) ? code : _.get(code, "code");
                     if (code === 400) {
                         res.status(400).end();
                     } else if (code === 401) {
-                        res.status(401).send("Invalid credentials.");
+                        res.status(401).send(error || "Invalid credentials.");
                     } else if (code === 403) {
-                        res.status(403).send("User permission denied.");
-                    } else if (_.indexOf([121, 11000, 409], code) !== -1) {
-                        res.status(409).send("Invalid arguments");
+                        res.status(403).send(error || "User permission denied.");
+                    } else if (code === 404) {
+                        res.status(404).end();
+                    } else if (_.includes([121, 11000, 409], code)) {
+                        res.status(409).send(error || "Invalid arguments");
                     } else if (code === 412) {
-                        res.status(412).send("Data in use.");
+                        res.status(412).send(error || "Data in use.");
                     } else {
-                        res.status(500).send("Database error");
+                        res.status(500).send(error || "Database error");
                     }
-                    console.error(req.method, req.url, _.get(req, "user._id"), _.get(req, "user.email"), error);
+                    console.error(req.method, req.url, _.get(req, "user._id"), _.get(req, "user.email"), code, error);
                 };
-
+                //Gestion Template
+                req.template = (template) => {
+                    const file = path.join(pathStatic, `./templates/${template}.html`);
+                    res.render(file, _.get(req.trads, template), (error, html) => {
+                        if (error) {
+                            req.error(404);
+                        } else {
+                            res.send(_.replace(_.replace(html, /\[{/g, "{{"), /\}]/g, "}}"));
+                        }
+                    });
+                };
                 next();
             }
-        }).use(session);
+        }).use(require("errorhandler")(_.assign({
+            log(error, str, req) {
+                if (error) {
+                    console.error(`Error in ${req.method} - ${req.url}: ${str}`);
+                    req.render("error", {
+                        error
+                    }, 500);
+                }
+            }
+        }, config.errorHandlerOptions)))
+        .use(router);
 
-    if (app.get("env") === "production") {
-        app.use(require("errorhandler")(config.errorHandlerOptions));
-    } else {
-        app.use(require("errorhandler")(config.errorHandlerOptions))
-            .use(require("morgan")("dev"))
+    if (app.get("env") !== "production") {
+        app.use(require("morgan")("dev"))
             .use((req, res, next) => {
-                require("on-finished")(res, () => {
-                    console.log(req.connection.remoteAddress, "finished request");
-                });
+                require("on-finished")(res, () => console.log(req.connection.remoteAddress, "finished request"));
                 next();
             });
     }
-
     device.enableDeviceHelpers(app);
 
-    return app;
-};
+    return {
+        app,
+        mongoStore,
+        router
+    };
+})();

@@ -9,7 +9,7 @@ exports = module.exports = function (server) {
     io.of("/bibliotech").use(passportSocketIo.authorize({
         "cookieParser": require("cookie-parser"),
         "key": "_bsession",
-        "secret": config.pass_phrase,
+        "secret": config.passPhrase,
         "store": express.mongoStore,
         "fail": (data, message, error, next) => { next(error); },
         "success": (data, next) => {
@@ -45,7 +45,7 @@ exports = module.exports = function (server) {
     io.of("/admin").use(passportSocketIo.authorize({
         "cookieParser": require("cookie-parser"),
         "key": "_bsession",
-        "secret": config.pass_phrase,
+        "secret": config.passPhrase,
         "store": express.mongoStore,
         "fail": (data, message, error, next) => { next(error); },
         "success": (data, next) => {
