@@ -21,19 +21,12 @@ const mailsAPI = require("../tools/mails"),
             "clientID": googleWeb.client_id,
             "clientSecret": googleWeb.client_secret,
             "callbackURL": "/googleAuth"
-        }, (accessToken, ...args) => {
-            const [
-                refreshToken,
-                params,
-                profile,
-                done
-            ] = args,
-            email = _.find(profile.emails, ["type", "account"]),
+        }, (token, refreshToken, profile, done) => {
+            const email = _.find(profile.emails, ["type", "account"]),
                 raw = JSON.parse(profile._raw),
                 gInfos = {
-                    "token": _.merge(params, {
-                        "refresh_token": refreshToken
-                    })
+                    token,
+                    refreshToken
                 };
 
             if (!email || !email.value) {

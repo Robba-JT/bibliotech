@@ -48,7 +48,8 @@ define("collection", ["lodash", "Request", "Cell", "dom"], function (_, request,
     Collection.prototype.init = function () {
         return new Promise((resolve, reject) => {
             request("/collection").send().then((result) => {
-                _.union(this.books, result);
+                this.books = _.unionBy(this.books, _.map(result, Cell), "id");
+                this.showAll();
                 resolve();
             }).catch((error) => {
                 console.error("collection.init", error);
@@ -68,8 +69,8 @@ define("collection", ["lodash", "Request", "Cell", "dom"], function (_, request,
 
     Collection.prototype.showAll = function () {
         const elt = µ.one("bookcells");
-        _.forEach(this.books, (book) => {
-            elt.html += Cell(book).html;
+        this.each((book) => {
+            elt.html += book.html;
         });
     };
 

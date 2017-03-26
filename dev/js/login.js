@@ -15,47 +15,50 @@ require(["lodash", "dom", "Request"], (_, µ, request) => {
         µ.many(".w, .k, [login]").toggleClass("notdisplayed");
         µ.one("form").observe("submit", function (event) {
             event.preventDefault();
-            µ.many(".w, .k").toggleClass("notdisplayed");
+            µ.many(".w, .k").toggleClass("notdisplayed", false);
+            µ.one("notdisplayed", true);
             const parser = _.omit(this.parser(), "confirm");
             µ.one(".g").text = "";
-            request(this.get("action"), this.get("method")).send(parser).then(() => {
-                window.location.reload(true);
-            }).catch((error) => {
+            request(this.get("action"), this.get("method")).send(parser).then(() => window.location.reload(true)).catch((error) => {
                 µ.one(".g").text = _.get(error, "error") || error;
-                µ.many(".w, .k").toggleClass("notdisplayed");
+                µ.many(".w, .k, .m").toggleClass("notdisplayed");
             });
             return false;
         });
-        µ.one("#f").observe("click", () => {
-            window.location = "/gAuth"
-        });
+        µ.one("#f").observe("click", () => window.location = "/gAuth");
         µ.one("[type=button]").observe("click", function () {
             const form = µ.one("form"),
                 action = form.get("action"),
                 alt = this.get("alt"),
-                value = this.get("value");
+                value = this.value;
 
-            this.set({
-                "value": alt,
-                "alt": value
-            });
+            this.set("alt", value).value = alt;
             form.set({
                 "action": action === "/login" ? "/new" : "/login",
                 "method": action === "/login" ? "PUT" : "POST"
             });
             µ.many("[name=name], [name=confirm]")
                 .toggleClass("notdisplayed")
-                .set({
-                    "value": "",
-                    "required": action === "/login"
-                });
-            µ.many(".error").toggleClass("notdisplayed", true);
+                .set("required", action === "/login").value = "";
+                µ.many(".error").toggleClass("notdisplayed", true);
         });
         µ.one("[name=confirm]").observe("change", function () {
-            const thisValue = this.get("value"),
-                pwdValue = µ.one("[name=password]").get("value");
+            const thisValue = this.value,
+                pwdValue = µ.one("[name=password]").value;
 
             µ.one("#c").toggleClass("notdisplayed", thisValue && thisValue !== pwdValue);
+        });
+        µ.one("button.m").observe("click", function () {
+            const elt = µ.one("[name=email]");
+            if (elt.valid) {
+                request("/mail", "POST").send({ "email": elt.value }).then(() => {
+
+                }).catch((error) => {
+                    µ.one(".g").text = _.get(error, "error") || error;
+                });
+            } else {
+                elt.focus();
+            }
         });
     } else {
         document.getElementsByClassName("k")[0].parentNode.style.display = "none";

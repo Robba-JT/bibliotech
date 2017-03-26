@@ -28,7 +28,7 @@ const Q = require("q"),
             });
         };
 
-        this.loadAll = (filter, projection) => db_books.find(filter, projection).toArray();
+        this.loadAll = (filter, projection = {}) => db_books.find(filter, projection).sort({"title": 1}).toArray();
 
         this.loadBooks = (filter) => db_books.find(filter).toArray();
 

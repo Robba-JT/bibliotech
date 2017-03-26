@@ -17,7 +17,9 @@ require.config({
 });
 require(["collection", "search"], (collection, search) => {
     if ("FileReader" in window && "formNoValidate" in document.createElement("input")) {
-        collection.init();
+        collection.init().then(() => {
+            console.log("collection", collection);
+        });
         //search.detail("S4qSCgAAQBAJ");
     } else {
         window.location.href = "/logout";

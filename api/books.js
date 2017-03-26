@@ -13,9 +13,7 @@ const console = require("../tools/console"),
             req.response();
         };
 
-        this.collection = (req) => {
-            req.response(_.get(req, "user.books"));
-        };
+        this.collection = (req) => booksDB.loadAll({ "id": {"$in": _.map(req.user.books, "book")}}).then(req.response).catch(req.error);
 
         this.delete = (req) => req.response("delete");
 

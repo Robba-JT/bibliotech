@@ -2,8 +2,8 @@ const Q = require("q"),
     _ = require("lodash"),
     reqOptions = {
         "gzip": true,
-        "timeout": 5000,
-        "proxy": "http://CGDM-EMEA%5Cjtassin:password_20@isp-ceg.emea.cegedim.grp:3128/"
+        //"proxy": "http://CGDM-EMEA%5Cjtassin:password_20@isp-ceg.emea.cegedim.grp:3128/",
+        "timeout": 5000
     },
     request = require("request"),
     RequestsAPI = function () {

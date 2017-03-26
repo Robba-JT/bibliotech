@@ -8,11 +8,11 @@ const console = require("../tools/console"),
     RequestsAPI = require("./requests"),
     gOptions = {
         "gzip": true,
+        //"proxy": "http://CGDM-EMEA%5Cjtassin:password_20@isp-ceg.emea.cegedim.grp:3128/",
         "headers": {
             "Accept-Encoding": "gzip",
             "Content-Type": "application/json"
-        },
-        "proxy": "http://CGDM-EMEA%5Cjtassin:password_20@isp-ceg.emea.cegedim.grp:3128/"
+        }
     },
     GoogleAPI = function (token) {
         if (!(this instanceof GoogleAPI)) {

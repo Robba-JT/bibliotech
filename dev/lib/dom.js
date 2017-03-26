@@ -307,14 +307,24 @@ define("dom", ["lodash"], function (_, dom) {
     };
 
     /**
+     * Value getter/setter
+     * @param {Object} value value
+     * @returns {myElement} this element
+     **/
+    Reflect.defineProperty(myElement.prototype, "value", {
+        get() {
+            return this.element.value;
+        },
+        set(value) {
+            this.element.value = value;
+        }
+    });
+
+    /**
      * HTML assigner
      * @param {String} html HTML code
      * @returns {myElement} this element
      **/
-    /*myElement.prototype.html = function (html) {
-        this.element.innerHTML = html;
-        return this;
-    };*/
     Reflect.defineProperty(myElement.prototype, "html", {
         get() {
             return this.element.innerHTML;
@@ -323,6 +333,26 @@ define("dom", ["lodash"], function (_, dom) {
             this.element.innerHTML = code;
         }
     });
+
+    /**
+     * is valid
+     * @param {String} html HTML code
+     * @returns {myElement} this element
+     **/
+    Reflect.defineProperty(myElement.prototype, "valid", {
+        get() {
+            return _.get(this.element, "validity.valid");
+        }
+    });
+
+    /**
+     * set focus on
+     * @returns {myElement} this element
+     **/
+    myElement.prototype.focus = function () {
+        this.element.focus();
+        return this;
+    };
 
     /**
      * TextContent assigner
