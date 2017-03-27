@@ -16,16 +16,19 @@ require(["lodash", "dom", "Request"], (_, µ, request) => {
         µ.one("form").observe("submit", function (event) {
             event.preventDefault();
             µ.many(".w, .k").toggleClass("notdisplayed", false);
-            µ.one("notdisplayed", true);
-            const parser = _.omit(this.parser(), "confirm");
+            µ.one(".m").toggleClass("notdisplayed", true);
             µ.one(".g").text = "";
-            request(this.get("action"), this.get("method")).send(parser).then(() => window.location.reload(true)).catch((error) => {
-                µ.one(".g").text = _.get(error, "error") || error;
-                µ.many(".w, .k, .m").toggleClass("notdisplayed");
-            });
+            request(this.get("action"), this.get("method")).send(_.omit(this.parser(), "confirm"))
+                .then(() => window.location.reload(true))
+                .catch((error) => {
+                    µ.one(".g").text = _.get(error, "error") || error;
+                    µ.many(".w, .k, .m").toggleClass("notdisplayed");
+                });
             return false;
         });
-        µ.one("#f").observe("click", () => window.location = "/gAuth");
+        µ.one("#f").observe("click", () => {
+            window.location = "/gAuth";
+        });
         µ.one("[type=button]").observe("click", function () {
             const form = µ.one("form"),
                 action = form.get("action"),
@@ -40,7 +43,7 @@ require(["lodash", "dom", "Request"], (_, µ, request) => {
             µ.many("[name=name], [name=confirm]")
                 .toggleClass("notdisplayed")
                 .set("required", action === "/login").value = "";
-                µ.many(".error").toggleClass("notdisplayed", true);
+            µ.many(".error").toggleClass("notdisplayed", true);
         });
         µ.one("[name=confirm]").observe("change", function () {
             const thisValue = this.value,
@@ -51,8 +54,10 @@ require(["lodash", "dom", "Request"], (_, µ, request) => {
         µ.one("button.m").observe("click", function () {
             const elt = µ.one("[name=email]");
             if (elt.valid) {
-                request("/mail", "POST").send({ "email": elt.value }).then(() => {
-
+                request("/mail", "POST").send({
+                    "email": elt.value
+                }).then(() => {
+                    _.noop();
                 }).catch((error) => {
                     µ.one(".g").text = _.get(error, "error") || error;
                 });

@@ -31,11 +31,34 @@
             "title": "BiblioTech",
             "type": "website",
             "url": "https://biblio.tech",
+            "valid": "Valider",
             "waiting": "Veuillez patienter...",
             "welcome": "BiblioTech"
         },
         "maintenance": {
             "message": "Le site est actuellement en cours de maintenance."
+        },
+        "profile": {
+            "close": "Fermer",
+            "confirmPwd": "Confirmez mot de passe",
+            "deleteAccount": "Supprimer mon compte",
+            "deleteConfirm": "Cette opération est irréversible. Etes-vous de vouloir supprimer votre compte?",
+            "errConfirm": "Les mots de passe ne sont pas identiques!",
+            "errPwd": "Le mot de passe doit contenir entre 4 et 12 caractères!",
+            "gconnexion": "Connexion Google",
+            "gexport": "Exporter maintenant",
+            "gimport": "Importer maintenant",
+            "goperation": "Cette opération va importer/exporter vos EBooks depuis/vers votre bibliothèque Google. Etes vous sur de vouloir continuer?",
+            "gsync": "Synchronisation automatique Google",
+            "modPwd": "Modifier mot de passe",
+            "msgPwd": "Mot de passe invalide!",
+            "name": "Nom",
+            "nbBooks": "Nombre de livres enregistrés",
+            "newPwd": "Nouveau mot de passe",
+            "password": "Mot de passe",
+            "profile": "Profil",
+            "valid": "Valider",
+            "warning": "Attention"
         },
         "search": {
             "all": "Tous",
@@ -88,6 +111,28 @@
         },
         "maintenance": {
             "message": "Site under maintenance"
+        },
+        "profile": {
+            "close": "Close",
+            "confirmPwd": "Confirm password",
+            "deleteAccount": "Delete account",
+            "deleteConfirm": "This is irreversible. Do you want to delete your account?",
+            "errConfirm": "Password fields are not identical!",
+            "errPwd": "Password field must contain between 4 and 12 characters!",
+            "gconnexion": "Google Connection",
+            "gexport": "Export now",
+            "gimport": "Import now",
+            "goperation": "This operation will import / export your eBooks from / to your Google library. Are you sure you want to continue?",
+            "gsync": "Auto sync Google",
+            "modPwd": "Change password",
+            "msgPwd": "Invalid password!",
+            "name": "Name",
+            "nbBooks": "Books number",
+            "newPwd": "New password",
+            "password": "Password",
+            "profile": "Profile",
+            "valid": "Valid",
+            "warning": "Warning"
         },
         "search": {
             "all": "All",

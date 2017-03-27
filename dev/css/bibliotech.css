@@ -81,7 +81,7 @@ form input {
 
 form input:invalid {
     box-shadow: none;
-    border: 1.5px red solid;
+    border: 1.5px red solid !important;
 }
 
 @keyframes fadein {
@@ -600,7 +600,7 @@ button:disabled, input[type=button]:disabled, input[type=submit]:disabled {
     -webkit-filter: blur(0);
     -moz-filter: blur(0);
     -o-filter: blur(0);
-    filter: blur(0)
+    filter: blur(0);
 }
 
 #footer:hover {
@@ -625,7 +625,8 @@ button:disabled, input[type=button]:disabled, input[type=submit]:disabled {
 bookcells {
     position: relative;
     width: 100%;
-    text-align: left
+    text-align: left;
+    display: inline-table;
 }
 
 .errMsg {
@@ -655,7 +656,9 @@ bookcells {
     color: #000;
     font-size: 12px;
     z-index: 2;
-    text-align: center
+    text-align: center;
+    display: inline-table;
+    position: relative;
 }
 
 .bookcell:hover {

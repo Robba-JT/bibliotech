@@ -27,20 +27,19 @@ define("collection", ["lodash", "Request", "Cell", "dom"], function (_, request,
         if (_.find(this.books, ["id", id])) {
             throw new Error("Book already added.");
         } else {
-            this.books.push({
-                "id": id
+            _.push(this.books, {
+                id
             });
         }
         return this;
     };
 
     Collection.prototype.remove = function (id) {
-        if (_.find(this.books, ["id", id])) {
-            this.books.push({
-                "id": id
-            });
-        } else {
+        const index = _.isNumber(id) ? id : _.indexOf(this.books, ["id", id]);
+        if (index === -1) {
             throw new Error("Invalid book id.");
+        } else {
+            this.books.splice(index, 1);
         }
         return this;
     };
@@ -48,7 +47,9 @@ define("collection", ["lodash", "Request", "Cell", "dom"], function (_, request,
     Collection.prototype.init = function () {
         return new Promise((resolve, reject) => {
             request("/collection").send().then((result) => {
-                this.books = _.unionBy(this.books, _.map(result, Cell), "id");
+                this.books = _.unionBy(this.books, _.map(result, (book) => new Cell(_.assign(book, {
+                    "inCollection": true
+                }))), "id");
                 this.showAll();
                 resolve();
             }).catch((error) => {

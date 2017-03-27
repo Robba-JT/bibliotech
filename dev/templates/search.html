@@ -3,7 +3,7 @@
 </header>
 <form autocomplete="off" name="searchForm">
     <div>
-        <input name="search" minlength="3" error="{{error}}" type="search" autocomplete="on" required placeholder="{{search}}" auto-focus/>
+        <input name="search" minlength="3" type="search" autocomplete="on" required placeholder="{{search}}" required/>
         <input type="submit" value="{{valid}}"/>
     </div>
     <div id="recommand4u"><input type="button" value="{{recommand4u}}"></div>
@@ -28,13 +28,13 @@
     <div>
         <div class="radio">{{language}}:</div>
         <label>&nbsp;{{alls}}
-            <input type="radio" name="lang" value="all" checked/>
+            <input type="radio" name="lang" value="all"/>
         </label>
         <label>&nbsp;{{english}}
             <input type="radio" name="lang" value="en"/>
         </label>
         <label>&nbsp;{{french}}
-            <input type="radio" name="lang" value="fr"/>
+            <input type="radio" name="lang" value="fr" checked/>
         </label>
     </div>
 </form>

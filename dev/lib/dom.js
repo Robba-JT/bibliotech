@@ -17,7 +17,7 @@ define("dom", ["lodash"], function (_, dom) {
          * @returns {Object} Element
          **/
         myElement = function (elt) {
-            if (elt instanceof HTMLElement || elt instanceof Document) {
+            if (elt instanceof HTMLElement || elt instanceof Document || elt instanceof Window) {
                 this.element = elt;
                 this.name = elt.name;
                 this.tag = _.toUpper(elt.tagName);
@@ -79,7 +79,7 @@ define("dom", ["lodash"], function (_, dom) {
         } else if (parent instanceof myElement) {
             parent = parent.element;
         }
-        return new myElement(selector instanceof HTMLElement || selector instanceof Document ? selector : parent.querySelector(selector));
+        return new myElement(selector instanceof HTMLElement || selector instanceof Document || selector instanceof Window ? selector : parent.querySelector(selector));
     };
 
     Reflect.defineProperty(myCollection.prototype, "length", {
@@ -191,6 +191,7 @@ define("dom", ["lodash"], function (_, dom) {
             eventsName.split(",").forEach((eventName) => {
                 this.element.addEventListener(eventName.trim(), (event) => {
                     event.data = data;
+                    event.element = this;
                     return Reflect.apply(callback, this, [event]);
                 }, capture);
             });

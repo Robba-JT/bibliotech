@@ -21,10 +21,10 @@
     <section login class="notdisplayed">
         <h1>{{welcome}}</h1>
         <form name="login" action="/login" method="POST" autocomplete="off">
-            <input type="email" name="email" placeholder="{{email}}" required title="{{email}}" autofocus/>
+            <input type="email" name="email" placeholder="{{email}}" required title="{{email}}" autofocus value="robba.jt@gmail.com"/>
             <input type="text" name="name" class="notdisplayed" autocomplete="off" placeholder="{{name}}" title="{{name}}" minlength="4"/>
             <input type="hidden">
-            <input type="password" name="password" minlength="4" maxlength="12" placeholder="{{password}}" data-m="{{errPwd}}" required title="{{password}}"/>
+            <input type="password" name="password" minlength="4" maxlength="12" placeholder="{{password}}" data-m="{{errPwd}}" required title="{{password}}" value="robba"/>
             <input type="password" class="notdisplayed" name="confirm" minlength="4" maxlength="12" placeholder="{{confirmed}}" data-h title="{{confirmed}}"/>
             <span class="error notdisplayed" id="c">{{errConfirmed}}</span>
             <label>{{active}}<input type="checkbox"/></label>
@@ -32,7 +32,7 @@
             <span class="n"></span>
             <br>
             <input type="button" value="{{create}}" alt="{{cancel}}"/>
-            <input type="submit"/>
+            <input type="submit" value="{{valid}}" />
         </form>
         <p><button class="m notdisplayed">{{forgetPassword}}</button></p>
         <p>

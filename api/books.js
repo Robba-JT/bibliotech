@@ -3,6 +3,7 @@ const console = require("../tools/console"),
     path = require("path"),
     booksDB = require("../db/books"),
     GoogleAPI = require("./google")(),
+    requestAPI = require("./requests"),
     BooksAPI = function () {
         if (!(this instanceof BooksAPI)) {
             return new BooksAPI();
@@ -13,7 +14,34 @@ const console = require("../tools/console"),
             req.response();
         };
 
-        this.collection = (req) => booksDB.loadAll({ "id": {"$in": _.map(req.user.books, "book")}}).then(req.response).catch(req.error);
+        this.collection = (req) => booksDB.loadAll({
+            "id": {
+                "$in": _.map(req.user.books, "book")
+            }
+        }).then(req.response).catch(req.error);
+
+        this.cover = (req, res) => {
+            const id = _.get(req, "params[0]");
+            if (id) {
+                requestAPI.base64(
+                    id,
+                    //"url": `http://books.google.com/books/content?id=${id}&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api`
+                    `http://books.google.com/books/content?id=${id}&printsec=frontcover&img=-1&source=gbs_api`
+                ).then((result) => {
+                    //req.response(result.base64);
+                    res.set({
+                        "Content-Type": result.mime,
+                        "Content-Length": result.buffer.length
+                    });
+                    res.send(result.buffer);
+                }).catch((error) => {
+                    console.error("error", error);
+                    req.error(error);
+                });
+            } else {
+                req.error(409);
+            }
+        };
 
         this.delete = (req) => req.response("delete");
 

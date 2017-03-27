@@ -3,8 +3,10 @@ require.config({
         "Cell": "../modules/Cell",
         "collection": "../modules/collection",
         "dom": "../lib/dom",
+        "footer": "../modules/footer",
         "handlebars": "../lib/handlebars.min",
         "lodash": "../lib/lodash.min",
+        "profile": "../modules/profile",
         "Request": "../lib/Request",
         "search": "../modules/search",
         "text": "../lib/require-text.min"
@@ -15,12 +17,11 @@ require.config({
         }
     }
 });
-require(["collection", "search"], (collection, search) => {
+require(["dom", "collection", "profile", "search", "footer"], (µ, collection, profile) => {
     if ("FileReader" in window && "formNoValidate" in document.createElement("input")) {
-        collection.init().then(() => {
-            console.log("collection", collection);
-        });
-        //search.detail("S4qSCgAAQBAJ");
+        µ.many(".waiting, .roundIcon").toggleClass("notdisplayed", true);
+        profile.init();
+        collection.init();
     } else {
         window.location.href = "/logout";
     }

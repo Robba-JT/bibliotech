@@ -16,9 +16,9 @@ const console = require("../tools/console"),
             });
         };
 
-        this.get = (req) => req.response(
-            _.pick(req.user, ["_id", "name", "googleSignIn"])
-        );
+        this.delete = (req) => req.response();
+
+        this.get = (req) => req.response(_.pick(req.user, ["_id", "name", "googleSignIn"]));
 
         this.update = (req) => {
             usersDB.update({

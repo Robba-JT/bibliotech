@@ -63,10 +63,14 @@ module.exports = exports = (() => {
     //Profile
     router.route("/profile")
         .get(userAPI.get)
-        .post(userAPI.update);
+        .post(userAPI.update)
+        .delete(userAPI.delete);
 
     //Collection
     router.get("/collection", booksAPI.collection);
+
+    //Covers
+    router.get("/cover/*", booksAPI.cover);
 
     router.param("book", booksAPI.validate);
     router.route("book/:book")
@@ -78,16 +82,7 @@ module.exports = exports = (() => {
     router.get("/detail/*", booksAPI.detail);
 
     //Search
-    router.post("/search", (req, res) => {
-        if (_.has(req, "body")) {
-            const params = {
-                "q": `${req.body.by || ""}${req.body.search}`,
-                "langRestrict": req.body.lang
-            };
-            console.log("req.body", typeof req.body, req.body, params);
-            google.search(params).then(req.response).catch(req.error);
-        }
-    });
+    router.post("/search", google.search);
 
     //Preview
     router.post("/preview", (req, res) => res.render("preview", {
