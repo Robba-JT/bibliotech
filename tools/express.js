@@ -4,6 +4,7 @@ const express = require("express"),
     _ = require("lodash"),
     path = require("path"),
     trads = require("../trads/trads"),
+    meta = require("../trads/meta"),
     version = require("../package").version,
     device = require("express-device"),
     pathStatic = path.join(__dirname, "../dev");
@@ -80,8 +81,12 @@ exports = module.exports = (() => {
                 req.status(200).end();
             } else {
                 //Gestion écran
-                const lang = req.acceptsLanguages()[0];
-                req.trads = trads[_.has(trads, lang) ? lang : "fr"];
+                const acceptLang = req.acceptsLanguages()[0],
+                    lang = _.has(trads, acceptLang) ? acceptLang : "fr",
+                    reqMeta = meta[lang];
+
+                req.trads = trads[lang];
+
                 req.render = (page, labels = {}, status) => {
                     if (_.isNumber(labels) && !status) {
                         status = labels;
@@ -93,7 +98,7 @@ exports = module.exports = (() => {
                     _.assign(labels, _.get(req.trads, page), {
                         version,
                         page
-                    });
+                    }, reqMeta);
                     res.status(status || 200).render(reqPath, labels);
                 };
                 //Gestion réponse
@@ -118,7 +123,7 @@ exports = module.exports = (() => {
                     } else if (code === 401) {
                         res.status(401).send(error || "Invalid credentials.");
                     } else if (code === 403) {
-                        res.status(403).send(error || "User permission denied.");
+                        res.status(403).send(error || "Invalid session");
                     } else if (code === 404) {
                         res.status(404).end();
                     } else if (_.includes([121, 11000, 409], code)) {

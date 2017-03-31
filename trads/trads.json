@@ -38,6 +38,26 @@
         "maintenance": {
             "message": "Le site est actuellement en cours de maintenance."
         },
+        "menu": {
+            "affich": "Afficher le menu",
+            "authors": "Auteurs",
+            "close": "Fermer",
+            "collection": "Bibliothèque",
+            "contacts": "Contacts",
+            "disposition": "Enregistrer la disposition",
+            "errFilter": "Le filtre doit contenir au moins 3 caractères!",
+            "filter": "Filtre",
+            "logout": "Déconnexion",
+            "mask": "Masquer le menu",
+            "newBook": "Nouvel enregistrement",
+            "note": "Note",
+            "notifs": "Notifications",
+            "profile": "Profil",
+            "search": "Recherche",
+            "sorts": "Tris",
+            "tags": "Etiquettes",
+            "title": "Titre"
+        },
         "profile": {
             "close": "Fermer",
             "confirmPwd": "Confirmez mot de passe",
@@ -111,6 +131,26 @@
         },
         "maintenance": {
             "message": "Site under maintenance"
+        },
+        "menu": {
+            "affich": "Menu",
+            "authors": "Authors",
+            "close": "Close",
+            "collection": "Collection",
+            "contacts": "Contacts",
+            "disposition": "Save disposition",
+            "errFilter": "Filter field must contain at least 3 characters!",
+            "filter": "Filter",
+            "logout": "Logout",
+            "mask": "Menu",
+            "newBook": "New record",
+            "note": "Note",
+            "notifs": "Notifications",
+            "profile": "Profile",
+            "search": "Search",
+            "sorts": "Sorts",
+            "tags": "Tags",
+            "title": "Title"
         },
         "profile": {
             "close": "Close",

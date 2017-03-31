@@ -29,6 +29,8 @@ const mailsAPI = require("../tools/mails"),
                     refreshToken
                 };
 
+            console.log(email, raw, gInfos);
+
             if (!email || !email.value) {
                 done(new Error("Invalid profile"));
             } else {
@@ -99,7 +101,7 @@ const mailsAPI = require("../tools/mails"),
         //Google Auth
         this.gAuth = passport.authenticate("google", {
             "approvalPrompt": "force",
-            "scope": "email https://www.googleapis.com/auth/books",
+            "scope": ["email", "https://www.googleapis.com/auth/books"],
             "accessType": "offline"
         });
 
@@ -147,11 +149,11 @@ const mailsAPI = require("../tools/mails"),
         this.new = (req, res, next) => {
             passport.authenticate("new", (error, user) => {
                 if (error || !user) {
-                    req.error(403, req.trads.error.alreadyExist);
+                    req.error(401, req.trads.error.alreadyExist);
                 } else {
                     req.login(user, (err) => {
                         if (err) {
-                            req.error(403, err);
+                            req.error(401, err);
                         } else {
                             req.response();
                             next();

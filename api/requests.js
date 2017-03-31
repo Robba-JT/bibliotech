@@ -13,7 +13,7 @@ const Q = require("q"),
 
         request.defaults(reqOptions);
 
-        this.base64 = function (id, url) {
+        this.loadImg = function (id, url) {
             return new Q.Promise((resolve, reject) => {
                 if (url) {
                     const req = request.get({
@@ -30,9 +30,7 @@ const Q = require("q"),
                             });
                             response.on("end", () => resolve({
                                 id,
-                                //"base64": `data:${_.get(response, "headers.content-type")};base64,${})`
                                 "mime": _.get(response, "headers.content-type"),
-                                //"base64": Buffer.concat(chunk).toString("base64")
                                 "buffer": Buffer.concat(chunk)
                             }));
                         } else {

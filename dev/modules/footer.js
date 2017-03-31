@@ -1,4 +1,4 @@
-define("footer", ["dom"], function (µ) {
+define("footer", [], function () {
     µ.one(window).observe("scroll", () => µ.one("#footer").toggleClass("notdisplayed", !document.body.scrollTop));
 
     µ.one("#footer").observe("click", () => {

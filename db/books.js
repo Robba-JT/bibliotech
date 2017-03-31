@@ -28,7 +28,9 @@ const Q = require("q"),
             });
         };
 
-        this.loadAll = (filter, projection = {}) => db_books.find(filter, projection).sort({"title": 1}).toArray();
+        this.loadAll = (filter, projection = {}) => db_books.find(filter, projection).sort({
+            "title": 1
+        }).toArray();
 
         this.loadBooks = (filter) => db_books.find(filter).toArray();
 
@@ -42,7 +44,9 @@ const Q = require("q"),
             "date": 1
         }).toArray();
 
-        this.loadOne = (filter) => db_books.findOne(filter);
+        this.loadOne = (filter) => new Q.Promise((resolve, reject) => {
+            db_books.findOne(filter).then(resolve).catch(reject);
+        });
 
         this.removeOne = (filter) => db_books.remove(filter);
 

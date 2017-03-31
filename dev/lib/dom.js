@@ -1,8 +1,6 @@
-define("dom", ["lodash"], function (_, dom) {
-    if (!dom) {
-        dom = {};
-    }
-    const sizables = [
+const µ = (function () {
+    const dom = {},
+        sizables = [
             "width", "max-width",
             "height", "max-height",
             "top", "left", "bottom", "right",
@@ -17,6 +15,9 @@ define("dom", ["lodash"], function (_, dom) {
          * @returns {Object} Element
          **/
         myElement = function (elt) {
+            if (elt instanceof myElement) {
+                return elt;
+            }
             if (elt instanceof HTMLElement || elt instanceof Document || elt instanceof Window) {
                 this.element = elt;
                 this.name = elt.name;
@@ -33,8 +34,13 @@ define("dom", ["lodash"], function (_, dom) {
          * @returns {Array} myElement(s)
          **/
         myCollection = function (elts) {
+            if (elts instanceof myCollection) {
+                return elts;
+            }
             this.elements = [];
-            Reflect.apply(Array.prototype.forEach, elts, [(elt) => this.elements.push(new myElement(elt))]);
+            Reflect.apply(Array.prototype.forEach, elts, [(elt) => {
+                this.elements.push(elt instanceof myElement ? elt : new myElement(elt));
+            }]);
             return this;
         };
 
@@ -112,6 +118,33 @@ define("dom", ["lodash"], function (_, dom) {
         },
         set(checked) {
             this.element.checked = Boolean(checked);
+        }
+    });
+
+    Reflect.defineProperty(myElement.prototype, "loaded", {
+        get() {
+            return this.element.onload;
+        },
+        set(cb) {
+            if (this.tag === "IMG" && _.isFunction(cb)) {
+                this.element.onload = () => {
+                    Reflect.apply(cb, this, []);
+                };
+            }
+        }
+    });
+
+    Reflect.defineProperty(myElement.prototype, "parent", {
+        get() {
+            return dom.one(this.element.parentNode);
+        }
+    });
+
+    Reflect.defineProperty(myElement.prototype, "siblings", {
+        get() {
+            const children = dom.many(this.element.parentNode.children);
+            _.remove(children.elements, this);
+            return children;
         }
     });
 
@@ -206,7 +239,7 @@ define("dom", ["lodash"], function (_, dom) {
      * @returns {myElement} this element
      **/
     myElement.prototype.css = function (styles, values) {
-        if (_.isString(styles) && values) {
+        if (_.isString(styles)) {
             const inter = {};
             inter[styles] = values;
             styles = inter;
@@ -215,7 +248,7 @@ define("dom", ["lodash"], function (_, dom) {
             for (const style in styles) {
                 if (this.element) {
                     const kebabStyle = _.kebabCase(style),
-                        trimValue = styles[style].toString().split(" ");
+                        trimValue = _.split(_.toString(styles[style]), " ");
 
                     trimValue.forEach((value, index) => {
                         if (!isNaN(Number(value)) && !_.has(value, "%") && !_.has(value, "px")) {
@@ -269,7 +302,9 @@ define("dom", ["lodash"], function (_, dom) {
             try {
                 this.many("input").each((input) => {
                     if (_.has(input, "name") && input.name && input.value) {
-                        if (input.get("type") !== "radio" || input.checked === true) {
+                        if (input.get("type") === "checkbox") {
+                            obj[input.name] = input.checked;
+                        } else if (input.get("type") !== "radio" || input.checked === true) {
                             obj[input.name] = input.value;
                         }
                     }
@@ -355,11 +390,7 @@ define("dom", ["lodash"], function (_, dom) {
         return this;
     };
 
-    /**
-     * TextContent assigner
-     * @param {String} text textContent
-     * @returns {myElement} this element
-     **/
+
     /*
     myElement.prototype.text = function (text = "") {
         this.element.textContent = text;
@@ -380,7 +411,11 @@ define("dom", ["lodash"], function (_, dom) {
      * @returns {String} attribute value
      **/
     myElement.prototype.get = function (attr) {
-        return this.element ? Reflect.apply(this.element.getAttribute, this.element, [attr]) : null;
+        var result = null;
+        if (this.element) {
+            result = this.element[attr] || Reflect.apply(this.element.getAttribute, this.element, [attr]);
+        }
+        return result;
     };
 
     /**
@@ -431,6 +466,19 @@ define("dom", ["lodash"], function (_, dom) {
     myElement.prototype.append = function (tag, attrs) {
         const elt = tag instanceof HTMLElement || tag instanceof myElement ? tag.set(attrs) : dom.new(tag, attrs);
         this.element.appendChild(elt.element);
+        return elt;
+    };
+
+    /**
+     * Element prepend
+     * @param {String} tag tagName
+     * @param {Object} attrs Attributes list
+     * @returns {myElement} new element
+     **/
+    myElement.prototype.prepend = function (tag, attrs) {
+        const elt = tag instanceof HTMLElement || tag instanceof myElement ? tag.set(attrs) : dom.new(tag, attrs),
+            parent = this.parent;
+        parent.element.insertBefore(elt.element, this.element);
         return elt;
     };
 
@@ -544,4 +592,4 @@ define("dom", ["lodash"], function (_, dom) {
     };
 
     return dom;
-});
+})();

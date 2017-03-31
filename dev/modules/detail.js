@@ -1,4 +1,4 @@
-define("detail", ["lodash", "Request", "collection", "text!../templates/search"], function (_, request, collection, template) {
+define("detail", ["Request", "collection", "text!../templates/search"], function (request, collection, template) {
     const detail = function (id) {
         return new Promise((resolve, reject) => {
             if (collection.has(id)) {

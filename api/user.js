@@ -18,7 +18,7 @@ const console = require("../tools/console"),
 
         this.delete = (req) => req.response();
 
-        this.get = (req) => req.response(_.pick(req.user, ["_id", "name", "googleSignIn"]));
+        this.get = (req) => req.response(_.pick(req.user, ["_id", "name", "googleSignIn", "googleSync"]));
 
         this.update = (req) => {
             usersDB.update({

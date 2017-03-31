@@ -22,6 +22,7 @@ const bcrypt = require("bcrypt-nodejs"),
                 "orders": [],
                 "userbooks": 0,
                 "googleSignIn": Boolean(googleSignIn),
+                "googleSync": false,
                 "admin": false
             };
             if (googleSignIn) {

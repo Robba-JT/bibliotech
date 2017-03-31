@@ -1,4 +1,4 @@
-define("Request", ["lodash"], function (_) {
+const request = (function () {
     /**
      * Ajax request constructor
      * @param {String} url url
@@ -85,7 +85,9 @@ define("Request", ["lodash"], function (_) {
                 this.req.addEventListener("error", reject);
                 this.req.addEventListener("readystatechange", () => {
                     if (this.req.readyState === XMLHttpRequest.DONE) {
-                        if (_.includes([200, 204], this.req.status)) {
+                        if (this.req.status === 403) {
+                            window.location.reload("/");
+                        } else if (_.includes([200, 204], this.req.status)) {
                             try {
                                 resolve(JSON.parse(this.req.response));
                             } catch (error) {
@@ -106,5 +108,6 @@ define("Request", ["lodash"], function (_) {
             }
         }) : Promise.reject(new Error(["Request invalid argument", "URL parameter is missing."]));
     };
+
     return Request;
-});
+})();

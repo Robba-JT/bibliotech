@@ -18,7 +18,7 @@ require(["lodash", "dom", "Request"], (_, µ, request) => {
             µ.many(".w, .k").toggleClass("notdisplayed", false);
             µ.one(".m").toggleClass("notdisplayed", true);
             µ.one(".g").text = "";
-            request(this.get("action"), this.get("method")).send(_.omit(this.parser(), "confirm"))
+            request(this.get("action"), "POST").send(_.omit(this.parser(), "confirm"))
                 .then(() => window.location.reload(true))
                 .catch((error) => {
                     µ.one(".g").text = _.get(error, "error") || error;
@@ -37,8 +37,7 @@ require(["lodash", "dom", "Request"], (_, µ, request) => {
 
             this.set("alt", value).value = alt;
             form.set({
-                "action": action === "/login" ? "/new" : "/login",
-                "method": action === "/login" ? "PUT" : "POST"
+                "action": action === "/login" ? "/new" : "/login"
             });
             µ.many("[name=name], [name=confirm]")
                 .toggleClass("notdisplayed")

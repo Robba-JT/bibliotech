@@ -1,60 +1,57 @@
-define("search", ["lodash", "dom", "Request", "Cell", "collection", "text!../templates/search"], function (_, µ, request, Cell, collection, template) {
+define("search", ["cells", "Window", "text!../templates/search"], function (cells, Window, template) {
     const Search = function () {
-            this.search = "";
-            this.books = [];
-            this.window = Window(template, this);
-        },
-        Window = function (temp, parent) {
-            const window = µ.one("search").set("innerHTML", template);
+        this.last = {};
+        this.window = new Window("search", template);
 
-            window.one("form").observe("submit", (event) => {
-                event.preventDefault();
-                parent.get(event.element.parser());
+        emitter.on("openSearch", () => {
+            this.window.one("form").reset();
+            this.window.open();
+        });
+
+        µ.one("form[name=searchForm]").observe("submit", (event) => {
+            event.preventDefault();
+            const search = event.element.parser();
+            if (!_.isEqual(search, this.last.qs)) {
+                this.last.qs = search;
+                this.last.books = [];
+                this.window.close();
+                cells.reset();
+                this.get(search);
                 event.element.reset();
-                return false;
-            });
-
-            window.one(".closeWindow")
-                .observe("click", () => window.toggleClass("notdisplayed").one("[type=search]").set("value", ""));
-
-            window.one("#recommand4u input").observe("click", () => parent.recommanded());
-
-            return window;
-        };
+                µ.many(".waiting, .roundIcon").toggleClass("notdisplayed", false);
+                emitter.emit("clickMenu", "recherche");
+            }
+            return false;
+        });
+    };
 
     Search.prototype.show = function (books) {
-        this.window.toggleClass("notdisplayed", true);
         µ.many(".waiting, .roundIcon").toggleClass("notdisplayed", true);
-        const bookcells = µ.one("bookcells");
-        bookcells.html = "";
-        this.books = [];
-        _.forEach(books, (book) => {
-            const cell = collection.has(book.id) ? collection.get(book.id) : new Cell(book);
-            this.books.push(cell);
-            bookcells.html += cell.html;
-        });
+        const newBooks = _.map(books, (book) => cells.getCell(book));
+        this.last.books = _.unionBy(this.last.books, newBooks, "id");
+        cells.showAll(newBooks);
     };
 
     Search.prototype.error = function (error) {
         console.error(error);
     };
 
-    Search.prototype.get = function (search) {
-        if (!_.isEqual(search, this.search)) {
-            this.search = search;
-            µ.many(".waiting, .roundIcon").toggleClass("notdisplayed", false);
-            request("/search", "POST").send(this.search).then((result) => this.show(result)).catch(this.error);
-        }
-    };
-
-    Search.prototype.open = function () {
-        this.window.toggleClass("notdisplayed", false);
+    Search.prototype.get = function () {
+        request("/search", "POST").send(_.merge(this.last.qs, {
+            "index": this.last.books.length
+        })).then((result) => {
+            this.show(result.books);
+            if (result.books.length === 40) {
+                //return this.get();
+            }
+            return false;
+        }).catch(this.error);
     };
 
     Search.prototype.recommanded = function () {
-        this.window.toggleClass("notdisplayed", false);
-        if (!_.isEqual("recommanded", this.search)) {
-            this.search = "recommanded";
+        this.window.close();
+        if (!_.isEqual("recommanded", this.last.qs)) {
+            this.last.qs = "recommanded";
             request("/recommanded", "POST").send().then(this.show).catch(this.error);
         }
     };

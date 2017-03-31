@@ -1,33 +1,54 @@
-define("collection", ["lodash", "Request", "Cell", "dom"], function (_, request, Cell, µ) {
+define("collection", ["cells"], function (cells) {
     const Collection = function () {
-        this.books = [];
+        emitter.once("initCollect", this, this.init);
+
+        emitter.on("showCollection", this, this.showAll);
+
+        emitter.on("addBook", this, function (bookId) {
+            if (!this.has(bookId)) {
+                request(`/book/${bookId}`, "POST").send().then((result) => {
+                    this.cells.push(cells.getCell(result, true));
+                    this.cells = _.sortBy(this.cells, ["book.title"]);
+                    µ.one("#nbBooks").text = this.cells.length;
+                }).catch((error) => console.error(error));
+            }
+        });
+
+        emitter.on("removeBook", this, function (bookId) {
+            if (this.has(bookId)) {
+                request(`/book/${bookId}`, "DELETE").send().then(() => {
+                    _.remove(this.cells, ["id", bookId]);
+                    µ.one("#nbBooks").text = this.cells.length;
+                }).catch((error) => console.error(error));
+            }
+        });
     };
 
     Reflect.defineProperty(Collection.prototype, "length", {
         get() {
-            return this.books.length;
+            return this.cells.length;
         }
     });
 
     Reflect.defineProperty(Collection.prototype, "tags", {
         get() {
-            return this.books.length;
+            return this.cells.length;
         }
     });
 
     Collection.prototype.has = function (id) {
-        return _.findIndex(this.books, ["id", id]) !== -1;
+        return _.some(this.cells, ["id", id]);
     };
 
     Collection.prototype.get = function (id) {
-        return _.find(this.books, ["id", id]);
+        return _.find(this.cells, ["id", id]);
     };
 
     Collection.prototype.add = function (id) {
-        if (_.find(this.books, ["id", id])) {
+        if (_.find(this.cells, ["id", id])) {
             throw new Error("Book already added.");
         } else {
-            _.push(this.books, {
+            _.push(this.cells, {
                 id
             });
         }
@@ -35,43 +56,30 @@ define("collection", ["lodash", "Request", "Cell", "dom"], function (_, request,
     };
 
     Collection.prototype.remove = function (id) {
-        const index = _.isNumber(id) ? id : _.indexOf(this.books, ["id", id]);
+        const index = _.isNumber(id) ? id : _.indexOf(this.cells, ["id", id]);
         if (index === -1) {
             throw new Error("Invalid book id.");
         } else {
-            this.books.splice(index, 1);
-        }
-        return this;
-    };
-
-    Collection.prototype.init = function () {
-        return new Promise((resolve, reject) => {
-            request("/collection").send().then((result) => {
-                this.books = _.unionBy(this.books, _.map(result, (book) => new Cell(_.assign(book, {
-                    "inCollection": true
-                }))), "id");
-                this.showAll();
-                resolve();
-            }).catch((error) => {
-                console.error("collection.init", error);
-                reject();
-            });
-        });
-    };
-
-    Collection.prototype.each = function (callback) {
-        if (_.isFunction(callback)) {
-            _.forEach(this.books, callback);
-        } else {
-            throw new Error("Invalid callback.");
+            this.cells.splice(index, 1);
         }
         return this;
     };
 
     Collection.prototype.showAll = function () {
-        const elt = µ.one("bookcells");
-        this.each((book) => {
-            elt.html += book.html;
+        emitter.emit("clickMenu", "collection");
+        emitter.emit("resetCells");
+        emitter.emit("showCells", this.cells);
+        µ.one("#tags").toggleClass("notdisplayed", !this.tags.length);
+    };
+
+    Collection.prototype.init = function () {
+        request("/collection").send().then((result) => {
+            this.tags = result.tags;
+            this.cells = cells.getCells(result.books, true);
+            this.showAll();
+            µ.one("#nbBooks").text = this.cells.length;
+        }).catch((error) => {
+            console.error("collection.init", error);
         });
     };
 

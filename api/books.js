@@ -4,31 +4,60 @@ const console = require("../tools/console"),
     booksDB = require("../db/books"),
     GoogleAPI = require("./google")(),
     requestAPI = require("./requests"),
+    usersDB = require("../db/users"),
     BooksAPI = function () {
         if (!(this instanceof BooksAPI)) {
             return new BooksAPI();
         }
 
         this.add = (req) => {
-            console.log("req.book", req.book);
-            req.response();
+            if (req.book) {
+                req.user.books.push({
+                    "id": req.book.id,
+                    "date": new Date()
+                });
+                usersDB.update({
+                    "_id": req.user._id
+                }, {
+                    "$addToSet": {
+                        "books": {
+                            "id": req.book.id,
+                            "date": new Date()
+                        }
+                    }
+                }).then(() => {
+                    req.response(_.omit(req.book, ["_id", "isNew"]));
+                }).catch(req.error);
+                if (req.book.isNew) {
+                    booksDB.update(_.omit(req.book, "isNew"));
+                }
+            } else {
+                req.error(500);
+            }
         };
+
+        this.book = (req) => req.response(req.book);
 
         this.collection = (req) => booksDB.loadAll({
             "id": {
-                "$in": _.map(req.user.books, "book")
+                "$in": _.map(req.user.books, "id")
             }
-        }).then(req.response).catch(req.error);
+        }, {
+            "_id": false
+        }).then((books) => {
+            req.response({
+                books,
+                "tags": req.user.tags
+            });
+        }).catch(req.error);
 
         this.cover = (req, res) => {
             const id = _.get(req, "params[0]");
             if (id) {
-                requestAPI.base64(
+                requestAPI.loadImg(
                     id,
-                    //"url": `http://books.google.com/books/content?id=${id}&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api`
-                    `http://books.google.com/books/content?id=${id}&printsec=frontcover&img=-1&source=gbs_api`
+                    `http://books.google.com/books/content?id=${id}&printsec=frontcover&img=1&source=gbs_api`
                 ).then((result) => {
-                    //req.response(result.base64);
                     res.set({
                         "Content-Type": result.mime,
                         "Content-Length": result.buffer.length
@@ -43,30 +72,66 @@ const console = require("../tools/console"),
             }
         };
 
-        this.delete = (req) => req.response("delete");
+        this.delete = (req) => {
+            if (_.has(req, "book")) {
+                usersDB.update({
+                    "_id": req.user._id
+                }, {
+                    "$pull": {
+                        "books": {
+                            "id": req.book.id
+                        }
+                    }
+                }).then(() => req.response()).catch(req.error);
+            } else {
+                req.response();
+            }
+        };
 
         this.detail = (req) => {
             const id = _.get(req, "params[0]");
             if (id) {
-                GoogleAPI.detail(id).then(req.response).catch(req.error);
+                booksDB.loadOne({
+                        id
+                    }).catch(() => GoogleAPI.detail(id))
+                    .then(req.response).catch(req.error);
             } else {
                 req.error(409);
             }
         };
 
-        this.book = (req) => req.response(req.book);
-
-        this.validate = (req, res, next, book) => {
-            if (_.includes(_.get(req, "user.books"), book)) {
-                booksDB.loadOne({
-                    "id": book
-                }).then((result) => {
-                    req.book = result;
-                    next();
-                }).catch(req.error);
+        this.preview = (req) => {
+            const id = _.get(req, "params[0]");
+            if (id) {
+                req.template("preview", {
+                    "bookid": id
+                });
             } else {
-                next();
+                req.error(409);
             }
+        };
+
+        this.update = (req) => {
+            const id = _.get(req, "params[0]");
+            if (_.some(req.user.books, ["id", id])) {
+                _.noop();
+            } else {
+                req.error(409);
+            }
+        };
+
+        this.validate = (req, res, next, id) => {
+            booksDB.loadOne({
+                    id
+                }).then((book) => {
+                    if (book) {
+                        return book;
+                    }
+                    throw new Error("Unknown book");
+                }).catch(() => GoogleAPI.detail(id).then((book) => book))
+                .then((book) => {
+                    req.book = book;
+                }).done(next);
         };
 
         this.template = (req) => {

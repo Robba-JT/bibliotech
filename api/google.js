@@ -63,6 +63,7 @@ const console = require("../tools/console"),
                         "type": "ISBN_13"
                     }), "identifier") || "",
                     "cover": bookinfos.imageLinks ? bookinfos.imageLinks.small || bookinfos.imageLinks.medium || bookinfos.imageLinks.large || bookinfos.imageLinks.extraLarge || bookinfos.imageLinks.thumbnail || bookinfos.imageLinks.smallThumbnail : false,
+                    //"cover": Boolean(_.keys(bookinfos.imageLinks).length),
                     "access": _.get(book, "accessInfo.accessViewStatus") || "NONE",
                     "preview": _.get(book, "accessInfo.webReaderLink") || "",
                     "date": new Date()
@@ -97,9 +98,10 @@ const console = require("../tools/console"),
             googleRequest = (fonction, params) => new Q.Promise((resolve, reject) => {
                 const gFunction = _.get(gBooks, fonction);
                 if (_.isEmpty(auth.credentials)) {
-                    _.assign(params, {
-                        "key": googleConfig.key
-                    });
+                    // _.assign(params, {
+                    //     "key": googleConfig.key
+                    // });
+                    _.noop();
                 } else {
                     _.assign(params, {
                         auth
@@ -152,15 +154,13 @@ const console = require("../tools/console"),
             if (_.has(req, "body")) {
                 const params = {
                     "q": `${req.body.by || ""}${req.body.search}`,
-                    "langRestrict": req.body.lang
+                    "langRestrict": req.body.lang,
+                    "startIndex": req.body.index
                 };
-                var total = 0;
                 googleRequest("volumes.list", _.assign(params, reqParams.search))
                     .then(formatAll)
-                    .then((result) => {
-                        total += result.books.length;
-                        req.response(result.books);
-                    }).catch(req.error);
+                    .then(req.response)
+                    .catch(req.error);
             }
         };
 
@@ -168,15 +168,9 @@ const console = require("../tools/console"),
             googleRequest("volumes.get", _.assign({
                 volumeId
             }, reqParams.searchOne)).then((response) => {
-                const book = format(response);
-                book.isNew = true;
-                RequestsAPI.base64(volumeId, book.cover || book.thumbnail).then((res) => {
-                    book.base64 = res.base64;
-                }).catch((error) => {
-                    console.error("serachOne base64", book.id, book.title, book.cover, book.thumbnail, error);
-                }).done(() => {
-                    resolve(book);
-                });
+                resolve(_.assign(format(response), {
+                    "isNew": true
+                }));
             }).catch(reject);
         });
 

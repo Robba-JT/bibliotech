@@ -37,16 +37,11 @@ module.exports = exports = (() => {
     router.get("/gAuth", loginAPI.gAuth)
         .get("/googleAuth", [loginAPI.googleAuth, userAPI.connect]);
 
-    //Trads
-    router.post("/trad", (req, res) => {
-        res.jsonp(fs.readFileSync(["./static/trads", req.body.lang, `${req.body.page}.json`].join("/")));
-    });
-
     //Login
     router.post("/login", [loginAPI.auth, userAPI.connect]);
 
     //Nouvel utilisateur
-    router.put("/new", [loginAPI.new, userAPI.connect]);
+    router.post("/new", [loginAPI.new, userAPI.connect]);
 
     //Mot de passe oublié
     router.post("/mail", loginAPI.forgotten);
@@ -55,7 +50,7 @@ module.exports = exports = (() => {
     router.get("/logout", loginAPI.out);
 
     //Validate
-    router.get("*", loginAPI.validate);
+    router.all("*", loginAPI.validate);
 
     //templates
     router.get("/templates/*", booksAPI.template);
@@ -63,7 +58,7 @@ module.exports = exports = (() => {
     //Profile
     router.route("/profile")
         .get(userAPI.get)
-        .post(userAPI.update)
+        .put(userAPI.update)
         .delete(userAPI.delete);
 
     //Collection
@@ -73,21 +68,21 @@ module.exports = exports = (() => {
     router.get("/cover/*", booksAPI.cover);
 
     router.param("book", booksAPI.validate);
-    router.route("book/:book")
+    router.route("/book/:book")
         .get(booksAPI.book)
         .post(booksAPI.add)
         .delete(booksAPI.delete);
 
     //Detail
-    router.get("/detail/*", booksAPI.detail);
+    router.route("/detail/*")
+        .get(booksAPI.detail)
+        .put(booksAPI.update);
 
     //Search
     router.post("/search", google.search);
 
     //Preview
-    router.post("/preview", (req, res) => res.render("preview", {
-        "bookid": req.body.previewid
-    }));
+    router.get("/preview/*", booksAPI.preview);
 
     //Erreur url
     router.all("*", (req) => {
