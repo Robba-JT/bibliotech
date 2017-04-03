@@ -138,7 +138,9 @@ exports = module.exports = (() => {
                 //Gestion Template
                 req.template = (template) => {
                     const file = path.join(pathStatic, `./templates/${template}.html`);
-                    res.render(file, _.get(req.trads, template), (error, html) => {
+                    res.render(file, _.assign({
+                        version
+                    }, _.get(req.trads, template)), (error, html) => {
                         if (error) {
                             req.error(404);
                         } else {

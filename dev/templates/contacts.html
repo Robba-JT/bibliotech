@@ -2,9 +2,9 @@
     <div class="closeWindow" title="[{close}]"></div>
 </header>
 <article>
-    <div id="googleLink" ng-click="navbar.openUrl(\"https://plus.google.com/+BiblioTechWeb\")" title="Google +"></div>
-    <div id="facebookLink" ng-click="navbar.openUrl(\"https://www.facebook.com/virtual.biblio.tech\")" title="Facebook"></div>
-    <div id="mailLink" ng-click="navbar.mailTo()" title="Mail"></div>
-    <div id="helpLink" ng-click="windows.open(\"help\", true)" title="Help"></div>
-</article><span><u>Version:</u>&nbsp;[{version}]</span>
-<div id="gandiLink" ng-click="navbar.openUrl(\"https://www.gandi.net/ssl/secured/www.biblio.tech/194723/cdfd118361\")" title="Secure by"></div>
+    <div id="googleLink" url="https://plus.google.com/+BiblioTechWeb" title="Google +"></div>
+    <div id="facebookLink" url="https://www.facebook.com/virtual.biblio.tech" title="Facebook"></div>
+    <div id="mailLink" title="Mail"><a href="mailto:admin@biblio.tech?subject=Bibliotech" class="notdisplayed"></a></div>
+    <div id="helpLink" title="Help"></div>
+</article><span><u>Version:</u>&nbsp;{{version}}</span>
+<div id="gandiLink" url="https://www.gandi.net/ssl/secured/www.biblio.tech/194723/cdfd118361" title="Secure by"></div>

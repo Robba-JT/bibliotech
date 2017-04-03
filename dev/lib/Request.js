@@ -1,4 +1,4 @@
-const request = (function () {
+const req = (function () {
     /**
      * Ajax request constructor
      * @param {String} url url

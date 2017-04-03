@@ -1,4 +1,4 @@
-define("cells", ["collection", "hdb", "text!../templates/Cell"], function (collection, hdb, template) {
+define("cells", ["hdb", "text!../templates/Cell"], function (hdb, template) {
     const render = hdb.compile(template),
         elt = µ.one("bookcells"),
         thief = new ColorThief(),
@@ -46,12 +46,12 @@ define("cells", ["collection", "hdb", "text!../templates/Cell"], function (colle
             this.cell.one(".add").observe("click", () => {
                 event.stopPropagation();
                 this.cell.many("button").toggleClass("notdisplayed");
-                emitter.emit("addBook", this.id);
+                em.emit("addBook", this.id);
             });
 
             this.cell.one(".remove").observe("click", (event) => {
                 event.stopPropagation();
-                emitter.emit("removeBook", this.id);
+                em.emit("removeBook", this.id);
                 if (µ.one("#collection").hasClass("active")) {
                     this.cell.remove();
                 } else {
@@ -60,11 +60,9 @@ define("cells", ["collection", "hdb", "text!../templates/Cell"], function (colle
             });
 
             this.cell.observe("click", () => {
-                request(`/detail/${this.id}`).send().then((detail) => {
-                    emitter.emit("openDetail", detail);
-                }).catch((error) => {
-                    console.error("detail", error);
-                });
+                req(`/detail/${this.id}`).send().then((detail) => {
+                    em.emit("openDetail", detail);
+                }).catch(err.add);
             }).observe("dragstart", (event) => {
                 event.dataTransfer.setData("id", `id${this.id}`);
             }).observe("dragover", (event) => {
@@ -84,9 +82,18 @@ define("cells", ["collection", "hdb", "text!../templates/Cell"], function (colle
         },
         Cells = function () {
             this.cells = [];
-            emitter.on("showCells", this, this.show);
-            emitter.on("resetCells", this, this.reset);
+            em.on("showCells", this, this.show);
+            em.on("resetCells", this, this.reset);
         };
+
+    Cell.prototype.filter = function (filtre) {
+        if (!filtre) {
+            this.cell.toggleClass("notdisplayed", false);
+        } else {
+            const concat = _.toLower(_.concat(this.book.title, this.book.subtitle || "", this.book.authors || "", this.book.description || "").join(""));
+            this.cell.toggleClass("notdisplayed", !_.includes(concat, _.toLower(filtre)));
+        }
+    };
 
     Cell.prototype.changeBackground = function (rgb) {
         this.cell.css("background-color", rgbToHex(rgb)).one("figcaption").css("color", darkTest(rgb) ? "whitesmoke" : "black");
@@ -105,7 +112,7 @@ define("cells", ["collection", "hdb", "text!../templates/Cell"], function (colle
     };
 
     Cells.prototype.getCell = function (book, inCollection) {
-        return !inCollection && collection.has(book.id) ? collection.get(book.id) : new Cell(book, inCollection);
+        return new Cell(book, inCollection);
     };
 
     Cells.prototype.getCells = function (books, inCollection) {

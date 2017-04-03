@@ -19,21 +19,26 @@ define("Window", [], function () {
         return this.window.many(selector);
     };
 
+    Window.prototype.set = function (...args) {
+        this.window.set(...args);
+        return this;
+    }
+
     Window.prototype.open = function () {
         this.window.css({
             "top": `${document.body.scrollTop + µ.one("#navbar").get("clientHeight")}px`
-        })
-        this.window.toggleClass("notdisplayed", false);
+        });
+        this.window.toggleClass("notdisplayed", false).one("[focus]").focus();
         µ.one(".waiting").toggleClass("notdisplayed", false);
         µ.one("html").toggleClass("overflown", true);
-        emitter.emit(this, "open");
+        em.emit(this, "open");
     };
 
     Window.prototype.close = function () {
         this.window.toggleClass("notdisplayed", true);
         µ.one(".waiting").toggleClass("notdisplayed", true);
         µ.one("html").toggleClass("overflown", false);
-        emitter.emit(this, "close");
+        em.emit(this, "close");
     };
 
     Window.prototype.toggle = function () {

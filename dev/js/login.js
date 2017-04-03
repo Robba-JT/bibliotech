@@ -7,10 +7,16 @@ require.config({
     "shim": {
         "lodash": {
             "exports": "_"
+        },
+        "dom": {
+            "exports": "µ"
+        },
+        "Request": {
+            "exports": "req"
         }
     }
 });
-require(["lodash", "dom", "Request"], (_, µ, request) => {
+require(["lodash", "dom", "Request"], () => {
     if ("FileReader" in window && "formNoValidate" in document.createElement("input")) {
         µ.many(".w, .k, [login]").toggleClass("notdisplayed");
         µ.one("form").observe("submit", function (event) {
@@ -18,7 +24,7 @@ require(["lodash", "dom", "Request"], (_, µ, request) => {
             µ.many(".w, .k").toggleClass("notdisplayed", false);
             µ.one(".m").toggleClass("notdisplayed", true);
             µ.one(".g").text = "";
-            request(this.get("action"), "POST").send(_.omit(this.parser(), "confirm"))
+            req(this.get("action"), "POST").send(_.omit(this.parser(), "confirm"))
                 .then(() => window.location.reload(true))
                 .catch((error) => {
                     µ.one(".g").text = _.get(error, "error") || error;
@@ -53,7 +59,7 @@ require(["lodash", "dom", "Request"], (_, µ, request) => {
         µ.one("button.m").observe("click", function () {
             const elt = µ.one("[name=email]");
             if (elt.valid) {
-                request("/mail", "POST").send({
+                req("/mail", "POST").send({
                     "email": elt.value
                 }).then(() => {
                     _.noop();

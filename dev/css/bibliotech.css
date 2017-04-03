@@ -106,7 +106,7 @@ form input:invalid {
     visibility: hidden!important
 }
 
-#cloud>div, #contactsWindow div, #footer, #noCover, #selectedSearch::before, #selectedTag::before, #sort span, .altCover, .closePreview, .googlePreview, .help #helpHelp, .help aside, .imgAction .upload, .navbar .button, .navgrid [nav], .note, .roundIcon, .windowheader div, search footer, footer .personnal, footer .previewable, footer .recommanded {
+cloud>div, #contactsWindow div, #footer, #noCover, #selectedSearch::before, #selectedTag::before, sorts span, .altCover, .closePreview, .googlePreview, .help #helpHelp, .help aside, .imgAction .upload, .navbar .button, .navgrid [nav], .note, .roundIcon, .windowheader div, search footer, footer .personnal, footer .previewable, footer .recommanded {
     background-image: url(/images/spritesheet.png);
     background-repeat: no-repeat
 }
@@ -374,7 +374,7 @@ search footer {
 
 .help, .waiting {
     position: fixed;
-    top: 0;
+    top: 0 !important;
     left: 0;
     height: 100%;
     width: 100%;
@@ -532,7 +532,7 @@ search footer {
     background-position: -109px -10px
 }
 
-#notifs, #sort {
+#notifs, sorts {
     background-color: #fff;
     border-bottom-right-radius: 5px;
     border-bottom-left-radius: 5px;
@@ -542,35 +542,35 @@ search footer {
     min-width: 10%
 }
 
-#notifs>div, #sort>div {
+#notifs>div, sorts>div {
     padding: 5px;
     cursor: pointer;
     white-space: nowrap
 }
 
-#sort span {
+sorts span {
     width: 16px;
     height: 16px;
     display: inline-block
 }
 
-#sort>div:not(.sortBy) .asc {
+sorts>div:not(.sortBy) .asc {
     background-position: -594px -590px
 }
 
-#sort>div:hover .asc, .sortBy .asc {
+sorts>div:hover .asc, .sortBy .asc {
     background-position: -558px -590px
 }
 
-#sort>div:not(.sortBy) .desc {
+sorts>div:not(.sortBy) .desc {
     background-position: -558px -554px
 }
 
-#sort>div:hover .desc, .sortBy .desc {
+sorts>div:hover .desc, .sortBy .desc {
     background-position: -594px -554px
 }
 
-#notifs>div:hover, #sort>div:not(.sortBy):hover {
+#notifs>div:hover, sorts>div:not(.sortBy):hover {
     color: #b8860b;
     text-decoration: underline;
     font-family: roboto_italic
@@ -852,7 +852,7 @@ button.remove {
     content: "13: "
 }
 
-#cloud {
+cloud {
     position: fixed;
     top: 0;
     left: 0;
@@ -864,7 +864,7 @@ button.remove {
     text-align: center
 }
 
-#cloud>div {
+cloud>div {
     position: fixed;
     right: 0;
     margin: 5px;
@@ -876,68 +876,68 @@ button.remove {
     border-radius: 45%
 }
 
-#cloud>div:hover {
+cloud>div:hover {
     background-position: -636px -130px
 }
 
-#cloud span.tag {
+cloud span.tag {
     cursor: pointer;
     position: fixed;
     padding: 2px
 }
 
-#cloud span.tag:hover {
+cloud span.tag:hover {
     text-decoration: underline;
     color: #f5f5f5;
     font-weight: bolder
 }
 
-#cloud span.tag10 {
+cloud span.tag10 {
     color: #B8860B;
     font-size: 6em
 }
 
-#cloud span.tag9 {
+cloud span.tag9 {
     color: #FF8C00;
     font-size: 5em
 }
 
-#cloud span.tag8 {
+cloud span.tag8 {
     color: orange;
     font-size: 4.5em
 }
 
-#cloud span.tag7 {
+cloud span.tag7 {
     color: #8B4513;
     font-size: 4em
 }
 
-#cloud span.tag6 {
+cloud span.tag6 {
     color: #D2691E;
     font-size: 3.5em
 }
 
-#cloud span.tag5 {
+cloud span.tag5 {
     color: peru;
     font-size: 3em
 }
 
-#cloud span.tag4 {
+cloud span.tag4 {
     color: #DAA520;
     font-size: 2.5em
 }
 
-#cloud span.tag3 {
+cloud span.tag3 {
     color: #F4A460;
     font-size: 2em
 }
 
-#cloud span.tag2 {
+cloud span.tag2 {
     color: tan;
     font-size: 1.5em
 }
 
-#cloud span.tag1 {
+cloud span.tag1 {
     color: #DEB887;
     font-size: 1em
 }
@@ -1177,7 +1177,7 @@ button.remove {
     background: red
 }
 
-.filtre [type=text], .window [type=email], .window [type=number], .window [type=password], .window [type=search], .window [type=text], .window textarea {
+.filtre [type=search], .window [type=email], .window [type=number], .window [type=password], .window [type=search], .window [type=text], .window textarea {
     font-size: 15px;
     border: 1px solid grey;
     height: 24px;

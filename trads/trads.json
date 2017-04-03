@@ -1,5 +1,8 @@
 {
     "fr": {
+        "bibliotech": {
+            "close": "Fermer"
+        },
         "Cell": {
             "add": "Ajouter",
             "remove": "Supprimer"
@@ -9,6 +12,20 @@
             "alreadyExist": "Utilisateur déjà créé!",
             "errorSendMail": "Une erreur est survenue durant l'envoi de l'email, veuillez réessayer ultérieurement ou nous envoyer un mail à: admin@biblio.tech.",
             "successSendMail": "Un email contenant votre nouveau mot de passe vient de vous être envoyé."
+        },
+        "help": {
+            "addbook": "Ajouter un livre",
+            "affich": "Afficher le menu",
+            "close": "Fermer",
+            "collection": "Bibliothèque",
+            "contacts": "Contacts",
+            "logout": "Déconnexion",
+            "mask": "Masquer le menu",
+            "notifications": "Notifications",
+            "profile": "Profil",
+            "search": "Recherche",
+            "tags": "Etiquettes",
+            "welcome": "Bienvenue sur BiblioTech!"
         },
         "login": {
             "active": "Garder la session active",
@@ -96,9 +113,17 @@
             "searchby": "Rechercher par",
             "title": "Titre",
             "valid": "Valider"
+        },
+        "sorts": {
+            "authors": "Auteur",
+            "note": "Note",
+            "title": "Titre"
         }
     },
     "en": {
+        "bibliotech": {
+            "close": "Close"
+        },
         "Cell": {
             "add": "Add",
             "remove": "Remove"
@@ -108,6 +133,20 @@
             "alreadyExist": "User already exist!",
             "errorSendMail": "An error occured while sending the email, please try again later or send us an email to: admin@biblio.tech.",
             "successSendMail": "An email containing your new password has been sent to you."
+        },
+        "help": {
+            "addbook": "Add a book",
+            "affich": "Menu",
+            "close": "Close",
+            "collection": "Collection",
+            "contacts": "Contacts",
+            "logout": "Logout",
+            "mask": "Menu",
+            "notifications": "Notifications",
+            "profile": "Profile",
+            "search": "Search",
+            "tags": "Tags",
+            "welcome": "Welcome to BiblioTech!"
         },
         "login": {
             "active": "Stay connected",
@@ -190,6 +229,11 @@
             "searchby": "Search by",
             "title": "Title",
             "valid": "Valid"
+        },
+        "sorts": {
+            "authors": "Authors",
+            "note": "Note",
+            "title": "Title"
         }
     }
 }

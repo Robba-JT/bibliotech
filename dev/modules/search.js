@@ -1,11 +1,14 @@
-define("search", ["cells", "Window", "text!../templates/search"], function (cells, Window, template) {
+define("search", ["cells", "collection", "Window", "text!../templates/search"], function (cells, collection, Window, template) {
     const Search = function () {
         this.last = {};
         this.window = new Window("search", template);
 
-        emitter.on("openSearch", () => {
+        em.on("openSearch", () => {
             this.window.one("form").reset();
             this.window.open();
+        });
+        em.on("filtreSearch", this, function (filtre) {
+            _.forEach(this.last.books, (cell) => cell.filter(filtre));
         });
 
         µ.one("form[name=searchForm]").observe("submit", (event) => {
@@ -19,7 +22,7 @@ define("search", ["cells", "Window", "text!../templates/search"], function (cell
                 this.get(search);
                 event.element.reset();
                 µ.many(".waiting, .roundIcon").toggleClass("notdisplayed", false);
-                emitter.emit("clickMenu", "recherche");
+                em.emit("clickMenu", "recherche");
             }
             return false;
         });
@@ -27,17 +30,15 @@ define("search", ["cells", "Window", "text!../templates/search"], function (cell
 
     Search.prototype.show = function (books) {
         µ.many(".waiting, .roundIcon").toggleClass("notdisplayed", true);
-        const newBooks = _.map(books, (book) => cells.getCell(book));
+        const newBooks = _.map(books, (book) => {
+            return collection.get(book.id) || cells.getCell(book);
+        });
         this.last.books = _.unionBy(this.last.books, newBooks, "id");
-        cells.showAll(newBooks);
-    };
-
-    Search.prototype.error = function (error) {
-        console.error(error);
+        cells.show(newBooks);
     };
 
     Search.prototype.get = function () {
-        request("/search", "POST").send(_.merge(this.last.qs, {
+        req("/search", "POST").send(_.merge(this.last.qs, {
             "index": this.last.books.length
         })).then((result) => {
             this.show(result.books);
@@ -45,14 +46,14 @@ define("search", ["cells", "Window", "text!../templates/search"], function (cell
                 //return this.get();
             }
             return false;
-        }).catch(this.error);
+        }).catch(err.add);
     };
 
     Search.prototype.recommanded = function () {
         this.window.close();
         if (!_.isEqual("recommanded", this.last.qs)) {
             this.last.qs = "recommanded";
-            request("/recommanded", "POST").send().then(this.show).catch(this.error);
+            req("/recommanded", "POST").send().then(this.show).catch(err.add);
         }
     };
 

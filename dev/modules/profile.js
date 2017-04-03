@@ -1,12 +1,12 @@
 define("profile", ["Window", "hdb", "text!../templates/profile"], function (Window, hdb, template) {
     const render = hdb.compile(template),
         Profile = function () {
-            emitter.on("openProfile", () => {
+            em.on("openProfile", () => {
                 this.window.open();
             });
 
-            emitter.once("initProfile", this, function () {
-                request("/profile").send().then((user) => {
+            em.once("initProfile", this, function () {
+                req("/profile").send().then((user) => {
                     this.user = user;
                     this.window = new Window("profile", render(user));
                     µ.one("#recommand4u").toggleClass("notdisplayed", !user.googleSignIn);
@@ -22,11 +22,9 @@ define("profile", ["Window", "hdb", "text!../templates/profile"], function (Wind
                             }
                         });
                         if (!_.isEmpty(parsed)) {
-                            request("/profile", "PUT").send(parsed).then(() => {
+                            req("/profile", "PUT").send(parsed).then(() => {
                                 _.assign(user, parsed);
-                            }).catch((error) => {
-                                console.error("error", error);
-                            });
+                            }).catch(err.add);
                         }
                     });
                 });

@@ -1,36 +1,33 @@
 define("collection", ["cells"], function (cells) {
     const Collection = function () {
-        emitter.once("initCollect", this, this.init);
-
-        emitter.on("showCollection", this, this.showAll);
-
-        emitter.on("addBook", this, function (bookId) {
+        em.once("initCollect", this, this.init);
+        em.on("showCollection", this, this.show);
+        em.on("addBook", this, function (bookId) {
             if (!this.has(bookId)) {
-                request(`/book/${bookId}`, "POST").send().then((result) => {
+                req(`/book/${bookId}`, "POST").send().then((result) => {
                     this.cells.push(cells.getCell(result, true));
                     this.cells = _.sortBy(this.cells, ["book.title"]);
                     µ.one("#nbBooks").text = this.cells.length;
-                }).catch((error) => console.error(error));
+                }).catch(err.add);
             }
         });
-
-        emitter.on("removeBook", this, function (bookId) {
+        em.on("removeBook", this, function (bookId) {
             if (this.has(bookId)) {
-                request(`/book/${bookId}`, "DELETE").send().then(() => {
+                req(`/book/${bookId}`, "DELETE").send().then(() => {
                     _.remove(this.cells, ["id", bookId]);
                     µ.one("#nbBooks").text = this.cells.length;
-                }).catch((error) => console.error(error));
+                }).catch(err.add);
             }
+        });
+        em.on("filtreCollection", this, function (filtre) {
+            _.forEach(this.cells, (cell) => cell.filter(filtre));
+        });
+        em.on("sortCollection", this, function (params) {
+            cells.show(_.orderBy(this.cells, `book.${params.by}`, params.sort || "asc"));
         });
     };
 
     Reflect.defineProperty(Collection.prototype, "length", {
-        get() {
-            return this.cells.length;
-        }
-    });
-
-    Reflect.defineProperty(Collection.prototype, "tags", {
         get() {
             return this.cells.length;
         }
@@ -65,22 +62,21 @@ define("collection", ["cells"], function (cells) {
         return this;
     };
 
-    Collection.prototype.showAll = function () {
-        emitter.emit("clickMenu", "collection");
-        emitter.emit("resetCells");
-        emitter.emit("showCells", this.cells);
+    Collection.prototype.show = function () {
+        em.emit("clickMenu", "collection");
+        em.emit("resetCells");
+        em.emit("showCells", this.cells);
         µ.one("#tags").toggleClass("notdisplayed", !this.tags.length);
     };
 
     Collection.prototype.init = function () {
-        request("/collection").send().then((result) => {
+        req("/collection").send().then((result) => {
             this.tags = result.tags;
             this.cells = cells.getCells(result.books, true);
-            this.showAll();
+            this.show();
             µ.one("#nbBooks").text = this.cells.length;
-        }).catch((error) => {
-            console.error("collection.init", error);
-        });
+            em.emit("generateTags", this.tags);
+        }).catch(err.add);
     };
 
     return new Collection();

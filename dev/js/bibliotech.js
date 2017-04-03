@@ -1,9 +1,11 @@
 require.config({
     "paths": {
         "cells": "../modules/cells",
+        "cloud": "../modules/cloud",
         "collection": "../modules/collection",
         "dom": "../lib/dom",
         "emitter": "../lib/emitter",
+        "errors": "../lib/errors",
         "footer": "../modules/footer",
         "hdb": "../lib/handlebars.min",
         "lodash": "../lib/lodash.min",
@@ -23,22 +25,29 @@ require.config({
             "exports": "ColorThief"
         },
         "dom": {
-            "exports": "µ"
+            "exports": "µ",
+            "deps": ["lodash"]
         },
         "emitter": {
-            "exports": "emitter"
+            "exports": "em",
+            "deps": ["lodash"]
         },
         "Request": {
-            "exports": "request"
+            "exports": "req",
+            "deps": ["lodash"]
+        },
+        "errors": {
+            "exports": "err",
+            "deps": ["lodash"]
         }
     }
 });
 
-require(["lodash", "Thief", "dom", "emitter", "Request"], () => {
-    require(["collection", "footer", "menu", "profile", "search"], () => {
+require(["lodash", "Thief", "dom", "emitter", "Request", "errors"], () => {
+    require(["profile", "cloud", "collection", "footer", "menu", "search"], () => {
         if ("FileReader" in window && "formNoValidate" in document.createElement("input")) {
             µ.many(".waiting, .roundIcon").toggleClass("notdisplayed", true);
-            emitter.emit("initProfile").emit("initCollect");
+            em.emit("initProfile").emit("initCollect");
         } else {
             window.location.href = "/logout";
         }

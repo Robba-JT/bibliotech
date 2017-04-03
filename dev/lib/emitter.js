@@ -1,4 +1,4 @@
-const emitter = (function () {
+const em = (function () {
     const Emitter = function () {
             this.onEvents = [];
             this.onceEvents = [];

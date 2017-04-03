@@ -386,7 +386,9 @@ const µ = (function () {
      * @returns {myElement} this element
      **/
     myElement.prototype.focus = function () {
-        this.element.focus();
+        if (this.element) {
+            this.element.focus();
+        }
         return this;
     };
 
@@ -510,15 +512,19 @@ const µ = (function () {
      * @returns {myElement} this element;
      **/
     myElement.prototype.trigger = function (eventName) {
-        const isMouse = _.has(["click", "mouseenter", "mouseleave", "mouseup", "mousedown"], eventName);
-        var thisEvent = null;
-        try {
-            thisEvent = isMouse ? new MouseEvent(eventName) : new Event(eventName);
-        } catch (error) {
-            thisEvent = document.createEvent(isMouse ? "MouseEvents" : "HTMLEvents");
-            thisEvent.initEvent(eventName, true, true);
+        if (this.element[eventName] && _.isFunction(this.element[eventName])) {
+            Reflect.apply(this.element[eventName], this.element, []);
+        } else {
+            const isMouse = _.has(["click", "mouseenter", "mouseleave", "mouseup", "mousedown"], eventName);
+            var thisEvent = null;
+            try {
+                thisEvent = isMouse ? new MouseEvent(eventName) : new Event(eventName);
+            } catch (error) {
+                thisEvent = document.createEvent(isMouse ? "MouseEvents" : "HTMLEvents");
+                thisEvent.initEvent(eventName, true, true);
+            }
+            this.element.dispatchEvent(thisEvent);
         }
-        this.element.dispatchEvent(thisEvent);
         return this;
     };
 
