@@ -10,11 +10,11 @@
 </header>
 <article>
     <div class="detailCover" dir="rtl">
-        <div id="noCover"></div>
+        <div id="noCover[{alt}]"></div>
         <div>
-            <img id="detailCover" src="[{cover}]"/>
+            <img id="detailCover" src="[{source}]"/>
         </div>
-        <div class="imgAction">
+        <div class="imgAction[{alt}]">
             <div class="upload"></div>
         </div>
         <form id="uploadHidden" class="notdisplayed">
@@ -32,8 +32,10 @@
         </div>
         <div class="volumeInfo">
             <button class="title" tabindex="-1">{{authors}}:</button>
-            <span ng-repeat="author in detail.book.authors" searchby="inauthor:">[{author}]</span>
-            <input type="text" placeholder="[{trads.authorsWithComa}]" name="authors"/>
+            [{#each authors}]
+            <span searchby="inauthor:">[{this}]</span>
+            [{/each}]
+            <input type="text" placeholder="{{authorsWithComa}}" name="authors"/>
         </div>
         <div class="volumeInfo">
             <button class="title" tabindex="-1">{{publishBy}}:</button>
@@ -52,7 +54,7 @@
             <span searchby="isbn:">[{isbn10}]</span>
             <input type="text" placeholder="{{isbn10}}" size="10" maxlength="10" name="isbn10"/>
             <span searchby="isbn:">{{isbn13}}</span>
-            <input type="text" placeholder="[{trads.isbn13}]" size="13" maxlength="13" name="isbn13"/>
+            <input type="text" placeholder="{{isbn13}}" size="13" maxlength="13" name="isbn13"/>
         </div>
         <div class="volumeInfo">
             <button class="title" tabindex="-1">{{description}}:</button>
@@ -64,7 +66,7 @@
             <button class="title" tabindex="-1">{{categories}}:</button>
             <span class="direct">[{categories}]</span>
         </div>
-        <div class="nonEditable" ng-show="detail.book.from">
+        <div class="nonEditable">
             <button class="title" tabindex="-1">{{from}}:</button>
             <span class="direct">[{from}]</span>
         </div>

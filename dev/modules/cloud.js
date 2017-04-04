@@ -1,13 +1,15 @@
 define("cloud", ["text!../templates/cloud"], function (template) {
     const cloud = µ.one("cloud").set("innerHTML", template),
         Cloud = function () {
-            this.list = [];
-
             em.on("generateTags", this, function (tags) {
                 this.list = tags;
-                console.log("this.list", this.list);
-                //this.generate();
+                this.reset().generate();
             });
+
+            em.on("openCloud", this, this.open);
+            em.on("closeCloud", this, this.close);
+
+            cloud.one("div").observe("click", this.close);
         },
         Tag = function (title, books) {
             this.title = title;
@@ -23,20 +25,26 @@ define("cloud", ["text!../templates/cloud"], function (template) {
         }
     });
 
+    Tag.prototype.appendTo = function (parent) {
+        if (this.span) {
+            this.span.appendTo(parent);
+        }
+        return this;
+    };
+
     Cloud.prototype.generate = function () {
         const height = ~~(cloud.clientHeight / 2),
             width = ~~(cloud.clientWidth / 2),
-            lgTags = this.tags.length,
+            lgTags = this.list.length,
             ratio = width / height,
             step = 3.0,
-            documenttags = [],
             isOver = function (elem, others) {
                 const lg = others.length,
                     overlap = function (a, b) {
                         return (Math.abs(2.0 * a.offsetLeft + a.offsetWidth - 2.0 * b.offsetLeft - b.offsetWidth) < a.offsetWidth + b.offsetWidth) && (Math.abs(2.0 * a.offsetTop + a.offsetHeight - 2.0 * b.offsetTop - b.offsetHeight) < a.offsetHeight + b.offsetHeight);
                     };
                 for (let i = 0; i < lg; i += 1) {
-                    if (overlap(elem, others[i])) {
+                    if (overlap(elem, others[i].span)) {
                         return true;
                     }
                 }
@@ -44,41 +52,57 @@ define("cloud", ["text!../templates/cloud"], function (template) {
             };
 
         for (let i = 0; i < lgTags; i += 1) {
-            const tag = this.tags[i],
-                documenttag = new Tag(tag.title, tag.weight),
-                top = height - (documenttag.clientHeight / 2),
-                left = width - (documenttag.clientWidth / 2),
+            const tag = new Tag(this.list[i].title, this.list[i].weight).appendTo(cloud),
+                span = tag.span;
+
+            let top = height - (span.clientHeight / 2),
+                left = width - (span.clientWidth / 2),
                 radius = 0,
                 angle = 6.28 * Math.random();
 
-            documenttag.css({
-                "top": top,
-                "left": left
+            span.css({
+                top,
+                left
             });
-            while (isOver(documenttag, documenttags)) {
+            while (isOver(tag, this.tags)) {
                 radius += step;
                 angle += (i % 2 === 0 ? 1 : -1) * step;
-                top = height + radius * Math.sin(angle) - (documenttag.clientHeight / 2.0);
-                left = width - (documenttag.clientWidth / 2.0) + (radius * Math.cos(angle)) * ratio;
-                documenttag.css({
-                    "top": top,
-                    "left": left
+                top = height + radius * Math.sin(angle) - (span.clientHeight / 2.0);
+                left = width - (span.clientWidth / 2.0) + (radius * Math.cos(angle)) * ratio;
+                span.css({
+                    top,
+                    left
                 });
             }
-            documenttags.push(documenttag);
+            this.tags.push(span);
         }
+        return this;
     };
 
-    Cloud.prototype.add = function (title) {
+    Cloud.prototype.add = function (title, book) {
         _.noop();
     };
 
-    Cloud.prototype.remove = function (title) {
+    Cloud.prototype.remove = function (title, book) {
         _.noop();
     };
 
     Cloud.prototype.reset = function () {
-        cloud.set("innerHTML", template);
+        this.list = this.tags = [];
+        cloud.set("innerHTML", template).one("div").observe("click", this.close);
+        return this;
+    };
+
+    Cloud.prototype.open = function () {
+        µ.one("html").toggleClass("overflown", true);
+        cloud.toggleClass("notdisplayed", false);
+        return this;
+    };
+
+    Cloud.prototype.close = function () {
+        cloud.toggleClass("notdisplayed", true);
+        µ.one("html").toggleClass("overflown", false);
+        return this;
     };
 
     return new Cloud();

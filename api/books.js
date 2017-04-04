@@ -2,14 +2,10 @@ const console = require("../tools/console"),
     _ = require("lodash"),
     path = require("path"),
     booksDB = require("../db/books"),
-    GoogleAPI = require("./google")(),
+    GoogleAPI = require("./google"),
     requestAPI = require("./requests"),
     usersDB = require("../db/users"),
     BooksAPI = function () {
-        if (!(this instanceof BooksAPI)) {
-            return new BooksAPI();
-        }
-
         this.add = (req) => {
             if (req.book) {
                 req.user.books.push({
@@ -47,7 +43,8 @@ const console = require("../tools/console"),
         }).then((books) => {
             req.response({
                 books,
-                "tags": req.user.tags
+                "tags": req.user.tags,
+                "total": books.length
             });
         }).catch(req.error);
 
@@ -132,15 +129,6 @@ const console = require("../tools/console"),
                 .then((book) => {
                     req.book = book;
                 }).done(next);
-        };
-
-        this.template = (req) => {
-            const template = _.get(req, "params[0]");
-            if (template) {
-                req.template(template);
-            } else {
-                req.error(404);
-            }
         };
 
         return this;

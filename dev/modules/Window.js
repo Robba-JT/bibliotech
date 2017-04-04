@@ -1,5 +1,5 @@
 define("Window", [], function () {
-    const Window = function (selector, template) {
+    const Window = function (selector, template = "") {
         if (!(this instanceof Window)) {
             return new Window(selector, template);
         }

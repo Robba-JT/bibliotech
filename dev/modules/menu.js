@@ -14,7 +14,7 @@ define("menu", ["Window", "text!../templates/menu", "text!../templates/contacts"
     navbar.one("#profile").observe("click", () => em.emit("openProfile"));
     navbar.one("#collection").observe("click", () => em.emit("showCollection"));
     navbar.one("#contact").observe("click", () => contacts.open());
-    navbar.one("#tags").observe("click", () => em.emit("cloud"));
+    navbar.one("#tags").observe("click", () => em.emit("openCloud"));
 
     µ.one("bookcells").css("top", µ.one("#navbar").get("clientHeight"));
     navbar.one("#logout").observe("click", () => {

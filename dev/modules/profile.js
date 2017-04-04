@@ -24,7 +24,9 @@ define("profile", ["Window", "hdb", "text!../templates/profile"], function (Wind
                         if (!_.isEmpty(parsed)) {
                             req("/profile", "PUT").send(parsed).then(() => {
                                 _.assign(user, parsed);
-                            }).catch(err.add);
+                            }).catch((error) => {
+        err.add(error);
+    });
                         }
                     });
                 });

@@ -14,13 +14,8 @@ const console = require("../tools/console"),
             "Content-Type": "application/json"
         }
     },
-    GoogleAPI = function (token) {
-        if (!(this instanceof GoogleAPI)) {
-            return new GoogleAPI(token);
-        }
-
-        const auth = {},
-            maxResult = 400,
+    GoogleAPI = function () {
+        const maxResult = 400,
             reqParams = {
                 "searchOne": {
                     "fields": "id, etag, accessInfo(accessViewStatus, webReaderLink), volumeInfo(title, subtitle, authors, publisher, publishedDate, description, industryIdentifiers, pageCount, categories, imageLinks, canonicalVolumeLink)",
@@ -75,43 +70,39 @@ const console = require("../tools/console"),
                     "books": _.sortBy(_.map(books.items || books, format), "title")
                 };
             },
-            setCredentials = function (to_set) {
-                if (!_.keys(auth).length && to_set) {
-                    _.assign(auth, new gAuth(googleConfig.web.client_id, googleConfig.web.client_secret, "postmessage"));
-                    _.assign(auth.credentials, to_set);
-                }
-            },
-            refreshCredentials = () => new Q.Promise(function (resolve, reject) {
-                if (_.isEmpty(auth.credentials)) {
+            refreshCredentials = (token) => new Q.Promise(function (resolve, reject) {
+                if (!token) {
                     reject("No oauth connexion.");
                 } else {
-                    auth.refreshAccessToken((error, refreshed) => {
-                        if (error || !refreshed) {
-                            reject(error || new Error("No refresh token."));
-                        } else {
-                            setCredentials(refreshed);
-                            resolve();
-                        }
-                    });
+                    // auth.refreshAccessToken((error, refreshed) => {
+                    //     if (error || !refreshed) {
+                    //         reject(error || new Error("No refresh token."));
+                    //     } else {
+                    //         setCredentials(refreshed);
+                    //         resolve();
+                    //     }
+                    // });
                 }
             }),
-            googleRequest = (fonction, params) => new Q.Promise((resolve, reject) => {
+            googleRequest = (fonction, params, token) => new Q.Promise((resolve, reject) => {
                 const gFunction = _.get(gBooks, fonction);
-                if (_.isEmpty(auth.credentials)) {
+                if (_.isUndefined(token)) {
                     // _.assign(params, {
                     //     "key": googleConfig.key
                     // });
                     _.noop();
                 } else {
                     _.assign(params, {
-                        auth
+                        "auth": {
+                            "credentials": token
+                        }
                     });
                 }
                 if (_.isFunction(gFunction)) {
                     gFunction(params, (error, success) => {
                         if (error && error.code !== 401) {
                             reject(error);
-                        } else if (error && error.code === 401 && _.keys(auth).length) {
+                        } else if (error && error.code === 401 && token) {
                             refreshCredentials().then(function () {
                                 gFunction(params, (err, result) => {
                                     if (err) {
@@ -129,8 +120,6 @@ const console = require("../tools/console"),
                     reject("Invalid call.");
                 }
             });
-
-        setCredentials(token);
 
         this.associated = (params) => googleRequest("volumes.associated.list", _.merge(params, reqParams.search));
 
@@ -153,11 +142,12 @@ const console = require("../tools/console"),
         this.search = (req) => {
             if (_.has(req, "body")) {
                 const params = {
-                    "q": `${req.body.by || ""}${req.body.search}`,
-                    "langRestrict": req.body.lang,
-                    "startIndex": req.body.index
-                };
-                googleRequest("volumes.list", _.assign(params, reqParams.search))
+                        "q": `${req.body.by || ""}${req.body.search}`,
+                        "langRestrict": req.body.lang,
+                        "startIndex": req.body.index
+                    },
+                    token = _.get(req.user, "token");
+                googleRequest("volumes.list", _.assign(params, reqParams.search), token)
                     .then(formatAll)
                     .then(req.response)
                     .catch(req.error);
@@ -183,4 +173,4 @@ const console = require("../tools/console"),
 
 google.options(gOptions);
 
-exports = module.exports = GoogleAPI;
+exports = module.exports = GoogleAPI();

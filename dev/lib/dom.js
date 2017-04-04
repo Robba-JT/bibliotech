@@ -472,6 +472,17 @@ const µ = (function () {
     };
 
     /**
+     * New element assigner
+     * @param {myElement} parent parent
+     * @returns {myElement} this element
+     **/
+    myElement.prototype.appendTo = function (parent) {
+        const elt = parent instanceof myElement ? parent.element : parent;
+        elt.appendChild(this.element);
+        return this;
+    };
+
+    /**
      * Element prepend
      * @param {String} tag tagName
      * @param {Object} attrs Attributes list

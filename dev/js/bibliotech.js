@@ -3,6 +3,7 @@ require.config({
         "cells": "../modules/cells",
         "cloud": "../modules/cloud",
         "collection": "../modules/collection",
+        "detail": "../modules/detail",
         "dom": "../lib/dom",
         "emitter": "../lib/emitter",
         "errors": "../lib/errors",
@@ -44,9 +45,8 @@ require.config({
 });
 
 require(["lodash", "Thief", "dom", "emitter", "Request", "errors"], () => {
-    require(["profile", "cloud", "collection", "footer", "menu", "search"], () => {
+    require(["profile", "cloud", "collection", "footer", "menu", "search", "detail"], () => {
         if ("FileReader" in window && "formNoValidate" in document.createElement("input")) {
-            µ.many(".waiting, .roundIcon").toggleClass("notdisplayed", true);
             em.emit("initProfile").emit("initCollect");
         } else {
             window.location.href = "/logout";

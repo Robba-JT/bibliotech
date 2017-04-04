@@ -7,10 +7,6 @@ const Q = require("q"),
     },
     request = require("request"),
     RequestsAPI = function () {
-        if (!(this instanceof RequestsAPI)) {
-            return new RequestsAPI();
-        }
-
         request.defaults(reqOptions);
 
         this.loadImg = function (id, url) {

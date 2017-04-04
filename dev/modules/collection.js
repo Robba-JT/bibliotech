@@ -1,5 +1,7 @@
 define("collection", ["cells"], function (cells) {
     const Collection = function () {
+        this.tags = [];
+        this.cells = [];
         em.once("initCollect", this, this.init);
         em.on("showCollection", this, this.show);
         em.on("addBook", this, function (bookId) {
@@ -8,7 +10,9 @@ define("collection", ["cells"], function (cells) {
                     this.cells.push(cells.getCell(result, true));
                     this.cells = _.sortBy(this.cells, ["book.title"]);
                     µ.one("#nbBooks").text = this.cells.length;
-                }).catch(err.add);
+                }).catch((error) => {
+                    err.add(error);
+                });
             }
         });
         em.on("removeBook", this, function (bookId) {
@@ -16,7 +20,9 @@ define("collection", ["cells"], function (cells) {
                 req(`/book/${bookId}`, "DELETE").send().then(() => {
                     _.remove(this.cells, ["id", bookId]);
                     µ.one("#nbBooks").text = this.cells.length;
-                }).catch(err.add);
+                }).catch((error) => {
+                    err.add(error);
+                });
             }
         });
         em.on("filtreCollection", this, function (filtre) {
@@ -71,12 +77,18 @@ define("collection", ["cells"], function (cells) {
 
     Collection.prototype.init = function () {
         req("/collection").send().then((result) => {
+            µ.many(".waiting, .roundIcon").toggleClass("notdisplayed", true);
             this.tags = result.tags;
-            this.cells = cells.getCells(result.books, true);
+            this.cells = _.union(this.cells, cells.getCells(result.books, true));
             this.show();
-            µ.one("#nbBooks").text = this.cells.length;
+            if (result.total === this.cells.length) {
+                µ.one(".waitAnim").toggleClass("notdisplayed", true);
+                µ.one("#nbBooks").text = this.cells.length;
+            }
             em.emit("generateTags", this.tags);
-        }).catch(err.add);
+        }).catch((error) => {
+            err.add(error);
+        });
     };
 
     return new Collection();

@@ -704,7 +704,31 @@ bookcells {
 
 .bookcell figure {
     margin: 5px;
-    position: relative
+    position: relative;
+}
+
+/* Tooltip text */
+.bookcell figure span {
+    visibility: hidden;
+    width: 100%;
+    background-color: black;
+    text-align: center;
+    border-bottom-right-radius: 6px;
+    border-bottom-left-radius: 6px;
+    position: absolute;
+    z-index: 5;
+    opacity: .85;
+    color: #daa520;
+    bottom: 0px;
+    left: 0px;
+    font-size: 1.2em;
+    max-height: 100%;
+    overflow: hidden;
+    cursor: url(/images/iconmonstr-x-mark-2-icon.png), pointer;
+}
+
+.bookcell figure:hover span {
+    visibility: visible;
 }
 
 .altCover {
@@ -954,15 +978,15 @@ cloud span.tag1 {
     box-shadow: 2px 2px 2px 2px #888
 }
 
-[detail]>* {
+detail>* {
     display: block
 }
 
-[detail]>article {
+detail>article {
     height: 100%
 }
 
-[detail]>article>* {
+detail>article>* {
     float: left
 }
 
@@ -1308,9 +1332,10 @@ search>img {
     text-align: center
 }
 
-[detail] {
+detail {
     margin-left: 1%;
-    width: 99%;
+    margin-top: 1%;
+    width: 99% !important;
     height: 97%;
     overflow: hidden
 }

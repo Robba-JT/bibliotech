@@ -1,12 +1,10 @@
 const fs = require("fs-extra"),
+    _ = require("lodash"),
     booksAPI = require("../api/books"),
     loginAPI = require("../api/login"),
     userAPI = require("../api/user"),
+    googleAPI = require("../api/google"),
     router = require("../tools/express").router;
-
-// A modifier
-const _ = require("lodash"),
-    google = require("../api/google")();
 
 module.exports = exports = (() => {
     //Passport init
@@ -53,7 +51,14 @@ module.exports = exports = (() => {
     router.all("*", loginAPI.validate);
 
     //templates
-    router.get("/templates/*", booksAPI.template);
+    router.get("/templates/*", (req) => {
+        const template = _.get(req, "params[0]");
+        if (template) {
+            req.template(template);
+        } else {
+            req.error(404);
+        }
+    });
 
     //Profile
     router.route("/profile")
@@ -79,7 +84,7 @@ module.exports = exports = (() => {
         .put(booksAPI.update);
 
     //Search
-    router.post("/search", google.search);
+    router.post("/search", googleAPI.search);
 
     //Preview
     router.get("/preview/*", booksAPI.preview);

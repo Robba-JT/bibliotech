@@ -3,12 +3,14 @@ define("cells", ["hdb", "text!../templates/Cell"], function (hdb, template) {
         elt = µ.one("bookcells"),
         thief = new ColorThief(),
         width = `${~~(elt.element.offsetWidth / ~~(elt.element.offsetWidth / 257)) - 8}px`,
-        Cell = function (book, inCollection) {
+        Cell = function (book, inCollection = false) {
             if (!(this instanceof Cell)) {
                 return new Cell(book, inCollection);
             }
             this.id = book.id;
             this.book = book;
+            this.inCollect = inCollection;
+            this.detailed = false;
             this.cell = µ.new("article").toggleClass("bookcell").set({
                 "innerHTML": render(_.assign({}, book, {
                     "source": _.get(book, "cover") ? `/cover/${book.id}` : "",
@@ -18,12 +20,18 @@ define("cells", ["hdb", "text!../templates/Cell"], function (hdb, template) {
                     "pers": _.isPlainObject(book.id) ? "" : "notdisplayed",
                     "rec": _.isPlainObject(book.id) ? "" : "notdisplayed"
                 })),
-                "title": _.get(book, "description").substr(0, 500) + (_.get(book, "description").length > 500 ? "..." : ""),
                 "draggable": true,
                 "id": `id${book.id}`
             }).css({
                 width
+            }).observe("mouseleave", () => {
+                this.cell.one("figure span").toggleClass("notdisplayed", false);
             });
+            const index = _.get(book, "description").indexOf(" ", 500);
+            this.cell.one("figure span").observe("click", (event) => {
+                event.stopPropagation();
+                event.element.toggleClass("notdisplayed", true);
+            }).html = _.get(book, "description").substr(0, Math.max(500, index)) + (index !== -1 ? "..." : "");
 
             if (_.has(book, "cover")) {
                 const cover = this.cell.one("img");
@@ -46,12 +54,14 @@ define("cells", ["hdb", "text!../templates/Cell"], function (hdb, template) {
             this.cell.one(".add").observe("click", () => {
                 event.stopPropagation();
                 this.cell.many("button").toggleClass("notdisplayed");
+                this.inCollect = true;
                 em.emit("addBook", this.id);
             });
 
             this.cell.one(".remove").observe("click", (event) => {
                 event.stopPropagation();
                 em.emit("removeBook", this.id);
+                this.inCollect = false;
                 if (µ.one("#collection").hasClass("active")) {
                     this.cell.remove();
                 } else {
@@ -60,9 +70,18 @@ define("cells", ["hdb", "text!../templates/Cell"], function (hdb, template) {
             });
 
             this.cell.observe("click", () => {
-                req(`/detail/${this.id}`).send().then((detail) => {
-                    em.emit("openDetail", detail);
-                }).catch(err.add);
+                if (this.detailed) {
+                    em.emit("openDetail", this.book);
+                } else {
+                    req(`/detail/${this.id}`).send().then((detail) => {
+                        _.assign(this.book, detail, {
+                            "detailed": true
+                        });
+                        em.emit("openDetail", this.book);
+                    }).catch((error) => {
+                        err.add(error);
+                    });
+                }
             }).observe("dragstart", (event) => {
                 event.dataTransfer.setData("id", `id${this.id}`);
             }).observe("dragover", (event) => {

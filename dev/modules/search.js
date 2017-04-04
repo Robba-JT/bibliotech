@@ -21,7 +21,8 @@ define("search", ["cells", "collection", "Window", "text!../templates/search"], 
                 cells.reset();
                 this.get(search);
                 event.element.reset();
-                µ.many(".waiting, .roundIcon").toggleClass("notdisplayed", false);
+                µ.many(".waiting, .roundIcon, .waitAnim").toggleClass("notdisplayed", false);
+                µ.one("sort.active").toggleClass("active", false);
                 em.emit("clickMenu", "recherche");
             }
             return false;
@@ -44,16 +45,23 @@ define("search", ["cells", "collection", "Window", "text!../templates/search"], 
             this.show(result.books);
             if (result.books.length === 40) {
                 //return this.get();
+                µ.one(".waitAnim").toggleClass("notdisplayed", true);
+            } else {
+                µ.one(".waitAnim").toggleClass("notdisplayed", true);
             }
             return false;
-        }).catch(err.add);
+        }).catch((error) => {
+            err.add(error);
+        });
     };
 
     Search.prototype.recommanded = function () {
         this.window.close();
         if (!_.isEqual("recommanded", this.last.qs)) {
             this.last.qs = "recommanded";
-            req("/recommanded", "POST").send().then(this.show).catch(err.add);
+            req("/recommanded", "POST").send().then(this.show).catch((error) => {
+                err.add(error);
+            });
         }
     };
 
