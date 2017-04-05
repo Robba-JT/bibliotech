@@ -88,6 +88,14 @@ const µ = (function () {
         return new myElement(selector instanceof HTMLElement || selector instanceof Document || selector instanceof Window ? selector : parent.querySelector(selector));
     };
 
+    dom.rgbToHex = function (rgb) {
+        return `#${((1 << 24) + (rgb[0] << 16) + (rgb[1] << 8) + rgb[2]).toString(16).substr(1)}`;
+    };
+
+    dom.isDark = function (rgb) {
+        return 0.3 * rgb[0] + 0.59 * rgb[1] + 0.11 * rgb[2] <= 128;
+    };
+
     Reflect.defineProperty(myCollection.prototype, "length", {
         get() {
             return this.elements.length;
@@ -466,9 +474,16 @@ const µ = (function () {
      * @returns {myElement} new element
      **/
     myElement.prototype.append = function (tag, attrs) {
-        const elt = tag instanceof HTMLElement || tag instanceof myElement ? tag.set(attrs) : dom.new(tag, attrs);
-        this.element.appendChild(elt.element);
-        return elt;
+        if (tag instanceof myCollection) {
+            _.forEach(tag.elements, (elt) => {
+                this.element.appendChild(elt.set(attrs).element);
+            });
+            return this;
+        } else {
+            const elt = tag instanceof HTMLElement || tag instanceof myElement ? tag.set(attrs) : dom.new(tag, attrs);
+            this.element.appendChild(elt.element);
+            return elt;
+        }
     };
 
     /**

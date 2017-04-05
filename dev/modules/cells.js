@@ -8,8 +8,9 @@ define("cells", ["hdb", "text!../templates/Cell"], function (hdb, template) {
                 return new Cell(book, inCollection);
             }
             this.id = book.id;
-            this.book = book;
-            this.inCollect = inCollection;
+            this.book = _.assign(book, {
+                inCollection
+            });
             this.detailed = false;
             this.cell = µ.new("article").toggleClass("bookcell").set({
                 "innerHTML": render(_.assign({}, book, {
@@ -38,14 +39,16 @@ define("cells", ["hdb", "text!../templates/Cell"], function (hdb, template) {
                 cover.loaded = () => {
                     cover.toggleClass("notdisplayed", false);
                     cover.siblings.get(0).toggleClass("notdisplayed");
-                    this.palette = thief.getPalette(cover.element);
-                    if (this.palette && this.palette.length > 2) {
-                        this.changeBackground(this.palette[1]);
+                    _.assign(this.book, {
+                        "palette": thief.getPalette(cover.element)
+                    });
+                    if (this.book.palette && this.book.palette.length > 2) {
+                        this.changeBackground(this.book.palette[1]);
                         this.cell.observe("mouseover", () => {
-                            this.changeBackground(this.palette[0]);
+                            this.changeBackground(this.book.palette[0]);
                         });
                         this.cell.observe("mouseleave", () => {
-                            this.changeBackground(this.palette[1]);
+                            this.changeBackground(this.book.palette[1]);
                         });
                     }
                 };
@@ -54,14 +57,14 @@ define("cells", ["hdb", "text!../templates/Cell"], function (hdb, template) {
             this.cell.one(".add").observe("click", () => {
                 event.stopPropagation();
                 this.cell.many("button").toggleClass("notdisplayed");
-                this.inCollect = true;
+                this.book.inCollection = true;
                 em.emit("addBook", this.id);
             });
 
             this.cell.one(".remove").observe("click", (event) => {
                 event.stopPropagation();
                 em.emit("removeBook", this.id);
-                this.inCollect = false;
+                this.book.inCollection = false;
                 if (µ.one("#collection").hasClass("active")) {
                     this.cell.remove();
                 } else {
@@ -93,12 +96,6 @@ define("cells", ["hdb", "text!../templates/Cell"], function (hdb, template) {
 
             return this;
         },
-        rgbToHex = function (rgb) {
-            return `#${((1 << 24) + (rgb[0] << 16) + (rgb[1] << 8) + rgb[2]).toString(16).substr(1)}`;
-        },
-        darkTest = function (rgb) {
-            return 0.3 * rgb[0] + 0.59 * rgb[1] + 0.11 * rgb[2] <= 128;
-        },
         Cells = function () {
             this.cells = [];
             em.on("showCells", this, this.show);
@@ -115,7 +112,7 @@ define("cells", ["hdb", "text!../templates/Cell"], function (hdb, template) {
     };
 
     Cell.prototype.changeBackground = function (rgb) {
-        this.cell.css("background-color", rgbToHex(rgb)).one("figcaption").css("color", darkTest(rgb) ? "whitesmoke" : "black");
+        this.cell.css("background-color", µ.rgbToHex(rgb)).one("figcaption").css("color", µ.isDark(rgb) ? "whitesmoke" : "black");
     };
 
     Cells.prototype.show = function (cells) {
@@ -135,7 +132,7 @@ define("cells", ["hdb", "text!../templates/Cell"], function (hdb, template) {
     };
 
     Cells.prototype.getCells = function (books, inCollection) {
-        return _.map(books, (book) => this.getCell(book, Boolean(inCollection)));
+        return _.map(books, (book) => this.getCell(book, inCollection));
     };
 
     return new Cells();

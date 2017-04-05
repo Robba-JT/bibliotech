@@ -1,12 +1,12 @@
 <header class="windowheader">&nbsp;
     <span class="direct" default="{{newBook}}">[{title}]</span>
     <div class="closeWindow" title="{{close}}"></div>
-    <div class="detailSave" title="{{save}}"></div>
-    <div class="detailAdd" title="{{add}}"></div>
-    <div class="detailGbooks" title="{{gbooks}}"></div>
-    <div class="detailConnex" title="{{connex}}"></div>
-    <div class="detailPreview" title="{{preview}}"></div>
-    <div class="detailRecommand" title="{{torecommand}}"></div>
+    <div id="detailSave" class="notdisplayed" title="{{save}}"></div>
+    <div id="detailAdd" class="notdisplayed" title="{{add}}"></div>
+    <div id="detailGbooks" class="notdisplayed" title="{{gbooks}}"></div>
+    <div id="detailConnex" class="notdisplayed" title="{{connex}}"></div>
+    <div id="detailPreview" class="notdisplayed" title="{{preview}}"></div>
+    <div id="detailRecommand" class="notdisplayed" title="{{torecommand}}"></div>
 </header>
 <article>
     <div class="detailCover" dir="rtl">
@@ -27,40 +27,40 @@
             <button class="title" tabindex="-1">{{title}}:</button>
             <span searchby="intitle:">[{title}]</span>&nbsp;
             <span searchby="intitle:">[{subtitle}]</span>
-            <input type="text" placeholder="{{title}}" error="{{errTitle}}" name="title" required minlength="3" />
-            <input type="text" placeholder="{{subtitle}}" name="subtitle" />
+            <input type="text" class="notdisplayed" placeholder="{{title}}" error="{{errTitle}}" name="title" required minlength="3" />
+            <input type="text" class="notdisplayed" placeholder="{{subtitle}}" name="subtitle" />
         </div>
         <div class="volumeInfo">
             <button class="title" tabindex="-1">{{authors}}:</button>
             [{#each authors}]
             <span searchby="inauthor:">[{this}]</span>
             [{/each}]
-            <input type="text" placeholder="{{authorsWithComa}}" name="authors"/>
+            <input type="text" class="notdisplayed" placeholder="{{authorsWithComa}}" name="authors"/>
         </div>
         <div class="volumeInfo">
             <button class="title" tabindex="-1">{{publishBy}}:</button>
             <span searchby="inpublisher:">[{publisher}]</span>
-            <input type="text" placeholder="{{publisher}}" name="publisher"/>
+            <input type="text" class="notdisplayed" placeholder="{{publisher}}" name="publisher"/>
             <span class="date">[{XDate}]</span>
-            <input type="date" name="XDate" placeholder="{{publishedDate}}"/>
+            <input type="date" class="notdisplayed" name="XDate" placeholder="{{publishedDate}}"/>
         </div>
         <div class="volumeInfo">
             <button class="title" tabindex="-1">{{nbPages}}:</button>
             <span class="direct">[{pageCount}]</span>
-            <input type="number" placeholder="{{nbPages}}" name="pageCount"/>
+            <input type="number" class="notdisplayed" placeholder="{{nbPages}}" name="pageCount"/>
         </div>
         <div class="volumeInfo">
             <button class="title" tabindex="-1">{{isbn}}:</button>
             <span searchby="isbn:">[{isbn10}]</span>
-            <input type="text" placeholder="{{isbn10}}" size="10" maxlength="10" name="isbn10"/>
+            <input type="text" class="notdisplayed" placeholder="{{isbn10}}" size="10" maxlength="10" name="isbn10"/>
             <span searchby="isbn:">{{isbn13}}</span>
-            <input type="text" placeholder="{{isbn13}}" size="13" maxlength="13" name="isbn13"/>
+            <input type="text" class="notdisplayed" placeholder="{{isbn13}}" size="13" maxlength="13" name="isbn13"/>
         </div>
         <div class="volumeInfo">
             <button class="title" tabindex="-1">{{description}}:</button>
             <br>
-            <span class="tab">[{description}]</span>
-            <textarea placeholder="{{description}}" rows="5" name="description"></textarea>
+            <span description class="tab"></span>
+            <textarea class="notdisplayed" placeholder="{{description}}" rows="5" name="description"></textarea>
         </div>
         <div class="nonEditable">
             <button class="title" tabindex="-1">{{categories}}:</button>
@@ -77,24 +77,26 @@
                 <button type="submit">+</button>
             </form>
         </div>
-        <div>
+        <div class="tags">
+            [{#each tags}]
             <div class="tag">
-                <button class="libelle" title="{{filter}}">[{tag}]</button>
+                <button class="libelle" title="{{filter}}">[{this}]</button>
                 <button title="{{remove}}"><b>x</b></button>
             </div>
+            [{/each}]
         </div>
-        <div id="userNote" class="inCollection">
-            <div note="1" class="note"></div>
-            <div note="2" class="note"></div>
-            <div note="3" class="note"></div>
-            <div note="4" class="note"></div>
-            <div note="5" class="note"></div>
+        <div id="userNote" class="inCollection notdisplayed">
+            <div note="1" class="note empty"></div>
+            <div note="2" class="note empty"></div>
+            <div note="3" class="note empty"></div>
+            <div note="4" class="note empty"></div>
+            <div note="5" class="note empty"></div>
         </div>
-        <div class="userComment inCollection">
+        <div class="userComment inCollection notdisplayed">
             <textarea name="userComment" class="direct" rows="5" placeholder="{{comments}}"></textarea>
             <div class="direct date">&nbsp;@&nbsp;[{userDate}]</div>
         </div>
-        <div>
+        <div class="notdisplayed">
             <span class="title">{{readersComments}}:</span>
             <span class="subtitle">{{mNote}}:&nbsp;
                 <span>[{note}]</span>

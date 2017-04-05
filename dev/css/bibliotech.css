@@ -709,7 +709,6 @@ bookcells {
 
 /* Tooltip text */
 .bookcell figure span {
-    visibility: hidden;
     width: 100%;
     background-color: black;
     text-align: center;
@@ -725,10 +724,13 @@ bookcells {
     max-height: 100%;
     overflow: hidden;
     cursor: url(/images/iconmonstr-x-mark-2-icon.png), pointer;
+    transform: scaleY(0);
+    transform-origin: 50% bottom;
+    transition:transform .5s ease;
 }
 
 .bookcell figure:hover span {
-    visibility: visible;
+    transform: scaleY(1);
 }
 
 .altCover {
@@ -1030,51 +1032,51 @@ detail>article>* {
     background-position: -674px -298px
 }
 
-.windowheader .detailSave {
+.windowheader #detailSave {
     background-position: -354px -130px
 }
 
-.windowheader .detailSave:hover {
+.windowheader #detailSave:hover {
     background-position: -422px -130px
 }
 
-.windowheader .detailAdd {
+.windowheader #detailAdd {
     background-position: -10px -554px
 }
 
-.windowheader .detailAdd:hover {
+.windowheader #detailAdd:hover {
     background-position: -554px -486px
 }
 
-.windowheader .detailGbooks {
+.windowheader #detailGbooks {
     background-position: -10px -350px
 }
 
-.windowheader .detailGbooks:hover {
+.windowheader #detailGbooks:hover {
     background-position: -10px -266px
 }
 
-.windowheader .detailConnex {
+.windowheader #detailConnex {
     background-position: -250px -554px
 }
 
-.windowheader .detailConnex:hover {
+.windowheader #detailConnex:hover {
     background-position: -182px -554px
 }
 
-.windowheader .detailPreview {
+.windowheader #detailPreview {
     background-position: -536px -62px
 }
 
-.windowheader .detailPreview:hover {
+.windowheader #detailPreview:hover {
     background-position: -10px -130px
 }
 
-.windowheader .detailRecommand {
+.windowheader #detailRecommand {
     background-position: -318px -554px
 }
 
-.windowheader .detailRecommand:hover {
+.windowheader #detailRecommand:hover {
     background-position: -386px -554px
 }
 
@@ -1518,7 +1520,7 @@ div.tag button.libelle.new:hover {
 }
 
 div.tag button:not(.libelle) {
-    margin-left: -1px;
+    margin-left: -5px;
     margin-right: 5px;
     border-radius: 0 5px 5px 0;
     background: maroon

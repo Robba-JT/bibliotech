@@ -41,6 +41,9 @@ const console = require("../tools/console"),
         }, {
             "_id": false
         }).then((books) => {
+            _.forEach(books, (book) => _.assign(book, {
+                "tags": _.result(req.user, "tags")
+            }));
             req.response({
                 books,
                 "tags": req.user.tags,
