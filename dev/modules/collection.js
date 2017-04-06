@@ -1,6 +1,6 @@
 define("collection", ["cells"], function (cells) {
     const Collection = function () {
-        this.tags = [];
+        this.tags = {};
         this.cells = [];
         em.once("initCollect", this, this.init);
         em.on("showCollection", this, this.show);
@@ -27,6 +27,11 @@ define("collection", ["cells"], function (cells) {
         });
         em.on("filtreCollection", this, function (filtre) {
             _.forEach(this.cells, (cell) => cell.filter(filtre));
+        });
+        em.on("filtreTag", this, function (tag) {
+            µ.one("#selectedTag span").text = tag;
+            µ.one("#selectedTag").toggleClass("notdisplayed", false);
+            _.forEach(this.cells, (cell) => cell.byTag(tag));
         });
         em.on("sortCollection", this, function (params) {
             cells.show(_.orderBy(this.cells, `book.${params.by}`, params.sort || "asc"));
@@ -70,15 +75,22 @@ define("collection", ["cells"], function (cells) {
 
     Collection.prototype.show = function () {
         em.emit("clickMenu", "collection");
+        em.emit("resetFilter", !_.isEmpty(this.tags));
         em.emit("resetCells");
         em.emit("showCells", this.cells);
-        µ.one("#tags").toggleClass("notdisplayed", !this.tags.length);
     };
 
     Collection.prototype.init = function () {
         req("/collection").send().then((result) => {
             µ.many(".waiting, .roundIcon").toggleClass("notdisplayed", true);
-            this.tags = result.tags;
+            _.reduce(result.tags, (tags, tag) => {
+                if (_.has(tags, tag)) {
+                    tags[tag] += 1;
+                } else {
+                    _.set(tags, tag, 1);
+                }
+                return tags;
+            }, this.tags);
             this.cells = _.union(this.cells, cells.getCells(result.books, true));
             this.show();
             if (result.total === this.cells.length) {

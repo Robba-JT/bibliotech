@@ -47,6 +47,13 @@ define("menu", ["Window", "text!../templates/menu", "text!../templates/contacts"
         }
     });
 
+    em.on("resetFilter", function (withTags) {
+        navbar.one("#selectedTag span").text = navbar.one("#selectedSearch span").text = "";
+        navbar.many("#selectedTag, #selectedSearch").toggleClass("notdisplayed", true);
+        navbar.one("#tags").toggleClass("notdisplayed", !withTags);
+        navbar.one("form").reset();
+    });
+
     contacts.many("[url]").observe("click", (event) => window.open(event.element.get("url")));
     contacts.one("#helpLink").observe("click", (event) => {
         contacts.close();

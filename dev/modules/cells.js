@@ -9,9 +9,9 @@ define("cells", ["hdb", "text!../templates/Cell"], function (hdb, template) {
             }
             this.id = book.id;
             this.book = _.assign(book, {
-                inCollection
+                inCollection,
+                "detailed": false
             });
-            this.detailed = false;
             this.cell = µ.new("article").toggleClass("bookcell").set({
                 "innerHTML": render(_.assign({}, book, {
                     "source": _.get(book, "cover") ? `/cover/${book.id}` : "",
@@ -73,7 +73,7 @@ define("cells", ["hdb", "text!../templates/Cell"], function (hdb, template) {
             });
 
             this.cell.observe("click", () => {
-                if (this.detailed) {
+                if (this.book.detailed || this.book.inCollection) {
                     em.emit("openDetail", this.book);
                 } else {
                     req(`/detail/${this.id}`).send().then((detail) => {
@@ -111,6 +111,10 @@ define("cells", ["hdb", "text!../templates/Cell"], function (hdb, template) {
         }
     };
 
+    Cell.prototype.byTag = function (tag) {
+        this.cell.toggleClass("notdisplayed", !_.includes(this.book.tags, tag));
+    };
+
     Cell.prototype.changeBackground = function (rgb) {
         this.cell.css("background-color", µ.rgbToHex(rgb)).one("figcaption").css("color", µ.isDark(rgb) ? "whitesmoke" : "black");
     };
@@ -118,7 +122,7 @@ define("cells", ["hdb", "text!../templates/Cell"], function (hdb, template) {
     Cells.prototype.show = function (cells) {
         this.cells = _.unionBy(this.cells, cells, "id");
         _.forEach(cells, (book) => {
-            elt.append(book.cell);
+            elt.append(book.cell.toggleClass("notdisplayed", false));
         });
     };
 

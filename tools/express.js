@@ -139,7 +139,8 @@ exports = module.exports = (() => {
                 req.template = (template) => {
                     const file = path.join(pathStatic, `./templates/${template}.html`);
                     res.render(file, _.assign({
-                        version
+                        version,
+                        lang
                     }, _.get(req.trads, template)), (error, html) => {
                         if (error) {
                             req.error(404);

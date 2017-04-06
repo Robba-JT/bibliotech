@@ -1,6 +1,7 @@
-define("detail", ["Window", "hdb", "text!../templates/detail", "text!../templates/tag"], function (Window, hdb, tempDetail, tempTag) {
+define("detail", ["Window", "hdb", "text!../templates/detail", "text!../templates/Tag", "text!../templates/MostAdded"], function (Window, hdb, tempDetail, tempTag, tempAdded) {
     const renderDetail = hdb.compile(tempDetail),
         renderTag = hdb.compile(tempTag),
+        renderAdded = hdb.compile(tempAdded),
         detail = µ.one("detail"),
         Detail = function () {
             em.on("openDetail", this, (book) => {
@@ -8,24 +9,18 @@ define("detail", ["Window", "hdb", "text!../templates/detail", "text!../template
             });
         };
 
-    Detail.prototype.open = function (book) {
-        µ.one(".waiting").toggleClass("notdisplayed", false);
-        µ.one("html").toggleClass("overflown", true);
-        this.init(book);
-    };
-
-    Detail.prototype.close = function () {
-        detail.toggleClass("notdisplayed", true);
-        µ.one(".waiting").toggleClass("notdisplayed", true);
-        µ.one("html").toggleClass("overflown", false);
-    };
-
     Detail.prototype.init = function (book) {
         this.book = book;
-        detail.set("innerHTML", renderDetail(_.assign(book, {
-            "source": _.get(book, "cover") ? `/cover/${book.id}` : "",
-            "alt": _.get(book, "cover") ? " notdisplayed" : "",
-            "authors": book.authors.split(",")
+        this.cloneBook = _.assign({
+            "note": 0,
+            "tags": [],
+            "comment": ""
+        }, this.book);
+
+        detail.set("innerHTML", renderDetail(_.assign({}, this.cloneBook, {
+            "source": _.get(this.cloneBook, "cover") ? `/cover/${this.cloneBook.id}` : "",
+            "alt": _.get(this.cloneBook, "cover") ? " notdisplayed" : "",
+            "hasComment": _.get(this.cloneBook, "date") ? "" : " notdisplayed"
         })));
         detail.one("[description]").html = book.description;
         detail.one(".closeWindow").observe("click", () => {
@@ -40,8 +35,8 @@ define("detail", ["Window", "hdb", "text!../templates/detail", "text!../template
         detail.css({
             "top": `${document.body.scrollTop}px`
         }).toggleClass("notdisplayed", false);
-        if (this.book.palette && this.book.palette.length) {
-            detail.css("background", `radial-gradient(circle at 50%, whitesmoke 0%,${µ.rgbToHex(this.book.palette[0])} 100%)`);
+        if (this.cloneBook.palette && this.cloneBook.palette.length) {
+            detail.css("background", `radial-gradient(circle at 50%, whitesmoke 0%,${µ.rgbToHex(this.cloneBook.palette[0])} 100%)`);
         } else {
             detail.css("background", "radial-gradient(circle at 50%, whitesmoke 0%, #909090 100%)");
         }
@@ -50,24 +45,69 @@ define("detail", ["Window", "hdb", "text!../templates/detail", "text!../template
             this.addTag(event.element.parser());
             event.element.reset();
         });
-        if (this.book.inCollection) {
+        if (this.cloneBook.inCollection) {
             detail.many(".inCollection").toggleClass("notdisplayed", false);
         }
-        if (this.book.note) {
+        if (this.cloneBook.note) {
             const notes = detail.many(".note");
-            notes.length = this.book.note;
+            notes.length = this.cloneBook.note;
             notes.toggleClass("empty select");
         }
+        detail.many(".note").observe("mouseenter", (event) => {
+            const value = _.parseInt(event.element.get("note")),
+                note = this.cloneBook.note || 0,
+                notes = detail.many(".note");
+
+            notes.each((elt, index) => {
+                elt.toggleClass("plus", index >= note && index < value)
+                    .toggleClass("minus", index < note && index >= value);
+            });
+        }).observe("mouseleave", () => {
+            detail.many(".note").each((elt) => {
+                elt.toggleClass("plus minus", false);
+            });
+        }).observe("click", (event) => {
+            const thisNote = _.parseInt(event.element.get("note"));
+            if (this.cloneBook.note === 1 && thisNote === 1) {
+                this.cloneBook.note = 0;
+            } else {
+                this.cloneBook.note = thisNote;
+            }
+            detail.many(".note").each((elt, index) => {
+                elt.toggleClass("empty", index >= this.cloneBook.note).toggleClass("select", index < this.cloneBook.note);
+            });
+        });
+        detail.one("[name=userComment]").observe("change", (event) => {
+            this.cloneBook.comment = event.element.value;
+            this.cloneBook.date = event.element.value ? new Date() : null;
+        });
+    };
+
+    Detail.prototype.open = function (book) {
+        µ.one(".waiting").toggleClass("notdisplayed", false);
+        µ.one("html").toggleClass("overflown", true);
+        this.init(book);
+    };
+
+    Detail.prototype.close = function () {
+        detail.toggleClass("notdisplayed", true);
+        µ.one(".waiting").toggleClass("notdisplayed", true);
+        µ.one("html").toggleClass("overflown", false);
     };
 
     Detail.prototype.save = function () {
-        _.noop();
+        const diff = _.diff(this.cloneBook, this.book);
+        if (!_.isEmpty(diff)) {
+            req(`/detail/${this.book.id}`, "PUT").send(diff).catch((error) => err.add(error));
+        }
+        _.assign(this.book, this.cloneBook);
+        this.close();
     };
     Detail.prototype.add = function () {
         _.noop();
     };
     Detail.prototype.googleLink = function () {
-        window.open(this.book.link);
+        window.open(this.cloneBook.link);
     };
     Detail.prototype.connex = function () {
         _.noop();
@@ -79,15 +119,27 @@ define("detail", ["Window", "hdb", "text!../templates/detail", "text!../template
         _.noop();
     };
     Detail.prototype.addTag = function (result) {
-        if (!_.includes(this.book.tags, result.tag)) {
-            detail.one(".tags").toggleClass("notdisplayed", false).html += renderTag(result);
-            _.forEach(_.sortBy(detail.many(".tags .tag").elements, [(tag) => tag.text]), (elt) => {
-                detail.one(".tags").append(elt);
-            });
-            this.book.tags.push(result.tag);
-            this.book.tags.sort();
+        if (!_.includes(this.cloneBook.tags, result.tag)) {
+            const tags = detail.one(".tags");
+            tags.html += renderTag(result);
+            tags.append(_.sortBy(detail.many(".tags .tag").elements, [(tag) => tag.text])).toggleClass("notdisplayed", false);
+            this.cloneBook.tags = _.concat(this.cloneBook.tags, [result.tag]);
+            this.cloneBook.tags.sort();
         }
-    }
+    };
+
+    hdb.registerHelper("formatDate", function (date, lang) {
+        const options = {
+            "year": "numeric",
+            "month": "long",
+            "day": "numeric"
+        };
+        return new Date(date || new Date()).toLocaleDateString(lang || "fr", options);
+    });
+
+    hdb.registerHelper("eachAuthors", function (authors) {
+        return _.trim(authors).split(",");
+    });
 
     return new Detail();
 });

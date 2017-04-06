@@ -18,7 +18,7 @@ const console = require("../tools/console"),
                     "$addToSet": {
                         "books": {
                             "id": req.book.id,
-                            "date": new Date()
+                            "@": new Date()
                         }
                     }
                 }).then(() => {
@@ -41,12 +41,14 @@ const console = require("../tools/console"),
         }, {
             "_id": false
         }).then((books) => {
-            _.forEach(books, (book) => _.assign(book, {
-                "tags": _.result(req.user, "tags")
-            }));
+            let tags = [];
+            _.forEach(books, (book) => {
+                _.assign(book, _.find(req.user.books, ["id", book.id]));
+                tags = _.concat(tags, book.tags || []);
+            });
             req.response({
                 books,
-                "tags": req.user.tags,
+                tags,
                 "total": books.length
             });
         }).catch(req.error);
@@ -113,8 +115,26 @@ const console = require("../tools/console"),
 
         this.update = (req) => {
             const id = _.get(req, "params[0]");
-            if (_.some(req.user.books, ["id", id])) {
-                _.noop();
+            if (_.some(req.user.books, ["id", id]) && !_.isEmpty(req.body) && _.isPlainObject(req.body)) {
+                const update = {};
+                if (_.has(req.body, "date")) {
+                    update["books.$.date"] = new Date(req.body.date);
+                }
+                if (_.has(req.body, "comment")) {
+                    update["books.$.comment"] = req.body.comment || "";
+                }
+                if (_.has(req.body, "tags")) {
+                    update["books.$.tags"] = req.body.tags || [];
+                }
+                if (_.has(req.body, "note")) {
+                    update["books.$.note"] = _.parseInt(req.body.note) || 0;
+                }
+                usersDB.update({
+                    "_id": req.user._id,
+                    "books.id": id
+                }, {
+                    "$set": update
+                }).then(() => req.response()).catch(req.error);
             } else {
                 req.error(409);
             }

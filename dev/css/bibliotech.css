@@ -70,6 +70,10 @@ img {
     display: none!important
 }
 
+.invisible {
+    visibility: hidden;
+}
+
 .window:not(.ng-hide) {
     animation: fadein .5s
 }

@@ -9,7 +9,7 @@ require.config({
         "errors": "../lib/errors",
         "footer": "../modules/footer",
         "hdb": "../lib/handlebars.min",
-        "lodash": "../lib/lodash.min",
+        "lodash": "../lib/protoLodash",
         "menu": "../modules/menu",
         "profile": "../modules/profile",
         "Request": "../lib/Request",
@@ -26,20 +26,16 @@ require.config({
             "exports": "ColorThief"
         },
         "dom": {
-            "exports": "µ",
-            "deps": ["lodash"]
+            "exports": "µ"
         },
         "emitter": {
-            "exports": "em",
-            "deps": ["lodash"]
+            "exports": "em"
         },
         "Request": {
-            "exports": "req",
-            "deps": ["lodash"]
+            "exports": "req"
         },
         "errors": {
-            "exports": "err",
-            "deps": ["lodash"]
+            "exports": "err"
         }
     }
 });

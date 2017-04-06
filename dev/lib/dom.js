@@ -474,8 +474,9 @@ const µ = (function () {
      * @returns {myElement} new element
      **/
     myElement.prototype.append = function (tag, attrs) {
-        if (tag instanceof myCollection) {
-            _.forEach(tag.elements, (elt) => {
+        if (tag instanceof myCollection || _.isArray(tag)) {
+            const elts = tag.elements || tag;
+            _.forEach(elts, (elt) => {
                 this.element.appendChild(elt.set(attrs).element);
             });
             return this;
@@ -494,6 +495,17 @@ const µ = (function () {
     myElement.prototype.appendTo = function (parent) {
         const elt = parent instanceof myElement ? parent.element : parent;
         elt.appendChild(this.element);
+        return this;
+    };
+
+    /**
+     * New elements assigner
+     * @param {myElement} parent parent
+     * @returns {myCollection} this element
+     **/
+    myCollection.prototype.appendTo = function (parent) {
+        const elt = parent instanceof myElement ? parent.element : parent;
+        _.forEach(this.elements, (element) => element.appendTo(elt));
         return this;
     };
 
@@ -538,18 +550,20 @@ const µ = (function () {
      * @returns {myElement} this element;
      **/
     myElement.prototype.trigger = function (eventName) {
-        if (this.element[eventName] && _.isFunction(this.element[eventName])) {
-            Reflect.apply(this.element[eventName], this.element, []);
-        } else {
-            const isMouse = _.has(["click", "mouseenter", "mouseleave", "mouseup", "mousedown"], eventName);
-            var thisEvent = null;
-            try {
-                thisEvent = isMouse ? new MouseEvent(eventName) : new Event(eventName);
-            } catch (error) {
-                thisEvent = document.createEvent(isMouse ? "MouseEvents" : "HTMLEvents");
-                thisEvent.initEvent(eventName, true, true);
+        if (this.element) {
+            if (this.element[eventName] && _.isFunction(this.element[eventName])) {
+                Reflect.apply(this.element[eventName], this.element, []);
+            } else {
+                const isMouse = _.has(["click", "mouseenter", "mouseleave", "mouseup", "mousedown"], eventName);
+                var thisEvent = null;
+                try {
+                    thisEvent = isMouse ? new MouseEvent(eventName) : new Event(eventName);
+                } catch (error) {
+                    thisEvent = document.createEvent(isMouse ? "MouseEvents" : "HTMLEvents");
+                    thisEvent.initEvent(eventName, true, true);
+                }
+                this.element.dispatchEvent(thisEvent);
             }
-            this.element.dispatchEvent(thisEvent);
         }
         return this;
     };
@@ -574,7 +588,7 @@ const µ = (function () {
      * @returns {myCollection} this collection
      **/
     myCollection.prototype.each = function (callback) {
-        this.elements.forEach((element) => Reflect.apply(callback, null, [element]));
+        this.elements.forEach((element, index) => Reflect.apply(callback, null, [element, index]));
         return this;
     };
 

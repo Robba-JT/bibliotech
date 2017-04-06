@@ -23,6 +23,7 @@ define("search", ["cells", "collection", "Window", "text!../templates/search"], 
                 event.element.reset();
                 µ.many(".waiting, .roundIcon, .waitAnim").toggleClass("notdisplayed", false);
                 µ.one("sort.active").toggleClass("active", false);
+                em.emit("resetFilter");
                 em.emit("clickMenu", "recherche");
             }
             return false;

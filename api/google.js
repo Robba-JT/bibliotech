@@ -61,7 +61,7 @@ const console = require("../tools/console"),
                     //"cover": Boolean(_.keys(bookinfos.imageLinks).length),
                     "access": _.get(book, "accessInfo.accessViewStatus") || "NONE",
                     "preview": _.get(book, "accessInfo.webReaderLink") || "",
-                    "date": new Date()
+                    "@": new Date()
                 };
             },
             formatAll = function (books) {
