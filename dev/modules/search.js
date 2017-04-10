@@ -10,6 +10,16 @@ define("search", ["cells", "collection", "Window", "text!../templates/search"], 
         em.on("filtreSearch", this, function (filtre) {
             _.forEach(this.last.books, (cell) => cell.filter(filtre));
         });
+        em.on("associated", (associated) => {
+            if (_.get(this.last, "qs.associated") !== associated) {
+                this.last = {
+                    "qs": {
+                        associated
+                    }
+                };
+                this.associated();
+            }
+        });
 
         µ.one("form[name=searchForm]").observe("submit", (event) => {
             event.preventDefault();
@@ -37,6 +47,19 @@ define("search", ["cells", "collection", "Window", "text!../templates/search"], 
         });
         this.last.books = _.unionBy(this.last.books, newBooks, "id");
         cells.show(newBooks);
+    };
+
+    Search.prototype.associated = function () {
+        cells.reset();
+        µ.many(".waiting, .roundIcon, .waitAnim").toggleClass("notdisplayed", false);
+        µ.one("sort.active").toggleClass("active", false);
+        em.emit("resetFilter");
+        em.emit("clickMenu", "recherche");
+        req(`/associated/${this.last.qs.associated}`).send().then((result) => {
+            console.log("connex result", result);
+            this.show(result.books);
+            µ.one(".waitAnim").toggleClass("notdisplayed", true);
+        }).catch((error) => err.add(error));
     };
 
     Search.prototype.get = function () {

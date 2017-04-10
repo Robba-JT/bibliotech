@@ -8,7 +8,7 @@ const console = require("../tools/console"),
     RequestsAPI = require("./requests"),
     gOptions = {
         "gzip": true,
-        "proxy": "http://CGDM-EMEA%5Cjtassin:password_22@isp-ceg.emea.cegedim.grp:3128/",
+        "proxy": "http://CGDM-EMEA%5Cjtassin:password_23@isp-ceg.emea.cegedim.grp:3128/",
         "headers": {
             "Accept-Encoding": "gzip",
             "Content-Type": "application/json"
@@ -121,7 +121,16 @@ const console = require("../tools/console"),
                 }
             });
 
-        this.associated = (params) => googleRequest("volumes.associated.list", _.merge(params, reqParams.search));
+        this.associated = (req) => {
+            const volumeId = _.get(req, "params[0]");
+            if (volumeId) {
+                googleRequest("volumes.associated.list", _.merge({
+                    volumeId
+                }, reqParams.search)).then(formatAll).then(req.response).catch(req.error);
+            } else {
+                req.error(409);
+            }
+        };
 
         this.format = (books) => {
             const ret_books = [];

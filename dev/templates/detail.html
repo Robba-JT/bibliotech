@@ -1,25 +1,44 @@
 <header class="windowheader">&nbsp;
     <span class="direct" default="{{newBook}}">[{title}]</span>
     <div class="closeWindow" title="{{close}}"></div>
-    <div id="detailSave" class="notdisplayed" title="{{save}}"></div>
-    <div id="detailAdd" class="notdisplayed" title="{{add}}"></div>
-    <div id="detailGbooks" class="notdisplayed" title="{{gbooks}}"></div>
-    <div id="detailConnex" class="notdisplayed" title="{{connex}}"></div>
-    <div id="detailPreview" class="notdisplayed" title="{{preview}}"></div>
-    <div id="detailRecommand" class="notdisplayed" title="{{torecommand}}"></div>
+    [{#if inCollection}]
+    <div id="detailSave" title="{{save}}"></div>
+    <div id="detailRecommand" title="{{torecommand}}"></div>
+    [{else}]
+    <div id="detailAdd" title="{{add}}"></div>
+    [{/if}]
+    [{#if link}]
+    <div id="detailGbooks" title="{{gbooks}}"></div>
+    <div id="detailConnex" title="{{connex}}"></div>
+    [{/if}]
+    [{#ifPreview access}]
+    <div id="detailPreview" title="{{preview}}"></div>
+    [{/ifPreview}]
 </header>
 <article>
     <div class="detailCover" dir="rtl">
-        <div id="noCover[{alt}]"></div>
+        [{#if cover}]
         <div>
-            <img id="detailCover" src="[{source}]"/>
+            <img id="detailCover" src="/cover/[{id}]"/>
         </div>
-        <div class="imgAction[{alt}]">
+        [{else if alt}]
+        <div>
+            <img id="detailCover" src="/cover/[{id}]"/>
+        </div>
+        <div class="imgAction">
             <div class="upload"></div>
         </div>
-        <form id="uploadHidden" class="notdisplayed">
+        [{else}]
+        <div>
+            <img id="detailCover" class="notdisplayed"/>
+        </div>
+        <div id="noCover"></div>
+        <div class="imgAction">
+            <div class="upload"></div>
+        </div>
+        [{/if}]
+        <form name="uploadImg" class="notdisplayed">
             <input type="file" accept="image/*"/>
-            <input type="hidden" message="errUpload" titre="error"/>
         </form>
     </div>
     <div class="detailBook">
@@ -37,6 +56,7 @@
             [{/eachAuthors}]
             <input type="text" class="notdisplayed" placeholder="{{authorsWithComa}}" name="authors"/>
         </div>
+        [{#if publisher}]
         <div class="volumeInfo">
             <button class="title" tabindex="-1">{{publishBy}}:</button>
             <span searchby="inpublisher:">[{publisher}]</span>
@@ -44,32 +64,44 @@
             <span class="date">@&nbsp;[{formatDate publishedDate "{{lang}}"}]</span>
             <input type="date" class="notdisplayed" name="publishedDate" placeholder="{{publishedDate}}"/>
         </div>
+        [{/if}]
+        [{#if pageCount}]
         <div class="volumeInfo">
             <button class="title" tabindex="-1">{{nbPages}}:</button>
             <span class="direct">[{pageCount}]</span>
             <input type="number" class="notdisplayed" placeholder="{{nbPages}}" name="pageCount"/>
         </div>
+        [{/if}]
+        [{#ifISBN isbn10 isbn13}]
         <div class="volumeInfo">
             <button class="title" tabindex="-1">{{isbn}}:</button>
             <span searchby="isbn:">[{isbn10}]</span>
             <input type="text" class="notdisplayed" placeholder="{{isbn10}}" size="10" maxlength="10" name="isbn10"/>
-            <span searchby="isbn:">{{isbn13}}</span>
+            <span searchby="isbn:">[{isbn13}]</span>
             <input type="text" class="notdisplayed" placeholder="{{isbn13}}" size="13" maxlength="13" name="isbn13"/>
         </div>
+        [{/ifISBN}]
+        [{#if description}]
         <div class="volumeInfo">
             <button class="title" tabindex="-1">{{description}}:</button>
             <br>
             <span description class="tab"></span>
             <textarea class="notdisplayed" placeholder="{{description}}" rows="5" name="description"></textarea>
         </div>
+        [{/if}]
+        [{#if categories}]
         <div class="nonEditable">
             <button class="title" tabindex="-1">{{categories}}:</button>
             <span class="direct">[{categories}]</span>
         </div>
+        [{/if}]
+        [{#ifRec}]
         <div class="nonEditable">
             <button class="title" tabindex="-1">{{from}}:</button>
             <span class="direct">[{from}]</span>
         </div>
+        [{/ifRec}]
+        [{#if inCollection}]
         <div>
             <form name="formTag" autocomplete="off">
                 <input name="tag" type="text" placeholder="{{newTag}}" list="tagsList" minlength="2" maxlength="30" auto-focus required size="30"/>
@@ -85,17 +117,18 @@
             </div>
             [{/tags}]
         </div>
-        <div id="userNote" class="inCollection notdisplayed">
+        <div id="userNote" class="inCollection">
             <div note=1 class="note empty"></div>
             <div note=2 class="note empty"></div>
             <div note=3 class="note empty"></div>
             <div note=4 class="note empty"></div>
             <div note=5 class="note empty"></div>
         </div>
-        <div class="userComment inCollection notdisplayed">
+        <div class="userComment inCollection">
             <textarea name="userComment" class="direct" rows="5" placeholder="{{comments}}">[{comment}]</textarea>
             <div class="direct date[{hasComment}]">&nbsp;@&nbsp;[{formatDate date}]</div>
         </div>
+        [{/if}]
         <div class="notdisplayed">
             <span class="title">{{readersComments}}:</span>
             <span class="subtitle">{{mNote}}:&nbsp;

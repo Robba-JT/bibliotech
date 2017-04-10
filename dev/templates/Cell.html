@@ -1,17 +1,28 @@
     <header>[{title}]</header>
-    <button class="add [{add}]">{{add}}</button>
-    <button class="remove [{remove}]">{{remove}}</button>
+    [{#if inCollection}]
+    <button class="add notdisplayed">{{add}}</button>
+    <button class="remove">{{remove}}</button>
+    [{else}]
+    <button class="add">{{add}}</button>
+    <button class="remove notdisplayed">{{remove}}</button>
+    [{/if}]
     <figure>
         <span></span>
         <div>
             <div class="altCover"></div>
-            <img src="[{source}]" class="notdisplayed">
+            <img class="notdisplayed">
         </div>
         <figcaption>
             <footer>
-                <div class="personnal nsv [{pers}]"></div>
-                <div class="previewable nsv [{acc}]"></div>
-                <div class="recommanded nsv [{rec}]"></div>
+                [{#ifPreview access}]
+                <div class="previewable nsv"></div>
+                [{/ifPreview}]
+                [{#ifPers id}]
+                <div class="personnal nsv"></div>
+                [{/ifPers}]
+                [{#ifRec id}]
+                <div class="recommanded nsv"></div>
+                [{/ifRec}]
             </footer>
             [{authors}]
         </figcaption>

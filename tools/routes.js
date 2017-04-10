@@ -86,6 +86,9 @@ module.exports = exports = (() => {
     //Search
     router.post("/search", googleAPI.search);
 
+    //connex
+    router.get("/associated/*", googleAPI.associated);
+
     //Preview
     router.get("/preview/*", booksAPI.preview);
 

@@ -2,7 +2,7 @@ const Q = require("q"),
     _ = require("lodash"),
     reqOptions = {
         "gzip": true,
-        "proxy": "http://CGDM-EMEA%5Cjtassin:password_22@isp-ceg.emea.cegedim.grp:3128/",
+        "proxy": "http://CGDM-EMEA%5Cjtassin:password_23@isp-ceg.emea.cegedim.grp:3128/",
         "timeout": 5000
     },
     request = require("request"),
@@ -15,7 +15,7 @@ const Q = require("q"),
                     const req = request.get({
                         url,
                         "encoding": "binary",
-                        "proxy": "http://CGDM-EMEA%5Cjtassin:password_22@isp-ceg.emea.cegedim.grp:3128/"
+                        "proxy": "http://CGDM-EMEA%5Cjtassin:password_23@isp-ceg.emea.cegedim.grp:3128/"
                     });
                     req.on("error", reject);
                     req.on("response", (response) => {

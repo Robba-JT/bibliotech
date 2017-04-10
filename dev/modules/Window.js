@@ -8,6 +8,9 @@ define("Window", [], function () {
         this.window = µ.one(selector).set("innerHTML", template);
         this.window.one(".closeWindow").observe("click", () => this.close());
 
+        em.on("resize", this, this.close);
+        em.on("closeAll", this, this.close);
+
         return this;
     };
 

@@ -9,6 +9,7 @@ require.config({
         "errors": "../lib/errors",
         "footer": "../modules/footer",
         "hdb": "../lib/handlebars.min",
+        "biblioHdb": "../modules/biblioHdb",
         "lodash": "../lib/protoLodash",
         "menu": "../modules/menu",
         "profile": "../modules/profile",
@@ -36,11 +37,14 @@ require.config({
         },
         "errors": {
             "exports": "err"
+        },
+        "biblioHdb": {
+            "deps": ["hdb"]
         }
     }
 });
 
-require(["lodash", "Thief", "dom", "emitter", "Request", "errors"], () => {
+require(["lodash", "Thief", "dom", "emitter", "Request", "errors", "biblioHdb"], () => {
     require(["profile", "cloud", "collection", "footer", "menu", "search", "detail"], () => {
         if ("FileReader" in window && "formNoValidate" in document.createElement("input")) {
             em.emit("initProfile").emit("initCollect");

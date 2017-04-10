@@ -2,7 +2,6 @@ define("cells", ["hdb", "text!../templates/Cell"], function (hdb, template) {
     const render = hdb.compile(template),
         elt = µ.one("bookcells"),
         thief = new ColorThief(),
-        width = `${~~(elt.element.offsetWidth / ~~(elt.element.offsetWidth / 257)) - 8}px`,
         Cell = function (book, inCollection = false) {
             if (!(this instanceof Cell)) {
                 return new Cell(book, inCollection);
@@ -13,14 +12,7 @@ define("cells", ["hdb", "text!../templates/Cell"], function (hdb, template) {
                 "detailed": false
             });
             this.cell = µ.new("article").toggleClass("bookcell").set({
-                "innerHTML": render(_.assign({}, book, {
-                    "source": _.get(book, "cover") ? `/cover/${book.id}` : "",
-                    "acc": _.get(book, "access") === "SAMPLE" ? "" : "notdisplayed",
-                    "add": inCollection ? "notdisplayed" : "",
-                    "remove": inCollection ? "" : "notdisplayed",
-                    "pers": _.isPlainObject(book.id) ? "" : "notdisplayed",
-                    "rec": _.isPlainObject(book.id) ? "" : "notdisplayed"
-                })),
+                "innerHTML": render(book),
                 "draggable": true,
                 "id": `id${book.id}`
             }).css({
@@ -33,26 +25,6 @@ define("cells", ["hdb", "text!../templates/Cell"], function (hdb, template) {
                 event.stopPropagation();
                 event.element.toggleClass("notdisplayed", true);
             }).html = _.get(book, "description").substr(0, Math.max(500, index)) + (index !== -1 ? "..." : "");
-
-            if (_.has(book, "cover")) {
-                const cover = this.cell.one("img");
-                cover.loaded = () => {
-                    cover.toggleClass("notdisplayed", false);
-                    cover.siblings.get(0).toggleClass("notdisplayed");
-                    _.assign(this.book, {
-                        "palette": thief.getPalette(cover.element)
-                    });
-                    if (this.book.palette && this.book.palette.length > 2) {
-                        this.changeBackground(this.book.palette[1]);
-                        this.cell.observe("mouseover", () => {
-                            this.changeBackground(this.book.palette[0]);
-                        });
-                        this.cell.observe("mouseleave", () => {
-                            this.changeBackground(this.book.palette[1]);
-                        });
-                    }
-                };
-            }
 
             this.cell.one(".add").observe("click", () => {
                 event.stopPropagation();
@@ -94,36 +66,88 @@ define("cells", ["hdb", "text!../templates/Cell"], function (hdb, template) {
                 this.cell.prepend(µ.one(`#${event.dataTransfer.getData("id")}`));
             });
 
+            if (_.get(book, "cover") || _.get(book, "alt")) {
+                const defLoad = this.defLoad = () => {
+                    const cover = this.cell.one("img");
+                    if (!cover.get("src") && this.isVisible()) {
+                        window.removeEventListener("scroll", defLoad);
+                        cover.loaded = () => {
+                            cover.toggleClass("notdisplayed", false);
+                            cover.siblings.get(0) && cover.siblings.get(0).remove();
+                            _.assign(this.book, {
+                                "palette": thief.getPalette(cover.element)
+                            });
+                            if (this.book.palette && this.book.palette.length > 2) {
+                                this.changeBackground(this.book.palette[1]);
+                                this.cell.observe("mouseover", () => {
+                                    this.changeBackground(this.book.palette[0]);
+                                });
+                                this.cell.observe("mouseleave", () => {
+                                    this.changeBackground(this.book.palette[1]);
+                                });
+                            }
+                        };
+                        cover.element.src = book.alt || `/cover/${this.book.id}`;
+                    } else {
+                        window.addEventListener("scroll", defLoad);
+                    }
+                };
+            }
             return this;
         },
         Cells = function () {
             this.cells = [];
             em.on("showCells", this, this.show);
             em.on("resetCells", this, this.reset);
+            em.on("resize", this, this.resize);
         };
+
+    let width = `${~~(elt.element.offsetWidth / ~~(elt.element.offsetWidth / 257)) - 10}px`;
 
     Cell.prototype.filter = function (filtre) {
         if (!filtre) {
             this.cell.toggleClass("notdisplayed", false);
         } else {
-            const concat = _.toLower(_.concat(this.book.title, this.book.subtitle || "", this.book.authors || "", this.book.description || "").join(""));
-            this.cell.toggleClass("notdisplayed", !_.includes(concat, _.toLower(filtre)));
+            const concat = _.toLower(_.concat(this.book.title, this.book.subtitle || "", this.book.authors || "", this.book.description || "").join("")),
+                visible = _.includes(concat, _.toLower(filtre));
+
+            this.cell.toggleClass("notdisplayed", !visible);
+            if (visible) {
+                this.defLoad();
+            }
         }
     };
 
     Cell.prototype.byTag = function (tag) {
         this.cell.toggleClass("notdisplayed", !_.includes(this.book.tags, tag));
+        this.defLoad();
     };
 
     Cell.prototype.changeBackground = function (rgb) {
         this.cell.css("background-color", µ.rgbToHex(rgb)).one("figcaption").css("color", µ.isDark(rgb) ? "whitesmoke" : "black");
     };
 
+    Cell.prototype.resize = function () {
+        this.cell.css({
+            width
+        });
+    };
+
+    Cell.prototype.isVisible = function () {
+        return document.body.scrollTop + window.outerHeight > this.cell.element.offsetTop && window.getComputedStyle(this.cell.element).visibility === "visible" && window.getComputedStyle(this.cell.element).display !== "none";
+    };
+
+    Cells.prototype.resize = function () {
+        width = `${~~(elt.element.offsetWidth / ~~(elt.element.offsetWidth / 257)) - 8}px`;
+        _.forEach(this.cells, (cell) => cell.resize());
+    };
+
     Cells.prototype.show = function (cells) {
-        this.cells = _.unionBy(this.cells, cells, "id");
         _.forEach(cells, (book) => {
             elt.append(book.cell.toggleClass("notdisplayed", false));
+            book.defLoad && book.defLoad();
         });
+        this.cells = _.unionBy(this.cells, cells, "id");
     };
 
     Cells.prototype.reset = function () {
@@ -138,6 +162,8 @@ define("cells", ["hdb", "text!../templates/Cell"], function (hdb, template) {
     Cells.prototype.getCells = function (books, inCollection) {
         return _.map(books, (book) => this.getCell(book, inCollection));
     };
+
+    window.addEventListener("resize", () => em.emit("resize"));
 
     return new Cells();
 });

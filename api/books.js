@@ -1,5 +1,6 @@
 const console = require("../tools/console"),
     _ = require("lodash"),
+    Q = require("q"),
     path = require("path"),
     booksDB = require("../db/books"),
     GoogleAPI = require("./google"),
@@ -56,19 +57,33 @@ const console = require("../tools/console"),
         this.cover = (req, res) => {
             const id = _.get(req, "params[0]");
             if (id) {
-                requestAPI.loadImg(
-                    id,
-                    `http://books.google.com/books/content?id=${id}&printsec=frontcover&img=1&source=gbs_api`
-                ).then((result) => {
-                    res.set({
-                        "Content-Type": result.mime,
-                        "Content-Length": result.buffer.length
+                const book = _.find(req.user.books, ["id", id]);
+                if (book && book.alt) {
+                    booksDB.loadCover({
+                        "_id": book.cover
+                    }).then((cover) => {
+                        const buffer = Buffer.from(cover.base64, "base64")
+                        res.set({
+                            "Content-Type": cover.mime,
+                            "Content-Length": buffer.length
+                        });
+                        res.send(buffer);
+                    }).catch(req.error);
+                } else {
+                    requestAPI.loadImg(
+                        id,
+                        `http://books.google.com/books/content?id=${id}&printsec=frontcover&img=1&source=gbs_api`
+                    ).then((result) => {
+                        res.set({
+                            "Content-Type": result.mime,
+                            "Content-Length": result.buffer.length
+                        });
+                        res.send(result.buffer);
+                    }).catch((error) => {
+                        console.error("error", error);
+                        req.error(error);
                     });
-                    res.send(result.buffer);
-                }).catch((error) => {
-                    console.error("error", error);
-                    req.error(error);
-                });
+                }
             } else {
                 req.error(409);
             }
@@ -116,7 +131,8 @@ const console = require("../tools/console"),
         this.update = (req) => {
             const id = _.get(req, "params[0]");
             if (_.some(req.user.books, ["id", id]) && !_.isEmpty(req.body) && _.isPlainObject(req.body)) {
-                const update = {};
+                const update = {},
+                    proms = [];
                 if (_.has(req.body, "date")) {
                     update["books.$.date"] = new Date(req.body.date);
                 }
@@ -129,12 +145,31 @@ const console = require("../tools/console"),
                 if (_.has(req.body, "note")) {
                     update["books.$.note"] = _.parseInt(req.body.note) || 0;
                 }
-                usersDB.update({
-                    "_id": req.user._id,
-                    "books.id": id
-                }, {
-                    "$set": update
-                }).then(() => req.response()).catch(req.error);
+                if (_.has(req.body, "alt")) {
+                    const base64_marker = ";base64,",
+                        base64_index = req.body.alt.indexOf(base64_marker),
+                        base64 = req.body.alt.substr(base64_index + base64_marker.length),
+                        mime = req.body.alt.substring(5, base64_index);
+
+                    proms.push(booksDB.addCover({
+                        base64,
+                        mime,
+                        "palette": _.get(req.body, "palette"),
+                        "date": new Date(),
+                        "by": req.user._id
+                    }));
+                }
+                Q.allSettled(proms).then((result) => {
+                    if (result && result.length && result[0].state === "fulfilled") {
+                        update["books.$.alt"] = result[0].value;
+                    }
+                    usersDB.update({
+                        "_id": req.user._id,
+                        "books.id": id
+                    }, {
+                        "$set": update
+                    }).then(() => req.response()).catch(req.error);
+                });
             } else {
                 req.error(409);
             }

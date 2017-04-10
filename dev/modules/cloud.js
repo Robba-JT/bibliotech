@@ -7,6 +7,9 @@ define("cloud", ["text!../templates/cloud"], function (template) {
 
             em.on("openCloud", this, this.open);
             em.on("closeCloud", this, this.close);
+            em.on("resize", this, () => {
+                this.close().reset().generate(this.list);
+            });
 
             cloud.one("div").observe("click", this.close);
         },

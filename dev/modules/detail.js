@@ -2,6 +2,7 @@ define("detail", ["Window", "hdb", "text!../templates/detail", "text!../template
     const renderDetail = hdb.compile(tempDetail),
         renderTag = hdb.compile(tempTag),
         renderAdded = hdb.compile(tempAdded),
+        thief = new ColorThief(),
         detail = µ.one("detail"),
         Detail = function () {
             em.on("openDetail", this, (book) => {
@@ -18,28 +19,21 @@ define("detail", ["Window", "hdb", "text!../templates/detail", "text!../template
         }, this.book);
 
         detail.set("innerHTML", renderDetail(_.assign({}, this.cloneBook, {
-            "source": _.get(this.cloneBook, "cover") ? `/cover/${this.cloneBook.id}` : "",
-            "alt": _.get(this.cloneBook, "cover") ? " notdisplayed" : "",
             "hasComment": _.get(this.cloneBook, "date") ? "" : " notdisplayed"
         })));
         detail.one("[description]").html = book.description;
         detail.one(".closeWindow").observe("click", () => {
             this.close();
         });
-        detail.one("#detailSave").toggleClass("notdisplayed", !book.inCollection).observe("click", () => this.save());
-        detail.one("#detailAdd").toggleClass("notdisplayed", book.inCollection).observe("click", () => this.add());
-        detail.one("#detailGbooks").toggleClass("notdisplayed", !book.link).observe("click", () => this.googleLink());
-        detail.one("#detailConnex").toggleClass("notdisplayed", _.isPlainObject(book.id)).observe("click", () => this.connex());
-        detail.one("#detailPreview").toggleClass("notdisplayed", !book.preview).observe("click", () => this.preview());
-        detail.one("#detailRecommand").toggleClass("notdisplayed", !book.inCollection).observe("click", () => this.recommand());
+        detail.one("#detailSave").observe("click", () => this.save());
+        detail.one("#detailAdd").observe("click", () => this.add());
+        detail.one("#detailGbooks").observe("click", () => this.googleLink());
+        detail.one("#detailConnex").observe("click", () => this.connex());
+        detail.one("#detailPreview").observe("click", () => this.preview());
+        detail.one("#detailRecommand").observe("click", () => this.recommand());
         detail.css({
             "top": `${document.body.scrollTop}px`
         }).toggleClass("notdisplayed", false);
-        if (this.cloneBook.palette && this.cloneBook.palette.length) {
-            detail.css("background", `radial-gradient(circle at 50%, whitesmoke 0%,${µ.rgbToHex(this.cloneBook.palette[0])} 100%)`);
-        } else {
-            detail.css("background", "radial-gradient(circle at 50%, whitesmoke 0%, #909090 100%)");
-        }
         detail.one("form[name=formTag]").observe("submit", (event) => {
             event.preventDefault();
             this.addTag(event.element.parser());
@@ -53,6 +47,7 @@ define("detail", ["Window", "hdb", "text!../templates/detail", "text!../template
             notes.length = this.cloneBook.note;
             notes.toggleClass("empty select");
         }
+        detail.css("background", "radial-gradient(circle at 50%, whitesmoke 0%, #909090 100%)");
         detail.many(".note").observe("mouseenter", (event) => {
             const value = _.parseInt(event.element.get("note")),
                 note = this.cloneBook.note || 0,
@@ -81,6 +76,28 @@ define("detail", ["Window", "hdb", "text!../templates/detail", "text!../template
             this.cloneBook.comment = event.element.value;
             this.cloneBook.date = event.element.value ? new Date() : null;
         });
+        detail.one("#detailCover").observe("load", () => {
+            if (!_.has(this.cloneBook, "palette")) {
+                this.cloneBook.palette = thief.getPalette(detail.one("#detailCover").element);
+            }
+            if (this.cloneBook.palette && this.cloneBook.palette.length) {
+                detail.css("background", `radial-gradient(circle at 50%, whitesmoke 0%,${µ.rgbToHex(this.cloneBook.palette[0])} 100%)`);
+            }
+        });
+        detail.one("div.upload").observe("click", () => detail.one("[type=file]").trigger("click"));
+        detail.one("[type=file]").observe("change", (event) => {
+            detail.many("#noCover").toggleClass("notdisplayed", event.element.files.length);
+            if (event.element.files.length) {
+                const reader = new FileReader();
+                reader.addEventListener("load", (result) => {
+                    detail.one("#detailCover").toggleClass("notdisplayed", false).set("src", result.target.result);
+                    this.cloneBook.alt = result.target.result;
+                });
+                reader.readAsDataURL(event.element.files[0]);
+                detail.one("form[name=uploadImg]").reset();
+            }
+        });
+        em.on("resize", this, this.close);
     };
 
     Detail.prototype.open = function (book) {
@@ -98,7 +115,7 @@ define("detail", ["Window", "hdb", "text!../templates/detail", "text!../template
     Detail.prototype.save = function () {
         const diff = _.diff(this.cloneBook, this.book);
         if (!_.isEmpty(diff)) {
-            req(`/detail/${this.book.id}`, "PUT").send(diff).catch((error) => err.add(error));
+            req(`/detail/${this.book.id}`, "PUT").send(diff, "palette").catch((error) => err.add(error));
         }
         _.assign(this.book, this.cloneBook);
         this.close();
@@ -110,7 +127,8 @@ define("detail", ["Window", "hdb", "text!../templates/detail", "text!../template
         window.open(this.cloneBook.link);
     };
     Detail.prototype.connex = function () {
-        _.noop();
+        this.close();
+        em.emit("associated", this.book.id);
     };
     Detail.prototype.preview = function () {
         _.noop();
@@ -127,19 +145,6 @@ define("detail", ["Window", "hdb", "text!../templates/detail", "text!../template
             this.cloneBook.tags.sort();
         }
     };
-
-    hdb.registerHelper("formatDate", function (date, lang) {
-        const options = {
-            "year": "numeric",
-            "month": "long",
-            "day": "numeric"
-        };
-        return new Date(date || new Date()).toLocaleDateString(lang || "fr", options);
-    });
-
-    hdb.registerHelper("eachAuthors", function (authors) {
-        return _.trim(authors).split(",");
-    });
 
     return new Detail();
 });

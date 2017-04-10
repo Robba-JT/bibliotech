@@ -14,7 +14,7 @@ const Q = require("q"),
         this.addCover = function (data) {
             return new Q.Promise((resolve, reject) => {
                 this.loadCover({
-                    "cover": data.cover
+                    "base64": data.base64
                 }).then((cover) => {
                     if (cover) {
                         resolve(_.get(cover, "_id"));
