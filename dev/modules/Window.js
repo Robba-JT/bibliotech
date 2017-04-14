@@ -35,6 +35,7 @@ define("Window", [], function () {
         µ.one(".waiting").toggleClass("notdisplayed", false);
         µ.one("html").toggleClass("overflown", true);
         em.emit(this, "open");
+        return this;
     };
 
     Window.prototype.close = function () {
@@ -42,6 +43,7 @@ define("Window", [], function () {
         µ.one(".waiting").toggleClass("notdisplayed", true);
         µ.one("html").toggleClass("overflown", false);
         em.emit(this, "close");
+        return this;
     };
 
     Window.prototype.toggle = function () {
@@ -50,6 +52,7 @@ define("Window", [], function () {
         } else {
             this.close();
         }
+        return this;
     };
 
     return Window;

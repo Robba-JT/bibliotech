@@ -4,10 +4,11 @@ define("collection", ["cells"], function (cells) {
         this.cells = [];
         em.once("initCollect", this, this.init);
         em.on("showCollection", this, this.show);
-        em.on("addBook", this, function (bookId) {
-            if (!this.has(bookId)) {
-                req(`/book/${bookId}`, "POST").send().then((result) => {
-                    this.cells.push(cells.getCell(result, true));
+        em.on("addBook", this, function (cell) {
+            if (!this.has(cell.id)) {
+                req(`/book/${cell.id}`, "POST").send().then((result) => {
+                    cell.update(result, true);
+                    this.cells.push(cell);
                     this.cells = _.sortBy(this.cells, ["book.title"]);
                     µ.one("#nbBooks").text = this.cells.length;
                 }).catch((error) => {
@@ -78,6 +79,7 @@ define("collection", ["cells"], function (cells) {
         em.emit("resetFilter", !_.isEmpty(this.tags));
         em.emit("resetCells");
         em.emit("showCells", this.cells);
+        return this;
     };
 
     Collection.prototype.init = function () {
@@ -101,6 +103,7 @@ define("collection", ["cells"], function (cells) {
         }).catch((error) => {
             err.add(error);
         });
+        return this;
     };
 
     return new Collection();

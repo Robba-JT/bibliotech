@@ -44,7 +44,10 @@ exports = module.exports = (() => {
         .set("json spaces", 1)
         .enable("etag").set("etag", true)
         .set("x-powered-by", false)
-        .use(require("compression")())
+        .use(require("compression")({
+            "level": 9,
+            "memLevel": 9
+        }))
         .use(require("response-time")())
         .use(require("express-json")())
         .use(require("cors")())
@@ -55,9 +58,7 @@ exports = module.exports = (() => {
             "extended": true,
             "limit": "50mb"
         }))
-        .use(require("serve-static")(pathStatic, {
-            "maxAge": require("ms")("10 days")
-        }))
+        .use(require("serve-static")(pathStatic))
         .use(require("serve-favicon")(path.join(__dirname, "../static/images/favicon.png")))
         .use(session)
         .use(device.capture())

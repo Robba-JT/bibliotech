@@ -81,21 +81,32 @@ define("cloud", ["text!../templates/cloud"], function (template) {
                 em.emit("filtreTag", title);
             });
             this.tags.push(span);
+            this.options.push(`<option value="${title}">${title}</option>`);
         });
         return this;
     };
 
-    Cloud.prototype.add = function (title, book) {
-        _.noop();
+    Cloud.prototype.add = function (title) {
+        const liste = _.clone(this.list);
+        if (_.has(liste, "title")) {
+            liste[title] += 1;
+        } else {
+            liste[title] = 1;
+        }
+        this.reset();
+        this.generate(liste);
+        return this;
     };
 
-    Cloud.prototype.remove = function (title, book) {
+    Cloud.prototype.remove = function (title) {
         _.noop();
+        return this;
     };
 
     Cloud.prototype.reset = function () {
         this.list = {};
         this.tags = [];
+        this.options = [];
         cloud.set("innerHTML", template).one("div").observe("click", this.close);
         return this;
     };

@@ -20,6 +20,18 @@ define("search", ["cells", "collection", "Window", "text!../templates/search"], 
                 this.associated();
             }
         });
+        em.on("search", this, (qs) => {
+            if (!_.isEqual(qs, this.last.qs)) {
+                this.last.qs = qs;
+                this.last.books = [];
+                cells.reset();
+                this.get(qs);
+                µ.many(".waiting, .roundIcon, .waitAnim").toggleClass("notdisplayed", false);
+                µ.one("sort.active").toggleClass("active", false);
+                em.emit("resetFilter");
+                em.emit("clickMenu", "recherche");
+            }
+        });
 
         µ.one("form[name=searchForm]").observe("submit", (event) => {
             event.preventDefault();
@@ -47,6 +59,7 @@ define("search", ["cells", "collection", "Window", "text!../templates/search"], 
         });
         this.last.books = _.unionBy(this.last.books, newBooks, "id");
         cells.show(newBooks);
+        return this;
     };
 
     Search.prototype.associated = function () {
@@ -60,6 +73,7 @@ define("search", ["cells", "collection", "Window", "text!../templates/search"], 
             this.show(result.books);
             µ.one(".waitAnim").toggleClass("notdisplayed", true);
         }).catch((error) => err.add(error));
+        return this;
     };
 
     Search.prototype.get = function () {
@@ -77,6 +91,7 @@ define("search", ["cells", "collection", "Window", "text!../templates/search"], 
         }).catch((error) => {
             err.add(error);
         });
+        return this;
     };
 
     Search.prototype.recommanded = function () {
@@ -87,6 +102,7 @@ define("search", ["cells", "collection", "Window", "text!../templates/search"], 
                 err.add(error);
             });
         }
+        return this;
     };
 
     return new Search();

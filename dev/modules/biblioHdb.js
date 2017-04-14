@@ -33,12 +33,20 @@ define("biblioHdb", ["hdb"], function (hdb) {
     });
 
     hdb.registerHelper("eachAuthors", function (authors) {
-        return _.split(_.trim(authors), ",");
+        var result = "";
+        _.forEach(_.split(_.trim(authors), ","), (author) => {
+            result += `<span searchby="inauthor:">${author}</span>`;
+        });
+        return result;
     });
 
     hdb.registerHelper("ifISBN", function (isbn10, isbn13, options) {
         if (isbn10 || isbn13) {
             return options.fn(this);
         }
+    });
+
+    hdb.registerHelper("ifCover", function (cover, alt, options) {
+        return cover || alt ? options.fn(this) : options.inverse(this);
     });
 });

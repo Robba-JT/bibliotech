@@ -17,26 +17,21 @@
 </header>
 <article>
     <div class="detailCover" dir="rtl">
-        [{#if cover}]
+        [{#if src}]
         <div>
-            <img id="detailCover" src="/cover/[{id}]"/>
-        </div>
-        [{else if alt}]
-        <div>
-            <img id="detailCover" src="/cover/[{id}]"/>
-        </div>
-        <div class="imgAction">
-            <div class="upload"></div>
+            <img id="detailCover" src="[{src}]"/>
         </div>
         [{else}]
         <div>
             <img id="detailCover" class="notdisplayed"/>
         </div>
         <div id="noCover"></div>
+        [{/if}]
+        [{#unless cover}]
         <div class="imgAction">
             <div class="upload"></div>
         </div>
-        [{/if}]
+        [{/unless}]
         <form name="uploadImg" class="notdisplayed">
             <input type="file" accept="image/*"/>
         </form>
@@ -51,9 +46,7 @@
         </div>
         <div class="volumeInfo">
             <button class="title" tabindex="-1">{{authors}}:</button>
-            [{#eachAuthors authors}]
-            <span searchby="inauthor:">[{this}]</span>
-            [{/eachAuthors}]
+            [{#eachAuthors authors}][{this}][{/eachAuthors}]
             <input type="text" class="notdisplayed" placeholder="{{authorsWithComa}}" name="authors"/>
         </div>
         [{#if publisher}]
@@ -85,7 +78,7 @@
         <div class="volumeInfo">
             <button class="title" tabindex="-1">{{description}}:</button>
             <br>
-            <span description class="tab"></span>
+            <span description class="tab">{[{description}]}</span>
             <textarea class="notdisplayed" placeholder="{{description}}" rows="5" name="description"></textarea>
         </div>
         [{/if}]
@@ -113,7 +106,7 @@
             [{#tags}]
             <div class="tag">
                 <button class="libelle" title="{{filter}}">[{this}]</button>
-                <button title="{{remove}}"><b>x</b></button>
+                <button value="[{this}]" title="{{remove}}"><b>x</b></button>
             </div>
             [{/tags}]
         </div>

@@ -1,7 +1,6 @@
 const console = require("../tools/console"),
     _ = require("lodash"),
     Q = require("q"),
-    path = require("path"),
     booksDB = require("../db/books"),
     GoogleAPI = require("./google"),
     requestAPI = require("./requests"),
@@ -11,7 +10,9 @@ const console = require("../tools/console"),
             if (req.book) {
                 req.user.books.push({
                     "id": req.book.id,
-                    "date": new Date()
+                    "date": new Date(),
+                    "tags": [],
+                    "comment": ""
                 });
                 usersDB.update({
                     "_id": req.user._id
@@ -60,9 +61,9 @@ const console = require("../tools/console"),
                 const book = _.find(req.user.books, ["id", id]);
                 if (book && book.alt) {
                     booksDB.loadCover({
-                        "_id": book.cover
+                        "_id": book.alt
                     }).then((cover) => {
-                        const buffer = Buffer.from(cover.base64, "base64")
+                        const buffer = Buffer.from(cover.base64, "base64");
                         res.set({
                             "Content-Type": cover.mime,
                             "Content-Length": buffer.length
@@ -72,7 +73,7 @@ const console = require("../tools/console"),
                 } else {
                     requestAPI.loadImg(
                         id,
-                        `http://books.google.com/books/content?id=${id}&printsec=frontcover&img=1&source=gbs_api`
+                        `http://books.google.com/books/content?id=${id}&printsec=frontcover&img=1&zoom=2&source=gbs_api`
                     ).then((result) => {
                         res.set({
                             "Content-Type": result.mime,
@@ -99,7 +100,20 @@ const console = require("../tools/console"),
                             "id": req.book.id
                         }
                     }
-                }).then(() => req.response()).catch(req.error);
+                }).then(() => {
+                    const book = _.remove(req.user.books, ["id", req.book.id]);
+                    req.response();
+                    if (book.alt) {
+                        usersDB.withCover(book.id).then((count) => {
+                            console.log("count", count);
+                            if (!count) {
+                                booksDB.removeCover({
+                                    "_id": book.alt
+                                });
+                            }
+                        });
+                    }
+                }).catch(req.error);
             } else {
                 req.response();
             }
@@ -129,22 +143,16 @@ const console = require("../tools/console"),
         };
 
         this.update = (req) => {
-            const id = _.get(req, "params[0]");
-            if (_.some(req.user.books, ["id", id]) && !_.isEmpty(req.body) && _.isPlainObject(req.body)) {
+            const id = _.get(req, "params[0]"),
+                book = _.find(req.user.books, ["id", id]);
+            if (book && !_.isEmpty(req.body) && _.isPlainObject(req.body)) {
                 const update = {},
                     proms = [];
-                if (_.has(req.body, "date")) {
-                    update["books.$.date"] = new Date(req.body.date);
-                }
-                if (_.has(req.body, "comment")) {
-                    update["books.$.comment"] = req.body.comment || "";
-                }
-                if (_.has(req.body, "tags")) {
-                    update["books.$.tags"] = req.body.tags || [];
-                }
-                if (_.has(req.body, "note")) {
-                    update["books.$.note"] = _.parseInt(req.body.note) || 0;
-                }
+
+                update["books.$.date"] = _.has(req.body, "date") && new Date(req.body.date);
+                update["books.$.comment"] = _.has(req.body, "comment") && req.body.comment;
+                update["books.$.tags"] = _.has(req.body, "tags") && req.body.tags;
+                update["books.$.note"] = _.has(req.body, "note") && _.parseInt(req.body.note);
                 if (_.has(req.body, "alt")) {
                     const base64_marker = ";base64,",
                         base64_index = req.body.alt.indexOf(base64_marker),
@@ -168,7 +176,9 @@ const console = require("../tools/console"),
                         "books.id": id
                     }, {
                         "$set": update
-                    }).then(() => req.response()).catch(req.error);
+                    }).then(() => {
+                        req.response();
+                    }).catch(req.error);
                 });
             } else {
                 req.error(409);
@@ -188,7 +198,6 @@ const console = require("../tools/console"),
                     req.book = book;
                 }).done(next);
         };
-
         return this;
     };
 

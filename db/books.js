@@ -20,7 +20,6 @@ const Q = require("q"),
                         resolve(_.get(cover, "_id"));
                     } else {
                         db_covers.insertOne(data).then((result) => {
-                            console.log("result", result, _.get(result.ops[0], "_id"));
                             resolve(result.insertedId);
                         }).catch(reject);
                     }

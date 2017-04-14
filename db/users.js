@@ -9,7 +9,7 @@ const bcrypt = require("bcrypt-nodejs"),
         const db = require("./../tools/mongo").client,
             users = db.collection("users");
 
-        this.add = (userid, password, name, googleSignIn) => new Q.Promise(function (resolve, reject) {
+        this.add = (userid, password, name, googleSignIn) => new Q.Promise((resolve, reject) => {
             const user = {
                 "_id": _.toLower(userid),
                 "password": bcrypt.hashSync(password),
@@ -39,7 +39,7 @@ const bcrypt = require("bcrypt-nodejs"),
 
         this.encryptPwd = (pwd) => bcrypt.encryptPwd(pwd);
 
-        this.find = (userid) => new Q.Promise(function (resolve, reject) {
+        this.find = (userid) => new Q.Promise((resolve, reject) => {
             users.findOne({
                 "_id": _.toLower(userid)
             }, (err, result) => {
@@ -51,7 +51,13 @@ const bcrypt = require("bcrypt-nodejs"),
             });
         });
 
-        this.hasBook = (user, book) => new Q.Promise(function (resolve, reject) {
+        this.withCover = (coverId) => new Q.Promise((resolve, reject) => {
+            users.find({
+                "book.alt": coverId
+            }).toArray().count().then(resolve).catch(reject);
+        });
+
+        this.hasBook = (user, book) => new Q.Promise((resolve, reject) => {
             users.findOne({
                 _id: user,
                 "books.book": book
@@ -69,7 +75,7 @@ const bcrypt = require("bcrypt-nodejs"),
                 books = [];
             }
             books.push(bookid);
-            return new Q.Promise(function (resolve, reject) {
+            return new Q.Promise((resolve, reject) => {
                 users.aggregate([{
                         "$match": {
                             "books.book": bookid,
@@ -136,17 +142,11 @@ const bcrypt = require("bcrypt-nodejs"),
 
         this.remove = (query) => users.remove(query);
 
-        this.update = (query, data) => new Q.Promise(function (resolve, reject) {
-            users.update(query, data, function (err, result) {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(result);
-                }
-            });
+        this.update = (query, data) => new Q.Promise((resolve, reject) => {
+            users.update(query, data).then(resolve).catch(reject);
         });
 
-        this.validate = (userid, password, googleSignIn) => new Q.Promise(function (resolve, reject) {
+        this.validate = (userid, password, googleSignIn) => new Q.Promise((resolve, reject) => {
             users.findOne({
                 "_id": _.toLower(userid)
             }, function (err, user) {

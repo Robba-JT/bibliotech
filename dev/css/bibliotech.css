@@ -52,6 +52,10 @@ html {
     overflow: hidden
 }
 
+.scrolled {
+    overflow: scroll
+}
+
 img {
     max-width: 100%;
     height: auto;
@@ -122,7 +126,7 @@ footer .personnal {
     background-position: -418px -486px
 }
 
-.bookcell:hover footer .personnal {
+cell:hover footer .personnal {
     background-position: -486px -486px
 }
 
@@ -133,7 +137,7 @@ footer .previewable {
     background-position: -468px -62px
 }
 
-.bookcell:hover footer .previewable {
+cell:hover footer .previewable {
     background-position: -10px -130px
 }
 
@@ -144,7 +148,7 @@ footer .recommanded {
     background-position: -178px -434px
 }
 
-.bookcell:hover footer .recommanded {
+cell:hover footer .recommanded {
     background-position: -246px -434px
 }
 
@@ -630,7 +634,7 @@ bookcells {
     position: relative;
     width: 100%;
     text-align: left;
-    display: inline-table;
+    display: block;
 }
 
 .errMsg {
@@ -647,30 +651,38 @@ bookcells {
     -moz-transition: width 2s;
     -o-transition: width 2s;
     transition: width 2s;
-    vertical-align: top
+    vertical-align: top;
 }
 
-.bookcell {
-    padding: 2px;
-    margin-left: 5px;
-    margin-bottom: 5px;
-    box-shadow: 2px 2px 2px 2px #888;
-    background-color: #FFF;
-    border-color: #666;
+cell {
+    display: inline-table;
     color: #000;
     font-size: 12px;
     z-index: 2;
     text-align: center;
-    display: inline-table;
     position: relative;
     -webkit-transition: width 2s;
     -moz-transition: width 2s;
     -o-transition: width 2s;
     transition: width 2s;
-    vertical-align: top
+    vertical-align: top;
+    background-color: #FFF;
+    box-shadow: 2px 2px 2px 2px #888;
+    border-color: #666;
+    margin-bottom: 5px;
+    margin-left: 5px;
+    cursor: pointer;
 }
 
-.bookcell:hover {
+cell > * {
+    padding: 5px;
+}
+
+cell img {
+    border-radius: 5px;
+}
+
+cell:hover {
     color: #000;
     background-color: #b8860b;
     -webkit-transition: box-shadow .33s ease-in-out, background-color .33s ease-in-out;
@@ -679,17 +691,13 @@ bookcells {
     transition: box-shadow .33s ease-in-out, background-color .33s ease-in-out
 }
 
-.bookcell figcaption, .bookcell header, .bookcell img {
-    cursor: pointer
-}
-
 .isDrag {
     background-color: silver!important;
     cursor: move;
     opacity: .75
 }
 
-.bookcell header {
+cell header {
     color: #000;
     font-size: 150%;
     background-color: #E0E0E0;
@@ -700,24 +708,24 @@ bookcells {
     font-family: roboto_bold
 }
 
-.bookcell:hover header {
+cell:hover header {
     color: #daa520;
     background-color: #3F3F3F
 }
 
-.bookcell article {
+cell article {
     position: relative;
     min-height: 30px;
     padding: 5px
 }
 
-.bookcell figure {
+cell figure {
     margin: 5px;
     position: relative;
 }
 
 /* Tooltip text */
-.bookcell figure span {
+cell figure span {
     width: 100%;
     background-color: black;
     text-align: center;
@@ -738,7 +746,7 @@ bookcells {
     transition:transform .5s ease;
 }
 
-.bookcell figure:hover span {
+cell figure:hover span {
     transform: scaleY(1);
 }
 
@@ -750,11 +758,11 @@ bookcells {
     margin-top: 5px
 }
 
-.bookcell:hover .altCover {
+cell:hover .altCover {
     background-position: -510px -660px
 }
 
-.bookcell .altCover, .bookcell figure .cover {
+cell .altCover, cell figure .cover {
     opacity: .75;
     -webkit-transition: opacity .33s ease-in-out;
     -moz-transition: opacity .33s ease-in-out;
@@ -762,23 +770,23 @@ bookcells {
     transition: opacity .33s ease-in-out
 }
 
-.bookcell:hover .altCover, .bookcell:hover figure .cover {
+cell:hover .altCover, cell:hover figure .cover {
     opacity: 1
 }
 
-.bookcell figcaption {
+cell figcaption {
     font-size: 150%;
     text-align: center;
     position: relative
 }
 
-.bookcell footer {
+cell footer {
     position: absolute;
     left: 5px;
     top: -53px
 }
 
-.bookcell button {
+cell button {
     font-size: 125%;
     opacity: .9;
     display: inline-block;
@@ -790,12 +798,12 @@ bookcells {
     cursor: pointer
 }
 
-.bookcell button:hover {
+cell button:hover {
     opacity: 1;
     font-weight: bolder
 }
 
-.bookcell footer>div {
+cell footer>div {
     float: left;
     margin-right: 5px
 }
@@ -1435,7 +1443,7 @@ detail {
     margin-left: 40px
 }
 
-.detailBook .link {
+.detailBook [searchby] {
     font-size: 17px;
     color: #00008b;
     text-decoration: underline;
@@ -1451,7 +1459,7 @@ detail {
     content: ""
 }
 
-.detailBook .link:hover {
+.detailBook [searchby]:hover {
     color: #191970;
     font-family: roboto_italic
 }
