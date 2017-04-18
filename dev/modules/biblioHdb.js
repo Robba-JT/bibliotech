@@ -7,7 +7,7 @@ define("biblioHdb", ["hdb"], function (hdb) {
 
     hdb.registerHelper("ifPers", function (id, options) {
         try {
-            const test = JSON.parse(id);
+            JSON.parse(id);
             return options.fn(this);
         } catch (error) {
             return options.inverse(this);
@@ -16,8 +16,7 @@ define("biblioHdb", ["hdb"], function (hdb) {
 
     hdb.registerHelper("ifRec", function (id, options) {
         try {
-            const test = JSON.parse(id);
-            if (test.user) {
+            if (JSON.parse(id).user) {
                 return options.fn(this);
             }
         } catch (error) {}

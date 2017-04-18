@@ -154,7 +154,7 @@ cell:hover footer .recommanded {
 
 .mostAdded {
     display: inline-block;
-    width: 19%;
+    width: 18%;
     vertical-align: top;
     text-align: center;
     padding: 5px;
@@ -1002,7 +1002,7 @@ detail>* {
 }
 
 detail>article {
-    height: 100%
+    height: calc(100% - 50px);
 }
 
 detail>article>* {

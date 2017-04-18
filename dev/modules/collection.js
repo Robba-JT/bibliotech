@@ -5,15 +5,27 @@ define("collection", ["cells"], function (cells) {
         em.once("initCollect", this, this.init);
         em.on("showCollection", this, this.show);
         em.on("addBook", this, function (cell) {
-            if (!this.has(cell.id)) {
-                req(`/book/${cell.id}`, "POST").send().then((result) => {
+            const update = (result) => {
                     cell.update(result, true);
+                    return;
+                },
+                add = () => {
                     this.cells.push(cell);
                     this.cells = _.sortBy(this.cells, ["book.title"]);
                     µ.one("#nbBooks").text = this.cells.length;
-                }).catch((error) => {
-                    err.add(error);
-                });
+                };
+
+            if (!this.has(cell.id)) {
+                if (cell.book.detailed) {
+                    add();
+                } else {
+                    req(`/book/${cell.id}`, "POST").send().then(update).then(add).catch((error) => {
+                        err.add(error);
+                    });
+                }
+            }
+            if (µ.one("#collection").hasClass("active")) {
+                this.show();
             }
         });
         em.on("removeBook", this, function (bookId) {

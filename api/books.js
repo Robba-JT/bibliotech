@@ -131,6 +131,32 @@ const console = require("../tools/console"),
             }
         };
 
+        this.mostAdded = (req) => {
+            const id = _.get(req, "params[0]");
+            if (id) {
+                usersDB.mostAdded(id, req.user._id, _.map(req.user.books, "book")).then((ids) => {
+                    if (ids.length) {
+                        booksDB.loadAll({
+                            "id": {
+                                "$in": ids
+                            }
+                        }, {
+                            "id": true,
+                            "title": true,
+                            "authors": true,
+                            "description": true,
+                            "cover": true,
+                            "_id": false
+                        }).then(req.response).catch(req.error);
+                    } else {
+                        req.response([]);
+                    }
+                }).catch(req.error);
+            } else {
+                req.error(409);
+            }
+        };
+
         this.preview = (req) => {
             const id = _.get(req, "params[0]");
             if (id) {

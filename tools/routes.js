@@ -83,6 +83,8 @@ module.exports = exports = (() => {
         .get(booksAPI.detail)
         .put(booksAPI.update);
 
+    router.get("/mostAdded/*", booksAPI.mostAdded);
+
     //Search
     router.post("/search", googleAPI.search);
 

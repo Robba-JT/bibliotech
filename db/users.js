@@ -70,15 +70,15 @@ const bcrypt = require("bcrypt-nodejs"),
             });
         });
 
-        this.mostAdded = function (bookid, user, books) {
+        this.mostAdded = function (id, user, books) {
             if (!books || !books.length) {
                 books = [];
             }
-            books.push(bookid);
+            books.push(id);
             return new Q.Promise((resolve, reject) => {
                 users.aggregate([{
                         "$match": {
-                            "books.book": bookid,
+                            "books.id": id,
                             "_id": {
                                 "$ne": user
                             }
@@ -87,7 +87,7 @@ const bcrypt = require("bcrypt-nodejs"),
                     {
                         "$project": {
                             "_id": false,
-                            "books.book": true
+                            "books.id": true
                         }
                     },
                     {
@@ -95,7 +95,7 @@ const bcrypt = require("bcrypt-nodejs"),
                     },
                     {
                         "$group": {
-                            "_id": "$books.book",
+                            "_id": "$books.id",
                             "count": {
                                 "$sum": 1
                             }
@@ -124,13 +124,15 @@ const bcrypt = require("bcrypt-nodejs"),
                     if (error) {
                         reject(error);
                     } else {
-                        const this_books = _.groupBy(result, "count"),
-                            keys = _.keys(_.groupBy(result, "count")).sort();
+                        const resBooks = _.groupBy(result, "count"),
+                            keys = _.keys(resBooks).sort(),
+                            lg = keys.length;
+
                         let most = [],
                             mostLength = 5;
 
-                        for (let jta = 0, lg = keys.length; jta < lg && mostLength > 0; jta += 1) {
-                            most.push(_.map(_.sampleSize(this_books[keys[jta]], mostLength), "_id"));
+                        for (let i = 0; i < lg && mostLength > 0; i += 1) {
+                            most.push(_.map(_.sampleSize(resBooks[keys[i]], mostLength), "_id"));
                             most = _.flattenDeep(most);
                             mostLength = 5 - most.length;
                         }

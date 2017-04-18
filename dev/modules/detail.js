@@ -1,4 +1,4 @@
-define("detail", ["Window", "hdb", "cloud", "text!../templates/detail", "text!../templates/Tag", "text!../templates/MostAdded"], function (Window, hdb, cloud, tempDetail, tempTag, tempAdded) {
+define("detail", ["Window", "hdb", "cloud", "cells", "text!../templates/detail", "text!../templates/Tag", "text!../templates/MostAdded"], function (Window, hdb, cloud, cells, tempDetail, tempTag, tempAdded) {
     const renderDetail = hdb.compile(tempDetail),
         renderTag = hdb.compile(tempTag),
         renderAdded = hdb.compile(tempAdded),
@@ -11,6 +11,7 @@ define("detail", ["Window", "hdb", "cloud", "text!../templates/detail", "text!..
         };
 
     Detail.prototype.init = function (cell) {
+        req(`/mostAdded/${cell.id}`).send().then((result) => this.mostAdded(result)).catch((error) => err.add(error));
         this.cell = cell;
         this.cloneBook = _.assign({
             "note": 0,
@@ -120,10 +121,40 @@ define("detail", ["Window", "hdb", "cloud", "text!../templates/detail", "text!..
         return this;
     };
 
+    Detail.prototype.mostAdded = function (books) {
+        if (books.length) {
+            const mostAdded = detail.one("#mostAdded"),
+                divMostAdded = mostAdded.one("div");
+
+            mostAdded.many("*").toggleClass("notdisplayed", false);
+            _.forEach(books, (book) => {
+                const cell = µ.new("div").toggleClass("mostAdded").set("innerHTML", renderAdded(book)).appendTo(divMostAdded);
+                if (book.cover) {
+                    const img = cell.one("img");
+                    img.loaded = () => {
+                        cell.one(".altCover").remove();
+                        img.toggleClass("notdisplayed", false);
+                    };
+                    img.set("src", `/cover/${book.id}`);
+                }
+                cell.observe("click", () => {
+                    req(`/detail/${book.id}`).send().then((result) => {
+                        _.assign(book, result, {
+                            "detailed": true
+                        });
+                        em.emit("openDetail", cells.getCell(book, false));
+                    }).catch((error) => {
+                        err.add(error);
+                    });
+                });
+            });
+        }
+    };
+
     Detail.prototype.save = function () {
         const diff = _.diff(this.cloneBook, this.cell.book);
         if (!_.isEmpty(diff)) {
-            req(`/detail/${this.cell.book.id}`, "PUT").send(diff).then(() => {
+            req(`/detail/${this.cell.book.id}`, "PUT").send(_.omit(diff, ["src", "palette"])).then(() => {
                 this.cell.update(this.cloneBook, true).defLoad();
                 this.close();
             }).catch((error) => err.add(error));

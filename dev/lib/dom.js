@@ -371,10 +371,12 @@ const µ = (function () {
      **/
     Reflect.defineProperty(myElement.prototype, "html", {
         get() {
-            return this.element.innerHTML;
+            return this.element && this.element.innerHTML || "";
         },
         set(code) {
-            this.element.innerHTML = code;
+            if (this.element) {
+                this.element.innerHTML = code;
+            }
         }
     });
 

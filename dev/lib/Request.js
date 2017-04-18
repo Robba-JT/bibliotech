@@ -108,6 +108,5 @@ const req = (function () {
             }
         }) : Promise.reject(new Error(["Request invalid argument", "URL parameter is missing."]));
     };
-
     return Request;
 })();
