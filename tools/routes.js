@@ -92,7 +92,7 @@ module.exports = exports = (() => {
     router.get("/associated/*", googleAPI.associated);
 
     //Preview
-    router.get("/preview/*", booksAPI.preview);
+    router.post("/preview/*", booksAPI.preview);
 
     //Erreur url
     router.all("*", (req) => {

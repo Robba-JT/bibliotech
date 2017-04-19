@@ -134,7 +134,7 @@ const console = require("../tools/console"),
         this.mostAdded = (req) => {
             const id = _.get(req, "params[0]");
             if (id) {
-                usersDB.mostAdded(id, req.user._id, _.map(req.user.books, "book")).then((ids) => {
+                usersDB.mostAdded(id, req.user._id, _.map(req.user.books, "id")).then((ids) => {
                     if (ids.length) {
                         booksDB.loadAll({
                             "id": {
@@ -158,10 +158,10 @@ const console = require("../tools/console"),
         };
 
         this.preview = (req) => {
-            const id = _.get(req, "params[0]");
+            const id = _.get(req, "body.preview");
             if (id) {
-                req.template("preview", {
-                    "bookid": id
+                req.template("previewContent", {
+                    id
                 });
             } else {
                 req.error(409);

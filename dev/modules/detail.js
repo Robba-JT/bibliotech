@@ -1,4 +1,4 @@
-define("detail", ["Window", "hdb", "cloud", "cells", "text!../templates/detail", "text!../templates/Tag", "text!../templates/MostAdded"], function (Window, hdb, cloud, cells, tempDetail, tempTag, tempAdded) {
+define("detail", ["Window", "hdb", "cloud", "cells", "text!../templates/detail", "text!../templates/Tag", "text!../templates/MostAdded", "text!../templates/Preview"], function (Window, hdb, cloud, cells, tempDetail, tempTag, tempAdded, tempPreview) {
     const renderDetail = hdb.compile(tempDetail),
         renderTag = hdb.compile(tempTag),
         renderAdded = hdb.compile(tempAdded),
@@ -8,18 +8,19 @@ define("detail", ["Window", "hdb", "cloud", "cells", "text!../templates/detail",
             em.on("openDetail", this, (book) => {
                 this.open(book);
             });
-        };
+        },
+        previewWindow = new Window("preview", tempPreview);
 
     Detail.prototype.init = function (cell) {
         req(`/mostAdded/${cell.id}`).send().then((result) => this.mostAdded(result)).catch((error) => err.add(error));
         this.cell = cell;
-        this.cloneBook = _.assign({
+        this.detailBook = _.assign({
             "note": 0,
             "tags": [],
             "comment": ""
         }, this.cell.book);
 
-        detail.set("innerHTML", renderDetail(_.merge(this.cloneBook, {
+        detail.set("innerHTML", renderDetail(_.merge(this.detailBook, {
             "src": this.cell.src
         })));
         detail.one(".closeWindow").observe("click", () => {
@@ -39,18 +40,18 @@ define("detail", ["Window", "hdb", "cloud", "cells", "text!../templates/detail",
             this.addTag(event.element.parser());
             event.element.reset();
         });
-        if (this.cloneBook.inCollection) {
+        if (this.detailBook.inCollection) {
             detail.many(".inCollection").toggleClass("notdisplayed", false);
         }
-        if (this.cloneBook.note) {
+        if (this.detailBook.note) {
             const notes = detail.many(".note");
-            notes.length = this.cloneBook.note;
+            notes.length = this.detailBook.note;
             notes.toggleClass("empty select");
         }
         detail.css("background", "radial-gradient(circle at 50%, whitesmoke 0%, #909090 100%)");
         detail.many(".note").observe("mouseenter", (event) => {
             const value = _.parseInt(event.element.get("note")),
-                note = this.cloneBook.note || 0,
+                note = this.detailBook.note || 0,
                 notes = detail.many(".note");
 
             notes.each((elt, index) => {
@@ -63,23 +64,23 @@ define("detail", ["Window", "hdb", "cloud", "cells", "text!../templates/detail",
             });
         }).observe("click", (event) => {
             const thisNote = _.parseInt(event.element.get("note"));
-            if (this.cloneBook.note === 1 && thisNote === 1) {
-                this.cloneBook.note = 0;
+            if (this.detailBook.note === 1 && thisNote === 1) {
+                this.detailBook.note = 0;
             } else {
-                this.cloneBook.note = thisNote;
+                this.detailBook.note = thisNote;
             }
             detail.many(".note").each((elt, index) => {
-                elt.toggleClass("empty", index >= this.cloneBook.note).toggleClass("select", index < this.cloneBook.note);
+                elt.toggleClass("empty", index >= this.detailBook.note).toggleClass("select", index < this.detailBook.note);
             });
         });
         detail.one("[name=userComment]").observe("change", (event) => {
-            this.cloneBook.comment = event.element.value;
-            this.cloneBook.date = event.element.value ? new Date() : null;
+            this.detailBook.comment = event.element.value;
+            this.detailBook.date = event.element.value ? new Date() : null;
         });
         detail.one("#detailCover").observe("load", () => {
-            this.cloneBook.palette = thief.getPalette(detail.one("#detailCover").element);
-            if (this.cloneBook.palette && this.cloneBook.palette.length) {
-                detail.css("background", `radial-gradient(circle at 50%, whitesmoke 0%,${µ.rgbToHex(this.cloneBook.palette[0])} 100%)`);
+            this.detailBook.palette = thief.getPalette(detail.one("#detailCover").element);
+            if (this.detailBook.palette && this.detailBook.palette.length) {
+                detail.css("background", `radial-gradient(circle at 50%, whitesmoke 0%,${µ.rgbToHex(this.detailBook.palette[0])} 100%)`);
             }
         });
         detail.one("div.upload").observe("click", () => detail.one("[type=file]").trigger("click"));
@@ -89,7 +90,7 @@ define("detail", ["Window", "hdb", "cloud", "cells", "text!../templates/detail",
                 const reader = new FileReader();
                 reader.addEventListener("load", (result) => {
                     detail.one("#detailCover").toggleClass("notdisplayed", false).set("src", result.target.result);
-                    this.cloneBook.alt = result.target.result;
+                    this.detailBook.alt = result.target.result;
                 });
                 reader.readAsDataURL(event.element.files[0]);
                 detail.one("form[name=uploadImg]").reset();
@@ -129,13 +130,27 @@ define("detail", ["Window", "hdb", "cloud", "cells", "text!../templates/detail",
             mostAdded.many("*").toggleClass("notdisplayed", false);
             _.forEach(books, (book) => {
                 const cell = µ.new("div").toggleClass("mostAdded").set("innerHTML", renderAdded(book)).appendTo(divMostAdded);
+                if (book.description) {
+                    const limit = 200,
+                        index = _.get(book, "description").indexOf(" ", limit);
+
+                    cell.one("span").html = _.get(book, "description").substr(0, Math.max(limit, index)) + (index === -1 ? "" : "...");
+                    cell.one("span").observe("click", (event) => {
+                        event.stopPropagation();
+                        event.element.toggleClass("notdisplayed", true);
+                    });
+                    cell.observe("mouseleave", () => {
+                        cell.one("span").toggleClass("notdisplayed", false);
+                    });
+                }
                 if (book.cover) {
                     const img = cell.one("img");
+                    book.src = `/cover/${book.id}?${Math.random().toString(24).slice(2)}`;
                     img.loaded = () => {
                         cell.one(".altCover").remove();
                         img.toggleClass("notdisplayed", false);
                     };
-                    img.set("src", `/cover/${book.id}`);
+                    img.set("src", book.src);
                 }
                 cell.observe("click", () => {
                     req(`/detail/${book.id}`).send().then((result) => {
@@ -152,10 +167,10 @@ define("detail", ["Window", "hdb", "cloud", "cells", "text!../templates/detail",
     };
 
     Detail.prototype.save = function () {
-        const diff = _.diff(this.cloneBook, this.cell.book);
+        const diff = _.diff(this.detailBook, this.cell.book);
         if (!_.isEmpty(diff)) {
             req(`/detail/${this.cell.book.id}`, "PUT").send(_.omit(diff, ["src", "palette"])).then(() => {
-                this.cell.update(this.cloneBook, true).defLoad();
+                this.cell.update(this.detailBook, true).defLoad();
                 this.close();
             }).catch((error) => err.add(error));
         }
@@ -166,7 +181,7 @@ define("detail", ["Window", "hdb", "cloud", "cells", "text!../templates/detail",
         return this;
     };
     Detail.prototype.googleLink = function () {
-        window.open(this.cloneBook.link);
+        window.open(this.detailBook.link);
         return this;
     };
     Detail.prototype.connex = function () {
@@ -175,15 +190,17 @@ define("detail", ["Window", "hdb", "cloud", "cells", "text!../templates/detail",
         return this;
     };
     Detail.prototype.preview = function () {
-        _.noop();
-        return this;
+        µ.one(".waiting").toggleClass("over", true);
+        previewWindow.one("iframe").set("src", "about:blank");
+        previewWindow.openOver();
+        detail.one("form[target=preview]").trigger("submit");
     };
     Detail.prototype.recommand = function () {
         _.noop();
         return this;
     };
     Detail.prototype.addTag = function (result) {
-        if (!_.includes(this.cloneBook.tags, result.tag)) {
+        if (!_.includes(this.detailBook.tags, result.tag)) {
             const tags = detail.one(".tags"),
                 tag = µ.new("div").toggleClass("tag").set("innerHTML", renderTag(result));
 
@@ -192,14 +209,19 @@ define("detail", ["Window", "hdb", "cloud", "cells", "text!../templates/detail",
             });
 
             tags.append(_.sortBy(_.concat(detail.many(".tags .tag").elements, [tag]), [(tag) => tag.text])).toggleClass("notdisplayed", false);
-            this.cloneBook.tags = _.concat(this.cloneBook.tags, [result.tag]);
-            this.cloneBook.tags.sort();
+            this.detailBook.tags = _.concat(this.detailBook.tags, [result.tag]);
+            this.detailBook.tags.sort();
         }
         return this;
     };
     Detail.prototype.removeTag = function () {
         //
     };
+
+    previewWindow.one("#closePreview").observe("click", () => {
+        µ.one(".waiting").toggleClass("over", false);
+        previewWindow.closeOver();
+    });
 
     return new Detail();
 });

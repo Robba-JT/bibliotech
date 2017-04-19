@@ -78,7 +78,7 @@
         <div class="volumeInfo">
             <button class="title" tabindex="-1">{{description}}:</button>
             <br>
-            <span description class="tab">{[{description}]}</span>
+            <span description>{[{description}]}</span>
             <textarea class="notdisplayed" placeholder="{{description}}" rows="5" name="description"></textarea>
         </div>
         [{/if}]
@@ -149,6 +149,6 @@
         </div>
     </div>
 </article>
-<form target="iPreview" method="POST" action="/preview">
-    <input type="hidden" name="previewid" value="[{id}]"/>
+<form target="preview" method="POST" action="/preview/">
+    <input type="hidden" name="preview" value="[{id}]" />
 </form>

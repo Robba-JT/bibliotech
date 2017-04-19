@@ -137,9 +137,9 @@ exports = module.exports = (() => {
                     console.error(req.method, req.url, _.get(req, "user._id"), _.get(req, "user.email"), code, error);
                 };
                 //Gestion Template
-                req.template = (template) => {
+                req.template = (template, params = {}) => {
                     const file = path.join(pathStatic, `./templates/${template}.html`);
-                    res.render(file, _.assign({
+                    res.render(file, _.assign(params, {
                         version,
                         lang
                     }, _.get(req.trads, template)), (error, html) => {

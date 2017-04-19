@@ -7,7 +7,8 @@ define("cells", ["hdb", "text!../templates/Cell"], function (hdb, template) {
                 return new Cell(book, inCollection);
             }
             this.id = book.id;
-            this.book = book;
+            this.src = _.get(book, "src");
+            this.book = _.omit(book, "src");
             this.cell = µ.new("cell").set({
                 "innerHTML": render(_.merge(this.book, {
                     inCollection,
@@ -20,8 +21,8 @@ define("cells", ["hdb", "text!../templates/Cell"], function (hdb, template) {
             }).observe("mouseleave", () => {
                 this.cell.one("figure span").toggleClass("notdisplayed", false);
             });
-            if (this.book.cover || this.book.alt) {
-                this.src = (this.book.cover || this.book.alt) && `/cover/${this.id}?${Math.random().toString(24).slice(2)}`;
+            if (!this.src && (this.book.cover || this.book.alt)) {
+                this.src = `/cover/${this.id}?${Math.random().toString(24).slice(2)}`;
             }
 
             const index = _.get(book, "description").indexOf(" ", 500),

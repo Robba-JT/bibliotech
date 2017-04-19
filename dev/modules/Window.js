@@ -8,8 +8,8 @@ define("Window", [], function () {
         this.window = µ.one(selector).set("innerHTML", template);
         this.window.one(".closeWindow").observe("click", () => this.close());
 
-        em.on("resize", this, this.close);
-        em.on("closeAll", this, this.close);
+        em.on("resize", this, this.closeAll);
+        em.on("closeAll", this, this.closeAll);
 
         return this;
     };
@@ -38,6 +38,13 @@ define("Window", [], function () {
         return this;
     };
 
+    Window.prototype.openOver = function () {
+        this.window.toggleClass("notdisplayed", false).one("[focus]").focus();
+        µ.one(".waiting").toggleClass("over", true);
+        em.emit(this, "openOver");
+        return this;
+    };
+
     Window.prototype.close = function () {
         this.window.toggleClass("notdisplayed", true);
         µ.one(".waiting").toggleClass("notdisplayed", true);
@@ -46,13 +53,19 @@ define("Window", [], function () {
         return this;
     };
 
-    Window.prototype.toggle = function () {
-        if (this.window.hasClass("notdisplayed")) {
-            this.open();
-        } else {
-            this.close();
-        }
+    Window.prototype.closeOver = function () {
+        this.window.toggleClass("notdisplayed", true);
+        µ.one(".waiting").toggleClass("over", false);
+        em.emit(this, "closeOver");
         return this;
+    };
+
+    Window.prototype.closeAll = function () {
+        return this.close().closeOver();
+    };
+
+    Window.prototype.toggle = function () {
+        return this.window.hasClass("notdisplayed") ? this.open() : this.close();
     };
 
     return Window;

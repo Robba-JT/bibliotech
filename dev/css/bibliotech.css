@@ -114,7 +114,7 @@ form input:invalid {
     visibility: hidden!important
 }
 
-cloud>div, #contactsWindow div, #footer, #noCover, #selectedSearch::before, #selectedTag::before, sorts span, .altCover, .closePreview, .googlePreview, .help #helpHelp, .help aside, .imgAction .upload, .navbar .button, .navgrid [nav], .note, .roundIcon, .windowheader div, search footer, footer .personnal, footer .previewable, footer .recommanded {
+cloud>div, #contactsWindow div, #footer, #noCover, #selectedSearch::before, #selectedTag::before, sorts span, .altCover, #closePreview, #googlePreview, .help #helpHelp, .help aside, .imgAction .upload, .navbar .button, .navgrid [nav], .note, .roundIcon, .windowheader div, search footer, footer .personnal, footer .previewable, footer .recommanded {
     background-image: url(/images/spritesheet.png);
     background-repeat: no-repeat
 }
@@ -161,31 +161,34 @@ cell:hover footer .recommanded {
     color: #f5f5f5;
     background-color: #3F3F3F;
     margin-right: 1%;
-    border-bottom-right-radius: 25px;
-    cursor: pointer
+    cursor: pointer;
+    position: relative;
+    border-radius: 6px;
+    box-shadow: 2px 2px 2px 2px #888;
 }
 
 .mostAdded:hover {
-    background-color: #b8860b
+    background-color: #b8860b;
 }
 
 .mostAdded header {
-    font-weight: 700
+    font-weight: 500;
 }
 
 .mostAdded img {
-    padding: 5px
+    padding: 5px;
+    border-radius: 10px;
 }
 
 .mostAdded footer {
-    font-family: roboto_italic
+    font-family: roboto_italic;
 }
 
 search footer {
     width: 62px;
     height: 30px;
     float: right;
-    background-position: -630px -538px
+    background-position: -630px -538px;
 }
 
 .navbar {
@@ -725,7 +728,7 @@ cell figure {
 }
 
 /* Tooltip text */
-cell figure span {
+cell figure span, .mostAdded span {
     width: 100%;
     background-color: black;
     text-align: center;
@@ -737,7 +740,6 @@ cell figure span {
     color: #daa520;
     bottom: 0px;
     left: 0px;
-    font-size: 1.2em;
     max-height: 100%;
     overflow: hidden;
     cursor: url(/images/iconmonstr-x-mark-2-icon.png), pointer;
@@ -746,7 +748,11 @@ cell figure span {
     transition:transform .5s ease;
 }
 
-cell figure:hover span {
+cell figure span {
+    font-size: 1.2em;
+}
+
+cell figure:hover span, .mostAdded:hover span {
     transform: scaleY(1);
 }
 
@@ -851,6 +857,10 @@ button.remove {
 
 .detailBook [type=text]:not([name=formTag] [type=text]), .detailBook textarea {
     width: 80%!important
+}
+
+.detailBook [description] > * {
+    padding-left: 10px;
 }
 
 .detailBook button {
@@ -1120,7 +1130,7 @@ detail>article>* {
     background-position: -630px -588px
 }
 
-.closePreview {
+#closePreview {
     width: 64px;
     height: 64px;
     position: absolute;
@@ -1130,7 +1140,7 @@ detail>article>* {
     background-position: -658px -214px
 }
 
-.closePreview:hover {
+#closePreview:hover {
     background-position: -610px -386px
 }
 
@@ -1147,14 +1157,13 @@ detail>article>* {
     margin-top: 10px
 }
 
-.googlePreview {
+#googlePreview {
     background-position: -312px -10px;
     width: 69px;
     height: 23px;
     position: absolute;
-    bottom: 38px;
-    left: 15px;
-    cursor: pointer
+    bottom: 2px;
+    left: 2px;
 }
 
 .window input {
@@ -1419,7 +1428,7 @@ detail {
     margin: 5px
 }
 
-.detailBook span {
+.detailBook span:not(.mostAdded span) {
     height: 24px
 }
 
@@ -1561,32 +1570,32 @@ div.tag button:not(.libelle):hover {
     font-size: 13px
 }
 
-#previewWindow {
-    z-index: 8;
-    height: 800%;
-    max-height: 90%;
-    width: 800px;
-    max-width: 80%;
-    border-color: #000
+preview {
+    top: 5% !important;
+    z-index: 9 !important;
+    height: 90%;
+    width: 716px !important;
+    max-width: 80% !important;
 }
 
-#previewWindow img[actclick=close] {
+preview img[actclick=close] {
     position: absolute;
     top: 15px;
     left: 15px
 }
 
-#previewWindow img[source=google-preview] {
+preview img[source=google-preview] {
     position: absolute;
     bottom: 25px;
     left: 10px;
     cursor: pointer
 }
 
-#previewWindow>iframe {
+preview>iframe {
     overflow: hidden;
-    width: 99%;
-    height: 99%
+    width: 100%;
+    height: 100%;
+    border: none;
 }
 
 #comments fieldset {

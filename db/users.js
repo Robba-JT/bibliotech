@@ -108,35 +108,24 @@ const bcrypt = require("bcrypt-nodejs"),
                     },
                     {
                         "$match": {
-                            "_id": {
-                                "$nin": books
-                            }
+                            "$and": [{
+                                "_id": {
+                                    "$nin": books
+                                }
+                            }, {
+                                "_id.user": {
+                                    "$exists": false
+                                }
+                            }]
                         }
-                    },
-                    {
-                        "$match": {
-                            "_id.user": {
-                                "$exists": false
-                            }
-                        }
+                    }, {
+                        "$limit": 5
                     }
                 ]).toArray((error, result) => {
                     if (error) {
                         reject(error);
                     } else {
-                        const resBooks = _.groupBy(result, "count"),
-                            keys = _.keys(resBooks).sort(),
-                            lg = keys.length;
-
-                        let most = [],
-                            mostLength = 5;
-
-                        for (let i = 0; i < lg && mostLength > 0; i += 1) {
-                            most.push(_.map(_.sampleSize(resBooks[keys[i]], mostLength), "_id"));
-                            most = _.flattenDeep(most);
-                            mostLength = 5 - most.length;
-                        }
-                        resolve(most);
+                        resolve(_.map(result, "_id"));
                     }
                 });
             });
