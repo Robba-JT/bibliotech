@@ -184,7 +184,6 @@ const mailsAPI = require("../tools/mails"),
         //Logout
         this.out = (req, res) => {
             req.logout();
-            res.clearCookie("_bsession");
             res.redirect("/");
         };
 

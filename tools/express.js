@@ -23,10 +23,10 @@ exports = module.exports = (() => {
         session = Session({
             "key": "_bsession",
             "proxy": false,
-            "resave": false,
+            "resave": true,
             "unset": "destroy",
             "saveUninitialized": false,
-            "rolling": true,
+            "rolling": false,
             "store": mongoStore,
             "secret": config.passPhrase,
             "cookie": {

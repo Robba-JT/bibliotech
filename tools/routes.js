@@ -20,7 +20,7 @@ module.exports = exports = (() => {
         if (req.isAuthenticated()) {
             next();
         } else {
-            res.clearCookie();
+            res.clearCookie("_bsession");
             req.render("login");
         }
     }, (req) => {
