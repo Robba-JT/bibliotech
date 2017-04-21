@@ -1,12 +1,11 @@
-const fs = require("fs-extra"),
-    _ = require("lodash"),
+const _ = require("lodash"),
     booksAPI = require("../api/books"),
     loginAPI = require("../api/login"),
     userAPI = require("../api/user"),
     googleAPI = require("../api/google"),
     router = require("../tools/express").router;
 
-module.exports = exports = (() => {
+module.exports = exports = (function () {
     //Passport init
     router
         .use(loginAPI.initialize())
@@ -100,4 +99,4 @@ module.exports = exports = (() => {
             "error": "Error 404"
         }, 404);
     });
-})();
+}());

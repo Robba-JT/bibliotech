@@ -35,19 +35,12 @@ define("cells", ["hdb", "text!../templates/Cell"], function (hdb, template) {
 
             this.cell.one(".add").observe("click", (event) => {
                 event.stopPropagation();
-                this.cell.many("button").toggleClass("notdisplayed");
-                em.emit("addBook", this);
+                this.add();
             });
 
             this.cell.one(".remove").observe("click", (event) => {
                 event.stopPropagation();
-                em.emit("removeBook", this.id);
-                this.book.inCollection = false;
-                if (µ.one("#collection").hasClass("active")) {
-                    this.cell.remove();
-                } else {
-                    this.cell.many("button").toggleClass("notdisplayed");
-                }
+                this.remove();
             });
 
             this.cell.observe("click", () => {
@@ -149,6 +142,21 @@ define("cells", ["hdb", "text!../templates/Cell"], function (hdb, template) {
             width
         });
         return this;
+    };
+
+    Cell.prototype.add = function () {
+        em.emit("addBook", this);
+        this.cell.many("button").toggleClass("notdisplayed");
+    };
+
+    Cell.prototype.remove = function () {
+        em.emit("removeBook", this.id);
+        this.book.inCollection = false;
+        if (µ.one("#collection").hasClass("active")) {
+            this.cell.remove();
+        } else {
+            this.cell.many("button").toggleClass("notdisplayed");
+        }
     };
 
     Cell.prototype.update = function (book, inCollection = false) {

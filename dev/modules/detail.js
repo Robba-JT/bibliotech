@@ -176,8 +176,10 @@ define("detail", ["Window", "hdb", "cloud", "cells", "text!../templates/detail",
         }
         return this;
     };
+
     Detail.prototype.add = function () {
-        em.emit("addBook", this.cell);
+        this.cell.add();
+        detail.many("#detailAdd, #detailSave, #detailRecommand").toggleClass("notdisplayed");
         return this;
     };
     Detail.prototype.googleLink = function () {
