@@ -19,8 +19,13 @@ module.exports = exports = (function () {
         if (req.isAuthenticated()) {
             next();
         } else {
-            res.clearCookie("_bsession");
-            req.render("login");
+            req.session.destroy((error) => {
+                if (error) {
+                    console.error("destroy", error);
+                }
+                res.clearCookie("_bsession");
+                req.render("login");
+            });
         }
     }, (req) => {
         if (req.user.admin) {
@@ -85,13 +90,13 @@ module.exports = exports = (function () {
     router.get("/mostAdded/*", booksAPI.mostAdded);
 
     //Search
-    router.post("/search", googleAPI.search);
+    router.get("/search", googleAPI.search);
 
     //connex
     router.get("/associated/*", googleAPI.associated);
 
     //Preview
-    router.post("/preview/*", booksAPI.preview);
+    router.get("/preview/*", booksAPI.preview);
 
     //Erreur url
     router.all("*", (req) => {

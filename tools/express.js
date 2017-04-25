@@ -26,7 +26,7 @@ exports = module.exports = (() => {
             "resave": true,
             "unset": "destroy",
             "saveUninitialized": false,
-            "rolling": false,
+            "rolling": true,
             "store": mongoStore,
             "secret": config.passPhrase,
             "cookie": {
@@ -76,7 +76,8 @@ exports = module.exports = (() => {
                 "X-Content-Type-Options": "nosniff",
                 "X-XSS-Protection": "1;mode=block",
                 "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS",
-                "Access-Control-Allow-Headers": "Content-Type,Transfer-Encoding"
+                "Access-Control-Allow-Headers": "Content-Type,Transfer-Encoding",
+                "Access-Control-Allow-Origin": "biblio.tech"
             });
             if (req.method == "OPTIONS") {
                 req.status(200).end();

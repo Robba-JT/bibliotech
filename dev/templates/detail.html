@@ -14,9 +14,9 @@
     <div id="detailGbooks" title="{{gbooks}}"></div>
     <div id="detailConnex" title="{{connex}}"></div>
     [{/if}]
-    [{#ifPreview access}]
+    [{#if preview}]
     <div id="detailPreview" title="{{preview}}"></div>
-    [{/ifPreview}]
+    [{/if}]
 </header>
 <article>
     <div class="detailCover" dir="rtl">
@@ -31,7 +31,7 @@
         <div id="noCover"></div>
         [{/if}]
         [{#unless cover}]
-        <div class="imgAction">
+        <div class="imgAction inCollection notdisplayed">
             <div class="upload"></div>
         </div>
         [{/unless}]
@@ -91,21 +91,20 @@
             <span class="direct">[{categories}]</span>
         </div>
         [{/if}]
-        [{#ifRec}]
+        [{#ifRec id}]
         <div class="nonEditable">
             <button class="title" tabindex="-1">{{from}}:</button>
             <span class="direct">[{from}]</span>
         </div>
         [{/ifRec}]
-        [{#if inCollection}]
-        <div>
+        <div class="inCollection notdisplayed">
             <form name="formTag" autocomplete="off">
                 <input name="tag" type="text" placeholder="{{newTag}}" list="tagsList" minlength="2" maxlength="30" auto-focus required size="30"/>
                 <datalist id="tagsList"></datalist>
                 <button type="submit">+</button>
             </form>
         </div>
-        <div class="tags">
+        <div class="tags inCollection notdisplayed">
             [{#tags}]
             <div class="tag">
                 <button class="libelle" title="{{filter}}">[{this}]</button>
@@ -113,18 +112,17 @@
             </div>
             [{/tags}]
         </div>
-        <div id="userNote" class="inCollection">
+        <div id="userNote" class="inCollection notdisplayed">
             <div note=1 class="note empty"></div>
             <div note=2 class="note empty"></div>
             <div note=3 class="note empty"></div>
             <div note=4 class="note empty"></div>
             <div note=5 class="note empty"></div>
         </div>
-        <div class="userComment inCollection">
+        <div class="userComment inCollection notdisplayed">
             <textarea name="userComment" class="direct" rows="5" placeholder="{{comments}}">[{comment}]</textarea>
             <div class="direct date[{hasComment}]">&nbsp;@&nbsp;[{formatDate date}]</div>
         </div>
-        [{/if}]
         <div class="notdisplayed">
             <span class="title">{{readersComments}}:</span>
             <span class="subtitle">{{mNote}}:&nbsp;
@@ -152,6 +150,4 @@
         </div>
     </div>
 </article>
-<form target="preview" method="POST" action="/preview/">
-    <input type="hidden" name="preview" value="[{id}]" />
-</form>
+<form target="preview" action="/preview/[{id}]"></form>

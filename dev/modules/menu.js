@@ -18,9 +18,7 @@ define("menu", ["Window", "text!../templates/menu", "text!../templates/contacts"
 
     µ.one("bookcells").css("top", µ.one("#navbar").get("clientHeight"));
     navbar.one("#logout").observe("click", () => {
-        req("/logout").send().then(() => {
-            window.location.reload("/");
-        });
+        req("/logout").send().then(() => em.emit("logout"));
     });
 
     navbar.one("form").observe("submit", function (event) {
@@ -52,6 +50,11 @@ define("menu", ["Window", "text!../templates/menu", "text!../templates/contacts"
         navbar.many("#selectedTag, #selectedSearch").toggleClass("notdisplayed", true);
         navbar.one("#tags").toggleClass("notdisplayed", !withTags);
         navbar.one("form").reset();
+    });
+
+    em.on("logout", () => {
+        store.clear();
+        window.location.reload("/");
     });
 
     contacts.many("[url]").observe("click", (event) => window.open(event.element.get("url")));

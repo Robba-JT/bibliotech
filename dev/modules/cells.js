@@ -43,20 +43,7 @@ define("cells", ["hdb", "text!../templates/Cell"], function (hdb, template) {
                 this.remove();
             });
 
-            this.cell.observe("click", () => {
-                if (this.book.detailed || this.book.inCollection) {
-                    em.emit("openDetail", this);
-                } else {
-                    req(`/detail/${this.id}`).send().then((detail) => {
-                        _.assign(this.book, detail, {
-                            "detailed": true
-                        });
-                        em.emit("openDetail", this);
-                    }).catch((error) => {
-                        err.add(error);
-                    });
-                }
-            }).observe("dragstart", (event) => {
+            this.cell.observe("click", () => em.emit("openDetail", this)).observe("dragstart", (event) => {
                 event.dataTransfer.setData("id", `id${this.id}`);
             }).observe("dragover", (event) => {
                 event.preventDefault();

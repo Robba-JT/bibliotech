@@ -36,6 +36,24 @@ const req = (function () {
         return this;
     };
 
+    Request.prototype.jsonToQueryString = function (params) {
+        let query = "";
+        const keys = _.keys(params),
+            lg = keys.length - 1;
+
+        if (_.isPlainObject(params)) {
+            query += "?";
+            _.forEach(keys, (key, index) => {
+                query += `${key}=${params[key]}`;
+                if (index < lg) {
+                    query += "&";
+                }
+            });
+        }
+        this.url += encodeURI(query);
+        return this;
+    };
+
     /**
      * Get Request response
      * @returns {Object} this request response
@@ -72,21 +90,25 @@ const req = (function () {
     Request.prototype.send = function (data) {
         return this.url ? new Promise((resolve, reject) => {
             try {
-                this.req.open(this.method, this.url, true);
-                if (!_.has(this.headers, "CONTENT-TYPE") && _.isPlainObject(data)) {
-                    this.headers = {
-                        "CONTENT-TYPE": "application/json;charset=UTF-8"
-                    };
-                    this.data = JSON.stringify(data);
+                if (this.method === "GET") {
+                    this.jsonToQueryString(data);
                 } else {
-                    this.data = data;
+                    if (!_.has(this.headers, "CONTENT-TYPE") && _.isPlainObject(data)) {
+                        this.headers = {
+                            "CONTENT-TYPE": "application/json;charset=UTF-8"
+                        };
+                        this.data = JSON.stringify(data);
+                    } else {
+                        this.data = data;
+                    }
                 }
+                this.req.open(this.method, this.url, true);
                 this.setHeaders();
                 this.req.addEventListener("error", reject);
                 this.req.addEventListener("readystatechange", () => {
                     if (this.req.readyState === XMLHttpRequest.DONE) {
                         if (this.req.status === 403) {
-                            window.location.reload("/");
+                            em.emit("logout");
                         } else if (_.includes([200, 204], this.req.status)) {
                             try {
                                 resolve(JSON.parse(this.req.response));

@@ -44,7 +44,13 @@ const Q = require("q"),
         }).toArray();
 
         this.loadOne = (filter) => new Q.Promise((resolve, reject) => {
-            db_books.findOne(filter).then(resolve).catch(reject);
+            db_books.findOne(filter).then((book) => {
+                if (!book) {
+                    reject();
+                } else {
+                    resolve(book);
+                }
+            }).catch(reject);
         });
 
         this.removeOne = (filter) => db_books.remove(filter);

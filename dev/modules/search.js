@@ -8,7 +8,7 @@ define("search", ["cells", "collection", "Window", "text!../templates/search"], 
             this.window.open();
         });
         em.on("filtreSearch", this, function (filtre) {
-            _.forEach(this.last.books, (cell) => cell.filter(filtre));
+            _.forEach(this.last.cells, (cell) => cell.filter(filtre));
         });
         em.on("associated", (associated) => {
             if (_.get(this.last, "qs.associated") !== associated) {
@@ -24,6 +24,7 @@ define("search", ["cells", "collection", "Window", "text!../templates/search"], 
             if (!_.isEqual(qs, this.last.qs)) {
                 this.last.qs = qs;
                 this.last.books = [];
+                this.last.cells = [];
                 cells.reset();
                 this.get(qs);
                 µ.many(".waiting, .roundIcon, .waitAnim").toggleClass("notdisplayed", false);
@@ -37,14 +38,15 @@ define("search", ["cells", "collection", "Window", "text!../templates/search"], 
             event.preventDefault();
             const search = event.element.parser();
             if (!_.isEqual(search, this.last.qs)) {
+                µ.many(".waiting, .roundIcon, .waitAnim").toggleClass("notdisplayed", false);
+                µ.one("sort.active").toggleClass("active", false);
                 this.last.qs = search;
                 this.last.books = [];
+                this.last.cells = [];
                 this.window.close();
                 cells.reset();
                 this.get(search);
                 event.element.reset();
-                µ.many(".waiting, .roundIcon, .waitAnim").toggleClass("notdisplayed", false);
-                µ.one("sort.active").toggleClass("active", false);
                 em.emit("resetFilter");
                 em.emit("clickMenu", "recherche");
             }
@@ -57,7 +59,8 @@ define("search", ["cells", "collection", "Window", "text!../templates/search"], 
         const newBooks = _.map(books, (book) => {
             return collection.get(book.id) || cells.getCell(book);
         });
-        this.last.books = _.unionBy(this.last.books, newBooks, "id");
+        this.last.books = _.unionBy(this.last.books, books, "id");
+        this.last.cells = _.unionBy(this.last.cells, newBooks, "id");
         cells.show(newBooks);
         return this;
     };
@@ -76,21 +79,33 @@ define("search", ["cells", "collection", "Window", "text!../templates/search"], 
         return this;
     };
 
-    Search.prototype.get = function () {
-        req("/search", "POST").send(_.merge(this.last.qs, {
+    Search.prototype.request = function () {
+        req("/search").send(_.merge({}, this.last.qs, {
             "index": this.last.books.length
         })).then((result) => {
             this.show(result.books);
             if (result.books.length === 40) {
-                //return this.get();
+                //return this.request();
                 µ.one(".waitAnim").toggleClass("notdisplayed", true);
+                store.set(this.last.qs, this.last.books);
             } else {
                 µ.one(".waitAnim").toggleClass("notdisplayed", true);
+                store.set(this.last.qs, this.last.books);
             }
             return false;
         }).catch((error) => {
             err.add(error);
         });
+    };
+
+    Search.prototype.get = function () {
+        const storeBooks = store.get(this.last.qs);
+        if (storeBooks) {
+            this.show(storeBooks);
+            µ.one(".waitAnim").toggleClass("notdisplayed", true);
+        } else {
+            this.request();
+        }
         return this;
     };
 

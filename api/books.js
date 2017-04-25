@@ -71,10 +71,7 @@ const console = require("../tools/console"),
                         res.send(buffer);
                     }).catch(req.error);
                 } else {
-                    requestAPI.loadImg(
-                        id,
-                        `http://books.google.com/books/content?id=${id}&printsec=frontcover&img=1&zoom=2&source=gbs_api`
-                    ).then((result) => {
+                    requestAPI.loadCover(id).then((result) => {
                         res.set({
                             "Content-Type": result.mime,
                             "Content-Length": result.buffer.length
@@ -158,7 +155,7 @@ const console = require("../tools/console"),
         };
 
         this.preview = (req) => {
-            const id = _.get(req, "body.preview");
+            const id = _.get(req, "params[0]");
             if (id) {
                 req.template("previewContent", {
                     id

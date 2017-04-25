@@ -5,8 +5,26 @@ define("detail", ["Window", "hdb", "cloud", "cells", "text!../templates/detail",
         thief = new ColorThief(),
         detail = µ.one("detail"),
         Detail = function () {
-            em.on("openDetail", this, (book) => {
-                this.open(book);
+            em.on("openDetail", this, (cell) => {
+                if (cell.book.detailed || cell.book.inCollection) {
+                    this.open(cell);
+                } else {
+                    const storeDetail = store.get(cell.id);
+                    if (storeDetail) {
+                        _.assign(cell.book, storeDetail);
+                        this.open(cell);
+                    } else {
+                        req(`/detail/${cell.id}`).send().then((result) => {
+                            _.assign(cell.book, result, {
+                                "detailed": true
+                            });
+                            store.set(cell.id, cell.book);
+                            this.open(cell);
+                        }).catch((error) => {
+                            err.add(error);
+                        });
+                    }
+                }
             });
         },
         previewWindow = new Window("preview", tempPreview);
@@ -106,6 +124,7 @@ define("detail", ["Window", "hdb", "cloud", "cells", "text!../templates/detail",
             });
         });
         em.on("resize", this, this.close);
+        em.on("closeAll", this, this.close);
     };
 
     Detail.prototype.open = function (cell) {
@@ -153,14 +172,7 @@ define("detail", ["Window", "hdb", "cloud", "cells", "text!../templates/detail",
                     img.set("src", book.src);
                 }
                 cell.observe("click", () => {
-                    req(`/detail/${book.id}`).send().then((result) => {
-                        _.assign(book, result, {
-                            "detailed": true
-                        });
-                        em.emit("openDetail", cells.getCell(book, false));
-                    }).catch((error) => {
-                        err.add(error);
-                    });
+                    em.emit("openDetail", cells.getCell(book, false));
                 });
             });
         }
@@ -179,7 +191,7 @@ define("detail", ["Window", "hdb", "cloud", "cells", "text!../templates/detail",
 
     Detail.prototype.add = function () {
         this.cell.add();
-        detail.many("#detailAdd, #detailSave, #detailRecommand").toggleClass("notdisplayed");
+        detail.many("#detailAdd, #detailSave, #detailRecommand, .inCollection").toggleClass("notdisplayed");
         return this;
     };
     Detail.prototype.googleLink = function () {

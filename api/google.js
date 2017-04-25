@@ -6,6 +6,7 @@ const console = require("../tools/console"),
     gAuth = google.auth.OAuth2,
     gBooks = google.books("v1"),
     RequestsAPI = require("./requests"),
+    url = require("url"),
     gOptions = {
         "gzip": true,
         "proxy": "http://CGDM-EMEA%5Cjtassin:password_23@isp-ceg.emea.cegedim.grp:3128/",
@@ -18,12 +19,12 @@ const console = require("../tools/console"),
         const maxResult = 400,
             reqParams = {
                 "searchOne": {
-                    "fields": "id, etag, accessInfo(accessViewStatus, webReaderLink), volumeInfo(title, subtitle, authors, publisher, publishedDate, description, industryIdentifiers, pageCount, categories, imageLinks, canonicalVolumeLink)",
+                    "fields": "id, etag, volumeInfo(title, subtitle, authors, publisher, publishedDate, description, industryIdentifiers, pageCount, categories, imageLinks, canonicalVolumeLink, previewLink)",
                     "projection": "full"
                 },
                 "search": {
                     "maxResults": 40,
-                    "fields": "totalItems, items(id, etag, accessInfo(accessViewStatus), volumeInfo(title, authors, description, imageLinks))",
+                    "fields": "totalItems, items(id, etag, volumeInfo(title, authors, description, imageLinks, previewLink))",
                     "projection": "lite",
                     "order": "relevance",
                     "printType": "books"
@@ -37,37 +38,36 @@ const console = require("../tools/console"),
                 }
             },
             format = (book) => {
-                const bookinfos = _.get(book, "volumeInfo") || {},
-                    industryIdentifiers = _.get(bookinfos, "industryIdentifiers") || {};
+                const bookInfos = _.get(book, "volumeInfo") || {},
+                    industryIdentifiers = _.get(bookInfos, "industryIdentifiers") || {};
 
                 return {
                     "id": book.id,
-                    "title": bookinfos.title || "",
-                    "subtitle": bookinfos.subtitle || "",
-                    "authors": bookinfos.authors && bookinfos.authors.length ? bookinfos.authors.sort().join(", ") : [],
-                    "description": bookinfos.description || "",
-                    "publisher": bookinfos.publisher || "",
-                    "publishedDate": bookinfos.publishedDate || "",
-                    "link": bookinfos.canonicalVolumeLink || "",
-                    "pageCount": bookinfos.pageCount || "",
-                    "categories": bookinfos.categories && bookinfos.categories.length ? bookinfos.categories[0] : "",
+                    "title": bookInfos.title || "",
+                    "subtitle": bookInfos.subtitle || "",
+                    "authors": bookInfos.authors && bookInfos.authors.length ? bookInfos.authors.sort().join(", ") : [],
+                    "description": bookInfos.description || "",
+                    "publisher": bookInfos.publisher || "",
+                    "publishedDate": bookInfos.publishedDate || "",
+                    "link": bookInfos.canonicalVolumeLink || "",
+                    "pageCount": bookInfos.pageCount || "",
+                    "categories": bookInfos.categories && bookInfos.categories.length ? bookInfos.categories[0] : "",
                     "isbn10": _.get(_.find(industryIdentifiers, {
                         "type": "ISBN_10"
                     }), "identifier") || "",
                     "isbn13": _.get(_.find(industryIdentifiers, {
                         "type": "ISBN_13"
                     }), "identifier") || "",
-                    "cover": bookinfos.imageLinks ? bookinfos.imageLinks.small || bookinfos.imageLinks.medium || bookinfos.imageLinks.large || bookinfos.imageLinks.extraLarge || bookinfos.imageLinks.thumbnail || bookinfos.imageLinks.smallThumbnail : false,
-                    //"cover": Boolean(_.keys(bookinfos.imageLinks).length),
-                    "access": _.get(book, "accessInfo.accessViewStatus") || "NONE",
-                    "preview": _.get(book, "accessInfo.webReaderLink") || "",
+                    //"cover": bookInfos.imageLinks ? bookInfos.imageLinks.small || bookInfos.imageLinks.medium || bookInfos.imageLinks.large || bookInfos.imageLinks.extraLarge || bookInfos.imageLinks.thumbnail || bookInfos.imageLinks.smallThumbnail : false,
+                    "cover": Boolean(_.keys(bookInfos.imageLinks).length),
+                    "preview": Boolean(bookInfos.previewLink),
                     "@": new Date()
                 };
             },
             formatAll = function (books) {
                 return {
                     "total": Math.min(books.totalItems, maxResult),
-                    "books": _.sortBy(_.map(books.items || books, format), "title")
+                    "books": _.sortBy(_.map(books.items, format), "title")
                 };
             },
             refreshCredentials = (token) => new Q.Promise(function (resolve, reject) {
@@ -149,11 +149,11 @@ const console = require("../tools/console"),
         this.all = (params) => googleRequest("mylibrary.bookshelves.volumes.list", _.assign(params, params.search ? reqParams.search : reqParams.import));
 
         this.search = (req) => {
-            if (_.has(req, "body")) {
+            if (_.has(req, "query") && _.get(req.query, "search")) {
                 const params = {
-                        "q": `${req.body.by || ""}${req.body.search}`,
-                        "langRestrict": req.body.lang,
-                        "startIndex": req.body.index
+                        "q": `${req.query.by || ""}${req.query.search}`,
+                        "langRestrict": req.query.lang,
+                        "startIndex": req.query.index
                     },
                     token = _.get(req.user, "token");
                 googleRequest("volumes.list", _.assign(params, reqParams.search), token)
