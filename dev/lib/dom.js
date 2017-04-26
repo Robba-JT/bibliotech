@@ -156,6 +156,12 @@ const µ = (function () {
         }
     });
 
+    Reflect.defineProperty(myElement.prototype, "visible", {
+        get() {
+            return window.getComputedStyle(this.element).visibility === "visible" && window.getComputedStyle(this.element).display !== "none";
+        }
+    });
+
     /**
      * Unique selector in myElement
      * @param {Object} selector selector

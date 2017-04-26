@@ -71,11 +71,17 @@ define("search", ["cells", "collection", "Window", "text!../templates/search"], 
         µ.one("sort.active").toggleClass("active", false);
         em.emit("resetFilter");
         em.emit("clickMenu", "recherche");
-        req(`/associated/${this.last.qs.associated}`).send().then((result) => {
-            console.log("connex result", result);
-            this.show(result.books);
+        const storeBooks = store.get(this.last.qs);
+        if (storeBooks) {
+            this.show(storeBooks);
             µ.one(".waitAnim").toggleClass("notdisplayed", true);
-        }).catch((error) => err.add(error));
+        } else {
+            req(`/associated/${this.last.qs.associated}`).send().then((result) => {
+                this.show(result.books);
+                store.set(this.last.qs, result.books);
+                µ.one(".waitAnim").toggleClass("notdisplayed", true);
+            }).catch((error) => err.add(error));
+        }
         return this;
     };
 
@@ -113,9 +119,18 @@ define("search", ["cells", "collection", "Window", "text!../templates/search"], 
         this.window.close();
         if (!_.isEqual("recommanded", this.last.qs)) {
             this.last.qs = "recommanded";
-            req("/recommanded", "POST").send().then(this.show).catch((error) => {
-                err.add(error);
-            });
+            const storeBooks = store.get(this.last.qs);
+            if (storeBooks) {
+                this.show(storeBooks);
+                µ.one(".waitAnim").toggleClass("notdisplayed", true);
+            } else {
+                req("/recommanded", "POST").send().then((result) => {
+                    this.show(result);
+                    store.set(this.last.qs, result);
+                }).catch((error) => {
+                    err.add(error);
+                });
+            }
         }
         return this;
     };

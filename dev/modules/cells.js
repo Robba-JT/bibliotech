@@ -158,9 +158,7 @@ define("cells", ["hdb", "text!../templates/Cell"], function (hdb, template) {
     };
 
     Cell.prototype.isVisible = function () {
-        return document.body.scrollTop + window.outerHeight > this.cell.element.offsetTop &&
-            window.getComputedStyle(this.cell.element).visibility === "visible" &&
-            window.getComputedStyle(this.cell.element).display !== "none";
+        return document.body.scrollTop + window.outerHeight > this.cell.element.offsetTop && this.cell.visible;
     };
 
     Cells.prototype.resize = function () {

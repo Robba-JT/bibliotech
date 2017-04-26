@@ -39,6 +39,9 @@ define("Window", [], function () {
     };
 
     Window.prototype.openOver = function () {
+        this.window.css({
+            "top": `${document.body.scrollTop + 10}px`
+        });
         this.window.toggleClass("notdisplayed", false).one("[focus]").focus();
         µ.one(".waiting").toggleClass("over", true);
         em.emit(this, "openOver");

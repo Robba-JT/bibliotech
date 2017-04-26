@@ -2,14 +2,15 @@ define("menu", ["Window", "text!../templates/menu", "text!../templates/contacts"
     const navbar = µ.one("navbar").set("innerHTML", tempMenu).toggleClass("notdisplayed"),
         sorts = µ.one("sorts").set("innerHTML", tempSorts),
         contacts = new Window("contacts", tempContacts).set("id", "contactsWindow"),
-        help = new Window("help", tempHelp);
+        help = new Window("help", tempHelp),
+        toggleMenu = () => {
+            navbar.many(".navbar").toggleClass("notdisplayed");
+            µ.one("bookcells").css("top", µ.one("#navbar").get("clientHeight") || 0);
+        };
 
-    let last = "";
+    var last = "";
 
-    navbar.many("#affichToggle, #altNavbar").observe("click", () => {
-        navbar.many(".navbar").toggleClass("notdisplayed");
-        µ.one("bookcells").css("top", µ.one("#navbar").get("clientHeight") || 0);
-    });
+    navbar.many("#affichToggle, #altNavbar").observe("click", toggleMenu);
     navbar.one("#recherche").observe("click", () => em.emit("openSearch"));
     navbar.one("#profile").observe("click", () => em.emit("openProfile"));
     navbar.one("#collection").observe("click", () => em.emit("showCollection"));
@@ -18,7 +19,7 @@ define("menu", ["Window", "text!../templates/menu", "text!../templates/contacts"
 
     µ.one("bookcells").css("top", µ.one("#navbar").get("clientHeight"));
     navbar.one("#logout").observe("click", () => {
-        req("/logout").send().then(() => em.emit("logout"));
+        em.emit("logout");
     });
 
     navbar.one("form").observe("submit", function (event) {
@@ -54,7 +55,9 @@ define("menu", ["Window", "text!../templates/menu", "text!../templates/contacts"
 
     em.on("logout", () => {
         store.clear();
-        window.location.reload("/");
+        req("/logout").send().then(() => {
+            window.location.reload("/");
+        });
     });
 
     contacts.many("[url]").observe("click", (event) => window.open(event.element.get("url")));
@@ -82,5 +85,70 @@ define("menu", ["Window", "text!../templates/menu", "text!../templates/contacts"
         }
         sorts.many("div").toggleClass("sortBy", false);
         this.toggleClass("sortBy", true);
+    });
+
+    window.addEventListener("contextmenu", (event) => {
+        event.preventDefault();
+        return false;
+    });
+    window.addEventListener("selectstart", (event) => {
+        return !_.includes(["INPUT", "TEXTAREA"], _.toUpper(event.target.tagName)) ? event.preventDefault() && false : true;
+    });
+    window.addEventListener("keydown", (event) => {
+        var test = false;
+        if (!event.altKey) {
+            if (event.ctrlKey) {
+                if (_.includes([77, 76, 82, 80, 66, 69, 73, 72], event.keyCode) && µ.one(".waitAnim").visible) {
+                    test = true;
+                } else {
+                    switch (event.keyCode) {
+                        case 66:
+                            em.emit("showCollection");
+                            test = true;
+                            break;
+                        case 69:
+                            em.emit("openCloud");
+                            test = true;
+                            break;
+                        case 72:
+                            help.open();
+                            test = true;
+                            break;
+                        case 73:
+                            contacts.open();
+                            test = true;
+                            break;
+                        case 76:
+                            em.emit("logout");
+                            break;
+                        case 77:
+                            toggleMenu();
+                            test = true;
+                            break;
+                        case 80:
+                            em.emit("openProfile");
+                            test = true;
+                            break;
+                        case 82:
+                            em.emit("openSearch");
+                            test = true;
+                            break;
+                        default:
+                    }
+                }
+            } else {
+                if (event.keyCode === 27) {
+                    em.emit("closeAll");
+                    test = true;
+                }
+                if (event.keyCode === 8 && !_.includes(["INPUT", "TEXTAREA"], _.toUpper(event.target.tagName))) {
+                    test = true;
+                }
+            }
+        }
+        if (test) {
+            event.preventDefault();
+        }
+        return !test;
     });
 });

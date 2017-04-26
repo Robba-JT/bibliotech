@@ -1571,9 +1571,8 @@ div.tag button:not(.libelle):hover {
 }
 
 preview {
-    top: 5% !important;
     z-index: 9 !important;
-    height: 90%;
+    height: calc(100% - 20px);
     width: 716px !important;
     max-width: 80% !important;
 }
