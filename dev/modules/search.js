@@ -11,13 +11,17 @@ define("search", ["cells", "collection", "Window", "text!../templates/search"], 
             _.forEach(this.last.cells, (cell) => cell.filter(filtre));
         });
         em.on("associated", (associated) => {
+            cells.reset();
             if (_.get(this.last, "qs.associated") !== associated) {
                 this.last = {
                     "qs": {
                         associated
                     }
                 };
+                this.last.books = [];
                 this.associated();
+            } else {
+                cells.show(this.last.cells);
             }
         });
         em.on("search", this, (qs) => {
@@ -31,6 +35,9 @@ define("search", ["cells", "collection", "Window", "text!../templates/search"], 
                 µ.one("sort.active").toggleClass("active", false);
                 em.emit("resetFilter");
                 em.emit("clickMenu", "recherche");
+            } else {
+                cells.reset();
+                cells.show(this.last.cells);
             }
         });
 
@@ -55,18 +62,17 @@ define("search", ["cells", "collection", "Window", "text!../templates/search"], 
     };
 
     Search.prototype.show = function (books) {
-        µ.many(".waiting, .roundIcon").toggleClass("notdisplayed", true);
-        const newBooks = _.map(books, (book) => {
+        this.last.books = _.unionBy(this.last.books, books, "id");
+        const newCells = _.map(books, (book) => {
             return collection.get(book.id) || cells.getCell(book);
         });
-        this.last.books = _.unionBy(this.last.books, books, "id");
-        this.last.cells = _.unionBy(this.last.cells, newBooks, "id");
-        cells.show(newBooks);
+        this.last.cells = _.unionBy(this.last.cells, newCells, "id");
+        cells.show(newCells);
+        µ.many(".waiting, .roundIcon").toggleClass("notdisplayed", true);
         return this;
     };
 
     Search.prototype.associated = function () {
-        cells.reset();
         µ.many(".waiting, .roundIcon, .waitAnim").toggleClass("notdisplayed", false);
         µ.one("sort.active").toggleClass("active", false);
         em.emit("resetFilter");
@@ -78,8 +84,8 @@ define("search", ["cells", "collection", "Window", "text!../templates/search"], 
         } else {
             req(`/associated/${this.last.qs.associated}`).send().then((result) => {
                 this.show(result.books);
-                store.set(this.last.qs, result.books);
                 µ.one(".waitAnim").toggleClass("notdisplayed", true);
+                store.set(this.last.qs, result.books);
             }).catch((error) => err.add(error));
         }
         return this;
@@ -91,9 +97,7 @@ define("search", ["cells", "collection", "Window", "text!../templates/search"], 
         })).then((result) => {
             this.show(result.books);
             if (result.books.length === 40) {
-                //return this.request();
-                µ.one(".waitAnim").toggleClass("notdisplayed", true);
-                store.set(this.last.qs, this.last.books);
+                this.request();
             } else {
                 µ.one(".waitAnim").toggleClass("notdisplayed", true);
                 store.set(this.last.qs, this.last.books);
@@ -131,6 +135,9 @@ define("search", ["cells", "collection", "Window", "text!../templates/search"], 
                     err.add(error);
                 });
             }
+        } else {
+            cells.reset();
+            cells.show(this.last.cells);
         }
         return this;
     };

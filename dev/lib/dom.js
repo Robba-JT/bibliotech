@@ -394,6 +394,13 @@ const µ = (function () {
     Reflect.defineProperty(myElement.prototype, "valid", {
         get() {
             return _.get(this.element, "validity.valid");
+        },
+        set(val) {
+            if (val) {
+                this.element.setCustomValidity("");
+            } else {
+                this.element.setCustomValidity("error input");
+            }
         }
     });
 

@@ -123,6 +123,13 @@ define("detail", ["Window", "hdb", "cloud", "cells", "text!../templates/detail",
                 "lang": document.body.lang
             });
         });
+        detail.many(".tag button").observe("click", (event) => {
+            if (event.element.hasClass("libelle")) {
+                this.byTag(event.element.text);
+            } else {
+                this.removeTag(event.element);
+            }
+        });
         em.on("resize", this, this.close);
         em.on("closeAll", this, this.close);
     };
@@ -179,13 +186,19 @@ define("detail", ["Window", "hdb", "cloud", "cells", "text!../templates/detail",
     };
 
     Detail.prototype.save = function () {
-        const diff = _.diff(this.detailBook, this.cell.book);
+        const diff = _.omit(_.diff(this.detailBook, this.cell.book), ["src", "palette"]);
         if (!_.isEmpty(diff)) {
-            req(`/detail/${this.cell.book.id}`, "PUT").send(_.omit(diff, ["src", "palette"])).then(() => {
+            req(`/detail/${this.cell.book.id}`, "PUT").send(diff).then(() => {
                 this.cell.update(this.detailBook, true).defLoad();
-                this.close();
+                if (_.has(diff, "tags")) {
+                    em.emit("updateTag", {
+                        "id": this.cell.id,
+                        "tags": diff.tags
+                    });
+                }
             }).catch((error) => err.add(error));
         }
+        this.close();
         return this;
     };
 
@@ -218,18 +231,31 @@ define("detail", ["Window", "hdb", "cloud", "cells", "text!../templates/detail",
             const tags = detail.one(".tags"),
                 tag = µ.new("div").toggleClass("tag").set("innerHTML", renderTag(result));
 
-            tag.many("button").observe("click", (event) => {
-                alert(event.element.hasClass("libelle") ? event.element.text : "remove");
+            tag.one("button:not(.libelle)").observe("click", (event) => {
+                this.removeTag(event.element);
             });
 
-            tags.append(_.sortBy(_.concat(detail.many(".tags .tag").elements, [tag]), [(tag) => tag.text])).toggleClass("notdisplayed", false);
+            tags.append(_.sortBy(_.concat(detail.many(".tags .tag").elements, [tag]), [(tag) => tag.one(".libelle").text])).toggleClass("notdisplayed", false);
             this.detailBook.tags = _.concat(this.detailBook.tags, [result.tag]);
             this.detailBook.tags.sort();
         }
         return this;
     };
-    Detail.prototype.removeTag = function () {
-        //
+    Detail.prototype.byTag = function (tag) {
+        this.close();
+        if (!µ.one("#collection").hasClass("active")) {
+            em.emit("showCollection");
+        }
+        em.emit("filtreTag", tag);
+        return this;
+    };
+    Detail.prototype.removeTag = function (elt) {
+        const tag = elt.siblings.get(0).text;
+        if (tag) {
+            this.detailBook.tags = _.without(this.detailBook.tags, tag);
+            elt.parent.remove();
+        }
+        return this;
     };
 
     previewWindow.one("#closePreview").observe("click", () => {

@@ -40,10 +40,12 @@ module.exports = exports = (function () {
         .get("/googleAuth", [loginAPI.googleAuth, userAPI.connect]);
 
     //Login
-    router.post("/login", [loginAPI.auth, userAPI.connect]);
+    router.route("/login")
+        .put([loginAPI.auth, userAPI.connect])
+        .post([loginAPI.new, userAPI.connect]);
 
     //Nouvel utilisateur
-    router.post("/new", [loginAPI.new, userAPI.connect]);
+    //router.post("/new", [loginAPI.new, userAPI.connect]);
 
     //Mot de passe oublié
     router.post("/mail", loginAPI.forgotten);

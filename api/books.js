@@ -43,14 +43,11 @@ const console = require("../tools/console"),
         }, {
             "_id": false
         }).then((books) => {
-            let tags = [];
             _.forEach(books, (book) => {
                 _.assign(book, _.find(req.user.books, ["id", book.id]));
-                tags = _.concat(tags, book.tags || []);
             });
             req.response({
                 books,
-                tags,
                 "total": books.length
             });
         }).catch(req.error);
@@ -172,10 +169,18 @@ const console = require("../tools/console"),
                 const update = {},
                     proms = [];
 
-                update["books.$.date"] = _.has(req.body, "date") && new Date(req.body.date);
-                update["books.$.comment"] = _.has(req.body, "comment") && req.body.comment;
-                update["books.$.tags"] = _.has(req.body, "tags") && req.body.tags;
-                update["books.$.note"] = _.has(req.body, "note") && _.parseInt(req.body.note);
+                if (_.has(req.body, "date")) {
+                    update["books.$.date"] = new Date(req.body.date);
+                }
+                if (_.has(req.body, "comment")) {
+                    update["books.$.comment"] = req.body.comment;
+                }
+                if (_.has(req.body, "tags")) {
+                    update["books.$.tags"] = req.body.tags;
+                }
+                if (_.has(req.body, "note")) {
+                    update["books.$.note"] = _.parseInt(req.body.note);
+                }
                 if (_.has(req.body, "alt")) {
                     const base64_marker = ";base64,",
                         base64_index = req.body.alt.indexOf(base64_marker),

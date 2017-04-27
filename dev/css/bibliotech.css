@@ -101,7 +101,7 @@ form input:invalid {
     }
 }
 
-.ng-invalid {
+/*.ng-invalid {
     border-color: red!important
 }
 
@@ -112,7 +112,7 @@ form input:invalid {
 
 .def-cloak, .x-def-cloak, [data-def-cloak], [def-cloak], [def\:cloak], [x-def-cloak] {
     visibility: hidden!important
-}
+}*/
 
 cloud>div, #contactsWindow div, #footer, #noCover, #selectedSearch::before, #selectedTag::before, sorts span, .altCover, #closePreview, #googlePreview, .help #helpHelp, .help aside, .imgAction .upload, .navbar .button, .navgrid [nav], .note, .roundIcon, .windowheader div, search footer, footer .personnal, footer .previewable, footer .recommanded {
     background-image: url(/images/spritesheet.png);
@@ -234,10 +234,6 @@ search footer {
     cursor: pointer;
     width: 48px;
     padding: 8px
-}
-
-.mnv {
-    background-color: transparent
 }
 
 #maskedorder {
@@ -647,7 +643,7 @@ bookcells {
     text-decoration: underline
 }
 
-.cell {
+/*.cell {
     position: relative;
     display: inline-block;
     -webkit-transition: width 2s;
@@ -655,7 +651,7 @@ bookcells {
     -o-transition: width 2s;
     transition: width 2s;
     vertical-align: top;
-}
+}*/
 
 cell {
     display: inline-table;
@@ -694,11 +690,11 @@ cell:hover {
     transition: box-shadow .33s ease-in-out, background-color .33s ease-in-out
 }
 
-.isDrag {
+/*.isDrag {
     background-color: silver!important;
     cursor: move;
     opacity: .75
-}
+}*/
 
 cell header {
     color: #000;
@@ -716,11 +712,11 @@ cell:hover header {
     background-color: #3F3F3F
 }
 
-cell article {
+/*cell article {
     position: relative;
     min-height: 30px;
     padding: 5px
-}
+}*/
 
 cell figure {
     margin: 5px;
@@ -897,11 +893,11 @@ button.remove {
     font-weight: bolder
 }
 
-.detailBook [field=isbn10]:before {
+.detailBook [isbn10]:before {
     content: "10: "
 }
 
-.detailBook [field=isbn13]:before {
+.detailBook [isbn13]:before {
     content: "13: "
 }
 

@@ -27,6 +27,16 @@ define("profile", ["Window", "hdb", "text!../templates/profile"], function (Wind
                             }).catch((error) => err.add(error));
                         }
                     });
+                    this.window.one("#delete").observe("click", (event) => {
+                        const parsed = this.window.one("form").parser();
+                        if (!_.get(parsed, "pwd")) {
+                            this.window.one("input[name=pwd]").set("required", true);
+                        } else {
+                            req("/profile", "DELETE").send(parsed).then((result) => {
+                                console.log("result", result);
+                            }).catch((error) => err.add(error));
+                        }
+                    });
                 });
             });
         };

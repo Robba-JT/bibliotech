@@ -71,9 +71,9 @@
         [{#ifISBN isbn10 isbn13}]
         <div class="volumeInfo">
             <button class="title" tabindex="-1">{{isbn}}:</button>
-            <span searchby="isbn:">[{isbn10}]</span>
+            <span searchby="isbn:" isbn10>[{isbn10}]</span>
             <input type="text" class="notdisplayed" placeholder="{{isbn10}}" size="10" maxlength="10" name="isbn10"/>
-            <span searchby="isbn:">[{isbn13}]</span>
+            <span searchby="isbn:" isbn13>[{isbn13}]</span>
             <input type="text" class="notdisplayed" placeholder="{{isbn13}}" size="13" maxlength="13" name="isbn13"/>
         </div>
         [{/ifISBN}]

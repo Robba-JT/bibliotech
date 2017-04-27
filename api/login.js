@@ -15,7 +15,13 @@ const mailsAPI = require("../tools/mails"),
             "browser_type": user.browser_type
         }));
 
-        passport.deserializeUser((data, done) => usersDB.find(data._id).then((user) => done(null, _.assign(user, data))).catch(done));
+        passport.deserializeUser((data, done) => usersDB.find(data._id).then((user) => {
+            if (user) {
+                done(null, _.assign(user, data));
+            } else {
+                throw new Error("Invalid User");
+            }
+        }).catch(done));
 
         passport.use(new GoogleStrategy({
             "clientID": googleWeb.client_id,
@@ -149,6 +155,7 @@ const mailsAPI = require("../tools/mails"),
         this.new = (req, res, next) => {
             passport.authenticate("new", (error, user) => {
                 if (error || !user) {
+                    console.error("login new", error);
                     req.error(401, req.trads.error.alreadyExist);
                 } else {
                     req.login(user, (err) => {
@@ -171,6 +178,7 @@ const mailsAPI = require("../tools/mails"),
                 } else {
                     req.login(user, (err) => {
                         if (err) {
+                            console.error("login new", err);
                             req.error(401, err);
                         } else {
                             req.response();

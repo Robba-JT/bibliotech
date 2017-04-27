@@ -16,7 +16,16 @@ const console = require("../tools/console"),
             });
         };
 
-        this.delete = (req) => req.response();
+        this.delete = (req) => {
+            const pwd = _.get(req, "body.pwd");
+            console.log("pwds", pwd, req.user, usersDB.compareSync(pwd, req.user.pwd));
+            if (pwd && usersDB.compareSync(pwd, req.user.password)) {
+                //usersDB.delete(req.user._id);
+                req.response();
+            } else {
+                req.error(409);
+            }
+        };
 
         this.get = (req) => req.response(_.pick(req.user, ["_id", "name", "googleSignIn", "googleSync"]));
 

@@ -88,14 +88,12 @@ define("collection", ["cells"], function (cells) {
     Collection.prototype.init = function () {
         req("/collection").send().then((result) => {
             µ.many(".waiting, .roundIcon").toggleClass("notdisplayed", true);
-            _.reduce(result.tags, (tags, tag) => {
-                if (_.has(tags, tag)) {
-                    tags[tag] += 1;
-                } else {
-                    _.set(tags, tag, 1);
+            this.tags = _.map(result.books, (book) => {
+                return {
+                    "id": book.id,
+                    "tags": book.tags || []
                 }
-                return tags;
-            }, this.tags);
+            });
             this.cells = _.union(this.cells, cells.getCells(result.books, true));
             this.show();
             if (result.total === this.cells.length) {

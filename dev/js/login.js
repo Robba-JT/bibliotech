@@ -24,7 +24,7 @@ require(["lodash", "dom", "Request"], () => {
             µ.many(".w, .k").toggleClass("notdisplayed", false);
             µ.one(".m").toggleClass("notdisplayed", true);
             µ.one(".g").text = "";
-            req(this.get("action"), "POST").send(_.omit(this.parser(), "confirm"))
+            req("/login", µ.one("[name=confirm]").visible ? "POST" : "PUT").send(_.omit(this.parser(), "confirm"))
                 .then(() => window.location.reload(true))
                 .catch((error) => {
                     µ.one(".g").text = _.get(error, "error") || error;
@@ -36,25 +36,22 @@ require(["lodash", "dom", "Request"], () => {
             window.location = "/gAuth";
         });
         µ.one("[type=button]").observe("click", function () {
-            const form = µ.one("form"),
-                action = form.get("action"),
-                alt = this.get("alt"),
+            const alt = this.get("alt"),
                 value = this.value;
 
             this.set("alt", value).value = alt;
-            form.set({
-                "action": action === "/login" ? "/new" : "/login"
-            });
             µ.many("[name=name], [name=confirm]")
                 .toggleClass("notdisplayed")
-                .set("required", action === "/login").value = "";
+                .set("required", µ.one("[name=confirm]").visible).value = "";
             µ.many(".error").toggleClass("notdisplayed", true);
         });
-        µ.one("[name=confirm]").observe("change", function () {
-            const thisValue = this.value,
-                pwdValue = µ.one("[name=password]").value;
+        µ.many("[name=confirm], [name=password]").observe("keyup", function () {
+            const confirmValue = µ.one("[name=confirm]").value,
+                pwdValue = µ.one("[name=password]").value,
+                test = pwdValue && confirmValue && confirmValue === pwdValue;
 
-            µ.one("#c").toggleClass("notdisplayed", thisValue && thisValue !== pwdValue);
+            µ.one("[name=confirm]").valid = test;
+            µ.one("#c").toggleClass("notdisplayed", test);
         });
         µ.one("button.m").observe("click", function () {
             const elt = µ.one("[name=email]");

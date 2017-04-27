@@ -9,9 +9,9 @@ const bcrypt = require("bcrypt-nodejs"),
         const db = require("./../tools/mongo").client,
             users = db.collection("users");
 
-        this.add = (userid, password, name, googleSignIn) => new Q.Promise((resolve, reject) => {
+        this.add = (userId, password, name, googleSignIn) => new Q.Promise((resolve, reject) => {
             const user = {
-                "_id": _.toLower(userid),
+                "_id": _.toLower(userId),
                 "password": bcrypt.hashSync(password),
                 "name": name || "",
                 "creation": new Date(),
@@ -37,11 +37,17 @@ const bcrypt = require("bcrypt-nodejs"),
             });
         });
 
+        this.compareSync = (toTest, password) => bcrypt.compareSync(toTest, password);
+
+        this.delete = (userId) => users.remove({
+            "_id": userId
+        });
+
         this.encryptPwd = (pwd) => bcrypt.encryptPwd(pwd);
 
-        this.find = (userid) => new Q.Promise((resolve, reject) => {
+        this.find = (userId) => new Q.Promise((resolve, reject) => {
             users.findOne({
-                "_id": _.toLower(userid)
+                "_id": _.toLower(userId)
             }, (err, result) => {
                 if (err || !result) {
                     reject(err);
@@ -137,9 +143,9 @@ const bcrypt = require("bcrypt-nodejs"),
             users.update(query, data).then(resolve).catch(reject);
         });
 
-        this.validate = (userid, password, googleSignIn) => new Q.Promise((resolve, reject) => {
+        this.validate = (userId, password, googleSignIn) => new Q.Promise((resolve, reject) => {
             users.findOne({
-                "_id": _.toLower(userid)
+                "_id": _.toLower(userId)
             }, function (err, user) {
                 if (err || !user) {
                     reject(err);

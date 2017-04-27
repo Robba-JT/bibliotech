@@ -2,7 +2,8 @@ define("cloud", ["text!../templates/cloud"], function (template) {
     const cloud = µ.one("cloud").set("innerHTML", template),
         Cloud = function () {
             em.on("generateTags", this, function (tags) {
-                this.reset().generate(tags);
+                this.list = tags;
+                this.reset().generate();
             });
 
             em.on("openCloud", this, this.open);
@@ -10,6 +11,7 @@ define("cloud", ["text!../templates/cloud"], function (template) {
             em.on("resize", this, () => {
                 this.close().reset().generate(this.list);
             });
+            em.on("updateTag", this, this.update);
 
             cloud.one("div").observe("click", this.close);
         },
@@ -35,79 +37,76 @@ define("cloud", ["text!../templates/cloud"], function (template) {
         return this;
     };
 
-    Cloud.prototype.generate = function (tags) {
-        this.list = tags;
-        const height = ~~(cloud.get("clientHeight") / 2),
-            width = ~~(cloud.get("clientWidth") / 2),
-            ratio = width / height,
-            step = 3.0,
-            isOver = function (elem, others) {
-                const lg = others.length,
-                    overlap = function (a, b) {
-                        return (Math.abs(2.0 * a.offsetLeft + a.offsetWidth - 2.0 * b.offsetLeft - b.offsetWidth) < a.offsetWidth + b.offsetWidth) && (Math.abs(2.0 * a.offsetTop + a.offsetHeight - 2.0 * b.offsetTop - b.offsetHeight) < a.offsetHeight + b.offsetHeight);
-                    };
-                for (let i = 0; i < lg; i += 1) {
-                    if (overlap(elem.element, others[i].element)) {
-                        return true;
-                    }
+    Cloud.prototype.close = function () {
+        cloud.toggleClass("invisible", true);
+        µ.one("html").toggleClass("overflown", false);
+        return this;
+    };
+
+    Cloud.prototype.generate = function () {
+        _.reduce(this.list, (list, one) => {
+            _.forEach(one.tags, (tag) => {
+                if (!_.has(list, tag)) {
+                    list[tag] = 0;
                 }
-                return false;
-            };
-        _.forIn(this.list, (weight, title, index) => {
-            const tag = new Tag(title, weight).appendTo(cloud),
-                span = tag.span;
-
-            let top = height - (span.get("clientHeight") / 2),
-                left = width - (span.get("clientWidth") / 2),
-                radius = 0,
-                angle = 6.28 * Math.random();
-
-            span.css({
-                top,
-                left
+                list[tag] += 1;
             });
-            while (isOver(span, this.tags)) {
-                radius += step;
-                angle += (this.tags.length % 2 === 0 ? 1 : -1) * step;
-                top = height + radius * Math.sin(angle) - (span.get("clientHeight") / 2.0);
-                left = width - (span.get("clientWidth") / 2.0) + (radius * Math.cos(angle)) * ratio;
+            return list;
+        }, this.computedList = {});
+        if (_.isEmpty(this.computedList)) {
+            µ.one("#tags").toggleClass("notdisplayed", true);
+        } else {
+            const height = ~~(cloud.get("clientHeight") / 2),
+                width = ~~(cloud.get("clientWidth") / 2),
+                ratio = width / height,
+                step = 3.0,
+                isOver = function (elem, others) {
+                    const lg = others.length,
+                        overlap = function (a, b) {
+                            return (Math.abs(2.0 * a.offsetLeft + a.offsetWidth - 2.0 * b.offsetLeft - b.offsetWidth) < a.offsetWidth + b.offsetWidth) && (Math.abs(2.0 * a.offsetTop + a.offsetHeight - 2.0 * b.offsetTop - b.offsetHeight) < a.offsetHeight + b.offsetHeight);
+                        };
+                    for (let i = 0; i < lg; i += 1) {
+                        if (overlap(elem.element, others[i].element)) {
+                            return true;
+                        }
+                    }
+                    return false;
+                };
+            _.forIn(this.computedList, (weight, title) => {
+                const tag = new Tag(title, weight).appendTo(cloud),
+                    span = tag.span;
+
+                let top = height - (span.get("clientHeight") / 2),
+                    left = width - (span.get("clientWidth") / 2),
+                    radius = 0,
+                    angle = 6.28 * Math.random();
+
                 span.css({
                     top,
                     left
                 });
-            }
-            span.observe("click", () => {
-                this.close();
-                em.emit("filtreTag", title);
+                while (isOver(span, this.tags)) {
+                    radius += step;
+                    angle += (this.tags.length % 2 === 0 ? 1 : -1) * step;
+                    top = height + radius * Math.sin(angle) - (span.get("clientHeight") / 2.0);
+                    left = width - (span.get("clientWidth") / 2.0) + (radius * Math.cos(angle)) * ratio;
+                    span.css({
+                        top,
+                        left
+                    });
+                }
+                span.observe("click", () => {
+                    this.close();
+                    em.emit("filtreTag", title);
+                });
+                this.tags.push(span);
+                this.options.push(`<option value="${title}">${title}</option>`);
             });
-            this.tags.push(span);
-            this.options.push(`<option value="${title}">${title}</option>`);
-        });
-        return this;
-    };
-
-    Cloud.prototype.add = function (title) {
-        const liste = _.clone(this.list);
-        if (_.has(liste, "title")) {
-            liste[title] += 1;
-        } else {
-            liste[title] = 1;
+            this.options.sort();
+            if (µ.one("#collection").hasClass("active")) {
+                µ.one("#tags").toggleClass("notdisplayed", false);
+            }
         }
-        this.reset();
-        this.generate(liste);
-        return this;
-    };
-
-    Cloud.prototype.remove = function (title) {
-        _.noop();
-        return this;
-    };
-
-    Cloud.prototype.reset = function () {
-        this.list = {};
-        this.tags = [];
-        this.options = [];
-        cloud.set("innerHTML", template).one("div").observe("click", this.close);
         return this;
     };
 
@@ -117,9 +116,24 @@ define("cloud", ["text!../templates/cloud"], function (template) {
         return this;
     };
 
-    Cloud.prototype.close = function () {
-        cloud.toggleClass("invisible", true);
-        µ.one("html").toggleClass("overflown", false);
+    Cloud.prototype.reset = function () {
+        this.tags = [];
+        this.options = [];
+        cloud.set("innerHTML", template).one("div").observe("click", this.close);
+        return this;
+    };
+
+    Cloud.prototype.update = function (param) {
+        const list = _.find(this.list, ["id", param.id]);
+        if (list) {
+            list.tags = param.tags;
+        } else {
+            this.list.push(param);
+        }
+        this.reset().generate();
+        if (µ.one("#selectedTag").visible && µ.one("#selectedTag span").text) {
+            em.emit("filtreTag", µ.one("#selectedTag span").text);
+        }
         return this;
     };
 

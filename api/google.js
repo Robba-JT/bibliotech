@@ -58,7 +58,6 @@ const console = require("../tools/console"),
                     "isbn13": _.get(_.find(industryIdentifiers, {
                         "type": "ISBN_13"
                     }), "identifier") || "",
-                    //"cover": bookInfos.imageLinks ? bookInfos.imageLinks.small || bookInfos.imageLinks.medium || bookInfos.imageLinks.large || bookInfos.imageLinks.extraLarge || bookInfos.imageLinks.thumbnail || bookInfos.imageLinks.smallThumbnail : false,
                     "cover": Boolean(_.keys(bookInfos.imageLinks).length),
                     "preview": Boolean(bookInfos.previewLink),
                     "@": new Date()
