@@ -7,8 +7,8 @@ define("search", ["cells", "collection", "Window", "text!../templates/search"], 
             this.window.one("form").reset();
             this.window.open();
         });
-        em.on("filtreSearch", this, function (filtre) {
-            _.forEach(this.last.cells, (cell) => cell.filter(filtre));
+        em.on("filtreSearch", this, function () {
+            _.forEach(this.last.cells, (cell) => cell.filter());
         });
         em.on("associated", (associated) => {
             cells.reset();
@@ -30,11 +30,11 @@ define("search", ["cells", "collection", "Window", "text!../templates/search"], 
                 this.last.books = [];
                 this.last.cells = [];
                 cells.reset();
-                this.get(qs);
                 µ.many(".waiting, .roundIcon, .waitAnim").toggleClass("notdisplayed", false);
                 µ.one("sort.active").toggleClass("active", false);
                 em.emit("resetFilter");
                 em.emit("clickMenu", "recherche");
+                this.get(qs);
             } else {
                 cells.reset();
                 cells.show(this.last.cells);
@@ -45,12 +45,12 @@ define("search", ["cells", "collection", "Window", "text!../templates/search"], 
             event.preventDefault();
             const search = event.element.parser();
             if (!_.isEqual(search, this.last.qs)) {
+                this.window.close();
                 µ.many(".waiting, .roundIcon, .waitAnim").toggleClass("notdisplayed", false);
                 µ.one("sort.active").toggleClass("active", false);
                 this.last.qs = search;
                 this.last.books = [];
                 this.last.cells = [];
-                this.window.close();
                 cells.reset();
                 this.get(search);
                 event.element.reset();
@@ -96,7 +96,7 @@ define("search", ["cells", "collection", "Window", "text!../templates/search"], 
             "index": this.last.books.length
         })).then((result) => {
             this.show(result.books);
-            if (result.books.length === 40) {
+            if (result.books.length === 40 && this.last.books.length < 400) {
                 this.request();
             } else {
                 µ.one(".waitAnim").toggleClass("notdisplayed", true);

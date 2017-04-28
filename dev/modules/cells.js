@@ -44,7 +44,10 @@ define("cells", ["hdb", "text!../templates/Cell"], function (hdb, template) {
             });
 
             this.cell.observe("click", () => em.emit("openDetail", this)).observe("dragstart", (event) => {
+                event.element.toggleClass("isDrag", true);
                 event.dataTransfer.setData("id", `id${this.id}`);
+            }).observe("dragend", (event) => {
+                event.element.toggleClass("isDrag", false);
             }).observe("dragover", (event) => {
                 event.preventDefault();
             }).observe("drop", (event) => {
@@ -96,24 +99,21 @@ define("cells", ["hdb", "text!../templates/Cell"], function (hdb, template) {
 
     let width = null;
 
-    Cell.prototype.filter = function (filtre) {
-        if (filtre) {
-            const concat = _.toLower(_.concat(this.book.title, this.book.subtitle || "", this.book.authors || "", this.book.description || "").join("")),
-                visible = _.includes(concat, _.toLower(filtre));
+    Cell.prototype.filter = function () {
+        const filter = _.words(_.toLower(_.noAccent(µ.one("#selectedSearch span").text))),
+            lgFilter = filter.length,
+            tag = µ.one("#selectedTag span").text,
+            concat = _.toLower(_.noAccent(_.concat(this.book.title, this.book.subtitle || "", this.book.authors || "", this.book.description || "").join(" ")));
 
-            this.cell.toggleClass("notdisplayed", !visible);
-            if (visible && this.defLoad) {
-                this.defLoad();
-            }
-        } else {
-            this.cell.toggleClass("notdisplayed", false);
+        var visible = tag ? _.includes(this.book.tags, tag) : true;
+        if (visible && lgFilter) {
+            _.forEach(filter, (word) => {
+                visible = _.includes(concat, word);
+                return visible;
+            });
         }
-        return this;
-    };
-
-    Cell.prototype.byTag = function (tag) {
-        this.cell.toggleClass("notdisplayed", !_.includes(this.book.tags, tag));
-        if (this.defLoad) {
+        this.cell.toggleClass("notdisplayed", !visible);
+        if (visible && this.defLoad) {
             this.defLoad();
         }
         return this;

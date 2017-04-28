@@ -1,10 +1,4 @@
 define("biblioHdb", ["hdb"], function (hdb) {
-    hdb.registerHelper("ifPreview", function (access, options) {
-        if (access !== "NONE") {
-            return options.fn(this);
-        }
-    });
-
     hdb.registerHelper("ifPers", function (id, options) {
         try {
             JSON.parse(id);

@@ -158,7 +158,7 @@ const µ = (function () {
 
     Reflect.defineProperty(myElement.prototype, "visible", {
         get() {
-            return window.getComputedStyle(this.element).visibility === "visible" && window.getComputedStyle(this.element).display !== "none";
+            return this.element && window.getComputedStyle(this.element).visibility === "visible" && window.getComputedStyle(this.element).display !== "none";
         }
     });
 
@@ -216,6 +216,20 @@ const µ = (function () {
     };
 
     /**
+     * index of elt in collection
+     * @param {myElement} elt elemnt to find
+     * @returns {Number} index of elt
+     **/
+    myCollection.prototype.indexOf = function (elt) {
+        if (_.isString(elt)) {
+            elt = dom.one(elt);
+        }
+        return _.findIndex(this.elements, (test) => {
+            return _.isEqual(test, elt);
+        });
+    };
+
+    /**
      * Element listener prototype
      * @param {String} eventsName Events name
      * @param {Object} data data to attach
@@ -254,6 +268,9 @@ const µ = (function () {
      **/
     myElement.prototype.css = function (styles, values) {
         if (_.isString(styles)) {
+            if (_.isUndefined(values)) {
+                return _.get(this, `element.style.${styles}`);
+            }
             const inter = {};
             inter[styles] = values;
             styles = inter;

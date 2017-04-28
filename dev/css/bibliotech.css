@@ -690,11 +690,17 @@ cell:hover {
     transition: box-shadow .33s ease-in-out, background-color .33s ease-in-out
 }
 
-/*.isDrag {
-    background-color: silver!important;
+.isDrag {
+    background-color: silver !important;
     cursor: move;
-    opacity: .75
-}*/
+    opacity: .85;
+}
+
+.isDrag header {
+    color: silver !important;
+    font-size: 150%;
+    background-color: #000 !important;
+}
 
 cell header {
     color: #000;
@@ -1611,7 +1617,7 @@ preview>iframe {
     cursor: pointer
 }
 
-#contextMenu {
+context {
     position: fixed;
     width: 200px!important;
     max-width: 25%!important;
@@ -1674,11 +1680,12 @@ preview>iframe {
     background-position: -260px -62px
 }
 
-#contextMenu [ng-click] {
-    margin: 5px
+context [id] {
+    cursor: pointer;
+    margin: 5px;
 }
 
-#contextMenu .closeWindow:hover, #contextMenu [ng-click]:hover {
+context [id]:hover {
     color: #000;
     background-color: #b8860b
 }

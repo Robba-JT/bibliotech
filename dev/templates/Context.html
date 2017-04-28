@@ -1,0 +1,38 @@
+<div class="navgrid">
+    <div>
+        <span nav="top" source="arrow-24-icon-top" blur="white" hover="alt" width="32" height="32"></span>
+    </div>
+    <div>
+        <span nav="left" source="arrow-24-icon-left" blur="white" hover="alt" width="32" height="32"></span>
+        <span nav="right" source="arrow-24-icon-right" blur="white" hover="alt" width="32" height="32"></span>
+    </div>
+    <div>
+        <span nav="bottom" source="arrow-24-icon-bottom" blur="white" hover="alt" width="32" height="32"></span>
+    </div>
+</div>
+<div>
+    [{#if inCollection}]
+    <div id="contextRecommand">{{torecommand}}&nbsp;</div>
+    [{else}]
+    <div id="contextRecommand" class="notdisplayed">{{torecommand}}&nbsp;</div>
+    [{/if}]
+    [{#if preview}]
+    <div id="contextPreview">{{preview}}&nbsp;</div>
+    [{/if}]
+    [{#if link}]
+    <div id="contextConnex">{{connex}}&nbsp;</div>
+    <div id="contextGbooks">{{gbooks}}&nbsp;</div>
+    [{/if}]
+    [{#unless src}]
+    <div id="contextCover">{{upload}}&nbsp;</div>
+    [{/unless}]
+    <hr>
+    [{#if inCollection}]
+    <div id="contextAdd" class="notdisplayed">{{add}}&nbsp;</div>
+    <div id="contextSave">{{save}}&nbsp;</div>
+    [{else}]
+    <div id="contextAdd">{{add}}&nbsp;</div>
+    <div id="contextSave" class="notdisplayed">{{save}}&nbsp;</div>
+    [{/if}]
+    <div id="contextClose">{{close}}&nbsp;</div>
+</div>

@@ -1,7 +1,8 @@
-define("detail", ["Window", "hdb", "cloud", "cells", "text!../templates/detail", "text!../templates/Tag", "text!../templates/MostAdded", "text!../templates/Preview"], function (Window, hdb, cloud, cells, tempDetail, tempTag, tempAdded, tempPreview) {
+define("detail", ["Window", "hdb", "cloud", "cells", "text!../templates/detail", "text!../templates/Tag", "text!../templates/MostAdded", "text!../templates/Preview", "text!../templates/Context"], function (Window, hdb, cloud, cells, tempDetail, tempTag, tempAdded, tempPreview, tempContext) {
     const renderDetail = hdb.compile(tempDetail),
         renderTag = hdb.compile(tempTag),
         renderAdded = hdb.compile(tempAdded),
+        renderContext = hdb.compile(tempContext),
         thief = new ColorThief(),
         detail = µ.one("detail"),
         Detail = function () {
@@ -27,7 +28,8 @@ define("detail", ["Window", "hdb", "cloud", "cells", "text!../templates/detail",
                 }
             });
         },
-        previewWindow = new Window("preview", tempPreview);
+        context = µ.one("context"),
+        preview = new Window("preview", tempPreview);
 
     Detail.prototype.init = function (cell) {
         req(`/mostAdded/${cell.id}`).send().then((result) => this.mostAdded(result)).catch((error) => err.add(error));
@@ -41,15 +43,56 @@ define("detail", ["Window", "hdb", "cloud", "cells", "text!../templates/detail",
         detail.set("innerHTML", renderDetail(_.merge(this.detailBook, {
             "src": this.cell.src
         })));
-        detail.one(".closeWindow").observe("click", () => {
-            this.close();
+        context.set("innerHTML", renderContext(_.merge(this.detailBook, {
+            "src": this.cell.src
+        }))).many("[nav]").observe("click", (event) => {
+            const move = event.element.get("nav"),
+                visibles = µ.many("cell:not(.notdisplayed)"),
+                perLine = ~~(µ.one("bookcells").get("clientWidth") / this.cell.cell.get("clientWidth"));
+            var index = visibles.indexOf(`#id${this.cell.id}`);
+
+            if (index === -1) {
+                return false;
+            }
+            switch (move) {
+                case "right":
+                    index += 1;
+                    if (index >= visibles.length) {
+                        return false;
+                    }
+                    break;
+                case "left":
+                    if (index === 0) {
+                        return false;
+                    }
+                    index -= 1;
+                    break;
+                case "top":
+                    if (index < perLine) {
+                        return false;
+                    }
+                    index -= perLine;
+                    break;
+                case "bottom":
+                    index += perLine;
+                    if (index >= visibles.length) {
+                        return false;
+                    }
+                    break;
+                default:
+            }
+            let next = visibles.get(index);
+            location.hash = next.id;
+            next.trigger("click");
+            return true;
         });
-        detail.one("#detailSave").observe("click", () => this.save());
-        detail.one("#detailAdd").observe("click", () => this.add());
-        detail.one("#detailGbooks").observe("click", () => this.googleLink());
-        detail.one("#detailConnex").observe("click", () => this.connex());
-        detail.one("#detailPreview").observe("click", () => this.preview());
-        detail.one("#detailRecommand").observe("click", () => this.recommand());
+        µ.many("detail .closeWindow, context #contextClose").observe("click", () => this.close());
+        µ.many("#detailSave, #contextSave").observe("click", () => this.save());
+        µ.many("#detailAdd, #contextAdd").observe("click", () => this.add());
+        µ.many("#detailGbooks, #contextGbooks").observe("click", () => this.googleLink());
+        µ.many("#detailConnex, #contextConnex").observe("click", () => this.connex());
+        µ.many("#detailPreview, #contextPreview").observe("click", () => this.preview());
+        µ.many("#detailRecommand, #contextRecommand").observe("click", () => this.recommand());
         detail.css({
             "top": `${document.body.scrollTop}px`
         }).toggleClass("notdisplayed", false);
@@ -142,9 +185,11 @@ define("detail", ["Window", "hdb", "cloud", "cells", "text!../templates/detail",
     };
 
     Detail.prototype.close = function () {
+        context.toggleClass("notdisplayed", true);
         detail.toggleClass("notdisplayed", true);
         µ.one(".waiting").toggleClass("notdisplayed", true);
         µ.one("html").toggleClass("overflown", false);
+        detail.set("innerHTML", "");
         return this;
     };
 
@@ -204,7 +249,7 @@ define("detail", ["Window", "hdb", "cloud", "cells", "text!../templates/detail",
 
     Detail.prototype.add = function () {
         this.cell.add();
-        detail.many("#detailAdd, #detailSave, #detailRecommand, .inCollection").toggleClass("notdisplayed");
+        µ.many("#detailAdd, #detailSave, #detailRecommand, #contextAdd, #contextSave, #contextRecommand, detail .inCollection").toggleClass("notdisplayed");
         return this;
     };
     Detail.prototype.googleLink = function () {
@@ -217,9 +262,10 @@ define("detail", ["Window", "hdb", "cloud", "cells", "text!../templates/detail",
         return this;
     };
     Detail.prototype.preview = function () {
+        context.toggleClass("notdisplayed", true);
         µ.one(".waiting").toggleClass("over", true);
-        previewWindow.one("iframe").set("src", "about:blank");
-        previewWindow.openOver();
+        preview.one("iframe").set("src", "about:blank");
+        preview.openOver();
         detail.one("form[target=preview]").trigger("submit");
     };
     Detail.prototype.recommand = function () {
@@ -258,10 +304,24 @@ define("detail", ["Window", "hdb", "cloud", "cells", "text!../templates/detail",
         return this;
     };
 
-    previewWindow.one("#closePreview").observe("click", () => {
+    preview.one("#closePreview").observe("click", () => {
         µ.one(".waiting").toggleClass("over", false);
-        previewWindow.closeOver();
+        preview.closeOver();
     });
+
+    detail.observe("contextmenu", (event) => {
+        event.preventDefault();
+        const thisHeight = context.toggleClass("notdisplayed", false).get("clientHeight"),
+            thisWidth = context.get("clientWidth"),
+            eventX = event.clientX,
+            eventY = event.clientY;
+        context.css({
+            "top": eventY + thisHeight > window.innerHeight ? eventY - thisHeight : eventY,
+            "left": eventX + thisWidth > window.innerWidth ? eventX - thisWidth : eventX
+        });
+        return false;
+    });
+    detail.observe("click", () => context.toggleClass("notdisplayed", true));
 
     return new Detail();
 });

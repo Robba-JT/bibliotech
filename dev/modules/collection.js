@@ -29,15 +29,16 @@ define("collection", ["cells"], function (cells) {
                 });
             }
         });
-        em.on("filtreCollection", this, function (filtre) {
-            _.forEach(this.cells, (cell) => cell.filter(filtre));
+        em.on("filtreCollection", this, function () {
+            _.forEach(this.cells, (cell) => cell.filter());
         });
         em.on("filtreTag", this, function (tag) {
             µ.one("#selectedTag span").text = tag;
             µ.one("#selectedTag").toggleClass("notdisplayed", false);
-            _.forEach(this.cells, (cell) => cell.byTag(tag));
+            _.forEach(this.cells, (cell) => cell.filter());
         });
         em.on("sortCollection", this, function (params) {
+            cells.reset();
             cells.show(_.orderBy(this.cells, `book.${params.by}`, params.sort || "asc"));
         });
     };

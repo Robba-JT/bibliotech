@@ -10,6 +10,7 @@ define("Window", [], function () {
 
         em.on("resize", this, this.closeAll);
         em.on("closeAll", this, this.closeAll);
+        em.on("closeOver", this, this.closeOver);
 
         return this;
     };

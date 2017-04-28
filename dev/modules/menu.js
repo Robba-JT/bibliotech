@@ -31,10 +31,10 @@ define("menu", ["Window", "text!../templates/menu", "text!../templates/contacts"
         event.preventDefault();
         const filtre = this.value;
         if (this.valid && filtre !== last) {
-            em.emit(navbar.one("#collection").hasClass("active") ? "filtreCollection" : "filtreSearch", filtre);
             last = filtre;
             navbar.one("#selectedSearch span").text = last;
             navbar.one("#selectedSearch").toggleClass("notdisplayed", !last);
+            em.emit(navbar.one("#collection").hasClass("active") ? "filtreCollection" : "filtreSearch");
         }
         return false;
     });
@@ -87,10 +87,6 @@ define("menu", ["Window", "text!../templates/menu", "text!../templates/contacts"
         this.toggleClass("sortBy", true);
     });
 
-    window.addEventListener("contextmenu", (event) => {
-        event.preventDefault();
-        return false;
-    });
     window.addEventListener("selectstart", (event) => {
         return !_.includes(["INPUT", "TEXTAREA"], _.toUpper(event.target.tagName)) ? event.preventDefault() && false : true;
     });
@@ -138,7 +134,7 @@ define("menu", ["Window", "text!../templates/menu", "text!../templates/contacts"
                 }
             } else {
                 if (event.keyCode === 27) {
-                    em.emit("closeAll");
+                    em.emit(µ.one(".over").visible ? "closeOver" : "closeAll");
                     test = true;
                 }
                 if (event.keyCode === 8 && !_.includes(["INPUT", "TEXTAREA"], _.toUpper(event.target.tagName))) {
@@ -150,5 +146,9 @@ define("menu", ["Window", "text!../templates/menu", "text!../templates/contacts"
             event.preventDefault();
         }
         return !test;
+    });
+    window.addEventListener("contextmenu", (event) => {
+        event.preventDefault();
+        return false;
     });
 });

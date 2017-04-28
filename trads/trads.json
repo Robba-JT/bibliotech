@@ -7,6 +7,16 @@
             "add": "Ajouter",
             "remove": "Supprimer"
         },
+        "Context": {
+            "add": "Ajouter",
+            "close": "Fermer",
+            "connex": "Recherche connexe",
+            "gbooks": "Google Books",
+            "preview": "Preview",
+            "save": "Enregistrer",
+            "torecommand": "Recommander",
+            "upload": "Modifier la couverture"
+        },
         "detail": {
             "add": "Ajouter",
             "authors": "Auteurs",
@@ -37,7 +47,8 @@
             "save": "Enregistrer",
             "subtitle": "Subtitle",
             "title": "Titre",
-            "torecommand": "Recommander"
+            "torecommand": "Recommander",
+            "upload": "Modifier la couverture"
         },
         "error": {
             "invalidCredential": "Identifiants incorrects!",
@@ -160,12 +171,22 @@
             "add": "Add",
             "remove": "Remove"
         },
+        "Context": {
+            "add": "Add",
+            "close": "Close",
+            "connex": "Connex search",
+            "gbooks": "Google Books",
+            "preview": "Preview",
+            "save": "Save",
+            "torecommand": "To Recommand",
+            "upload": "Modify cover"
+        },
         "detail": {
             "add": "Add",
             "authors": "Authors",
             "authorsWithComa": "Authors separated by commas",
             "categories": "Categories",
-            "close": "Fermer",
+            "close": "Close",
             "comments": "Comments",
             "connex": "Connex search",
             "description": "Description",
@@ -190,7 +211,8 @@
             "save": "Save",
             "subtitle": "Subtitle",
             "title": "Title",
-            "torecommand": "To recomand"
+            "torecommand": "To recomand",
+            "upload": "Modify cover"
         },
         "error": {
             "invalidCredential": "Invalid credentials!",

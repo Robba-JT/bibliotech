@@ -19,12 +19,12 @@ const console = require("../tools/console"),
         const maxResult = 400,
             reqParams = {
                 "searchOne": {
-                    "fields": "id, etag, volumeInfo(title, subtitle, authors, publisher, publishedDate, description, industryIdentifiers, pageCount, categories, imageLinks, canonicalVolumeLink, previewLink)",
+                    "fields": "id, etag, accessInfo(accessViewStatus), volumeInfo(title, subtitle, authors, publisher, publishedDate, description, industryIdentifiers, pageCount, categories, imageLinks, canonicalVolumeLink, previewLink)",
                     "projection": "full"
                 },
                 "search": {
                     "maxResults": 40,
-                    "fields": "totalItems, items(id, etag, volumeInfo(title, authors, description, imageLinks, previewLink))",
+                    "fields": "totalItems, items(id, etag, accessInfo(accessViewStatus), volumeInfo(title, authors, description, imageLinks, previewLink))",
                     "projection": "lite",
                     "order": "relevance",
                     "printType": "books"
@@ -59,7 +59,7 @@ const console = require("../tools/console"),
                         "type": "ISBN_13"
                     }), "identifier") || "",
                     "cover": Boolean(_.keys(bookInfos.imageLinks).length),
-                    "preview": Boolean(bookInfos.previewLink),
+                    "preview": _.get(book, "accessInfo.accessViewStatus") !== "NONE",
                     "@": new Date()
                 };
             },
