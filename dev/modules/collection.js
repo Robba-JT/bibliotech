@@ -33,9 +33,11 @@ define("collection", ["cells"], function (cells) {
             _.forEach(this.cells, (cell) => cell.filter());
         });
         em.on("filtreTag", this, function (tag) {
+            window.scrollTo(0, 0);
             µ.one("#selectedTag span").text = tag;
             µ.one("#selectedTag").toggleClass("notdisplayed", false);
             _.forEach(this.cells, (cell) => cell.filter());
+            em.emit("orderByTag", tag, this.cells);
         });
         em.on("sortCollection", this, function (params) {
             cells.reset();

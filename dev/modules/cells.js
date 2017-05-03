@@ -15,7 +15,7 @@ define("cells", ["hdb", "text!../templates/Cell"], function (hdb, template) {
                     "src": this.src
                 })),
                 "draggable": true,
-                "id": `id${this.book.id}`
+                "book": this.book.id
             }).css({
                 width
             }).observe("mouseleave", () => {
@@ -45,14 +45,17 @@ define("cells", ["hdb", "text!../templates/Cell"], function (hdb, template) {
 
             this.cell.observe("click", () => em.emit("openDetail", this)).observe("dragstart", (event) => {
                 event.element.toggleClass("isDrag", true);
-                event.dataTransfer.setData("id", `id${this.id}`);
+                event.dataTransfer.setData("book", this.id);
             }).observe("dragend", (event) => {
                 event.element.toggleClass("isDrag", false);
             }).observe("dragover", (event) => {
                 event.preventDefault();
             }).observe("drop", (event) => {
                 event.preventDefault();
-                this.cell.prepend(µ.one(`#${event.dataTransfer.getData("id")}`));
+                this.cell.prepend(µ.one(`[book=${event.dataTransfer.getData("book")}]`));
+                if (µ.one("#collection").hasClass("active") && µ.one("#selectedTag span").text) {
+                    µ.one("#saveorder").toggleClass("notdisplayed", false);
+                }
             });
 
             cover.loaded = () => {
@@ -90,6 +93,7 @@ define("cells", ["hdb", "text!../templates/Cell"], function (hdb, template) {
             em.on("showCells", this, this.show);
             em.on("resetCells", this, this.reset);
             em.on("resize", this, this.resize);
+            em.on("saveOrder", this, this.saveOrder);
         },
         updateWidth = function () {
             elt.toggleClass("scrolled", true);
@@ -181,6 +185,7 @@ define("cells", ["hdb", "text!../templates/Cell"], function (hdb, template) {
     Cells.prototype.reset = function () {
         elt.html = "";
         this.cells = [];
+        µ.one("#saveorder").toggleClass("notdisplayed", true);
         return this;
     };
 
@@ -191,6 +196,21 @@ define("cells", ["hdb", "text!../templates/Cell"], function (hdb, template) {
     Cells.prototype.getCells = function (books, inCollection) {
         updateWidth();
         return _.map(books, (book) => this.getCell(book, inCollection));
+    };
+
+    Cells.prototype.saveOrder = function () {
+        const cells = µ.many("cell").elements,
+            params = {
+                "tag": µ.one("#selectedTag span").text,
+                "list": _.reduce(cells, (list, one) => {
+                    if (one.visible) {
+                        list.push(one.get("book"));
+                    }
+                    return list;
+                }, [])
+            };
+        em.emit("updateOrder", params);
+        µ.one("#saveorder").toggleClass("notdisplayed", true);
     };
 
     window.addEventListener("resize", () => em.emit("resize"));

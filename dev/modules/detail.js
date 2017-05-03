@@ -49,7 +49,8 @@ define("detail", ["Window", "hdb", "cloud", "cells", "text!../templates/detail",
             const move = event.element.get("nav"),
                 visibles = µ.many("cell:not(.notdisplayed)"),
                 perLine = ~~(µ.one("bookcells").get("clientWidth") / this.cell.cell.get("clientWidth"));
-            var index = visibles.indexOf(`#id${this.cell.id}`);
+
+            var index = visibles.indexOf(`[book='${this.cell.id}']`);
 
             if (index === -1) {
                 return false;
@@ -81,9 +82,11 @@ define("detail", ["Window", "hdb", "cloud", "cells", "text!../templates/detail",
                     break;
                 default:
             }
-            let next = visibles.get(index);
-            location.hash = next.id;
-            next.trigger("click");
+            setTimeout(() => {
+                const next = visibles.get(index);
+                window.scrollTo(0, next.get("offsetTop"));
+                next.trigger("click");
+            }, 500);
             return true;
         });
         µ.many("detail .closeWindow, context #contextClose").observe("click", () => this.close());
@@ -93,9 +96,12 @@ define("detail", ["Window", "hdb", "cloud", "cells", "text!../templates/detail",
         µ.many("#detailConnex, #contextConnex").observe("click", () => this.connex());
         µ.many("#detailPreview, #contextPreview").observe("click", () => this.preview());
         µ.many("#detailRecommand, #contextRecommand").observe("click", () => this.recommand());
-        detail.css({
-            "top": `${document.body.scrollTop}px`
-        }).toggleClass("notdisplayed", false);
+        /*
+            detail.css({
+                "top": `${document.body.scrollTop}px`
+            }).toggleClass("notdisplayed", false);
+        */
+        detail.toggleClass("notdisplayed", false);
         detail.one("form[name=formTag]").observe("submit", (event) => {
             event.preventDefault();
             this.addTag(event.element.parser());

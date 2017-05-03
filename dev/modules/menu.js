@@ -16,6 +16,7 @@ define("menu", ["Window", "text!../templates/menu", "text!../templates/contacts"
     navbar.one("#collection").observe("click", () => em.emit("showCollection"));
     navbar.one("#contact").observe("click", () => contacts.open());
     navbar.one("#tags").observe("click", () => em.emit("openCloud"));
+    navbar.one("#saveorder").observe("click", () => em.emit("saveOrder"));
 
     µ.one("bookcells").css("top", µ.one("#navbar").get("clientHeight"));
     navbar.one("#logout").observe("click", () => {
@@ -43,6 +44,7 @@ define("menu", ["Window", "text!../templates/menu", "text!../templates/contacts"
         if (_.isString(active)) {
             navbar.many(".active").toggleClass("active", false);
             navbar.one(`#${active}`).toggleClass("active", true);
+            µ.one("#saveorder").toggleClass("notdisplayed", true);
         }
     });
 
@@ -90,10 +92,10 @@ define("menu", ["Window", "text!../templates/menu", "text!../templates/contacts"
     window.addEventListener("selectstart", (event) => {
         return !_.includes(["INPUT", "TEXTAREA"], _.toUpper(event.target.tagName)) ? event.preventDefault() && false : true;
     });
-    window.addEventListener("keydown", (event) => {
+    window.addEventListener("keyup", (event) => {
         var test = false;
-        if (!event.altKey) {
-            if (event.ctrlKey) {
+        if (!event.ctrlKey) {
+            if (event.altKey) {
                 if (_.includes([77, 76, 82, 80, 66, 69, 73, 72], event.keyCode) && µ.one(".waitAnim").visible) {
                     test = true;
                 } else {
@@ -136,9 +138,27 @@ define("menu", ["Window", "text!../templates/menu", "text!../templates/contacts"
                 if (event.keyCode === 27) {
                     em.emit(µ.one(".over").visible ? "closeOver" : "closeAll");
                     test = true;
-                }
-                if (event.keyCode === 8 && !_.includes(["INPUT", "TEXTAREA"], _.toUpper(event.target.tagName))) {
+                } else if (event.keyCode === 8 && !_.includes(["INPUT", "TEXTAREA"], _.toUpper(event.target.tagName))) {
                     test = true;
+                } else if (µ.one("detail").visible && _.includes([37, 38, 39, 40], event.keyCode)) {
+                    const context = µ.one("context");
+                    let nav = "";
+                    switch (event.keyCode) {
+                        case 37:
+                            nav = "left";
+                            break;
+                        case 38:
+                            nav = "top";
+                            break;
+                        case 39:
+                            nav = "right";
+                            break;
+                        case 40:
+                            nav = "bottom";
+                            break;
+                        default:
+                    }
+                    context.one(`[nav=${nav}]`).trigger("click");
                 }
             }
         }

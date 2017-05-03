@@ -42,18 +42,18 @@ const em = (function () {
         return this.removeOn(event).removeOnce(event);
     };
 
-    Emitter.prototype.emit = function (event, data) {
+    Emitter.prototype.emit = function (event, ...data) {
         const events = _.concat(_.filter(this.onEvents, ["event", event]),
             _.remove(this.onceEvents, ["event", event]));
 
         _.forEach(events, (evt) => {
-            evt.execute(data);
+            evt.execute(...data);
         });
         return this;
     };
 
-    Event.prototype.execute = function (data) {
-        return Reflect.apply(this.callback, this.context, [data]);
+    Event.prototype.execute = function (...data) {
+        return Reflect.apply(this.callback, this.context, data);
     };
 
     return new Emitter();

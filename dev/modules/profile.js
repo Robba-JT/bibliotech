@@ -39,7 +39,35 @@ define("profile", ["Window", "hdb", "text!../templates/profile"], function (Wind
                     });
                 });
             });
+
+            em.on("updateOrder", this, this.updateOrder);
+            em.on("orderByTag", this, this.orderByTag);
         };
+
+    Profile.prototype.updateOrder = function (order) {
+        const old = _.find(this.user.orders, ["tag", order.tag]);
+        req("/order", old ? "PUT" : "POST").send(order).then(() => {
+            if (old) {
+                _.assign(old, order);
+            } else {
+                this.user.orders.push(order);
+            }
+        }).catch((error) => err.add(error));
+    };
+
+    Profile.prototype.orderByTag = function (tag, cells) {
+        const order = _.find(this.user.orders, ["tag", tag]),
+            bookcells = µ.one("bookcells");
+
+        if (order) {
+            _.forEachRight(order.list, (one) => {
+                const cell = _.find(cells, ["id", one]);
+                if (_.has(cell, "cell")) {
+                    bookcells.insertFirst(cell.cell);
+                }
+            });
+        }
+    };
 
     return new Profile();
 });

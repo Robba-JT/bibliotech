@@ -56,7 +56,7 @@ module.exports = exports = (function () {
     //Validate
     router.all("*", loginAPI.validate);
 
-    //templates
+    //Templates
     router.get("/templates/*", (req) => {
         const template = _.get(req, "params[0]");
         if (template) {
@@ -72,12 +72,17 @@ module.exports = exports = (function () {
         .put(userAPI.update)
         .delete(userAPI.delete);
 
+    router.route("/order")
+        .post(userAPI.orderAdd)
+        .put(userAPI.orderUpdate);
+
     //Collection
     router.get("/collection", booksAPI.collection);
 
     //Covers
     router.get("/cover/*", booksAPI.cover);
 
+    //Books
     router.param("book", booksAPI.validate);
     router.route("/book/:book")
         .get(booksAPI.book)
@@ -94,7 +99,7 @@ module.exports = exports = (function () {
     //Search
     router.get("/search", googleAPI.search);
 
-    //connex
+    //Connex
     router.get("/associated/*", googleAPI.associated);
 
     //Preview

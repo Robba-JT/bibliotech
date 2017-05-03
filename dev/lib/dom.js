@@ -521,6 +521,26 @@ const µ = (function () {
 
     /**
      * New element assigner
+     * @param {String} tag tagName
+     * @param {Object} attrs Attributes list
+     * @returns {myElement} new element
+     **/
+    myElement.prototype.insertFirst = function (tag, attrs) {
+        if (tag instanceof myCollection || _.isArray(tag)) {
+            const elts = tag.elements || tag;
+            _.forEach(elts, (elt) => {
+                this.element.insertAdjacentElement("afterbegin", elt.set(attrs).element);
+            });
+            return this;
+        } else {
+            const elt = tag instanceof HTMLElement || tag instanceof myElement ? tag.set(attrs) : dom.new(tag, attrs);
+            this.element.insertAdjacentElement("afterbegin", elt.element);
+            return elt;
+        }
+    };
+
+    /**
+     * New element assigner
      * @param {myElement} parent parent
      * @returns {myElement} this element
      **/

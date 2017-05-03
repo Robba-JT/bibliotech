@@ -27,7 +27,45 @@ const console = require("../tools/console"),
             }
         };
 
-        this.get = (req) => req.response(_.pick(req.user, ["_id", "name", "googleSignIn", "googleSync"]));
+        this.get = (req) => req.response(_.pick(req.user, ["_id", "name", "googleSignIn", "googleSync", "orders"]));
+
+        this.orderAdd = (req) => {
+            const tag = _.get(req, "body.tag"),
+                list = _.get(req, "body.list");
+
+            if (tag && list) {
+                usersDB.update({
+                    "_id": req.user._id
+                }, {
+                    "$addToSet": {
+                        "orders": {
+                            tag,
+                            list
+                        }
+                    }
+                }).then(() => req.response()).catch(req.error);
+            } else {
+                req.error(409);
+            }
+        };
+
+        this.orderUpdate = (req) => {
+            const tag = _.get(req, "body.tag"),
+                list = _.get(req, "body.list");
+
+            if (tag && list) {
+                usersDB.update({
+                    "_id": req.user._id,
+                    "orders.tag": tag
+                }, {
+                    "$set": {
+                        "orders.$.list": list
+                    }
+                }).then(() => req.response()).catch(req.error);
+            } else {
+                req.error(409);
+            }
+        };
 
         this.update = (req) => {
             usersDB.update({

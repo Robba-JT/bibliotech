@@ -1003,7 +1003,7 @@ cloud span.tag1 {
     background-color: #fff;
     z-index: 7;
     max-width: 96%;
-    position: absolute;
+    position: fixed;
     left: 10px;
     border-bottom-right-radius: 10px;
     box-shadow: 2px 2px 2px 2px #888
@@ -1367,7 +1367,8 @@ detail {
     margin-top: 1%;
     width: 99% !important;
     height: 97%;
-    overflow: hidden
+    overflow: hidden;
+    top: 0px;
 }
 
 #detailContent {
@@ -1577,6 +1578,7 @@ preview {
     height: calc(100% - 20px);
     width: 716px !important;
     max-width: 80% !important;
+    top: 10px;
 }
 
 preview img[actclick=close] {

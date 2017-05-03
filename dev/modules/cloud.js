@@ -113,6 +113,7 @@ define("cloud", ["text!../templates/cloud"], function (template) {
     Cloud.prototype.open = function () {
         µ.one("html").toggleClass("overflown", true);
         cloud.toggleClass("invisible", false);
+        µ.one("#saveorder").toggleClass("notdisplayed", true);
         return this;
     };
 
