@@ -37,16 +37,10 @@ html {
     height: 100%
 }
 
-#navbar, bookcells {
-    -webkit-transition: top .5s;
-    -moz-transition: top .5s;
-    -o-transition: top .5s;
+/*bookcells {
     transition: top .5s;
-    -webkit-filter: blur(0);
-    -moz-filter: blur(0);
-    -o-filter: blur(0);
-    filter: blur(0)
-}
+    filter: blur(0);
+}*/
 
 .overflown {
     overflow: hidden

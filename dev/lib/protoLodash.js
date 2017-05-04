@@ -1,4 +1,4 @@
-define("lodash", ["../lib/lodash.min"], function () {
+define("lodash", function () {
     _.diff = function (a, b) {
         return _.reduce(a, function (result, value, key) {
             if (!_.isEqual(value, b[key])) {

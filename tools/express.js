@@ -6,8 +6,7 @@ const express = require("express"),
     trads = require("../trads/trads"),
     meta = require("../trads/meta"),
     version = require("../package").version,
-    device = require("express-device"),
-    pathStatic = path.join(__dirname, "../dev");
+    device = require("express-device");
 
 exports = module.exports = (() => {
     const app = express(),
@@ -37,10 +36,23 @@ exports = module.exports = (() => {
             }
         });
 
+    var pathStatic = "";
+
+    if (app.get("env") === "production") {
+        pathStatic = path.join(__dirname, "../static");
+        app.set("view cache", true);
+    } else {
+        pathStatic = path.join(__dirname, "../dev");
+        app.use(require("morgan")("dev"))
+            .use((req, res, next) => {
+                require("on-finished")(res, () => console.log(req.connection.remoteAddress, "finished request"));
+                next();
+            });
+    }
+
     app.engine("html", require("consolidate").swig)
         .set("view engine", "html")
         .set("views", path.join(__dirname, "../dev/views"))
-        //.set("view cache", true)
         .set("json spaces", 1)
         .enable("etag").set("etag", true)
         .set("x-powered-by", false)
@@ -114,7 +126,7 @@ exports = module.exports = (() => {
                     } else if (_.isString(result)) {
                         res.status(status || 200).send(result);
                     } else {
-                        res.status(status || 200).jsonp(result);
+                        res.status(status || 200).json(result);
                     }
                 };
                 //Gestion error
@@ -165,13 +177,6 @@ exports = module.exports = (() => {
         }, config.errorHandlerOptions)))
         .use(router);
 
-    if (app.get("env") !== "production") {
-        app.use(require("morgan")("dev"))
-            .use((req, res, next) => {
-                require("on-finished")(res, () => console.log(req.connection.remoteAddress, "finished request"));
-                next();
-            });
-    }
     device.enableDeviceHelpers(app);
 
     return {

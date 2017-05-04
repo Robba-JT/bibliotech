@@ -96,7 +96,7 @@ define("menu", ["Window", "text!../templates/menu", "text!../templates/contacts"
         var test = false;
         if (!event.ctrlKey) {
             if (event.altKey) {
-                if (_.includes([77, 76, 82, 80, 66, 69, 73, 72], event.keyCode) && µ.one(".waitAnim").visible) {
+                if (_.includes([66, 69, 72, 73, 76, 77, 80, 82, 84], event.keyCode) && µ.one(".waitAnim").visible) {
                     test = true;
                 } else {
                     switch (event.keyCode) {
@@ -131,6 +131,9 @@ define("menu", ["Window", "text!../templates/menu", "text!../templates/contacts"
                             em.emit("openSearch");
                             test = true;
                             break;
+                        case 84:
+                            em.emit("toTop");
+                            test = true;
                         default:
                     }
                 }
