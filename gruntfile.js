@@ -1,25 +1,38 @@
+const _ = require("lodash");
+
 module.exports = function (grunt) {
-    "use strict";
-    require("load-grunt-tasks")(grunt);
+    require("load-grunt-tasks")(grunt, {
+        "pattern": ["grunt-*", "@*/grunt-*", "grunt*-*"]
+    });
 
     grunt.initConfig({
         "pkg": grunt.file.readJSON("package.json"),
         "jshint": {
-            "login": [
-                "./root/dev/js/bibliotech.proto.js",
-                "./root/dev/js/login.js"
-            ],
-            "bibliotech": [
-                "./root/dev/js/bibliotech.proto.js",
-                "./root/dev/js/bibliotech.js",
-                "./root/dev/js/modules/*.js"
+            "client": [
+                "./dev/**/*.js"
             ],
             "server": [
                 "bibliotech.js",
+                "cluster_bibliotech.js",
                 "db/*.js",
-                "io/*.js",
+                "api/*.js",
                 "tools/*.js"
             ]
+        },
+        "babel": {
+            "options": {
+                "sourceMap": false,
+                "presets": ["es2015"]
+            },
+            "dist": {
+                "files": [{
+                    "expand": true,
+                    "cwd": "./dev",
+                    "src": ["**/*.es6.js"],
+                    "dest": "./dev/",
+                    "rename": (dest, src) => `${dest}${_.replace(src, ".es6.js", ".js")}`
+                }]
+            }
         },
         "uglify": {
             "options": {
@@ -28,28 +41,35 @@ module.exports = function (grunt) {
                 }
             },
             "lib": {
+                "files": [{
+                    "expand": true,
+                    "cwd": "./dev/lib",
+                    "src": ["**/*.js", "!**/*.min.js", "!**/*.es6.js"],
+                    "dest": "./static/lib/"
+                }]
+            },
+            "modules": {
                 "files": {
-
+                    "./static/js/bibliotech/modules.js": (function () {
+                        const out = ["./dev/js/config.js"];
+                        grunt.file.recurse("./dev/modules", (abspath, rootdir, subdir, filename) => {
+                            if (!_.includes(filename, ".es6.js")) {
+                                out.push(`${rootdir}${subdir || "/"}${filename}`);
+                            }
+                        });
+                        return out;
+                    }()),
+                    "./static/js/login/modules.js": ["./dev/js/config.js"]
                 }
             },
             "login": {
                 "files": {
-                    "./static/js/login/config.js": [
-                        "./dev/js/login/config.js"
-                    ],
-                    "./static/js/login/main.js": [
-                        "./dev/js/login/main.js"
-                    ]
+                    "./static/js/login/main.js": ["./dev/js/login/main.js"]
                 }
             },
             "bibliotech": {
                 "files": {
-                    "./static/js/login/config.js": [
-                        "./dev/js/login/config.js"
-                    ],
-                    "./static/js/login/main.js": [
-                        "./dev/js/login/main.js"
-                    ]
+                    "./static/js/bibliotech/main.js": ["./dev/js/bibliotech/main.js"]
                 }
             }
         },
@@ -60,12 +80,7 @@ module.exports = function (grunt) {
                     "collapseWhitespace": true
                 },
                 "files": {
-                    "./views/desktop/login.html": "./root/dev/html/login.html",
-                    "./views/desktop/error.html": "./root/dev/html/error.html",
-                    "./views/desktop/maintenance.html": "./root/dev/html/maintenance.html",
-                    "./views/mobile/login.html": "./root/dev/html/m.login.html",
-                    "./views/mobile/error.html": "./root/dev/html/m.error.html",
-                    "./views/mobile/maintenance.html": "./root/dev/html/m.maintenance.html"
+                    "./static/views/desktop/login.html": "./dev/views/desktop/login.html"
                 }
             },
             "bibliotech": {
@@ -74,109 +89,101 @@ module.exports = function (grunt) {
                     "collapseWhitespace": true
                 },
                 "files": {
-                    "./views/desktop/bibliotech.html": "./root/dev/html/bibliotech.html",
-                    "./views/mobile/bibliotech.html": "./root/dev/html/m.bibliotech.html",
-                    "./views/desktop/admin.html": "./root/dev/html/admin.html",
-                    "./views/mobile/admin.html": "./root/dev/html/admin.html",
-                    "./views/preview.html": "./root/dev/html/preview.html",
-                    "./root/html/bookcells.html": "./root/dev/html/bookcells.html",
-                    "./root/html/detail.html": "./root/dev/html/detail.html",
-                    "./root/html/m.bookcells.html": "./root/dev/html/m.bookcells.html",
-                    "./root/html/m.detail.html": "./root/dev/html/m.detail.html",
-                    "./root/html/navbar.html": "./root/dev/html/navbar.html",
-                    "./root/html/menu.html": "./root/dev/html/menu.html",
-                    "./root/html/profile.html": "./root/dev/html/profile.html",
-                    "./root/html/search.html": "./root/dev/html/search.html"
+                    "./static/views/desktop/bibliotech.html": "./dev/views/desktop/bibliotech.html",
+                    "./static/views/desktop/error.html": "./dev/views/desktop/error.html"
                 }
+            },
+            "templates": {
+                "options": {
+                    "removeComments": true,
+                    "collapseWhitespace": true
+                },
+                "files": [{
+                    "expand": true,
+                    "cwd": "./dev/templates",
+                    "src": ["**/*.html"],
+                    "dest": "./static/templates/"
+                }]
             }
         },
         "cssmin": {
             "login": {
                 "files": {
-                    "./root/css/login.css": ["./root/dev/css/login.css"],
-                    "./root/css/m.login.css": ["./root/dev/css/m.login.css"],
-                    "./root/css/error.css": ["./root/dev/css/error.css"],
-                    "./root/css/m.error.css": ["./root/dev/css/m.error.css"]
+                    "./static/css/login.css": ["./dev/css/login.css"],
+                    "./static/css/m.login.css": ["./dev/css/m.login.css"],
+                    "./static/css/error.css": ["./dev/css/error.css"],
+                    "./static/css/m.error.css": ["./dev/css/m.error.css"]
                 }
             },
             "bibliotech": {
                 "files": {
-                    "./root/css/bibliotech.css": ["./root/dev/css/bibliotech.css"],
-                    "./root/css/m.bibliotech.css": ["./root/dev/css/m.bibliotech.css"],
-                    "./root/css/admin.css": ["./root/dev/css/admin.css"]
+                    "./static/css/bibliotech.css": ["./dev/css/bibliotech.css"],
+                    "./static/css/m.bibliotech.css": ["./dev/css/m.bibliotech.css"],
+                    "./static/css/admin.css": ["./dev/css/admin.css"]
                 }
             }
         },
-        "clean": [".logs/*.log"],
+        "clean": {
+            "logs": [".logs/*.log"],
+            "global": [
+                "./static/css/*.css",
+                "./static/js/**.*.js",
+                "./static/modules/*.js",
+                "./static/templates/*.html",
+                "./static/views/**/*.html"
+            ]
+        },
+        "supervisor": {
+            "target": {
+                "script": "./cluster_bibliotech.js",
+                "options": {
+                    "args": ["development"],
+                    "ignore": ["./tmp", "./dev", "./static", "./.eslintrc.js", "./eslintignore", "./gruntfile.js"]
+                }
+            }
+        },
         "watch": {
             "options": {
                 "livereload": true
             },
             "jsserver": {
-                "files": ["bibliotech.js", "io/*.js", "db/*.js", "tools/*.js"],
+                "files": ["bibliotech.js", "cluster_bibliotech.js", "api/*.js", "db/*.js", "tools/*.js"],
                 "tasks": ["jshint:server"],
                 "options": {
                     "spawn": false
                 }
             },
-            "jslogin": {
-                "files": ["./root/dev/js/bibliotech.proto.js", "./root/dev/js/login.js", "./root/dev/js/m.login.js"],
-                "tasks": ["jshint:login", "uglify:login"],
+            "js": {
+                "files": ["./dev/**/*.js"],
+                "tasks": ["babel", "uglify"],
                 "options": {
                     "spawn": false
                 }
             },
-            "htmllogin": {
-                "files": [
-                    "./root/dev/html/login.html",
-                    "./root/dev/html/error.html",
-                    "./root/dev/html/maintenance.html",
-                    "./root/dev/html/m.login.html",
-                    "./root/dev/html/m.error.html",
-                    "./root/dev/html/m.maintenance.html"
-                ],
-                "tasks": ["htmlmin:login"],
+            "html": {
+                "files": ["./dev/**/*.html"],
+                "tasks": ["htmlmin"],
                 "options": {
                     "spawn": false
                 }
             },
-            "csslogin": {
-                "files": ["./root/dev/css/login.css", "./root/dev/css/error.css", "./root/dev/css/m.login.css", "./root/dev/css/m.error.css"],
-                "tasks": ["cssmin:login"],
-                "options": {
-                    "spawn": false
-                }
-            },
-            "jsbibliotech": {
-                "files": [
-                    "./root/dev/js/bibliotech.proto.js",
-                    "./root/dev/js/bibliotech.js",
-                    "./root/dev/js/m.bibliotech.js",
-                    "./root/dev/js/admin.js",
-                    "./root/dev/js/modules/*.js"
-                ],
-                "tasks": ["jshint:bibliotech", "uglify:bibliotech"],
-                "options": {
-                    "spawn": false
-                }
-            },
-            "htmlbibliotech": {
-                "files": ["./root/dev/html/*.html"],
-                "tasks": ["htmlmin:bibliotech"],
-                "options": {
-                    "spawn": false
-                }
-            },
-            "cssbibliotech": {
-                "files": ["./root/dev/css/bibliotech.css", "./root/dev/css/m.bibliotech.css", "./root/dev/css/admin.css"],
-                "tasks": ["cssmin:bibliotech"],
+            "css": {
+                "files": ["./dev/css/*.css"],
+                "tasks": ["cssmin"],
                 "options": {
                     "spawn": false
                 }
             }
+        },
+        "concurrent": {
+            "tasks": ["watch", "supervisor"],
+            "options": {
+                "logConcurrentOutput": true
+            }
         }
     });
 
+    grunt.registerTask("global", ["clean:global", "babel", "uglify", "htmlmin", "cssmin"]);
     grunt.registerTask("login", ["jshint:login", "uglify:login", "htmlmin:login", "cssmin:login"]);
     grunt.registerTask("bibliotech", [
         "jshint:bibliotech",
@@ -184,4 +191,5 @@ module.exports = function (grunt) {
         "htmlmin:bibliotech",
         "cssmin:bibliotech"
     ]);
+    grunt.registerTask("dev", ["concurrent"]);
 };

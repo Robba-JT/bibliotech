@@ -1,0 +1,1 @@
+"use strict";require(["lodash","Thief","dom","emitter","Request","errors","store","biblioHdb"],function(){require(["profile","cloud","collection","footer","menu","search","detail"],function(){"FileReader"in window&&"formNoValidate"in document.createElement("input")?em.emit("initProfile").emit("initCollect"):window.location.href="/logout"})});

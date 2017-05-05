@@ -17,7 +17,7 @@ process.send({
 
 require("./tools/mongo").init().then(() => {
     require("./tools/routes");
-    require("./tools/socket")(secureServer);
+    //require("./tools/socket")(secureServer);
     console.warn("Worker ready!");
 }).catch((error) => {
     console.error("Database Error", error);

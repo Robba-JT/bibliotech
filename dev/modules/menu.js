@@ -1,25 +1,39 @@
+"use strict";
+
 define("menu", ["Window", "text!../templates/menu", "text!../templates/contacts", "text!../templates/help", "text!../templates/sorts"], function (Window, tempMenu, tempContacts, tempHelp, tempSorts) {
-    const navbar = µ.one("navbar").set("innerHTML", tempMenu).toggleClass("notdisplayed"),
+    var navbar = µ.one("navbar").set("innerHTML", tempMenu).toggleClass("notdisplayed"),
         sorts = µ.one("sorts").set("innerHTML", tempSorts),
         contacts = new Window("contacts", tempContacts).set("id", "contactsWindow"),
         help = new Window("help", tempHelp),
-        toggleMenu = () => {
-            navbar.many(".navbar").toggleClass("notdisplayed");
-            µ.one("bookcells").css("top", µ.one("#navbar").get("clientHeight") || 0);
-        };
+        toggleMenu = function toggleMenu() {
+        navbar.many(".navbar").toggleClass("notdisplayed");
+        µ.one("bookcells").css("top", µ.one("#navbar").get("clientHeight") || 0);
+    };
 
     var last = "";
 
     navbar.many("#affichToggle, #altNavbar").observe("click", toggleMenu);
-    navbar.one("#recherche").observe("click", () => em.emit("openSearch"));
-    navbar.one("#profile").observe("click", () => em.emit("openProfile"));
-    navbar.one("#collection").observe("click", () => em.emit("showCollection"));
-    navbar.one("#contact").observe("click", () => contacts.open());
-    navbar.one("#tags").observe("click", () => em.emit("openCloud"));
-    navbar.one("#saveorder").observe("click", () => em.emit("saveOrder"));
+    navbar.one("#recherche").observe("click", function () {
+        return em.emit("openSearch");
+    });
+    navbar.one("#profile").observe("click", function () {
+        return em.emit("openProfile");
+    });
+    navbar.one("#collection").observe("click", function () {
+        return em.emit("showCollection");
+    });
+    navbar.one("#contact").observe("click", function () {
+        return contacts.open();
+    });
+    navbar.one("#tags").observe("click", function () {
+        return em.emit("openCloud");
+    });
+    navbar.one("#saveorder").observe("click", function () {
+        return em.emit("saveOrder");
+    });
 
     µ.one("bookcells").css("top", µ.one("#navbar").get("clientHeight"));
-    navbar.one("#logout").observe("click", () => {
+    navbar.one("#logout").observe("click", function () {
         em.emit("logout");
     });
 
@@ -30,7 +44,7 @@ define("menu", ["Window", "text!../templates/menu", "text!../templates/contacts"
 
     navbar.one("[type=search]").observe("search", function (event) {
         event.preventDefault();
-        const filtre = this.value;
+        var filtre = this.value;
         if (this.valid && filtre !== last) {
             last = filtre;
             navbar.one("#selectedSearch span").text = last;
@@ -43,7 +57,7 @@ define("menu", ["Window", "text!../templates/menu", "text!../templates/contacts"
     em.on("clickMenu", function (active) {
         if (_.isString(active)) {
             navbar.many(".active").toggleClass("active", false);
-            navbar.one(`#${active}`).toggleClass("active", true);
+            navbar.one("#" + active).toggleClass("active", true);
             µ.one("#saveorder").toggleClass("notdisplayed", true);
         }
     });
@@ -55,19 +69,21 @@ define("menu", ["Window", "text!../templates/menu", "text!../templates/contacts"
         navbar.one("form").reset();
     });
 
-    em.on("logout", () => {
+    em.on("logout", function () {
         store.clear();
-        req("/logout").send().then(() => {
+        req("/logout").send().then(function () {
             window.location.reload("/");
         });
     });
 
-    contacts.many("[url]").observe("click", (event) => window.open(event.element.get("url")));
-    contacts.one("#helpLink").observe("click", (event) => {
+    contacts.many("[url]").observe("click", function (event) {
+        return window.open(event.element.get("url"));
+    });
+    contacts.one("#helpLink").observe("click", function (event) {
         contacts.close();
         help.open();
     });
-    contacts.one("#mailLink").observe("click", (event) => {
+    contacts.one("#mailLink").observe("click", function (event) {
         event.element.one("a").trigger("click");
     });
 
@@ -89,10 +105,10 @@ define("menu", ["Window", "text!../templates/menu", "text!../templates/contacts"
         this.toggleClass("sortBy", true);
     });
 
-    window.addEventListener("selectstart", (event) => {
+    window.addEventListener("selectstart", function (event) {
         return !_.includes(["INPUT", "TEXTAREA"], _.toUpper(event.target.tagName)) ? event.preventDefault() && false : true;
     });
-    window.addEventListener("keyup", (event) => {
+    window.addEventListener("keyup", function (event) {
         var test = false;
         if (!event.ctrlKey) {
             if (event.altKey) {
@@ -144,8 +160,8 @@ define("menu", ["Window", "text!../templates/menu", "text!../templates/contacts"
                 } else if (event.keyCode === 8 && !_.includes(["INPUT", "TEXTAREA"], _.toUpper(event.target.tagName))) {
                     test = true;
                 } else if (µ.one("detail").visible && _.includes([37, 38, 39, 40], event.keyCode)) {
-                    const context = µ.one("context");
-                    let nav = "";
+                    var context = µ.one("context");
+                    var nav = "";
                     switch (event.keyCode) {
                         case 37:
                             nav = "left";
@@ -161,7 +177,7 @@ define("menu", ["Window", "text!../templates/menu", "text!../templates/contacts"
                             break;
                         default:
                     }
-                    context.one(`[nav=${nav}]`).trigger("click");
+                    context.one("[nav=" + nav + "]").trigger("click");
                 }
             }
         }
@@ -170,7 +186,7 @@ define("menu", ["Window", "text!../templates/menu", "text!../templates/contacts"
         }
         return !test;
     });
-    window.addEventListener("contextmenu", (event) => {
+    window.addEventListener("contextmenu", function (event) {
         event.preventDefault();
         return false;
     });

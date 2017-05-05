@@ -1,48 +1,46 @@
-const µ = (function () {
-    const dom = {},
-        sizables = [
-            "width", "max-width",
-            "height", "max-height",
-            "top", "left", "bottom", "right",
-            "border", "border-top", "border-right", "border-bottom", "border-left",
-            "border-radius",
-            "padding", "padding-top", "padding-right", "padding-bottom", "padding-left",
-            "margin", "margin-top", "margin-right", "margin-bottom", "margin-left"
-        ],
-        /**
-         * Element constructor
-         * @param {HTMLElement} elt Element
-         * @returns {Object} Element
-         **/
-        myElement = function (elt) {
-            if (elt instanceof myElement) {
-                return elt;
-            }
-            if (elt instanceof HTMLElement || elt instanceof Document || elt instanceof Window) {
-                this.element = elt;
-                this.name = elt.name;
-                this.tag = _.toUpper(elt.tagName);
-                this.id = elt.id;
-                this.classes = elt.classList;
-                this.value = elt.value;
-            }
-            return this;
-        },
-        /**
-         * Collection constructor
-         * @param {NodeList} elts List of elements
-         * @returns {Array} myElement(s)
-         **/
-        myCollection = function (elts) {
-            if (elts instanceof myCollection) {
-                return elts;
-            }
-            this.elements = [];
-            Reflect.apply(Array.prototype.forEach, elts, [(elt) => {
-                this.elements.push(elt instanceof myElement ? elt : new myElement(elt));
-            }]);
-            return this;
-        };
+"use strict";
+
+var µ = function () {
+    var dom = {},
+        sizables = ["width", "max-width", "height", "max-height", "top", "left", "bottom", "right", "border", "border-top", "border-right", "border-bottom", "border-left", "border-radius", "padding", "padding-top", "padding-right", "padding-bottom", "padding-left", "margin", "margin-top", "margin-right", "margin-bottom", "margin-left"],
+
+    /**
+     * Element constructor
+     * @param {HTMLElement} elt Element
+     * @returns {Object} Element
+     **/
+    myElement = function myElement(elt) {
+        if (elt instanceof myElement) {
+            return elt;
+        }
+        if (elt instanceof HTMLElement || elt instanceof Document || elt instanceof Window) {
+            this.element = elt;
+            this.name = elt.name;
+            this.tag = _.toUpper(elt.tagName);
+            this.id = elt.id;
+            this.classes = elt.classList;
+            this.value = elt.value;
+        }
+        return this;
+    },
+
+    /**
+     * Collection constructor
+     * @param {NodeList} elts List of elements
+     * @returns {Array} myElement(s)
+     **/
+    myCollection = function myCollection(elts) {
+        var _this = this;
+
+        if (elts instanceof myCollection) {
+            return elts;
+        }
+        this.elements = [];
+        Reflect.apply(Array.prototype.forEach, elts, [function (elt) {
+            _this.elements.push(elt instanceof myElement ? elt : new myElement(elt));
+        }]);
+        return this;
+    };
 
     /**
      * Create elements
@@ -50,8 +48,8 @@ const µ = (function () {
      * @param {Object} attrs attributes list
      * @returns {myElement} new element
      **/
-    dom.new = (tag, attrs) => {
-        const elt = new myElement(document.createElement(tag));
+    dom.new = function (tag, attrs) {
+        var elt = new myElement(document.createElement(tag));
         if (_.isPlainObject(attrs)) {
             elt.set(attrs);
         } else if (_.isString(attrs)) {
@@ -66,7 +64,9 @@ const µ = (function () {
      * @param {HTMLElement} parent parent
      * @returns {myCollection} query result
      **/
-    dom.many = (selector, parent = document) => {
+    dom.many = function (selector) {
+        var parent = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : document;
+
         if (parent instanceof myElement) {
             parent = parent.element;
         }
@@ -79,7 +79,9 @@ const µ = (function () {
      * @param {HTMLElement} parent parent
      * @returns {myElement} query result
      **/
-    dom.one = (selector, parent = document) => {
+    dom.one = function (selector) {
+        var parent = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : document;
+
         if (_.isString(parent)) {
             parent = document.querySelector(parent);
         } else if (parent instanceof myElement) {
@@ -89,7 +91,7 @@ const µ = (function () {
     };
 
     dom.rgbToHex = function (rgb) {
-        return `#${((1 << 24) + (rgb[0] << 16) + (rgb[1] << 8) + rgb[2]).toString(16).substr(1)}`;
+        return "#" + ((1 << 24) + (rgb[0] << 16) + (rgb[1] << 8) + rgb[2]).toString(16).substr(1);
     };
 
     dom.isDark = function (rgb) {
@@ -97,10 +99,10 @@ const µ = (function () {
     };
 
     Reflect.defineProperty(myCollection.prototype, "length", {
-        get() {
+        get: function get() {
             return this.elements.length;
         },
-        set(len) {
+        set: function set(len) {
             if (_.isNumber(len) && len > 0 && len < this.length) {
                 this.elements = this.elements.slice(0, len);
             }
@@ -109,55 +111,57 @@ const µ = (function () {
     });
 
     Reflect.defineProperty(myElement.prototype, "exists", {
-        get() {
+        get: function get() {
             return Boolean(this.element);
         }
     });
 
     Reflect.defineProperty(myElement.prototype, "files", {
-        get() {
+        get: function get() {
             return this.element && this.element.files || [];
         }
     });
 
     Reflect.defineProperty(myElement.prototype, "checked", {
-        get() {
+        get: function get() {
             return this.element.checked;
         },
-        set(checked) {
+        set: function set(checked) {
             this.element.checked = Boolean(checked);
         }
     });
 
     Reflect.defineProperty(myElement.prototype, "loaded", {
-        get() {
+        get: function get() {
             return this.element.onload;
         },
-        set(cb) {
+        set: function set(cb) {
+            var _this2 = this;
+
             if (this.tag === "IMG" && _.isFunction(cb)) {
-                this.element.onload = () => {
-                    Reflect.apply(cb, this, []);
+                this.element.onload = function () {
+                    Reflect.apply(cb, _this2, []);
                 };
             }
         }
     });
 
     Reflect.defineProperty(myElement.prototype, "parent", {
-        get() {
+        get: function get() {
             return dom.one(this.element.parentNode);
         }
     });
 
     Reflect.defineProperty(myElement.prototype, "siblings", {
-        get() {
-            const children = dom.many(this.element.parentNode.children);
+        get: function get() {
+            var children = dom.many(this.element.parentNode.children);
             _.remove(children.elements, this);
             return children;
         }
     });
 
     Reflect.defineProperty(myElement.prototype, "visible", {
-        get() {
+        get: function get() {
             return this.element && window.getComputedStyle(this.element).visibility === "visible" && window.getComputedStyle(this.element).display !== "none";
         }
     });
@@ -176,7 +180,9 @@ const µ = (function () {
      * @param {Boolean} forceGet force GET request
      * @returns {myElement} element
      **/
-    myElement.prototype.reload = function (forceGet = false) {
+    myElement.prototype.reload = function () {
+        var forceGet = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+
         forceGet = Boolean(forceGet);
         if (this.element instanceof Document) {
             this.element.location.reload(forceGet);
@@ -211,7 +217,9 @@ const µ = (function () {
      * @returns {myCollection} this collection
      **/
     myCollection.prototype.set = function (attr, value) {
-        this.elements.forEach((element) => Reflect.apply(element.set, element, [attr, value]));
+        this.elements.forEach(function (element) {
+            return Reflect.apply(element.set, element, [attr, value]);
+        });
         return this;
     };
 
@@ -224,7 +232,7 @@ const µ = (function () {
         if (_.isString(elt)) {
             elt = dom.one(elt);
         }
-        return _.findIndex(this.elements, (test) => {
+        return _.findIndex(this.elements, function (test) {
             return _.isEqual(test, elt);
         });
     };
@@ -237,23 +245,29 @@ const µ = (function () {
      * @param {Boolean} capture capture
      * @returns {myElement} this element
      **/
-    myElement.prototype.observe = function (eventsName, ...args) {
-        var [
-            data,
-            callback,
-            capture = false
-        ] = args;
+    myElement.prototype.observe = function (eventsName) {
+        var _this3 = this;
+
+        for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+            args[_key - 1] = arguments[_key];
+        }
+
+        var data = args[0],
+            callback = args[1],
+            _args$ = args[2],
+            capture = _args$ === undefined ? false : _args$;
+
         if (_.isFunction(data)) {
             capture = callback || false;
             callback = data;
             data = null;
         }
         if (_.has(this, "element")) {
-            eventsName.split(",").forEach((eventName) => {
-                this.element.addEventListener(eventName.trim(), (event) => {
+            eventsName.split(",").forEach(function (eventName) {
+                _this3.element.addEventListener(eventName.trim(), function (event) {
                     event.data = data;
-                    event.element = this;
-                    return Reflect.apply(callback, this, [event]);
+                    event.element = _this3;
+                    return Reflect.apply(callback, _this3, [event]);
                 }, capture);
             });
         }
@@ -267,26 +281,30 @@ const µ = (function () {
      * @returns {myElement} this element
      **/
     myElement.prototype.css = function (styles, values) {
+        var _this4 = this;
+
         if (_.isString(styles)) {
             if (_.isUndefined(values)) {
-                return _.get(this, `element.style.${styles}`);
+                return _.get(this, "element.style." + styles);
             }
-            const inter = {};
+            var inter = {};
             inter[styles] = values;
             styles = inter;
         }
         if (_.isPlainObject(styles)) {
-            for (const style in styles) {
+            for (var style in styles) {
                 if (this.element) {
-                    const kebabStyle = _.kebabCase(style),
-                        trimValue = _.split(_.toString(styles[style]), " ");
+                    (function () {
+                        var kebabStyle = _.kebabCase(style),
+                            trimValue = _.split(_.toString(styles[style]), " ");
 
-                    trimValue.forEach((value, index) => {
-                        if (!isNaN(Number(value)) && !_.has(value, "%") && !_.has(value, "px")) {
-                            trimValue[index] = `${value}px`;
-                        }
-                    });
-                    this.element.style[kebabStyle] = trimValue.join(" ");
+                        trimValue.forEach(function (value, index) {
+                            if (!isNaN(Number(value)) && !_.has(value, "%") && !_.has(value, "px")) {
+                                trimValue[index] = value + "px";
+                            }
+                        });
+                        _this4.element.style[kebabStyle] = trimValue.join(" ");
+                    })();
                 }
             }
         }
@@ -299,7 +317,7 @@ const µ = (function () {
      * @returns {myElement} this element style
      **/
     myElement.prototype.style = function (style) {
-        return _.get(this.element, style ? `style.${style}` : "style");
+        return _.get(this.element, style ? "style." + style : "style");
     };
 
     /**
@@ -309,14 +327,16 @@ const µ = (function () {
      * @returns {myElement} this element
      **/
     myElement.prototype.toggleClass = function (classes, toAdd) {
+        var _this5 = this;
+
         if (_.has(this, "element")) {
-            const action = _.isUndefined(toAdd) ? "toggle" : toAdd && "add" || "remove";
+            var action = _.isUndefined(toAdd) ? "toggle" : toAdd && "add" || "remove";
             if (!Array.isArray(classes)) {
                 classes = classes.split(" ");
             }
-            classes.forEach((cl) => {
-                if (this.element) {
-                    this.element.classList[action](cl);
+            classes.forEach(function (cl) {
+                if (_this5.element) {
+                    _this5.element.classList[action](cl);
                 }
             });
         }
@@ -328,10 +348,12 @@ const µ = (function () {
      * @param {Object} obj Object values
      * @returns {myElement} this element
      **/
-    myElement.prototype.parser = function (obj = {}) {
+    myElement.prototype.parser = function () {
+        var obj = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
         if (this.tag === "FORM") {
             try {
-                this.many("input").each((input) => {
+                this.many("input").each(function (input) {
                     if (_.has(input, "name") && input.name && input.value) {
                         if (input.get("type") === "checkbox") {
                             obj[input.name] = input.checked;
@@ -352,12 +374,14 @@ const µ = (function () {
      * @params {Object} defaults default value
      * @returns {myElement} this element
      **/
-    myElement.prototype.reset = function (defaults = {}) {
+    myElement.prototype.reset = function () {
+        var defaults = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
         if (this.tag === "FORM") {
             this.element.reset();
-            for (const input in defaults) {
+            for (var input in defaults) {
                 if (_.has(defaults, input)) {
-                    this.one(`[name=${input}]`).set("value", defaults[input]);
+                    this.one("[name=" + input + "]").set("value", defaults[input]);
                 }
             }
         }
@@ -379,10 +403,10 @@ const µ = (function () {
      * @returns {myElement} this element
      **/
     Reflect.defineProperty(myElement.prototype, "value", {
-        get() {
+        get: function get() {
             return this.element.value;
         },
-        set(value) {
+        set: function set(value) {
             this.element.value = value;
         }
     });
@@ -393,10 +417,10 @@ const µ = (function () {
      * @returns {myElement} this element
      **/
     Reflect.defineProperty(myElement.prototype, "html", {
-        get() {
+        get: function get() {
             return this.element && this.element.innerHTML || "";
         },
-        set(code) {
+        set: function set(code) {
             if (this.element) {
                 this.element.innerHTML = code;
             }
@@ -409,10 +433,10 @@ const µ = (function () {
      * @returns {myElement} this element
      **/
     Reflect.defineProperty(myElement.prototype, "valid", {
-        get() {
+        get: function get() {
             return _.get(this.element, "validity.valid");
         },
-        set(val) {
+        set: function set(val) {
             if (val) {
                 this.element.setCustomValidity("");
             } else {
@@ -432,17 +456,16 @@ const µ = (function () {
         return this;
     };
 
-
     /*
     myElement.prototype.text = function (text = "") {
         this.element.textContent = text;
         return this;
     };*/
     Reflect.defineProperty(myElement.prototype, "text", {
-        get() {
+        get: function get() {
             return this.element.textContent;
         },
-        set(text) {
+        set: function set(text) {
             this.element.textContent = text;
         }
     });
@@ -468,12 +491,12 @@ const µ = (function () {
      **/
     myElement.prototype.set = function (attrs, value) {
         if (_.isString(attrs) && !_.isUndefined(value)) {
-            const alt = {};
+            var alt = {};
             alt[attrs] = value;
             attrs = alt;
         }
         if (_.isPlainObject(attrs)) {
-            for (const attr in attrs) {
+            for (var attr in attrs) {
                 if (attr in this.element) {
                     this.element[attr] = attrs[attr];
                 } else {
@@ -490,11 +513,13 @@ const µ = (function () {
      * @returns {myElement} this element
      **/
     myElement.prototype.unset = function (attrs) {
+        var _this6 = this;
+
         if (_.isString(attrs)) {
             attrs = [attrs];
         }
-        attrs.forEach((attr) => {
-            this.element.removeAttribute(attr);
+        attrs.forEach(function (attr) {
+            _this6.element.removeAttribute(attr);
         });
         return this;
     };
@@ -506,14 +531,16 @@ const µ = (function () {
      * @returns {myElement} new element
      **/
     myElement.prototype.append = function (tag, attrs) {
+        var _this7 = this;
+
         if (tag instanceof myCollection || _.isArray(tag)) {
-            const elts = tag.elements || tag;
-            _.forEach(elts, (elt) => {
-                this.element.appendChild(elt.set(attrs).element);
+            var elts = tag.elements || tag;
+            _.forEach(elts, function (elt) {
+                _this7.element.appendChild(elt.set(attrs).element);
             });
             return this;
         } else {
-            const elt = tag instanceof HTMLElement || tag instanceof myElement ? tag.set(attrs) : dom.new(tag, attrs);
+            var elt = tag instanceof HTMLElement || tag instanceof myElement ? tag.set(attrs) : dom.new(tag, attrs);
             this.element.appendChild(elt.element);
             return elt;
         }
@@ -526,14 +553,16 @@ const µ = (function () {
      * @returns {myElement} new element
      **/
     myElement.prototype.insertFirst = function (tag, attrs) {
+        var _this8 = this;
+
         if (tag instanceof myCollection || _.isArray(tag)) {
-            const elts = tag.elements || tag;
-            _.forEach(elts, (elt) => {
-                this.element.insertAdjacentElement("afterbegin", elt.set(attrs).element);
+            var elts = tag.elements || tag;
+            _.forEach(elts, function (elt) {
+                _this8.element.insertAdjacentElement("afterbegin", elt.set(attrs).element);
             });
             return this;
         } else {
-            const elt = tag instanceof HTMLElement || tag instanceof myElement ? tag.set(attrs) : dom.new(tag, attrs);
+            var elt = tag instanceof HTMLElement || tag instanceof myElement ? tag.set(attrs) : dom.new(tag, attrs);
             this.element.insertAdjacentElement("afterbegin", elt.element);
             return elt;
         }
@@ -545,7 +574,7 @@ const µ = (function () {
      * @returns {myElement} this element
      **/
     myElement.prototype.appendTo = function (parent) {
-        const elt = parent instanceof myElement ? parent.element : parent;
+        var elt = parent instanceof myElement ? parent.element : parent;
         elt.appendChild(this.element);
         return this;
     };
@@ -556,8 +585,10 @@ const µ = (function () {
      * @returns {myCollection} this element
      **/
     myCollection.prototype.appendTo = function (parent) {
-        const elt = parent instanceof myElement ? parent.element : parent;
-        _.forEach(this.elements, (element) => element.appendTo(elt));
+        var elt = parent instanceof myElement ? parent.element : parent;
+        _.forEach(this.elements, function (element) {
+            return element.appendTo(elt);
+        });
         return this;
     };
 
@@ -568,7 +599,7 @@ const µ = (function () {
      * @returns {myElement} new element
      **/
     myElement.prototype.prepend = function (tag, attrs) {
-        const elt = tag instanceof HTMLElement || tag instanceof myElement ? tag.set(attrs) : dom.new(tag, attrs),
+        var elt = tag instanceof HTMLElement || tag instanceof myElement ? tag.set(attrs) : dom.new(tag, attrs),
             parent = this.parent;
         parent.element.insertBefore(elt.element, this.element);
         return elt;
@@ -580,7 +611,7 @@ const µ = (function () {
      * @returns {myElement} new element
      **/
     myElement.prototype.textNode = function (text) {
-        const node = document.createTextNode(text);
+        var node = document.createTextNode(text);
         this.element.appendChild(node);
         return node;
     };
@@ -606,7 +637,7 @@ const µ = (function () {
             if (this.element[eventName] && _.isFunction(this.element[eventName])) {
                 Reflect.apply(this.element[eventName], this.element, []);
             } else {
-                const isMouse = _.has(["click", "mouseenter", "mouseleave", "mouseup", "mousedown"], eventName);
+                var isMouse = _.has(["click", "mouseenter", "mouseleave", "mouseup", "mousedown"], eventName);
                 var thisEvent = null;
                 try {
                     thisEvent = isMouse ? new MouseEvent(eventName) : new Event(eventName);
@@ -640,7 +671,9 @@ const µ = (function () {
      * @returns {myCollection} this collection
      **/
     myCollection.prototype.each = function (callback) {
-        this.elements.forEach((element, index) => Reflect.apply(callback, null, [element, index]));
+        this.elements.forEach(function (element, index) {
+            return Reflect.apply(callback, null, [element, index]);
+        });
         return this;
     };
 
@@ -649,8 +682,14 @@ const µ = (function () {
      * @param {String} classes Classes list
      * @returns {myCollection} this collection
      **/
-    myCollection.prototype.toggleClass = function (...classes) {
-        this.elements.forEach((element) => Reflect.apply(element.toggleClass, element, classes));
+    myCollection.prototype.toggleClass = function () {
+        for (var _len2 = arguments.length, classes = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+            classes[_key2] = arguments[_key2];
+        }
+
+        this.elements.forEach(function (element) {
+            return Reflect.apply(element.toggleClass, element, classes);
+        });
         return this;
     };
 
@@ -659,8 +698,14 @@ const µ = (function () {
      * @param {String} styles Styles
      * @returns {myCollection} this collection
      **/
-    myCollection.prototype.css = function (...styles) {
-        this.elements.forEach((element) => Reflect.apply(element.css, element, styles));
+    myCollection.prototype.css = function () {
+        for (var _len3 = arguments.length, styles = Array(_len3), _key3 = 0; _key3 < _len3; _key3++) {
+            styles[_key3] = arguments[_key3];
+        }
+
+        this.elements.forEach(function (element) {
+            return Reflect.apply(element.css, element, styles);
+        });
         return this;
     };
 
@@ -669,7 +714,9 @@ const µ = (function () {
      * @returns {myElement} this element
      **/
     myCollection.prototype.remove = function () {
-        this.elements.forEach((element) => element.remove());
+        this.elements.forEach(function (element) {
+            return element.remove();
+        });
         return this;
     };
 
@@ -685,9 +732,11 @@ const µ = (function () {
             callback = data;
             data = null;
         }
-        this.elements.forEach((element) => Reflect.apply(myElement.prototype.observe, element, [eventsName, data, callback]));
+        this.elements.forEach(function (element) {
+            return Reflect.apply(myElement.prototype.observe, element, [eventsName, data, callback]);
+        });
         return this;
     };
 
     return dom;
-})();
+}();

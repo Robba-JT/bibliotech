@@ -32,17 +32,15 @@ exports = module.exports = (() => {
                 "expires": false,
                 "secure": true,
                 "httpOnly": true,
+                "sameSite": true,
                 "maxAge": config.maxAge
             }
-        });
-
-    var pathStatic = "";
+        }),
+        pathStatic = path.join(__dirname, app.get("env") === "production" ? "../static" : "../dev");
 
     if (app.get("env") === "production") {
-        pathStatic = path.join(__dirname, "../static");
         app.set("view cache", true);
     } else {
-        pathStatic = path.join(__dirname, "../dev");
         app.use(require("morgan")("dev"))
             .use((req, res, next) => {
                 require("on-finished")(res, () => console.log(req.connection.remoteAddress, "finished request"));
@@ -62,7 +60,7 @@ exports = module.exports = (() => {
         }))
         .use(require("response-time")())
         .use(require("express-json")())
-        .use(require("cors")())
+        //.use(require("cors")())
         .use(body_parser.json({
             "limit": "50mb"
         }))

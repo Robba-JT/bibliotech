@@ -1,22 +1,26 @@
-define("context", [], (template) => {
-    const Context = function () {
+"use strict";
+
+define("context", [], function (template) {
+    var Context = function Context() {
+        var _this = this;
+
         this.context = µ.one("context").set("innerHTML", template);
 
-        window.addEventListener("contextmenu", (event) => {
+        window.addEventListener("contextmenu", function (event) {
             event.preventDefault();
-            this.open(event);
+            _this.open(event);
             return false;
         });
 
-        window.addEventListener("click", (event) => {
-            this.close();
+        window.addEventListener("click", function (event) {
+            _this.close();
             return true;
         });
-    }
+    };
 
     Context.prototype.open = function (event) {
         this.context.toggleClass("notdisplayed", false);
-        const thisHeight = this.context.get("clientHeight"),
+        var thisHeight = this.context.get("clientHeight"),
             thisWidth = this.context.get("clientWidth"),
             eventX = event.clientX,
             eventY = event.clientY;
@@ -25,12 +29,12 @@ define("context", [], (template) => {
             "left": eventX + thisWidth > window.innerWidth ? eventX - thisWidth : eventX
         });
         return this;
-    }
+    };
 
     Context.prototype.close = function () {
         this.context.toggleClass("notdisplayed", true);
         return this;
-    }
+    };
 
     return new Context();
 });

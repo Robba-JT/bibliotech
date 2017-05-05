@@ -1,4 +1,6 @@
-const req = (function () {
+"use strict";
+
+var req = function () {
     /**
      * Ajax request constructor
      * @param {String} url url
@@ -6,16 +8,19 @@ const req = (function () {
      * @param {Object} headers specific headers
      * @class {Request} this request
      **/
-    const Request = function (url, method = "GET", headers = {}) {
+    var Request = function Request(url) {
+        var method = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "GET";
+        var headers = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+
         if (this instanceof Request) {
             this.method = _.toUpper(method);
             this.headers = {};
-            for (const head in headers) {
+            for (var head in headers) {
                 if (_.has(headers, head)) {
                     this.headers[_.toUpper(head)] = headers[head];
                 }
             }
-            this.url = encodeURI(!_.startsWith(url, "http") && !_.startsWith(url, "/") ? `/${url}` : url);
+            this.url = encodeURI(!_.startsWith(url, "http") && !_.startsWith(url, "/") ? "/" + url : url);
             this.req = new XMLHttpRequest();
         } else {
             return new Request(url, method, headers);
@@ -28,7 +33,7 @@ const req = (function () {
      * @returns {Request} this Request
      **/
     Request.prototype.setHeaders = function () {
-        for (const header in this.headers) {
+        for (var header in this.headers) {
             if (_.has(this.headers, header)) {
                 this.req.setRequestHeader(header, this.headers[header]);
             }
@@ -37,14 +42,14 @@ const req = (function () {
     };
 
     Request.prototype.jsonToQueryString = function (params) {
-        let query = "";
-        const keys = _.keys(params),
+        var query = "";
+        var keys = _.keys(params),
             lg = keys.length - 1;
 
         if (_.isPlainObject(params)) {
             query += "?";
-            _.forEach(keys, (key, index) => {
-                query += `${key}=${params[key]}`;
+            _.forEach(keys, function (key, index) {
+                query += key + "=" + params[key];
                 if (index < lg) {
                     query += "&";
                 }
@@ -59,7 +64,7 @@ const req = (function () {
      * @returns {Object} this request response
      **/
     Reflect.defineProperty(Request.prototype, "response", {
-        get() {
+        get: function get() {
             if (_.has([200, 204], this.req.status)) {
                 try {
                     return JSON.parse(this.req.response);
@@ -77,7 +82,7 @@ const req = (function () {
      * @returns {String} this request error
      **/
     Reflect.defineProperty(Request.prototype, "error", {
-        get() {
+        get: function get() {
             return this.req.status !== 200 && this.req.status !== 204 && this.req.responseText;
         }
     });
@@ -88,47 +93,49 @@ const req = (function () {
      * @returns {Promise} sending Promise
      **/
     Request.prototype.send = function (data) {
-        return this.url ? new Promise((resolve, reject) => {
+        var _this = this;
+
+        return this.url ? new Promise(function (resolve, reject) {
             try {
-                if (this.method === "GET") {
-                    this.jsonToQueryString(data);
+                if (_this.method === "GET") {
+                    _this.jsonToQueryString(data);
                 } else {
-                    if (!_.has(this.headers, "CONTENT-TYPE") && _.isPlainObject(data)) {
-                        this.headers = {
+                    if (!_.has(_this.headers, "CONTENT-TYPE") && _.isPlainObject(data)) {
+                        _this.headers = {
                             "CONTENT-TYPE": "application/json;charset=UTF-8"
                         };
-                        this.data = JSON.stringify(data);
+                        _this.data = JSON.stringify(data);
                     } else {
-                        this.data = data;
+                        _this.data = data;
                     }
                 }
-                this.req.open(this.method, this.url, true);
-                this.setHeaders();
-                this.req.addEventListener("error", reject);
-                this.req.addEventListener("readystatechange", () => {
-                    if (this.req.readyState === XMLHttpRequest.DONE) {
-                        if (this.req.status === 403) {
+                _this.req.open(_this.method, _this.url, true);
+                _this.setHeaders();
+                _this.req.addEventListener("error", reject);
+                _this.req.addEventListener("readystatechange", function () {
+                    if (_this.req.readyState === XMLHttpRequest.DONE) {
+                        if (_this.req.status === 403) {
                             em.emit("logout");
-                        } else if (_.includes([200, 204], this.req.status)) {
+                        } else if (_.includes([200, 204], _this.req.status)) {
                             try {
-                                resolve(JSON.parse(this.req.response));
+                                resolve(JSON.parse(_this.req.response));
                             } catch (error) {
-                                resolve(this.req.responseText);
+                                resolve(_this.req.responseText);
                             }
                         } else {
                             try {
-                                reject(JSON.parse(this.req.response));
+                                reject(JSON.parse(_this.req.response));
                             } catch (error) {
-                                reject(this.req.responseText);
+                                reject(_this.req.responseText);
                             }
                         }
                     }
                 });
-                this.req.send(this.data);
+                _this.req.send(_this.data);
             } catch (error) {
                 reject(error);
             }
         }) : Promise.reject(new Error(["Request invalid argument", "URL parameter is missing."]));
     };
     return Request;
-})();
+}();

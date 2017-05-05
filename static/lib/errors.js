@@ -1,0 +1,1 @@
+"use strict";var err=function(){var a=function(a){this.error=a,this.code=a.code||"",this.message=a.message||a,this.date=new Date},b=function(){this.errors=[]};return a.prototype.show=function(){},b.prototype.add=function(b){this.errors.push(new a(b))},b.prototype.show=function(){_.forEach(this.errors,function(a){return a.show()})},new b}();

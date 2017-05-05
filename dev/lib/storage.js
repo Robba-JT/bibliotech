@@ -1,5 +1,7 @@
-const store = (function () {
-    const Store = function () {
+"use strict";
+
+var store = function () {
+    var Store = function Store() {
         this.valid = Boolean(window.sessionStorage);
         this.store = window.sessionStorage;
     };
@@ -20,7 +22,7 @@ const store = (function () {
                 if (!_.isString(key)) {
                     key = CJSON.stringify(key);
                 }
-                const ret = this.store.getItem(key);
+                var ret = this.store.getItem(key);
                 return ret && CJSON.parse(ret);
             }
         } catch (error) {
@@ -45,4 +47,4 @@ const store = (function () {
         return this;
     };
     return new Store();
-}());
+}();

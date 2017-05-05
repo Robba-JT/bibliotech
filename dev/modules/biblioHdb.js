@@ -1,3 +1,5 @@
+"use strict";
+
 define("biblioHdb", ["hdb"], function (hdb) {
     hdb.registerHelper("ifPers", function (id, options) {
         try {
@@ -17,7 +19,7 @@ define("biblioHdb", ["hdb"], function (hdb) {
     });
 
     hdb.registerHelper("formatDate", function (date, lang) {
-        const options = {
+        var options = {
             "year": "numeric",
             "month": "long",
             "day": "numeric"
@@ -27,8 +29,8 @@ define("biblioHdb", ["hdb"], function (hdb) {
 
     hdb.registerHelper("eachAuthors", function (authors) {
         var result = "";
-        _.forEach(_.split(_.trim(authors), ","), (author) => {
-            result += `<span searchby="inauthor:">${author}</span>`;
+        _.forEach(_.split(_.trim(authors), ","), function (author) {
+            result += "<span searchby=\"inauthor:\">" + author + "</span>";
         });
         return result;
     });

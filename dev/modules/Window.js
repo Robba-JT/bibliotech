@@ -1,12 +1,20 @@
+"use strict";
+
 define("Window", [], function () {
-    const Window = function (selector, template = "") {
+    var Window = function Window(selector) {
+        var _this = this;
+
+        var template = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "";
+
         if (!(this instanceof Window)) {
             return new Window(selector, template);
         }
         this.selector = selector;
         this.template = template;
         this.window = µ.one(selector).set("innerHTML", template);
-        this.window.one(".closeWindow").observe("click", () => this.close());
+        this.window.one(".closeWindow").observe("click", function () {
+            return _this.close();
+        });
 
         em.on("resize", this, this.closeAll);
         em.on("closeAll", this, this.closeAll);
@@ -23,15 +31,17 @@ define("Window", [], function () {
         return this.window.many(selector);
     };
 
-    Window.prototype.set = function (...args) {
-        this.window.set(...args);
+    Window.prototype.set = function () {
+        var _window;
+
+        (_window = this.window).set.apply(_window, arguments);
         return this;
-    }
+    };
 
     Window.prototype.open = function () {
         this.window.css({
             //"top": `${document.body.scrollTop + µ.one("#navbar").get("clientHeight")}px`
-            "top": `${µ.one("#navbar").visible ? µ.one("#navbar").get("clientHeight") : 10}px`
+            "top": (µ.one("#navbar").visible ? µ.one("#navbar").get("clientHeight") : 10) + "px"
         });
         this.window.toggleClass("notdisplayed", false).one("[focus]").focus();
         µ.one(".waiting").toggleClass("notdisplayed", false);

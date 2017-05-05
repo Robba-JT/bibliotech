@@ -1,17 +1,21 @@
+"use strict";
+
 define("collection", ["cells"], function (cells) {
-    const Collection = function () {
+    var Collection = function Collection() {
         this.tags = {};
         this.cells = [];
         em.once("initCollect", this, this.init);
         em.on("showCollection", this, this.show);
         em.on("addBook", this, function (cell) {
+            var _this = this;
+
             if (!this.has(cell.id)) {
-                req(`/book/${cell.id}`, "POST").send().then((result) => {
+                req("/book/" + cell.id, "POST").send().then(function (result) {
                     cell.update(result, true);
-                    this.cells.push(cell);
-                    this.cells = _.sortBy(this.cells, ["book.title"]);
-                    µ.one("#nbBooks").text = this.cells.length;
-                }).catch((error) => {
+                    _this.cells.push(cell);
+                    _this.cells = _.sortBy(_this.cells, ["book.title"]);
+                    µ.one("#nbBooks").text = _this.cells.length;
+                }).catch(function (error) {
                     err.add(error);
                 });
                 if (µ.one("#collection").hasClass("active")) {
@@ -20,33 +24,39 @@ define("collection", ["cells"], function (cells) {
             }
         });
         em.on("removeBook", this, function (bookId) {
+            var _this2 = this;
+
             if (this.has(bookId)) {
-                req(`/book/${bookId}`, "DELETE").send().then(() => {
-                    _.remove(this.cells, ["id", bookId]);
-                    µ.one("#nbBooks").text = this.cells.length;
-                }).catch((error) => {
+                req("/book/" + bookId, "DELETE").send().then(function () {
+                    _.remove(_this2.cells, ["id", bookId]);
+                    µ.one("#nbBooks").text = _this2.cells.length;
+                }).catch(function (error) {
                     err.add(error);
                 });
             }
         });
         em.on("filtreCollection", this, function () {
-            _.forEach(this.cells, (cell) => cell.filter());
+            _.forEach(this.cells, function (cell) {
+                return cell.filter();
+            });
         });
         em.on("filtreTag", this, function (tag) {
             window.scrollTo(0, 0);
             µ.one("#selectedTag span").text = tag;
             µ.one("#selectedTag").toggleClass("notdisplayed", false);
-            _.forEach(this.cells, (cell) => cell.filter());
+            _.forEach(this.cells, function (cell) {
+                return cell.filter();
+            });
             em.emit("orderByTag", tag, this.cells);
         });
         em.on("sortCollection", this, function (params) {
             cells.reset();
-            cells.show(_.orderBy(this.cells, `book.${params.by}`, params.sort || "asc"));
+            cells.show(_.orderBy(this.cells, "book." + params.by, params.sort || "asc"));
         });
     };
 
     Reflect.defineProperty(Collection.prototype, "length", {
-        get() {
+        get: function get() {
             return this.cells.length;
         }
     });
@@ -64,14 +74,14 @@ define("collection", ["cells"], function (cells) {
             throw new Error("Book already added.");
         } else {
             _.push(this.cells, {
-                id
+                id: id
             });
         }
         return this;
     };
 
     Collection.prototype.remove = function (id) {
-        const index = _.isNumber(id) ? id : _.indexOf(this.cells, ["id", id]);
+        var index = _.isNumber(id) ? id : _.indexOf(this.cells, ["id", id]);
         if (index === -1) {
             throw new Error("Invalid book id.");
         } else {
@@ -89,22 +99,24 @@ define("collection", ["cells"], function (cells) {
     };
 
     Collection.prototype.init = function () {
-        req("/collection").send().then((result) => {
+        var _this3 = this;
+
+        req("/collection").send().then(function (result) {
             µ.many(".waiting, .roundIcon").toggleClass("notdisplayed", true);
-            this.tags = _.map(result.books, (book) => {
+            _this3.tags = _.map(result.books, function (book) {
                 return {
                     "id": book.id,
                     "tags": book.tags || []
-                }
+                };
             });
-            this.cells = _.union(this.cells, cells.getCells(result.books, true));
-            this.show();
-            if (result.total === this.cells.length) {
+            _this3.cells = _.union(_this3.cells, cells.getCells(result.books, true));
+            _this3.show();
+            if (result.total === _this3.cells.length) {
                 µ.one(".waitAnim").toggleClass("notdisplayed", true);
-                µ.one("#nbBooks").text = this.cells.length;
+                µ.one("#nbBooks").text = _this3.cells.length;
             }
-            em.emit("generateTags", this.tags);
-        }).catch((error) => {
+            em.emit("generateTags", _this3.tags);
+        }).catch(function (error) {
             err.add(error);
         });
         return this;

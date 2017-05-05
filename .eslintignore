@@ -1,5 +1,3 @@
 ./node_modules/**
-./tmp/**
 ./static/**
-./dev/lib/**
-./std/**
+./dev/lib/**/*.min.js

@@ -1,58 +1,64 @@
+"use strict";
+
 define("search", ["cells", "collection", "Window", "text!../templates/search"], function (cells, collection, Window, template) {
-    const Search = function () {
+    var Search = function Search() {
+        var _this = this;
+
         this.last = {};
         this.window = new Window("search", template);
 
-        em.on("openSearch", () => {
-            this.window.one("form").reset();
-            this.window.open();
+        em.on("openSearch", function () {
+            _this.window.one("form").reset();
+            _this.window.open();
         });
         em.on("filtreSearch", this, function () {
-            _.forEach(this.last.cells, (cell) => cell.filter());
+            _.forEach(this.last.cells, function (cell) {
+                return cell.filter();
+            });
         });
-        em.on("associated", (associated) => {
+        em.on("associated", function (associated) {
             cells.reset();
-            if (_.get(this.last, "qs.associated") !== associated) {
-                this.last = {
+            if (_.get(_this.last, "qs.associated") !== associated) {
+                _this.last = {
                     "qs": {
-                        associated
+                        associated: associated
                     }
                 };
-                this.last.books = [];
-                this.associated();
+                _this.last.books = [];
+                _this.associated();
             } else {
-                cells.show(this.last.cells);
+                cells.show(_this.last.cells);
             }
         });
-        em.on("search", this, (qs) => {
-            if (!_.isEqual(qs, this.last.qs)) {
-                this.last.qs = qs;
-                this.last.books = [];
-                this.last.cells = [];
+        em.on("search", this, function (qs) {
+            if (!_.isEqual(qs, _this.last.qs)) {
+                _this.last.qs = qs;
+                _this.last.books = [];
+                _this.last.cells = [];
                 cells.reset();
                 µ.many(".waiting, .roundIcon, .waitAnim").toggleClass("notdisplayed", false);
                 µ.one("sort.active").toggleClass("active", false);
                 em.emit("resetFilter");
                 em.emit("clickMenu", "recherche");
-                this.get(qs);
+                _this.get(qs);
             } else {
                 cells.reset();
-                cells.show(this.last.cells);
+                cells.show(_this.last.cells);
             }
         });
 
-        µ.one("form[name=searchForm]").observe("submit", (event) => {
+        µ.one("form[name=searchForm]").observe("submit", function (event) {
             event.preventDefault();
-            const search = event.element.parser();
-            if (!_.isEqual(search, this.last.qs)) {
-                this.window.close();
+            var search = event.element.parser();
+            if (!_.isEqual(search, _this.last.qs)) {
+                _this.window.close();
                 µ.many(".waiting, .roundIcon, .waitAnim").toggleClass("notdisplayed", false);
                 µ.one("sort.active").toggleClass("active", false);
-                this.last.qs = search;
-                this.last.books = [];
-                this.last.cells = [];
+                _this.last.qs = search;
+                _this.last.books = [];
+                _this.last.cells = [];
                 cells.reset();
-                this.get(search);
+                _this.get(search);
                 event.element.reset();
                 em.emit("resetFilter");
                 em.emit("clickMenu", "recherche");
@@ -63,7 +69,7 @@ define("search", ["cells", "collection", "Window", "text!../templates/search"], 
 
     Search.prototype.show = function (books) {
         this.last.books = _.unionBy(this.last.books, books, "id");
-        const newCells = _.map(books, (book) => {
+        var newCells = _.map(books, function (book) {
             return collection.get(book.id) || cells.getCell(book);
         });
         this.last.cells = _.unionBy(this.last.cells, newCells, "id");
@@ -73,43 +79,49 @@ define("search", ["cells", "collection", "Window", "text!../templates/search"], 
     };
 
     Search.prototype.associated = function () {
+        var _this2 = this;
+
         µ.many(".waiting, .roundIcon, .waitAnim").toggleClass("notdisplayed", false);
         µ.one("sort.active").toggleClass("active", false);
         em.emit("resetFilter");
         em.emit("clickMenu", "recherche");
-        const storeBooks = store.get(this.last.qs);
+        var storeBooks = store.get(this.last.qs);
         if (storeBooks) {
             this.show(storeBooks);
             µ.one(".waitAnim").toggleClass("notdisplayed", true);
         } else {
-            req(`/associated/${this.last.qs.associated}`).send().then((result) => {
-                this.show(result.books);
+            req("/associated/" + this.last.qs.associated).send().then(function (result) {
+                _this2.show(result.books);
                 µ.one(".waitAnim").toggleClass("notdisplayed", true);
-                store.set(this.last.qs, result.books);
-            }).catch((error) => err.add(error));
+                store.set(_this2.last.qs, result.books);
+            }).catch(function (error) {
+                return err.add(error);
+            });
         }
         return this;
     };
 
     Search.prototype.request = function () {
+        var _this3 = this;
+
         req("/search").send(_.merge({}, this.last.qs, {
             "index": this.last.books.length
-        })).then((result) => {
-            this.show(result.books);
-            if (result.books.length === 40 && this.last.books.length < 400) {
-                this.request();
+        })).then(function (result) {
+            _this3.show(result.books);
+            if (result.books.length === 40 && _this3.last.books.length < 400) {
+                _this3.request();
             } else {
                 µ.one(".waitAnim").toggleClass("notdisplayed", true);
-                store.set(this.last.qs, this.last.books);
+                store.set(_this3.last.qs, _this3.last.books);
             }
             return false;
-        }).catch((error) => {
+        }).catch(function (error) {
             err.add(error);
         });
     };
 
     Search.prototype.get = function () {
-        const storeBooks = store.get(this.last.qs);
+        var storeBooks = store.get(this.last.qs);
         if (storeBooks) {
             this.show(storeBooks);
             µ.one(".waitAnim").toggleClass("notdisplayed", true);
@@ -120,18 +132,20 @@ define("search", ["cells", "collection", "Window", "text!../templates/search"], 
     };
 
     Search.prototype.recommanded = function () {
+        var _this4 = this;
+
         this.window.close();
         if (!_.isEqual("recommanded", this.last.qs)) {
             this.last.qs = "recommanded";
-            const storeBooks = store.get(this.last.qs);
+            var storeBooks = store.get(this.last.qs);
             if (storeBooks) {
                 this.show(storeBooks);
                 µ.one(".waitAnim").toggleClass("notdisplayed", true);
             } else {
-                req("/recommanded", "POST").send().then((result) => {
-                    this.show(result);
-                    store.set(this.last.qs, result);
-                }).catch((error) => {
+                req("/recommanded", "POST").send().then(function (result) {
+                    _this4.show(result);
+                    store.set(_this4.last.qs, result);
+                }).catch(function (error) {
                     err.add(error);
                 });
             }

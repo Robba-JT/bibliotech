@@ -1,4 +1,6 @@
-require(["lodash", "dom", "Request"], () => {
+"use strict";
+
+require(["lodash", "dom", "Request"], function () {
     if ("FileReader" in window && "formNoValidate" in document.createElement("input")) {
         µ.many(".w, .k, [login]").toggleClass("notdisplayed");
         µ.one("form").observe("submit", function (event) {
@@ -6,29 +8,27 @@ require(["lodash", "dom", "Request"], () => {
             µ.many(".w, .k").toggleClass("notdisplayed", false);
             µ.one(".m").toggleClass("notdisplayed", true);
             µ.one(".g").text = "";
-            req("/login", µ.one("[name=confirm]").visible ? "POST" : "PUT").send(_.omit(this.parser(), "confirm"))
-                .then(() => window.location.reload(true))
-                .catch((error) => {
-                    µ.one(".g").text = _.get(error, "error") || error;
-                    µ.many(".w, .k, .m").toggleClass("notdisplayed");
-                });
+            req("/login", µ.one("[name=confirm]").visible ? "POST" : "PUT").send(_.omit(this.parser(), "confirm")).then(function () {
+                return window.location.reload(true);
+            }).catch(function (error) {
+                µ.one(".g").text = _.get(error, "error") || error;
+                µ.many(".w, .k, .m").toggleClass("notdisplayed");
+            });
             return false;
         });
-        µ.one("#f").observe("click", () => {
+        µ.one("#f").observe("click", function () {
             window.location = "/gAuth";
         });
         µ.one("[type=button]").observe("click", function () {
-            const alt = this.get("alt"),
+            var alt = this.get("alt"),
                 value = this.value;
 
             this.set("alt", value).value = alt;
-            µ.many("[name=name], [name=confirm]")
-                .toggleClass("notdisplayed")
-                .set("required", µ.one("[name=confirm]").visible).value = "";
+            µ.many("[name=name], [name=confirm]").toggleClass("notdisplayed").set("required", µ.one("[name=confirm]").visible).value = "";
             µ.many(".error").toggleClass("notdisplayed", true);
         });
         µ.many("[name=confirm], [name=password]").observe("keyup", function () {
-            const confirmValue = µ.one("[name=confirm]").value,
+            var confirmValue = µ.one("[name=confirm]").value,
                 pwdValue = µ.one("[name=password]").value,
                 test = pwdValue && confirmValue && confirmValue === pwdValue;
 
@@ -36,13 +36,13 @@ require(["lodash", "dom", "Request"], () => {
             µ.one("#c").toggleClass("notdisplayed", test);
         });
         µ.one("button.m").observe("click", function () {
-            const elt = µ.one("[name=email]");
+            var elt = µ.one("[name=email]");
             if (elt.valid) {
                 req("/mail", "POST").send({
                     "email": elt.value
-                }).then(() => {
+                }).then(function () {
                     _.noop();
-                }).catch((error) => {
+                }).catch(function (error) {
                     µ.one(".g").text = _.get(error, "error") || error;
                 });
             } else {
