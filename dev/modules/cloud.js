@@ -28,15 +28,6 @@ define("cloud", ["text!../templates/cloud"], function (template) {
         }).toggleClass("tag tag" + Math.min(~~(weight / 5) + 1, 10));
     };
 
-    // Reflect.defineProperty(Tag.prototype, "weight", {
-    //     get() {
-    //         return this.books.length;
-    //     },
-    //     set(value) {
-    //         this.weight = value;
-    //     }
-    // });
-
     Tag.prototype.appendTo = function (parent) {
         if (this.span) {
             this.span.appendTo(parent);

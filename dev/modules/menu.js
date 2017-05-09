@@ -31,6 +31,9 @@ define("menu", ["Window", "text!../templates/menu", "text!../templates/contacts"
     navbar.one("#saveorder").observe("click", function () {
         return em.emit("saveOrder");
     });
+    navbar.one("#newbook").observe("click", function () {
+        return em.emit("openNewDetail");
+    });
 
     µ.one("bookcells").css("top", µ.one("#navbar").get("clientHeight"));
     navbar.one("#logout").observe("click", function () {
@@ -189,5 +192,12 @@ define("menu", ["Window", "text!../templates/menu", "text!../templates/contacts"
     window.addEventListener("contextmenu", function (event) {
         event.preventDefault();
         return false;
+    });
+    window.addEventListener("click", function (event) {
+        if (event.target.id !== "tris") {
+            setTimeout(function () {
+                return sorts.toggleClass("notdisplayed", true);
+            });
+        }
     });
 });

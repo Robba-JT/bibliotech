@@ -1,5 +1,6 @@
-define("detail", ["Window", "hdb", "cloud", "cells", "text!../templates/detail", "text!../templates/Tag", "text!../templates/MostAdded", "text!../templates/Preview", "text!../templates/Context"], function (Window, hdb, cloud, cells, tempDetail, tempTag, tempAdded, tempPreview, tempContext) {
+define("detail", ["Window", "hdb", "cloud", "cells", "text!../templates/detail", "text!../templates/newDetail", "text!../templates/Tag", "text!../templates/MostAdded", "text!../templates/Preview", "text!../templates/Context"], function (Window, hdb, cloud, cells, tempDetail, tempNewDetail, tempTag, tempAdded, tempPreview, tempContext) {
     const renderDetail = hdb.compile(tempDetail),
+        renderNewDetail = hdb.compile(tempNewDetail),
         renderTag = hdb.compile(tempTag),
         renderAdded = hdb.compile(tempAdded),
         renderContext = hdb.compile(tempContext),
@@ -27,71 +28,18 @@ define("detail", ["Window", "hdb", "cloud", "cells", "text!../templates/detail",
                     }
                 }
             });
+
+            em.on("openNewDetail", this, () => {
+                this.open();
+            });
         },
         context = µ.one("context"),
         preview = new Window("preview", tempPreview);
 
-    Detail.prototype.init = function (cell) {
-        req(`/mostAdded/${cell.id}`).send().then((result) => this.mostAdded(result)).catch((error) => err.add(error));
-        this.cell = cell;
-        this.detailBook = _.assign({
-            "note": 0,
-            "tags": [],
-            "comment": ""
-        }, this.cell.book);
-
-        detail.set("innerHTML", renderDetail(_.merge(this.detailBook, {
-            "src": this.cell.src
-        })));
-        context.set("innerHTML", renderContext(_.merge(this.detailBook, {
-            "src": this.cell.src
-        }))).many("[nav]").observe("click", (event) => {
-            const move = event.element.get("nav"),
-                visibles = µ.many("cell:not(.notdisplayed)"),
-                perLine = ~~(µ.one("bookcells").get("clientWidth") / this.cell.cell.get("clientWidth"));
-
-            var index = visibles.indexOf(`[book='${this.cell.id}']`);
-
-            if (index === -1) {
-                return false;
-            }
-            switch (move) {
-                case "right":
-                    index += 1;
-                    if (index >= visibles.length) {
-                        return false;
-                    }
-                    break;
-                case "left":
-                    if (index === 0) {
-                        return false;
-                    }
-                    index -= 1;
-                    break;
-                case "top":
-                    if (index < perLine) {
-                        return false;
-                    }
-                    index -= perLine;
-                    break;
-                case "bottom":
-                    index += perLine;
-                    if (index >= visibles.length) {
-                        return false;
-                    }
-                    break;
-                default:
-            }
-            setTimeout(() => {
-                const next = visibles.get(index);
-                window.scrollTo(0, next.get("offsetTop"));
-                next.trigger("click");
-            }, 500);
-            return true;
-        });
+    Detail.prototype.setEvents = function () {
         µ.many("detail .closeWindow, context #contextClose").observe("click", () => this.close());
         µ.many("#detailSave, #contextSave").observe("click", () => this.save());
-        µ.many("#detailAdd, #contextAdd").observe("click", () => this.add());
+        //µ.many("#detailAdd, #contextAdd").observe("click", () => this.add());
         µ.many("#detailGbooks, #contextGbooks").observe("click", () => this.googleLink());
         µ.many("#detailConnex, #contextConnex").observe("click", () => this.connex());
         µ.many("#detailPreview, #contextPreview").observe("click", () => this.preview());
@@ -183,10 +131,89 @@ define("detail", ["Window", "hdb", "cloud", "cells", "text!../templates/detail",
         em.on("closeAll", this, this.close);
     };
 
+    Detail.prototype.empty = function () {
+        this.detailBook = {
+            "note": 0,
+            "tags": [],
+            "comment": ""
+        };
+        detail.set("innerHTML", renderNewDetail());
+        this.setEvents();
+        detail.many("button.title").toggleClass("hide", true);
+        detail.many(".volumeInfo input, .volumeInfo textarea, .volumeInfo span").toggleClass("notdisplayed");
+        µ.many("#detailAdd, #contextAdd").observe("click", () => this.create());
+    };
+
+    Detail.prototype.init = function (cell) {
+        req(`/mostAdded/${cell.id}`).send().then((result) => this.mostAdded(result)).catch((error) => err.add(error));
+        this.cell = cell;
+        this.detailBook = _.assign({
+            "note": 0,
+            "tags": [],
+            "comment": ""
+        }, this.cell.book);
+
+        detail.set("innerHTML", renderDetail(_.merge(this.detailBook, {
+            "src": this.cell.src
+        })));
+        context.set("innerHTML", renderContext(_.merge(this.detailBook, {
+            "src": this.cell.src
+        }))).many("[nav]").observe("click", (event) => {
+            const move = event.element.get("nav"),
+                visibles = µ.many("cell:not(.notdisplayed)"),
+                perLine = ~~(µ.one("bookcells").get("clientWidth") / this.cell.cell.get("clientWidth"));
+
+            var index = visibles.indexOf(`[book='${this.cell.id}']`);
+
+            if (index === -1) {
+                return false;
+            }
+            switch (move) {
+                case "right":
+                    index += 1;
+                    if (index >= visibles.length) {
+                        return false;
+                    }
+                    break;
+                case "left":
+                    if (index === 0) {
+                        return false;
+                    }
+                    index -= 1;
+                    break;
+                case "top":
+                    if (index < perLine) {
+                        return false;
+                    }
+                    index -= perLine;
+                    break;
+                case "bottom":
+                    index += perLine;
+                    if (index >= visibles.length) {
+                        return false;
+                    }
+                    break;
+                default:
+            }
+            setTimeout(() => {
+                const next = visibles.get(index);
+                window.scrollTo(0, next.get("offsetTop"));
+                next.trigger("click");
+            }, 500);
+            return true;
+        });
+        this.setEvents();
+        µ.many("#detailAdd, #contextAdd").observe("click", () => this.add());
+    };
+
     Detail.prototype.open = function (cell) {
         µ.one(".waiting").toggleClass("notdisplayed", false);
         µ.one("html").toggleClass("overflown", true);
-        this.init(cell);
+        if (cell) {
+            this.init(cell);
+        } else {
+            this.empty();
+        }
         return this;
     };
 
@@ -253,11 +280,18 @@ define("detail", ["Window", "hdb", "cloud", "cells", "text!../templates/detail",
         return this;
     };
 
+    Detail.prototype.create = function () {
+        detail.one("form[name=volumeInfo]").parser();
+        µ.many("#detailAdd, #detailSave, #detailRecommand, #contextAdd, #contextSave, #contextRecommand, detail .inCollection").toggleClass("notdisplayed");
+        return this;
+    };
+
     Detail.prototype.add = function () {
         this.cell.add();
         µ.many("#detailAdd, #detailSave, #detailRecommand, #contextAdd, #contextSave, #contextRecommand, detail .inCollection").toggleClass("notdisplayed");
         return this;
     };
+
     Detail.prototype.googleLink = function () {
         window.open(this.detailBook.link);
         return this;

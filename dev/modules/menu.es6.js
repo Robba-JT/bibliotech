@@ -17,6 +17,7 @@ define("menu", ["Window", "text!../templates/menu", "text!../templates/contacts"
     navbar.one("#contact").observe("click", () => contacts.open());
     navbar.one("#tags").observe("click", () => em.emit("openCloud"));
     navbar.one("#saveorder").observe("click", () => em.emit("saveOrder"));
+    navbar.one("#newbook").observe("click", () => em.emit("openNewDetail"));
 
     µ.one("bookcells").css("top", µ.one("#navbar").get("clientHeight"));
     navbar.one("#logout").observe("click", () => {
@@ -173,5 +174,10 @@ define("menu", ["Window", "text!../templates/menu", "text!../templates/contacts"
     window.addEventListener("contextmenu", (event) => {
         event.preventDefault();
         return false;
+    });
+    window.addEventListener("click", (event) => {
+        if (event.target.id !== "tris") {
+            setTimeout(() => sorts.toggleClass("notdisplayed", true));
+        }
     });
 });

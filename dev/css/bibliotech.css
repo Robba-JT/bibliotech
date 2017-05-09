@@ -1438,11 +1438,12 @@ detail {
     font-size: 18px;
     text-decoration: underline;
     font-weight: 700;
-    white-space: nowrap
+    white-space: nowrap;
+    margin-right: 10px;
 }
 
-.detailBook span.title {
-    display: block
+.detailBook .volumeInfo span.title {
+    display: inline-block;
 }
 
 .detailBook .subtitle {

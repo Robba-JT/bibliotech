@@ -261,6 +261,20 @@ const µ = (function () {
     };
 
     /**
+     * Element remove listener prototype
+     * @param {String} eventName Event name
+     * @param {Function} fn Callback function
+     * @param {Boolean} capture capture
+     * @returns {myElement} this element
+     **/
+    myElement.prototype.unobserve = function (eventName, fn, capture) {
+        if (_.has(this, "element")) {
+            this.element.removeEventListener(eventName, fn, capture);
+        }
+        return this;
+    };
+
+    /**
      * Element stylizer
      * @param {Object} styles Styles
      * @param {String} values values
@@ -686,6 +700,18 @@ const µ = (function () {
             data = null;
         }
         this.elements.forEach((element) => Reflect.apply(myElement.prototype.observe, element, [eventsName, data, callback]));
+        return this;
+    };
+
+    /**
+     * Collection remove listener
+     * @param {String} eventsName Events name
+     * @param {Object} data data
+     * @param {Function} callback Callback Function
+     * @returns {myCollection} this Collection
+     **/
+    myCollection.prototype.unobserve = function (eventsName, fn, capture) {
+        this.elements.forEach((element) => Reflect.apply(myElement.prototype.unobserve, element, [eventsName, fn, capture]));
         return this;
     };
 

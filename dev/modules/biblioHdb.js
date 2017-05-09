@@ -27,6 +27,18 @@ define("biblioHdb", ["hdb"], function (hdb) {
         return new Date(date || new Date()).toLocaleDateString(lang || "fr", options);
     });
 
+    hdb.registerHelper("formatInputDate", function (date) {
+        var options = {
+            "year": "numeric",
+            "month": "numeric",
+            "day": "numeric"
+        };
+        //return new Date(date || new Date()).toISOString().slice(0, 10);
+        if (date) {
+            return new Date(date).toISOString().slice(0, 10);
+        }
+    });
+
     hdb.registerHelper("eachAuthors", function (authors) {
         var result = "";
         _.forEach(_.split(_.trim(authors), ","), function (author) {
