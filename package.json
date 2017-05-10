@@ -4,7 +4,7 @@
     "description": "Virtual bibliotech",
     "main": "bibliotech.js",
     "scripts": {
-        "preinstall": "npm install -g grunt-cli supervisor eslint",
+        "preinstall": "npm install -g grunt-cli supervisor eslint pm2",
         "grunt": "grunt",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
@@ -13,7 +13,7 @@
         "type": "git",
         "url": "https://github.com/Robba-JT/bibliotech"
     },
-    "author": "Julien Tassin",
+    "author": "Julien Tassin <robba.jt@gmail.com>",
     "bugs": {
         "url": "https://github.com/Robba-JT/bibliotech/issues"
     },

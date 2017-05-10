@@ -15,18 +15,32 @@ define("Window", [], function () {
         return this;
     };
 
-    Window.prototype.one = function (selector) {
-        return this.window.one(selector);
+    Window.prototype.close = function () {
+        this.window.toggleClass("notdisplayed", true);
+        µ.one(".waiting").toggleClass("notdisplayed", true);
+        µ.one("html").toggleClass("overflown", false);
+        em.emit(this, "close");
+        return this;
+    };
+
+    Window.prototype.closeAll = function () {
+        return this.close().closeOver();
+    };
+
+    Window.prototype.closeOver = function () {
+        this.window.toggleClass("notdisplayed", true);
+        µ.one(".waiting").toggleClass("over", false);
+        em.emit(this, "closeOver");
+        return this;
     };
 
     Window.prototype.many = function (selector) {
         return this.window.many(selector);
     };
 
-    Window.prototype.set = function (...args) {
-        this.window.set(...args);
-        return this;
-    }
+    Window.prototype.one = function (selector) {
+        return this.window.one(selector);
+    };
 
     Window.prototype.open = function () {
         this.window.css({
@@ -47,23 +61,9 @@ define("Window", [], function () {
         return this;
     };
 
-    Window.prototype.close = function () {
-        this.window.toggleClass("notdisplayed", true);
-        µ.one(".waiting").toggleClass("notdisplayed", true);
-        µ.one("html").toggleClass("overflown", false);
-        em.emit(this, "close");
+    Window.prototype.set = function (...args) {
+        this.window.set(...args);
         return this;
-    };
-
-    Window.prototype.closeOver = function () {
-        this.window.toggleClass("notdisplayed", true);
-        µ.one(".waiting").toggleClass("over", false);
-        em.emit(this, "closeOver");
-        return this;
-    };
-
-    Window.prototype.closeAll = function () {
-        return this.close().closeOver();
     };
 
     Window.prototype.toggle = function () {

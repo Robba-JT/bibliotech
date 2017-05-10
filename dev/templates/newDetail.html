@@ -27,7 +27,7 @@
         </div>
         <div id="noCover"></div>
         [{/if}]
-        <div class="imgAction inCollection">
+        <div class="imgAction inCollection notdisplayed">
             <div class="upload"></div>
         </div>
         <form name="uploadImg" class="notdisplayed">
@@ -35,12 +35,12 @@
         </form>
     </div>
     <div class="detailBook">
-        <form name="volumeInfo">
+        <form name="newBook">
             <div class="volumeInfo">
                 <button class="title modify" tabindex="-1">{{title}}:</button>
                 <span searchby="intitle:">[{title}]</span>&nbsp;
                 <span searchby="intitle:">[{subtitle}]</span>
-                <input type="text" class="notdisplayed" placeholder="{{title}}" error="{{errTitle}}" name="title" required minlength="3" value="[{title}]" />
+                <input type="text" class="notdisplayed" placeholder="{{title}}" error="{{errTitle}}" name="title" required minlength="3" value="[{title}]" focus />
                 <input type="text" class="notdisplayed" placeholder="{{subtitle}}" name="subtitle" value="[{subtitle}]" />
             </div>
             <div class="volumeInfo">

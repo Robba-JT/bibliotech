@@ -12,147 +12,109 @@ define("detail", ["Window", "hdb", "cloud", "cells", "text!../templates/detail",
         var _this = this;
 
         em.on("openDetail", this, function (cell) {
-            if (cell.book.detailed || cell.book.inCollection) {
-                _this.open(cell);
+            µ.one(".waiting").toggleClass("notdisplayed", false);
+            µ.one("html").toggleClass("overflown", true);
+            if (_.isUndefined(cell.id)) {
+                _this.empty(cell);
+            } else if (cell.book.detailed || cell.book.inCollection) {
+                _this.init(cell);
             } else {
                 var storeDetail = store.get(cell.id);
                 if (storeDetail) {
                     _.assign(cell.book, storeDetail);
-                    _this.open(cell);
+                    _this.init(cell);
                 } else {
                     req("/detail/" + cell.id).send().then(function (result) {
                         _.assign(cell.book, result, {
                             "detailed": true
                         });
                         store.set(cell.id, cell.book);
-                        _this.open(cell);
+                        _this.init(cell);
                     }).catch(function (error) {
                         err.add(error);
                     });
                 }
             }
         });
-
-        em.on("openNewDetail", this, function () {
-            _this.open();
-        });
     },
         context = µ.one("context"),
         preview = new Window("preview", tempPreview);
 
-    Detail.prototype.setEvents = function () {
-        var _this2 = this;
-
-        µ.many("detail .closeWindow, context #contextClose").observe("click", function () {
-            return _this2.close();
-        });
-        µ.many("#detailSave, #contextSave").observe("click", function () {
-            return _this2.save();
-        });
-        //µ.many("#detailAdd, #contextAdd").observe("click", () => this.add());
-        µ.many("#detailGbooks, #contextGbooks").observe("click", function () {
-            return _this2.googleLink();
-        });
-        µ.many("#detailConnex, #contextConnex").observe("click", function () {
-            return _this2.connex();
-        });
-        µ.many("#detailPreview, #contextPreview").observe("click", function () {
-            return _this2.preview();
-        });
-        µ.many("#detailRecommand, #contextRecommand").observe("click", function () {
-            return _this2.recommand();
-        });
-        /*
-            detail.css({
-                "top": `${document.body.scrollTop}px`
-            }).toggleClass("notdisplayed", false);
-        */
-        detail.toggleClass("notdisplayed", false);
-        detail.one("form[name=formTag]").observe("submit", function (event) {
-            event.preventDefault();
-            _this2.addTag(event.element.parser());
-            event.element.reset();
-        });
-        if (this.detailBook.inCollection) {
-            detail.many(".inCollection").toggleClass("notdisplayed", false);
-        }
-        if (this.detailBook.note) {
-            var notes = detail.many(".note");
-            notes.length = this.detailBook.note;
-            notes.toggleClass("empty select");
-        }
-        detail.css("background", "radial-gradient(circle at 50%, whitesmoke 0%, #909090 100%)");
-        detail.many(".note").observe("mouseenter", function (event) {
-            var value = _.parseInt(event.element.get("note")),
-                note = _this2.detailBook.note || 0,
-                notes = detail.many(".note");
-
-            notes.each(function (elt, index) {
-                elt.toggleClass("plus", index >= note && index < value).toggleClass("minus", index < note && index >= value);
-            });
-        }).observe("mouseleave", function () {
-            detail.many(".note").each(function (elt) {
-                elt.toggleClass("plus minus", false);
-            });
-        }).observe("click", function (event) {
-            var thisNote = _.parseInt(event.element.get("note"));
-            if (_this2.detailBook.note === 1 && thisNote === 1) {
-                _this2.detailBook.note = 0;
-            } else {
-                _this2.detailBook.note = thisNote;
-            }
-            detail.many(".note").each(function (elt, index) {
-                elt.toggleClass("empty", index >= _this2.detailBook.note).toggleClass("select", index < _this2.detailBook.note);
-            });
-        });
-        detail.one("[name=userComment]").observe("change", function (event) {
-            _this2.detailBook.comment = event.element.value;
-            _this2.detailBook.date = event.element.value ? new Date() : null;
-        });
-        detail.one("#detailCover").observe("load", function () {
-            _this2.detailBook.palette = thief.getPalette(detail.one("#detailCover").element);
-            if (_this2.detailBook.palette && _this2.detailBook.palette.length) {
-                detail.css("background", "radial-gradient(circle at 50%, whitesmoke 0%," + µ.rgbToHex(_this2.detailBook.palette[0]) + " 100%)");
-            }
-        });
-        detail.one("div.upload").observe("click", function () {
-            return detail.one("[type=file]").trigger("click");
-        });
-        detail.one("[type=file]").observe("change", function (event) {
-            detail.many("#noCover").toggleClass("notdisplayed", event.element.files.length);
-            if (event.element.files.length) {
-                var reader = new FileReader();
-                reader.addEventListener("load", function (result) {
-                    detail.one("#detailCover").toggleClass("notdisplayed", false).set("src", result.target.result);
-                    _this2.detailBook.alt = result.target.result;
-                });
-                reader.readAsDataURL(event.element.files[0]);
-                detail.one("form[name=uploadImg]").reset();
-            }
-        });
-        detail.one("datalist").html = cloud.options.join("");
-        detail.many("[searchby]").observe("click", function (event) {
-            _this2.close();
-            em.emit("search", {
-                "by": event.element.get("searchby"),
-                "search": event.element.text,
-                "lang": document.body.lang
-            });
-        });
-        detail.many(".tag button").observe("click", function (event) {
-            if (event.element.hasClass("libelle")) {
-                _this2.byTag(event.element.text);
-            } else {
-                _this2.removeTag(event.element);
-            }
-        });
-        em.on("resize", this, this.close);
-        em.on("closeAll", this, this.close);
+    Detail.prototype.add = function () {
+        this.cell.add();
+        µ.many("#detailAdd, #detailSave, #detailRecommand, #contextAdd, #contextSave, #contextRecommand, detail .inCollection").toggleClass("notdisplayed");
+        return this;
     };
 
-    Detail.prototype.empty = function () {
+    Detail.prototype.addTag = function (result) {
+        var _this2 = this;
+
+        if (!_.includes(this.detailBook.tags, result.tag)) {
+            var tags = detail.one(".tags"),
+                tag = µ.new("div").toggleClass("tag").set("innerHTML", renderTag(result));
+
+            tag.one("button:not(.libelle)").observe("click", function (event) {
+                _this2.removeTag(event.element);
+            });
+
+            tags.append(_.sortBy(_.concat(detail.many(".tags .tag").elements, [tag]), [function (tag) {
+                return tag.one(".libelle").text;
+            }])).toggleClass("notdisplayed", false);
+            this.detailBook.tags = _.concat(this.detailBook.tags, [result.tag]);
+            this.detailBook.tags.sort();
+        }
+        return this;
+    };
+
+    Detail.prototype.byTag = function (tag) {
+        this.close();
+        if (!µ.one("#collection").hasClass("active")) {
+            em.emit("showCollection");
+        }
+        em.emit("filtreTag", tag);
+        return this;
+    };
+
+    Detail.prototype.close = function () {
+        context.toggleClass("notdisplayed", true);
+        detail.toggleClass("notdisplayed", true);
+        µ.one(".waiting").toggleClass("notdisplayed", true);
+        µ.one("html").toggleClass("overflown", false);
+        detail.set("innerHTML", "");
+        return this;
+    };
+
+    Detail.prototype.connex = function () {
+        this.close();
+        em.emit("associated", this.cell.id);
+        return this;
+    };
+
+    Detail.prototype.create = function () {
         var _this3 = this;
 
+        var newBook = detail.one("form[name=newBook]").parser();
+        detail.one("form[name=newBook]").reset();
+        req("/detail", "POST").send(newBook).then(function (id) {
+            _.assign(newBook, {
+                id: id
+            });
+            _this3.cell.id = JSON.stringify(id);
+            _this3.cell.add();
+            detail.set("innerHTML", renderNewDetail(_.assign(_this3.detailBook, newBook, {
+                "inCollection": true
+            })));
+            _this3.setEvents();
+        }).catch(function (error) {
+            return err.add(error);
+        });
+        return this;
+    };
+
+    Detail.prototype.empty = function (cell) {
+        var _this4 = this;
+
+        this.cell = cell;
         this.detailBook = {
             "note": 0,
             "tags": [],
@@ -163,15 +125,21 @@ define("detail", ["Window", "hdb", "cloud", "cells", "text!../templates/detail",
         detail.many("button.title").toggleClass("hide", true);
         detail.many(".volumeInfo input, .volumeInfo textarea, .volumeInfo span").toggleClass("notdisplayed");
         µ.many("#detailAdd, #contextAdd").observe("click", function () {
-            return _this3.create();
+            return _this4.create();
         });
+        detail.one("[focus]").focus();
+    };
+
+    Detail.prototype.googleLink = function () {
+        window.open(this.detailBook.link);
+        return this;
     };
 
     Detail.prototype.init = function (cell) {
-        var _this4 = this;
+        var _this5 = this;
 
         req("/mostAdded/" + cell.id).send().then(function (result) {
-            return _this4.mostAdded(result);
+            return _this5.mostAdded(result);
         }).catch(function (error) {
             return err.add(error);
         });
@@ -182,17 +150,23 @@ define("detail", ["Window", "hdb", "cloud", "cells", "text!../templates/detail",
             "comment": ""
         }, this.cell.book);
 
-        detail.set("innerHTML", renderDetail(_.merge(this.detailBook, {
-            "src": this.cell.src
-        })));
+        if (_.isPlainObject(cell.book.id)) {
+            detail.set("innerHTML", renderNewDetail(_.merge(this.detailBook, {
+                "src": this.cell.src
+            })));
+        } else {
+            detail.set("innerHTML", renderDetail(_.merge(this.detailBook, {
+                "src": this.cell.src
+            })));
+        }
         context.set("innerHTML", renderContext(_.merge(this.detailBook, {
             "src": this.cell.src
         }))).many("[nav]").observe("click", function (event) {
             var move = event.element.get("nav"),
                 visibles = µ.many("cell:not(.notdisplayed)"),
-                perLine = ~~(µ.one("bookcells").get("clientWidth") / _this4.cell.cell.get("clientWidth"));
+                perLine = ~~(µ.one("bookcells").get("clientWidth") / _this5.cell.cell.get("clientWidth"));
 
-            var index = visibles.indexOf("[book='" + _this4.cell.id + "']");
+            var index = visibles.indexOf("[book='" + _this5.cell.id + "']");
 
             if (index === -1) {
                 return false;
@@ -233,28 +207,8 @@ define("detail", ["Window", "hdb", "cloud", "cells", "text!../templates/detail",
         });
         this.setEvents();
         µ.many("#detailAdd, #contextAdd").observe("click", function () {
-            return _this4.add();
+            return _this5.add();
         });
-    };
-
-    Detail.prototype.open = function (cell) {
-        µ.one(".waiting").toggleClass("notdisplayed", false);
-        µ.one("html").toggleClass("overflown", true);
-        if (cell) {
-            this.init(cell);
-        } else {
-            this.empty();
-        }
-        return this;
-    };
-
-    Detail.prototype.close = function () {
-        context.toggleClass("notdisplayed", true);
-        detail.toggleClass("notdisplayed", true);
-        µ.one(".waiting").toggleClass("notdisplayed", true);
-        µ.one("html").toggleClass("overflown", false);
-        detail.set("innerHTML", "");
-        return this;
     };
 
     Detail.prototype.mostAdded = function (books) {
@@ -294,16 +248,38 @@ define("detail", ["Window", "hdb", "cloud", "cells", "text!../templates/detail",
         }
     };
 
+    Detail.prototype.preview = function () {
+        context.toggleClass("notdisplayed", true);
+        µ.one(".waiting").toggleClass("over", true);
+        preview.one("iframe").set("src", "about:blank");
+        preview.openOver();
+        detail.one("form[target=preview]").trigger("submit");
+    };
+
+    Detail.prototype.recommand = function () {
+        _.noop();
+        return this;
+    };
+
+    Detail.prototype.removeTag = function (elt) {
+        var tag = elt.siblings.get(0).text;
+        if (tag) {
+            this.detailBook.tags = _.without(this.detailBook.tags, tag);
+            elt.parent.remove();
+        }
+        return this;
+    };
+
     Detail.prototype.save = function () {
-        var _this5 = this;
+        var _this6 = this;
 
         var diff = _.omit(_.diff(this.detailBook, this.cell.book), ["src", "palette"]);
         if (!_.isEmpty(diff)) {
-            req("/detail/" + this.cell.book.id, "PUT").send(diff).then(function () {
-                _this5.cell.update(_this5.detailBook, true).defLoad();
+            req("/detail/" + this.cell.id, "PUT").send(diff).then(function () {
+                _this6.cell.update(_this6.detailBook, true).defLoad();
                 if (_.has(diff, "tags")) {
                     em.emit("updateTag", {
-                        "id": _this5.cell.id,
+                        "id": _this6.cell.id,
                         "tags": diff.tags
                     });
                 }
@@ -315,72 +291,119 @@ define("detail", ["Window", "hdb", "cloud", "cells", "text!../templates/detail",
         return this;
     };
 
-    Detail.prototype.create = function () {
-        detail.one("form[name=volumeInfo]").parser();
-        µ.many("#detailAdd, #detailSave, #detailRecommand, #contextAdd, #contextSave, #contextRecommand, detail .inCollection").toggleClass("notdisplayed");
-        return this;
-    };
+    Detail.prototype.setEvents = function () {
+        var _this7 = this;
 
-    Detail.prototype.add = function () {
-        this.cell.add();
-        µ.many("#detailAdd, #detailSave, #detailRecommand, #contextAdd, #contextSave, #contextRecommand, detail .inCollection").toggleClass("notdisplayed");
-        return this;
-    };
+        µ.many("detail .closeWindow, context #contextClose").observe("click", function () {
+            return _this7.close();
+        });
+        µ.many("#detailSave, #contextSave").observe("click", function () {
+            return _this7.save();
+        });
+        µ.many("#detailGbooks, #contextGbooks").observe("click", function () {
+            return _this7.googleLink();
+        });
+        µ.many("#detailConnex, #contextConnex").observe("click", function () {
+            return _this7.connex();
+        });
+        µ.many("#detailPreview, #contextPreview").observe("click", function () {
+            return _this7.preview();
+        });
+        µ.many("#detailRecommand, #contextRecommand").observe("click", function () {
+            return _this7.recommand();
+        });
+        detail.toggleClass("notdisplayed", false);
+        detail.one("form[name=formTag]").observe("submit", function (event) {
+            event.preventDefault();
+            _this7.addTag(event.element.parser());
+            event.element.reset();
+        });
+        if (this.detailBook.inCollection) {
+            detail.many(".inCollection").toggleClass("notdisplayed", false);
+        }
+        if (this.detailBook.note) {
+            var notes = detail.many(".note");
+            notes.length = this.detailBook.note;
+            notes.toggleClass("empty select");
+        }
+        detail.css("background", "radial-gradient(circle at 50%, whitesmoke 0%, #909090 100%)");
+        detail.many(".note").observe("mouseenter", function (event) {
+            var value = _.parseInt(event.element.get("note")),
+                note = _this7.detailBook.note,
+                notes = detail.many(".note");
 
-    Detail.prototype.googleLink = function () {
-        window.open(this.detailBook.link);
-        return this;
-    };
-    Detail.prototype.connex = function () {
-        this.close();
-        em.emit("associated", this.cell.book.id);
-        return this;
-    };
-    Detail.prototype.preview = function () {
-        context.toggleClass("notdisplayed", true);
-        µ.one(".waiting").toggleClass("over", true);
-        preview.one("iframe").set("src", "about:blank");
-        preview.openOver();
-        detail.one("form[target=preview]").trigger("submit");
-    };
-    Detail.prototype.recommand = function () {
-        _.noop();
-        return this;
-    };
-    Detail.prototype.addTag = function (result) {
-        var _this6 = this;
-
-        if (!_.includes(this.detailBook.tags, result.tag)) {
-            var tags = detail.one(".tags"),
-                tag = µ.new("div").toggleClass("tag").set("innerHTML", renderTag(result));
-
-            tag.one("button:not(.libelle)").observe("click", function (event) {
-                _this6.removeTag(event.element);
+            notes.each(function (elt, index) {
+                elt.toggleClass("plus", index >= note && index < value).toggleClass("minus", index < note && index >= value);
             });
-
-            tags.append(_.sortBy(_.concat(detail.many(".tags .tag").elements, [tag]), [function (tag) {
-                return tag.one(".libelle").text;
-            }])).toggleClass("notdisplayed", false);
-            this.detailBook.tags = _.concat(this.detailBook.tags, [result.tag]);
-            this.detailBook.tags.sort();
-        }
-        return this;
-    };
-    Detail.prototype.byTag = function (tag) {
-        this.close();
-        if (!µ.one("#collection").hasClass("active")) {
-            em.emit("showCollection");
-        }
-        em.emit("filtreTag", tag);
-        return this;
-    };
-    Detail.prototype.removeTag = function (elt) {
-        var tag = elt.siblings.get(0).text;
-        if (tag) {
-            this.detailBook.tags = _.without(this.detailBook.tags, tag);
-            elt.parent.remove();
-        }
-        return this;
+        }).observe("mouseleave", function () {
+            detail.many(".note").each(function (elt) {
+                elt.toggleClass("plus minus", false);
+            });
+        }).observe("click", function (event) {
+            var thisNote = _.parseInt(event.element.get("note"));
+            if (_this7.detailBook.note === 1 && thisNote === 1) {
+                _this7.detailBook.note = 0;
+            } else {
+                _this7.detailBook.note = thisNote;
+            }
+            detail.many(".note").each(function (elt, index) {
+                elt.toggleClass("empty", index >= _this7.detailBook.note).toggleClass("select", index < _this7.detailBook.note);
+            });
+        });
+        detail.one("[name=userComment]").observe("change", function (event) {
+            _this7.detailBook.comment = event.element.value;
+            _this7.detailBook.date = event.element.value ? new Date() : null;
+        });
+        detail.one("#detailCover").observe("load", function () {
+            _this7.detailBook.palette = thief.getPalette(detail.one("#detailCover").element);
+            if (_this7.detailBook.palette && _this7.detailBook.palette.length) {
+                detail.css("background", "radial-gradient(circle at 50%, whitesmoke 0%," + µ.rgbToHex(_this7.detailBook.palette[0]) + " 100%)");
+            }
+        });
+        detail.one("div.upload").observe("click", function () {
+            return detail.one("[type=file]").trigger("click");
+        });
+        detail.one("[type=file]").observe("change", function (event) {
+            detail.many("#noCover").toggleClass("notdisplayed", event.element.files.length);
+            if (event.element.files.length) {
+                var reader = new FileReader();
+                reader.addEventListener("load", function (result) {
+                    detail.one("#detailCover").toggleClass("notdisplayed", false).set("src", result.target.result);
+                    _this7.detailBook.alt = result.target.result;
+                });
+                reader.readAsDataURL(event.element.files[0]);
+                detail.one("form[name=uploadImg]").reset();
+            }
+        });
+        detail.one("datalist").html = cloud.options.join("");
+        detail.many("[searchby]").observe("click", function (event) {
+            _this7.close();
+            em.emit("search", {
+                "by": event.element.get("searchby"),
+                "search": event.element.text,
+                "lang": document.body.lang
+            });
+        });
+        detail.many(".tag button").observe("click", function (event) {
+            if (event.element.hasClass("libelle")) {
+                _this7.byTag(event.element.text);
+            } else {
+                _this7.removeTag(event.element);
+            }
+        });
+        detail.one("[name=newBook]").observe("submit", function (event) {
+            return event.preventDefault();
+        });
+        detail.many(".volumeInfo input, .volumeInfo textarea").observe("blur", function (event) {
+            event.element.value = "" + event.element.value.substr(0, 1).toUpperCase() + event.element.value.substr(1);
+            _.set(_this7.detailBook, "volumeInfo." + event.element.name, event.element.value);
+        });
+        detail.many("button.title").observe("click", function (event) {
+            event.element.toggleClass("hide");
+            event.element.parent.many("input, textarea").toggleClass("notdisplayed");
+        });
+        em.on("resize", this, this.close);
+        em.on("closeAll", this, this.close);
     };
 
     preview.one("#closePreview").observe("click", function () {

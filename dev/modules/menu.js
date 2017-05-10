@@ -12,7 +12,23 @@ define("menu", ["Window", "text!../templates/menu", "text!../templates/contacts"
 
     var last = "";
 
+    µ.one("bookcells").css("top", µ.one("#navbar").get("clientHeight"));
+
+    //Toggle
     navbar.many("#affichToggle, #altNavbar").observe("click", toggleMenu);
+
+    //Logout
+    em.on("logout", function () {
+        store.clear();
+        req("/logout").send().then(function () {
+            window.location.reload("/");
+        });
+    });
+    navbar.one("#logout").observe("click", function () {
+        em.emit("logout");
+    });
+
+    //Actions
     navbar.one("#recherche").observe("click", function () {
         return em.emit("openSearch");
     });
@@ -22,9 +38,6 @@ define("menu", ["Window", "text!../templates/menu", "text!../templates/contacts"
     navbar.one("#collection").observe("click", function () {
         return em.emit("showCollection");
     });
-    navbar.one("#contact").observe("click", function () {
-        return contacts.open();
-    });
     navbar.one("#tags").observe("click", function () {
         return em.emit("openCloud");
     });
@@ -32,19 +45,21 @@ define("menu", ["Window", "text!../templates/menu", "text!../templates/contacts"
         return em.emit("saveOrder");
     });
     navbar.one("#newbook").observe("click", function () {
-        return em.emit("openNewDetail");
+        return em.emit("newBook");
+    });
+    em.on("clickMenu", function (active) {
+        if (_.isString(active)) {
+            navbar.many(".active").toggleClass("active", false);
+            navbar.one("#" + active).toggleClass("active", true);
+            µ.one("#saveorder").toggleClass("notdisplayed", true);
+            last = "";
+        }
     });
 
-    µ.one("bookcells").css("top", µ.one("#navbar").get("clientHeight"));
-    navbar.one("#logout").observe("click", function () {
-        em.emit("logout");
-    });
-
+    //Filter
     navbar.one("form").observe("submit", function (event) {
-        event.preventDefault();
-        return false;
+        return event.preventDefault();
     });
-
     navbar.one("[type=search]").observe("search", function (event) {
         event.preventDefault();
         var filtre = this.value;
@@ -56,15 +71,6 @@ define("menu", ["Window", "text!../templates/menu", "text!../templates/contacts"
         }
         return false;
     });
-
-    em.on("clickMenu", function (active) {
-        if (_.isString(active)) {
-            navbar.many(".active").toggleClass("active", false);
-            navbar.one("#" + active).toggleClass("active", true);
-            µ.one("#saveorder").toggleClass("notdisplayed", true);
-        }
-    });
-
     em.on("resetFilter", function (withTags) {
         navbar.one("#selectedTag span").text = navbar.one("#selectedSearch span").text = "";
         navbar.many("#selectedTag, #selectedSearch").toggleClass("notdisplayed", true);
@@ -72,13 +78,10 @@ define("menu", ["Window", "text!../templates/menu", "text!../templates/contacts"
         navbar.one("form").reset();
     });
 
-    em.on("logout", function () {
-        store.clear();
-        req("/logout").send().then(function () {
-            window.location.reload("/");
-        });
+    //Contact
+    navbar.one("#contact").observe("click", function () {
+        return contacts.open();
     });
-
     contacts.many("[url]").observe("click", function (event) {
         return window.open(event.element.get("url"));
     });
@@ -87,9 +90,10 @@ define("menu", ["Window", "text!../templates/menu", "text!../templates/contacts"
         help.open();
     });
     contacts.one("#mailLink").observe("click", function (event) {
-        event.element.one("a").trigger("click");
+        return event.element.one("a").trigger("click");
     });
 
+    //Sorts
     navbar.one("#tris").observe("click", function (event) {
         sorts.css({
             "top": µ.one("#navbar").get("clientHeight"),
@@ -108,6 +112,7 @@ define("menu", ["Window", "text!../templates/menu", "text!../templates/contacts"
         this.toggleClass("sortBy", true);
     });
 
+    //Window
     window.addEventListener("selectstart", function (event) {
         return !_.includes(["INPUT", "TEXTAREA"], _.toUpper(event.target.tagName)) ? event.preventDefault() && false : true;
     });

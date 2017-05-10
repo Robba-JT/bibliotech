@@ -44,17 +44,6 @@ define("profile", ["Window", "hdb", "text!../templates/profile"], function (Wind
             em.on("orderByTag", this, this.orderByTag);
         };
 
-    Profile.prototype.updateOrder = function (order) {
-        const old = _.find(this.user.orders, ["tag", order.tag]);
-        req("/order", old ? "PUT" : "POST").send(order).then(() => {
-            if (old) {
-                _.assign(old, order);
-            } else {
-                this.user.orders.push(order);
-            }
-        }).catch((error) => err.add(error));
-    };
-
     Profile.prototype.orderByTag = function (tag, cells) {
         const order = _.find(this.user.orders, ["tag", tag]),
             bookcells = µ.one("bookcells");
@@ -67,6 +56,17 @@ define("profile", ["Window", "hdb", "text!../templates/profile"], function (Wind
                 }
             });
         }
+    };
+
+    Profile.prototype.updateOrder = function (order) {
+        const old = _.find(this.user.orders, ["tag", order.tag]);
+        req("/order", old ? "PUT" : "POST").send(order).then(() => {
+            if (old) {
+                _.assign(old, order);
+            } else {
+                this.user.orders.push(order);
+            }
+        }).catch((error) => err.add(error));
     };
 
     return new Profile();

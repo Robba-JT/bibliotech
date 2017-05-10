@@ -6,6 +6,20 @@ const console = require("../tools/console"),
     requestAPI = require("./requests"),
     usersDB = require("../db/users"),
     BooksAPI = function () {
+        const insertCover = function (user, cover, palette) {
+            const base64_marker = ";base64,",
+                base64_index = cover.indexOf(base64_marker),
+                base64 = cover.substr(base64_index + base64_marker.length),
+                mime = cover.substring(5, base64_index);
+
+            return booksDB.addCover({
+                base64,
+                mime,
+                "palette": palette,
+                "date": new Date(),
+                "by": user
+            });
+        };
         this.add = (req) => {
             if (req.book) {
                 req.user.books.push({
@@ -53,7 +67,10 @@ const console = require("../tools/console"),
         }).catch(req.error);
 
         this.cover = (req, res) => {
-            const id = _.get(req, "params[0]");
+            var id = _.get(req, "params[0]");
+            try {
+                id = JSON.parse(id);
+            } catch (error) {}
             if (id) {
                 const book = _.find(req.user.books, ["id", id]);
                 if (book && book.alt) {
@@ -81,6 +98,48 @@ const console = require("../tools/console"),
                 }
             } else {
                 req.error(409);
+            }
+        };
+
+        this.create = (req) => {
+            const newBook = _.get(req, "body");
+            if (newBook) {
+                const proms = [];
+                _.assign(newBook, {
+                    "id": {
+                        "user": req.user._id,
+                        "number": req.user.userbooks
+                    }
+                });
+                req.user.books.push({
+                    "id": newBook.id,
+                    "date": new Date(),
+                    "tags": [],
+                    "comment": ""
+                });
+                proms.push(usersDB.update({
+                    "_id": req.user._id
+                }, {
+                    "$addToSet": {
+                        "books": {
+                            "id": newBook.id,
+                            "@": new Date()
+                        }
+                    },
+                    "$inc": {
+                        "userbooks": 1
+                    }
+                }));
+                proms.push(booksDB.update(newBook));
+                Q.allSettled(proms).then((result) => {
+                    if (_.find(result, ["status", "rejected"])) {
+                        req.error(500);
+                    } else {
+                        req.response(newBook.id);
+                    }
+                }).catch(req.error);
+            } else {
+                req.error(500);
             }
         };
 
@@ -126,7 +185,10 @@ const console = require("../tools/console"),
         };
 
         this.mostAdded = (req) => {
-            const id = _.get(req, "params[0]");
+            var id = _.get(req, "params[0]");
+            try {
+                id = JSON.parse(id);
+            } catch (error) {}
             if (id) {
                 usersDB.mostAdded(id, req.user._id, _.map(req.user.books, "id")).then((ids) => {
                     if (ids.length) {
@@ -163,9 +225,7 @@ const console = require("../tools/console"),
         };
 
         this.update = (req) => {
-            const id = _.get(req, "params[0]"),
-                book = _.find(req.user.books, ["id", id]);
-            if (book && !_.isEmpty(req.body) && _.isPlainObject(req.body)) {
+            if (!_.isEmpty(req.body) && _.isPlainObject(req.body)) {
                 const update = {},
                     proms = [];
 
@@ -182,31 +242,29 @@ const console = require("../tools/console"),
                     update["books.$.note"] = _.parseInt(req.body.note);
                 }
                 if (_.has(req.body, "alt")) {
-                    const base64_marker = ";base64,",
-                        base64_index = req.body.alt.indexOf(base64_marker),
-                        base64 = req.body.alt.substr(base64_index + base64_marker.length),
-                        mime = req.body.alt.substring(5, base64_index);
-
-                    proms.push(booksDB.addCover({
-                        base64,
-                        mime,
-                        "palette": _.get(req.body, "palette"),
-                        "date": new Date(),
-                        "by": req.user._id
+                    proms.push(insertCover(req.user._id, req.body.alt, _.get(req.body, "palette")));
+                }
+                if (_.has(req.body, "volumeInfo")) {
+                    booksDB.update(_.merge(req.body.volumeInfo, {
+                        "id": req.book.id
                     }));
                 }
                 Q.allSettled(proms).then((result) => {
-                    if (result && result.length && result[0].state === "fulfilled") {
+                    if (_.find(result, ["state", "fulfilled"])) {
                         update["books.$.alt"] = result[0].value;
                     }
-                    usersDB.update({
-                        "_id": req.user._id,
-                        "books.id": id
-                    }, {
-                        "$set": update
-                    }).then(() => {
+                    if (!_.isEmpty(update)) {
+                        usersDB.update({
+                            "_id": req.user._id,
+                            "books.id": req.book.id
+                        }, {
+                            "$set": update
+                        }).then(() => {
+                            req.response();
+                        }).catch(req.error);
+                    } else {
                         req.response();
-                    }).catch(req.error);
+                    }
                 });
             } else {
                 req.error(409);
@@ -214,6 +272,9 @@ const console = require("../tools/console"),
         };
 
         this.validate = (req, res, next, id) => {
+            try {
+                id = JSON.parse(id);
+            } catch (error) {}
             booksDB.loadOne({
                     id
                 }).then((book) => {

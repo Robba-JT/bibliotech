@@ -16,30 +16,8 @@ const em = (function () {
             this.callback = callback;
         };
 
-    Emitter.prototype.on = function (...args) {
-        const new_event = new Event(...args);
-        this.onEvents.push(new_event);
-        return this;
-    };
-
-    Emitter.prototype.once = function (...args) {
-        const new_event = new Event(...args);
-        this.onceEvents.push(new_event);
-        return this;
-    };
-
-    Emitter.prototype.removeOn = function (event) {
-        _.remove(this.onEvents, ["event", event]);
-        return this;
-    };
-
-    Emitter.prototype.removeOnce = function (event) {
-        _.remove(this.onceEvents, ["event", event]);
-        return this;
-    };
-
-    Emitter.prototype.remove = function (event) {
-        return this.removeOn(event).removeOnce(event);
+    Event.prototype.execute = function (...data) {
+        return Reflect.apply(this.callback, this.context, data);
     };
 
     Emitter.prototype.emit = function (event, ...data) {
@@ -52,8 +30,30 @@ const em = (function () {
         return this;
     };
 
-    Event.prototype.execute = function (...data) {
-        return Reflect.apply(this.callback, this.context, data);
+    Emitter.prototype.on = function (...args) {
+        const new_event = new Event(...args);
+        this.onEvents.push(new_event);
+        return this;
+    };
+
+    Emitter.prototype.once = function (...args) {
+        const new_event = new Event(...args);
+        this.onceEvents.push(new_event);
+        return this;
+    };
+
+    Emitter.prototype.remove = function (event) {
+        return this.removeOn(event).removeOnce(event);
+    };
+
+    Emitter.prototype.removeOn = function (event) {
+        _.remove(this.onEvents, ["event", event]);
+        return this;
+    };
+
+    Emitter.prototype.removeOnce = function (event) {
+        _.remove(this.onceEvents, ["event", event]);
+        return this;
     };
 
     return new Emitter();

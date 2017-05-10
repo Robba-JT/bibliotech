@@ -61,17 +61,6 @@ define("search", ["cells", "collection", "Window", "text!../templates/search"], 
         });
     };
 
-    Search.prototype.show = function (books) {
-        this.last.books = _.unionBy(this.last.books, books, "id");
-        const newCells = _.map(books, (book) => {
-            return collection.get(book.id) || cells.getCell(book);
-        });
-        this.last.cells = _.unionBy(this.last.cells, newCells, "id");
-        cells.show(newCells);
-        µ.many(".waiting, .roundIcon").toggleClass("notdisplayed", true);
-        return this;
-    };
-
     Search.prototype.associated = function () {
         µ.many(".waiting, .roundIcon, .waitAnim").toggleClass("notdisplayed", false);
         µ.one("sort.active").toggleClass("active", false);
@@ -89,23 +78,6 @@ define("search", ["cells", "collection", "Window", "text!../templates/search"], 
             }).catch((error) => err.add(error));
         }
         return this;
-    };
-
-    Search.prototype.request = function () {
-        req("/search").send(_.merge({}, this.last.qs, {
-            "index": this.last.books.length
-        })).then((result) => {
-            this.show(result.books);
-            if (result.books.length === 40 && this.last.books.length < 400) {
-                this.request();
-            } else {
-                µ.one(".waitAnim").toggleClass("notdisplayed", true);
-                store.set(this.last.qs, this.last.books);
-            }
-            return false;
-        }).catch((error) => {
-            err.add(error);
-        });
     };
 
     Search.prototype.get = function () {
@@ -139,6 +111,34 @@ define("search", ["cells", "collection", "Window", "text!../templates/search"], 
             cells.reset();
             cells.show(this.last.cells);
         }
+        return this;
+    };
+
+    Search.prototype.request = function () {
+        req("/search").send(_.merge({}, this.last.qs, {
+            "index": this.last.books.length
+        })).then((result) => {
+            this.show(result.books);
+            if (result.books.length === 40 && this.last.books.length < 400) {
+                this.request();
+            } else {
+                µ.one(".waitAnim").toggleClass("notdisplayed", true);
+                store.set(this.last.qs, this.last.books);
+            }
+            return false;
+        }).catch((error) => {
+            err.add(error);
+        });
+    };
+
+    Search.prototype.show = function (books) {
+        this.last.books = _.unionBy(this.last.books, books, "id");
+        const newCells = _.map(books, (book) => {
+            return collection.get(book.id) || cells.getCell(book);
+        });
+        this.last.cells = _.unionBy(this.last.cells, newCells, "id");
+        cells.show(newCells);
+        µ.many(".waiting, .roundIcon").toggleClass("notdisplayed", true);
         return this;
     };
 

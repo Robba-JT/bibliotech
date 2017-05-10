@@ -10,25 +10,40 @@ define("menu", ["Window", "text!../templates/menu", "text!../templates/contacts"
 
     var last = "";
 
-    navbar.many("#affichToggle, #altNavbar").observe("click", toggleMenu);
-    navbar.one("#recherche").observe("click", () => em.emit("openSearch"));
-    navbar.one("#profile").observe("click", () => em.emit("openProfile"));
-    navbar.one("#collection").observe("click", () => em.emit("showCollection"));
-    navbar.one("#contact").observe("click", () => contacts.open());
-    navbar.one("#tags").observe("click", () => em.emit("openCloud"));
-    navbar.one("#saveorder").observe("click", () => em.emit("saveOrder"));
-    navbar.one("#newbook").observe("click", () => em.emit("openNewDetail"));
-
     µ.one("bookcells").css("top", µ.one("#navbar").get("clientHeight"));
+
+    //Toggle
+    navbar.many("#affichToggle, #altNavbar").observe("click", toggleMenu);
+
+    //Logout
+    em.on("logout", () => {
+        store.clear();
+        req("/logout").send().then(() => {
+            window.location.reload("/");
+        });
+    });
     navbar.one("#logout").observe("click", () => {
         em.emit("logout");
     });
 
-    navbar.one("form").observe("submit", function (event) {
-        event.preventDefault();
-        return false;
+    //Actions
+    navbar.one("#recherche").observe("click", () => em.emit("openSearch"));
+    navbar.one("#profile").observe("click", () => em.emit("openProfile"));
+    navbar.one("#collection").observe("click", () => em.emit("showCollection"));
+    navbar.one("#tags").observe("click", () => em.emit("openCloud"));
+    navbar.one("#saveorder").observe("click", () => em.emit("saveOrder"));
+    navbar.one("#newbook").observe("click", () => em.emit("newBook"));
+    em.on("clickMenu", function (active) {
+        if (_.isString(active)) {
+            navbar.many(".active").toggleClass("active", false);
+            navbar.one(`#${active}`).toggleClass("active", true);
+            µ.one("#saveorder").toggleClass("notdisplayed", true);
+            last = "";
+        }
     });
 
+    //Filter
+    navbar.one("form").observe("submit", (event) => event.preventDefault());
     navbar.one("[type=search]").observe("search", function (event) {
         event.preventDefault();
         const filtre = this.value;
@@ -40,15 +55,6 @@ define("menu", ["Window", "text!../templates/menu", "text!../templates/contacts"
         }
         return false;
     });
-
-    em.on("clickMenu", function (active) {
-        if (_.isString(active)) {
-            navbar.many(".active").toggleClass("active", false);
-            navbar.one(`#${active}`).toggleClass("active", true);
-            µ.one("#saveorder").toggleClass("notdisplayed", true);
-        }
-    });
-
     em.on("resetFilter", function (withTags) {
         navbar.one("#selectedTag span").text = navbar.one("#selectedSearch span").text = "";
         navbar.many("#selectedTag, #selectedSearch").toggleClass("notdisplayed", true);
@@ -56,22 +62,16 @@ define("menu", ["Window", "text!../templates/menu", "text!../templates/contacts"
         navbar.one("form").reset();
     });
 
-    em.on("logout", () => {
-        store.clear();
-        req("/logout").send().then(() => {
-            window.location.reload("/");
-        });
-    });
-
+    //Contact
+    navbar.one("#contact").observe("click", () => contacts.open());
     contacts.many("[url]").observe("click", (event) => window.open(event.element.get("url")));
     contacts.one("#helpLink").observe("click", (event) => {
         contacts.close();
         help.open();
     });
-    contacts.one("#mailLink").observe("click", (event) => {
-        event.element.one("a").trigger("click");
-    });
+    contacts.one("#mailLink").observe("click", (event) => event.element.one("a").trigger("click"));
 
+    //Sorts
     navbar.one("#tris").observe("click", function (event) {
         sorts.css({
             "top": µ.one("#navbar").get("clientHeight"),
@@ -90,6 +90,7 @@ define("menu", ["Window", "text!../templates/menu", "text!../templates/contacts"
         this.toggleClass("sortBy", true);
     });
 
+    //Window
     window.addEventListener("selectstart", (event) => {
         return !_.includes(["INPUT", "TEXTAREA"], _.toUpper(event.target.tagName)) ? event.preventDefault() && false : true;
     });

@@ -23,19 +23,6 @@ const req = (function () {
         return this;
     };
 
-    /**
-     * Set Request headers prototype
-     * @returns {Request} this Request
-     **/
-    Request.prototype.setHeaders = function () {
-        for (const header in this.headers) {
-            if (_.has(this.headers, header)) {
-                this.req.setRequestHeader(header, this.headers[header]);
-            }
-        }
-        return this;
-    };
-
     Request.prototype.jsonToQueryString = function (params) {
         let query = "";
         const keys = _.keys(params),
@@ -53,34 +40,6 @@ const req = (function () {
         this.url += encodeURI(query);
         return this;
     };
-
-    /**
-     * Get Request response
-     * @returns {Object} this request response
-     **/
-    Reflect.defineProperty(Request.prototype, "response", {
-        get() {
-            if (_.has([200, 204], this.req.status)) {
-                try {
-                    return JSON.parse(this.req.response);
-                } catch (error) {
-                    return this.req.responseText;
-                }
-            } else {
-                return null;
-            }
-        }
-    });
-
-    /**
-     * Get Request error
-     * @returns {String} this request error
-     **/
-    Reflect.defineProperty(Request.prototype, "error", {
-        get() {
-            return this.req.status !== 200 && this.req.status !== 204 && this.req.responseText;
-        }
-    });
 
     /**
      * Request sending method
@@ -130,5 +89,39 @@ const req = (function () {
             }
         }) : Promise.reject(new Error(["Request invalid argument", "URL parameter is missing."]));
     };
+
+    /**
+     * Set Request headers prototype
+     * @returns {Request} this Request
+     **/
+    Request.prototype.setHeaders = function () {
+        for (const header in this.headers) {
+            if (_.has(this.headers, header)) {
+                this.req.setRequestHeader(header, this.headers[header]);
+            }
+        }
+        return this;
+    };
+
+    Reflect.defineProperty(Request.prototype, "response", {
+        get() {
+            if (_.has([200, 204], this.req.status)) {
+                try {
+                    return JSON.parse(this.req.response);
+                } catch (error) {
+                    return this.req.responseText;
+                }
+            } else {
+                return null;
+            }
+        }
+    });
+
+    Reflect.defineProperty(Request.prototype, "error", {
+        get() {
+            return this.req.status !== 200 && this.req.status !== 204 && this.req.responseText;
+        }
+    });
+
     return Request;
 })();

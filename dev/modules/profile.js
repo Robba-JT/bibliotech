@@ -54,6 +54,20 @@ define("profile", ["Window", "hdb", "text!../templates/profile"], function (Wind
         em.on("orderByTag", this, this.orderByTag);
     };
 
+    Profile.prototype.orderByTag = function (tag, cells) {
+        var order = _.find(this.user.orders, ["tag", tag]),
+            bookcells = µ.one("bookcells");
+
+        if (order) {
+            _.forEachRight(order.list, function (one) {
+                var cell = _.find(cells, ["id", one]);
+                if (_.has(cell, "cell")) {
+                    bookcells.insertFirst(cell.cell);
+                }
+            });
+        }
+    };
+
     Profile.prototype.updateOrder = function (order) {
         var _this3 = this;
 
@@ -67,20 +81,6 @@ define("profile", ["Window", "hdb", "text!../templates/profile"], function (Wind
         }).catch(function (error) {
             return err.add(error);
         });
-    };
-
-    Profile.prototype.orderByTag = function (tag, cells) {
-        var order = _.find(this.user.orders, ["tag", tag]),
-            bookcells = µ.one("bookcells");
-
-        if (order) {
-            _.forEachRight(order.list, function (one) {
-                var cell = _.find(cells, ["id", one]);
-                if (_.has(cell, "cell")) {
-                    bookcells.insertFirst(cell.cell);
-                }
-            });
-        }
     };
 
     return new Profile();

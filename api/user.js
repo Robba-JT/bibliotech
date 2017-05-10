@@ -27,7 +27,7 @@ const console = require("../tools/console"),
             }
         };
 
-        this.get = (req) => req.response(_.pick(req.user, ["_id", "name", "googleSignIn", "googleSync", "orders"]));
+        this.get = (req) => req.response(_.pick(req.user, ["_id", "name", "googleSignIn", "googleSync", "orders", "userbooks"]));
 
         this.orderAdd = (req) => {
             const tag = _.get(req, "body.tag"),

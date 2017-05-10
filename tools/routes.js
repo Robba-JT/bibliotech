@@ -89,10 +89,11 @@ module.exports = exports = (function () {
         .post(booksAPI.add)
         .delete(booksAPI.delete);
 
+
     //Detail
-    router.route("/detail/*")
-        .get(booksAPI.detail)
-        .put(booksAPI.update);
+    router.get("/detail/*", booksAPI.detail);
+    router.put("/detail/:book", booksAPI.update);
+    router.post("/detail", booksAPI.create);
 
     router.get("/mostAdded/*", booksAPI.mostAdded);
 

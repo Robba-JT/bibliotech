@@ -4,16 +4,22 @@ const store = (function () {
         this.store = window.sessionStorage;
     };
 
-    Store.prototype.set = function (key, value) {
+    /**
+     * clear session storage
+     * @returns {Object}
+     **/
+    Store.prototype.clear = function () {
         if (this.valid) {
-            if (!_.isString(key)) {
-                key = CJSON.stringify(key);
-            }
-            this.store.setItem(key, CJSON.stringify(value));
+            this.store.clear();
         }
         return this;
     };
 
+    /**
+     * Get in session storage
+     * @param {String} key
+     * @returns {Object}
+     **/
     Store.prototype.get = function (key) {
         try {
             if (this.valid) {
@@ -29,6 +35,11 @@ const store = (function () {
         }
     };
 
+    /**
+     * Remove key from session storage
+     * @param {String} key
+     * @returns {Store}
+     **/
     Store.prototype.remove = function (key) {
         if (this.valid) {
             if (!_.isString(key)) {
@@ -36,13 +47,24 @@ const store = (function () {
             }
             this.store.removeItem(key);
         }
+        return this;
     };
 
-    Store.prototype.clear = function () {
+    /**
+     * Set in session storage
+     * @param {String} key
+     * @param {Object} value
+     * @returns {Store}
+     **/
+    Store.prototype.set = function (key, value) {
         if (this.valid) {
-            this.store.clear();
+            if (!_.isString(key)) {
+                key = CJSON.stringify(key);
+            }
+            this.store.setItem(key, CJSON.stringify(value));
         }
         return this;
     };
+
     return new Store();
 }());

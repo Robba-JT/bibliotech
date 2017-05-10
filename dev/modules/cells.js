@@ -10,7 +10,7 @@ define("cells", ["hdb", "text!../templates/Cell"], function (hdb, template) {
         if (!(this instanceof Cell)) {
             return new Cell(book, inCollection);
         }
-        this.id = book.id;
+        this.id = _.isPlainObject(book.id) ? JSON.stringify(book.id) : _.get(book, "id");
         this.src = _.get(book, "src");
         this.book = _.omit(book, "src");
         this.cell = µ.new("cell").set({
@@ -19,7 +19,7 @@ define("cells", ["hdb", "text!../templates/Cell"], function (hdb, template) {
                 "src": this.src
             })),
             "draggable": true,
-            "book": this.book.id
+            "book": this.id
         }).css({
             width: width
         }).observe("mouseleave", function () {
@@ -29,13 +29,15 @@ define("cells", ["hdb", "text!../templates/Cell"], function (hdb, template) {
             this.src = "/cover/" + this.id + "?" + Math.random().toString(24).slice(2);
         }
 
-        var index = _.get(book, "description").indexOf(" ", 500),
-            cover = this.cell.one("img");
+        if (_.has(book, "description")) {
+            var description = _.get(book, "description"),
+                index = description.indexOf(" ", 500);
 
-        this.cell.one("figure span").observe("click", function (event) {
-            event.stopPropagation();
-            event.element.toggleClass("notdisplayed", true);
-        }).html = _.get(book, "description").substr(0, Math.max(500, index)) + (index === -1 ? "" : "...");
+            this.cell.one("figure span").observe("click", function (event) {
+                event.stopPropagation();
+                event.element.toggleClass("notdisplayed", true);
+            }).html = description.substr(0, Math.max(500, index)) + (index === -1 ? "" : "...");
+        }
 
         this.cell.one(".add").observe("click", function (event) {
             event.stopPropagation();
@@ -64,6 +66,7 @@ define("cells", ["hdb", "text!../templates/Cell"], function (hdb, template) {
             }
         });
 
+        var cover = this.cell.one("img");
         cover.loaded = function () {
             cover.toggleClass("notdisplayed", false);
             if (cover.siblings.get(0)) {
@@ -100,6 +103,7 @@ define("cells", ["hdb", "text!../templates/Cell"], function (hdb, template) {
         em.on("resetCells", this, this.reset);
         em.on("resize", this, this.resize);
         em.on("saveOrder", this, this.saveOrder);
+        em.on("newBook", this, this.newBook);
     },
         updateWidth = function updateWidth() {
         elt.toggleClass("scrolled", true);
@@ -108,6 +112,17 @@ define("cells", ["hdb", "text!../templates/Cell"], function (hdb, template) {
     };
 
     var width = null;
+
+    //Cell
+    Cell.prototype.add = function () {
+        em.emit("addBook", this);
+        this.cell.many("button").toggleClass("notdisplayed");
+    };
+
+    Cell.prototype.changeBackground = function (rgb) {
+        this.cell.css("background-color", µ.rgbToHex(rgb)).one("figcaption").css("color", µ.isDark(rgb) ? "whitesmoke" : "black");
+        return this;
+    };
 
     Cell.prototype.filter = function () {
         var filter = _.words(_.toLower(_.noAccent(µ.one("#selectedSearch span").text))),
@@ -129,9 +144,8 @@ define("cells", ["hdb", "text!../templates/Cell"], function (hdb, template) {
         return this;
     };
 
-    Cell.prototype.changeBackground = function (rgb) {
-        this.cell.css("background-color", µ.rgbToHex(rgb)).one("figcaption").css("color", µ.isDark(rgb) ? "whitesmoke" : "black");
-        return this;
+    Cell.prototype.isVisible = function () {
+        return document.body.scrollTop + window.outerHeight > this.cell.element.offsetTop && this.cell.visible;
     };
 
     Cell.prototype.resize = function () {
@@ -139,11 +153,6 @@ define("cells", ["hdb", "text!../templates/Cell"], function (hdb, template) {
             width: width
         });
         return this;
-    };
-
-    Cell.prototype.add = function () {
-        em.emit("addBook", this);
-        this.cell.many("button").toggleClass("notdisplayed");
     };
 
     Cell.prototype.remove = function () {
@@ -159,46 +168,33 @@ define("cells", ["hdb", "text!../templates/Cell"], function (hdb, template) {
     Cell.prototype.update = function (book) {
         var inCollection = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
 
+        var volumeInfo = _.get(book, "volumeInfo") || {};
         if (_.get(book, "alt") !== _.get(this.book, "alt")) {
             this.src = "/cover/" + this.id + "?" + Math.random().toString(24).slice(2);
             this.cell.one("img").set("src", this.src);
         }
-        _.assign(this.book, book, {
+        _.assign(this.book, _.omit(book, "volumeInfo"), volumeInfo, {
             inCollection: inCollection
         });
-        return this;
-    };
-
-    Cell.prototype.isVisible = function () {
-        return document.body.scrollTop + window.outerHeight > this.cell.element.offsetTop && this.cell.visible;
-    };
-
-    Cells.prototype.resize = function () {
-        updateWidth();
-        _.forEach(this.cells, function (cell) {
-            return cell.resize();
-        });
-        return this;
-    };
-
-    Cells.prototype.show = function (cells) {
-        _.forEach(cells, function (book) {
-            elt.append(book.cell.toggleClass("notdisplayed", false));
-            if (book.defLoad) {
-                book.defLoad();
+        /*
+            if (volumeInfo.title) {
+                this.cell.one("header").text = volumeInfo.title;
             }
-        });
-        this.cells = _.unionBy(this.cells, cells, "id");
+            if (volumeInfo.authors) {
+                this.cell.one("figcaption div").text = volumeInfo.authors;
+            }
+            if (volumeInfo.description) {
+                this.cell.one("figure span").text = volumeInfo.description;
+            }
+        */
+        this.cell.one("header").text = this.book.title;
+        this.cell.one("figcaption div").text = this.book.authors;
+        this.cell.one("figure span").text = this.book.description;
+        this.cell.set("book", this.id);
         return this;
     };
 
-    Cells.prototype.reset = function () {
-        elt.html = "";
-        this.cells = [];
-        µ.one("#saveorder").toggleClass("notdisplayed", true);
-        return this;
-    };
-
+    //Cells
     Cells.prototype.getCell = function (book, inCollection) {
         return new Cell(book, inCollection);
     };
@@ -210,6 +206,26 @@ define("cells", ["hdb", "text!../templates/Cell"], function (hdb, template) {
         return _.map(books, function (book) {
             return _this2.getCell(book, inCollection);
         });
+    };
+
+    Cells.prototype.newBook = function () {
+        var cell = new Cell({});
+        cell.cell.one("img").trigger("click");
+    };
+
+    Cells.prototype.resize = function () {
+        updateWidth();
+        _.forEach(this.cells, function (cell) {
+            return cell.resize();
+        });
+        return this;
+    };
+
+    Cells.prototype.reset = function () {
+        elt.html = "";
+        this.cells = [];
+        µ.one("#saveorder").toggleClass("notdisplayed", true);
+        return this;
     };
 
     Cells.prototype.saveOrder = function () {
@@ -225,6 +241,17 @@ define("cells", ["hdb", "text!../templates/Cell"], function (hdb, template) {
         };
         em.emit("updateOrder", params);
         µ.one("#saveorder").toggleClass("notdisplayed", true);
+    };
+
+    Cells.prototype.show = function (cells) {
+        _.forEach(cells, function (book) {
+            elt.append(book.cell.toggleClass("notdisplayed", false));
+            if (book.defLoad) {
+                book.defLoad();
+            }
+        });
+        this.cells = _.unionBy(this.cells, cells, "id");
+        return this;
     };
 
     window.addEventListener("resize", function () {

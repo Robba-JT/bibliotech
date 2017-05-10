@@ -15,12 +15,12 @@ define("collection", ["cells"], function (cells) {
                     _this.cells.push(cell);
                     _this.cells = _.sortBy(_this.cells, ["book.title"]);
                     µ.one("#nbBooks").text = _this.cells.length;
+                    if (µ.one("#collection").hasClass("active")) {
+                        _this.show();
+                    }
                 }).catch(function (error) {
                     err.add(error);
                 });
-                if (µ.one("#collection").hasClass("active")) {
-                    this.show();
-                }
             }
         });
         em.on("removeBook", this, function (bookId) {
@@ -61,14 +61,6 @@ define("collection", ["cells"], function (cells) {
         }
     });
 
-    Collection.prototype.has = function (id) {
-        return _.some(this.cells, ["id", id]);
-    };
-
-    Collection.prototype.get = function (id) {
-        return _.find(this.cells, ["id", id]);
-    };
-
     Collection.prototype.add = function (id) {
         if (_.find(this.cells, ["id", id])) {
             throw new Error("Book already added.");
@@ -80,22 +72,12 @@ define("collection", ["cells"], function (cells) {
         return this;
     };
 
-    Collection.prototype.remove = function (id) {
-        var index = _.isNumber(id) ? id : _.indexOf(this.cells, ["id", id]);
-        if (index === -1) {
-            throw new Error("Invalid book id.");
-        } else {
-            this.cells.splice(index, 1);
-        }
-        return this;
+    Collection.prototype.get = function (id) {
+        return _.find(this.cells, ["id", id]);
     };
 
-    Collection.prototype.show = function () {
-        em.emit("clickMenu", "collection");
-        em.emit("resetFilter", !_.isEmpty(this.tags));
-        em.emit("resetCells");
-        em.emit("showCells", this.cells);
-        return this;
+    Collection.prototype.has = function (id) {
+        return _.some(this.cells, ["id", id]);
     };
 
     Collection.prototype.init = function () {
@@ -119,6 +101,24 @@ define("collection", ["cells"], function (cells) {
         }).catch(function (error) {
             err.add(error);
         });
+        return this;
+    };
+
+    Collection.prototype.remove = function (id) {
+        var index = _.isNumber(id) ? id : _.indexOf(this.cells, ["id", id]);
+        if (index === -1) {
+            throw new Error("Invalid book id.");
+        } else {
+            this.cells.splice(index, 1);
+        }
+        return this;
+    };
+
+    Collection.prototype.show = function () {
+        em.emit("clickMenu", "collection");
+        em.emit("resetFilter", !_.isEmpty(this.tags));
+        em.emit("resetCells");
+        em.emit("showCells", this.cells);
         return this;
     };
 

@@ -45,19 +45,12 @@ const µ = (function () {
         };
 
     /**
-     * Create elements
-     * @param {String} tag tagName
-     * @param {Object} attrs attributes list
-     * @returns {myElement} new element
+     * Test color
+     * @param {Array} rgb rgb color
+     * @returns {Boolean} is dark
      **/
-    dom.new = (tag, attrs) => {
-        const elt = new myElement(document.createElement(tag));
-        if (_.isPlainObject(attrs)) {
-            elt.set(attrs);
-        } else if (_.isString(attrs)) {
-            elt.html = attrs;
-        }
-        return elt;
+    dom.isDark = function (rgb) {
+        return 0.3 * rgb[0] + 0.59 * rgb[1] + 0.11 * rgb[2] <= 128;
     };
 
     /**
@@ -71,6 +64,22 @@ const µ = (function () {
             parent = parent.element;
         }
         return new myCollection(selector instanceof HTMLCollection || selector instanceof NodeList ? selector : parent.querySelectorAll(selector));
+    };
+
+    /**
+     * Create elements
+     * @param {String} tag tagName
+     * @param {Object} attrs attributes list
+     * @returns {myElement} new element
+     **/
+    dom.new = (tag, attrs) => {
+        const elt = new myElement(document.createElement(tag));
+        if (_.isPlainObject(attrs)) {
+            elt.set(attrs);
+        } else if (_.isString(attrs)) {
+            elt.html = attrs;
+        }
+        return elt;
     };
 
     /**
@@ -88,189 +97,43 @@ const µ = (function () {
         return new myElement(selector instanceof HTMLElement || selector instanceof Document || selector instanceof Window ? selector : parent.querySelector(selector));
     };
 
+    /**
+     * Convert rgb to hex
+     * @param {Array} rgb rgb color
+     * @returns {String} hex color
+     **/
     dom.rgbToHex = function (rgb) {
         return `#${((1 << 24) + (rgb[0] << 16) + (rgb[1] << 8) + rgb[2]).toString(16).substr(1)}`;
     };
 
-    dom.isDark = function (rgb) {
-        return 0.3 * rgb[0] + 0.59 * rgb[1] + 0.11 * rgb[2] <= 128;
-    };
-
-    Reflect.defineProperty(myCollection.prototype, "length", {
-        get() {
-            return this.elements.length;
-        },
-        set(len) {
-            if (_.isNumber(len) && len > 0 && len < this.length) {
-                this.elements = this.elements.slice(0, len);
-            }
-            return this;
-        }
-    });
-
-    Reflect.defineProperty(myElement.prototype, "exists", {
-        get() {
-            return Boolean(this.element);
-        }
-    });
-
-    Reflect.defineProperty(myElement.prototype, "files", {
-        get() {
-            return this.element && this.element.files || [];
-        }
-    });
-
-    Reflect.defineProperty(myElement.prototype, "checked", {
-        get() {
-            return this.element.checked;
-        },
-        set(checked) {
-            this.element.checked = Boolean(checked);
-        }
-    });
-
-    Reflect.defineProperty(myElement.prototype, "loaded", {
-        get() {
-            return this.element.onload;
-        },
-        set(cb) {
-            if (this.tag === "IMG" && _.isFunction(cb)) {
-                this.element.onload = () => {
-                    Reflect.apply(cb, this, []);
-                };
-            }
-        }
-    });
-
-    Reflect.defineProperty(myElement.prototype, "parent", {
-        get() {
-            return dom.one(this.element.parentNode);
-        }
-    });
-
-    Reflect.defineProperty(myElement.prototype, "siblings", {
-        get() {
-            const children = dom.many(this.element.parentNode.children);
-            _.remove(children.elements, this);
-            return children;
-        }
-    });
-
-    Reflect.defineProperty(myElement.prototype, "visible", {
-        get() {
-            return this.element && window.getComputedStyle(this.element).visibility === "visible" && window.getComputedStyle(this.element).display !== "none";
-        }
-    });
-
     /**
-     * Unique selector in myElement
-     * @param {Object} selector selector
-     * @returns {myElement} selected element
+     * New element assigner
+     * @param {String} tag tagName
+     * @param {Object} attrs Attributes list
+     * @returns {myElement} new element
      **/
-    myElement.prototype.one = function (selector) {
-        return dom.one(selector, this);
-    };
-
-    /**
-     * Location reload
-     * @param {Boolean} forceGet force GET request
-     * @returns {myElement} element
-     **/
-    myElement.prototype.reload = function (forceGet = false) {
-        forceGet = Boolean(forceGet);
-        if (this.element instanceof Document) {
-            this.element.location.reload(forceGet);
-        } else if (this.element instanceof HTMLIFrameElement) {
-            this.element.contentWindow.location.reload(forceGet);
-        }
-        return this;
-    };
-
-    /**
-     * multiple selector in myElement
-     * @param {Object} selector selector
-     * @returns {myCollection} selected elements
-     **/
-    myElement.prototype.many = function (selector) {
-        return dom.many(selector, this);
-    };
-
-    /**
-     * Get element from collection
-     * @param {Number} index index of element
-     * @returns {myElement} indexed element
-     **/
-    myCollection.prototype.get = function (index) {
-        return _.isNumber(index) && index < this.length ? this.elements[index] : null;
-    };
-
-    /**
-     * Multiple attributes setter
-     * @param {Object} attrs list of attributes
-     * @param {String} value value
-     * @returns {myCollection} this collection
-     **/
-    myCollection.prototype.set = function (attr, value) {
-        this.elements.forEach((element) => Reflect.apply(element.set, element, [attr, value]));
-        return this;
-    };
-
-    /**
-     * index of elt in collection
-     * @param {myElement} elt elemnt to find
-     * @returns {Number} index of elt
-     **/
-    myCollection.prototype.indexOf = function (elt) {
-        if (_.isString(elt)) {
-            elt = dom.one(elt);
-        }
-        return _.findIndex(this.elements, (test) => {
-            return _.isEqual(test, elt);
-        });
-    };
-
-    /**
-     * Element listener prototype
-     * @param {String} eventsName Events name
-     * @param {Object} data data to attach
-     * @param {Function} callback Callback function
-     * @param {Boolean} capture capture
-     * @returns {myElement} this element
-     **/
-    myElement.prototype.observe = function (eventsName, ...args) {
-        var [
-            data,
-            callback,
-            capture = false
-        ] = args;
-        if (_.isFunction(data)) {
-            capture = callback || false;
-            callback = data;
-            data = null;
-        }
-        if (_.has(this, "element")) {
-            eventsName.split(",").forEach((eventName) => {
-                this.element.addEventListener(eventName.trim(), (event) => {
-                    event.data = data;
-                    event.element = this;
-                    return Reflect.apply(callback, this, [event]);
-                }, capture);
+    myElement.prototype.append = function (tag, attrs) {
+        if (tag instanceof myCollection || _.isArray(tag)) {
+            const elts = tag.elements || tag;
+            _.forEach(elts, (elt) => {
+                this.element.appendChild(elt.set(attrs).element);
             });
+            return this;
+        } else {
+            const elt = tag instanceof HTMLElement || tag instanceof myElement ? tag.set(attrs) : dom.new(tag, attrs);
+            this.element.appendChild(elt.element);
+            return elt;
         }
-        return this;
     };
 
     /**
-     * Element remove listener prototype
-     * @param {String} eventName Event name
-     * @param {Function} fn Callback function
-     * @param {Boolean} capture capture
+     * New element assigner
+     * @param {myElement} parent parent
      * @returns {myElement} this element
      **/
-    myElement.prototype.unobserve = function (eventName, fn, capture) {
-        if (_.has(this, "element")) {
-            this.element.removeEventListener(eventName, fn, capture);
-        }
+    myElement.prototype.appendTo = function (parent) {
+        const elt = parent instanceof myElement ? parent.element : parent;
+        elt.appendChild(this.element);
         return this;
     };
 
@@ -308,33 +171,105 @@ const µ = (function () {
     };
 
     /**
-     * Get element style
-     * @param {String} style style
-     * @returns {myElement} this element style
+     * set focus on
+     * @returns {myElement} this element
      **/
-    myElement.prototype.style = function (style) {
-        return _.get(this.element, style ? `style.${style}` : "style");
+    myElement.prototype.focus = function () {
+        if (this.element) {
+            this.element.focus();
+        }
+        return this;
     };
 
     /**
-     * Element toggle classes prototype
-     * @param {ArrayString} classes Class names
-     * @param {Boolean} toAdd Action
+     * Get attribute value
+     * @param {String} attr attribute name
+     * @returns {String} attribute value
+     **/
+    myElement.prototype.get = function (attr) {
+        var result = null;
+        if (this.element) {
+            result = this.element[attr] || Reflect.apply(this.element.getAttribute, this.element, [attr]);
+        }
+        return result;
+    };
+
+    /**
+     * Test class prototype
+     * @param {String} cl Class
+     * @returns {Boolean} Test
+     **/
+    myElement.prototype.hasClass = function (cl) {
+        return this.classes.contains(cl);
+    };
+
+    /**
+     * New element assigner
+     * @param {String} tag tagName
+     * @param {Object} attrs Attributes list
+     * @returns {myElement} new element
+     **/
+    myElement.prototype.insertFirst = function (tag, attrs) {
+        if (tag instanceof myCollection || _.isArray(tag)) {
+            const elts = tag.elements || tag;
+            _.forEach(elts, (elt) => {
+                this.element.insertAdjacentElement("afterbegin", elt.set(attrs).element);
+            });
+            return this;
+        } else {
+            const elt = tag instanceof HTMLElement || tag instanceof myElement ? tag.set(attrs) : dom.new(tag, attrs);
+            this.element.insertAdjacentElement("afterbegin", elt.element);
+            return elt;
+        }
+    };
+
+    /**
+     * multiple selector in myElement
+     * @param {Object} selector selector
+     * @returns {myCollection} selected elements
+     **/
+    myElement.prototype.many = function (selector) {
+        return dom.many(selector, this);
+    };
+
+    /**
+     * Element listener prototype
+     * @param {String} eventsName Events name
+     * @param {Object} data data to attach
+     * @param {Function} callback Callback function
+     * @param {Boolean} capture capture
      * @returns {myElement} this element
      **/
-    myElement.prototype.toggleClass = function (classes, toAdd) {
+    myElement.prototype.observe = function (eventsName, ...args) {
+        var [
+            data,
+            callback,
+            capture = false
+        ] = args;
+        if (_.isFunction(data)) {
+            capture = callback || false;
+            callback = data;
+            data = null;
+        }
         if (_.has(this, "element")) {
-            const action = _.isUndefined(toAdd) ? "toggle" : toAdd && "add" || "remove";
-            if (!Array.isArray(classes)) {
-                classes = classes.split(" ");
-            }
-            classes.forEach((cl) => {
-                if (this.element) {
-                    this.element.classList[action](cl);
-                }
+            eventsName.split(",").forEach((eventName) => {
+                this.element.addEventListener(eventName.trim(), (event) => {
+                    event.data = data;
+                    event.element = this;
+                    return Reflect.apply(callback, this, [event]);
+                }, capture);
             });
         }
         return this;
+    };
+
+    /**
+     * Unique selector in myElement
+     * @param {Object} selector selector
+     * @returns {myElement} selected element
+     **/
+    myElement.prototype.one = function (selector) {
+        return dom.one(selector, this);
     };
 
     /**
@@ -362,6 +297,45 @@ const µ = (function () {
     };
 
     /**
+     * Element prepend
+     * @param {String} tag tagName
+     * @param {Object} attrs Attributes list
+     * @returns {myElement} new element
+     **/
+    myElement.prototype.prepend = function (tag, attrs) {
+        const elt = tag instanceof HTMLElement || tag instanceof myElement ? tag.set(attrs) : dom.new(tag, attrs),
+            parent = this.parent;
+        parent.element.insertBefore(elt.element, this.element);
+        return elt;
+    };
+
+    /**
+     * Location reload
+     * @param {Boolean} forceGet force GET request
+     * @returns {myElement} element
+     **/
+    myElement.prototype.reload = function (forceGet = false) {
+        forceGet = Boolean(forceGet);
+        if (this.element instanceof Document) {
+            this.element.location.reload(forceGet);
+        } else if (this.element instanceof HTMLIFrameElement) {
+            this.element.contentWindow.location.reload(forceGet);
+        }
+        return this;
+    };
+
+    /**
+     * Remove HTMLElement
+     * @returns {myElement} this element
+     **/
+    myElement.prototype.remove = function () {
+        if (this.element) {
+            this.element.parentNode.removeChild(this.element);
+        }
+        return this;
+    };
+
+    /**
      * FORM element reset
      * @params {Object} defaults default value
      * @returns {myElement} this element
@@ -376,102 +350,6 @@ const µ = (function () {
             }
         }
         return this;
-    };
-
-    /**
-     * Test class prototype
-     * @param {String} cl Class
-     * @returns {Boolean} Test
-     **/
-    myElement.prototype.hasClass = function (cl) {
-        return this.classes.contains(cl);
-    };
-
-    /**
-     * Value getter/setter
-     * @param {Object} value value
-     * @returns {myElement} this element
-     **/
-    Reflect.defineProperty(myElement.prototype, "value", {
-        get() {
-            return this.element.value;
-        },
-        set(value) {
-            this.element.value = value;
-        }
-    });
-
-    /**
-     * HTML assigner
-     * @param {String} html HTML code
-     * @returns {myElement} this element
-     **/
-    Reflect.defineProperty(myElement.prototype, "html", {
-        get() {
-            return this.element && this.element.innerHTML || "";
-        },
-        set(code) {
-            if (this.element) {
-                this.element.innerHTML = code;
-            }
-        }
-    });
-
-    /**
-     * is valid
-     * @param {String} html HTML code
-     * @returns {myElement} this element
-     **/
-    Reflect.defineProperty(myElement.prototype, "valid", {
-        get() {
-            return _.get(this.element, "validity.valid");
-        },
-        set(val) {
-            if (val) {
-                this.element.setCustomValidity("");
-            } else {
-                this.element.setCustomValidity("error input");
-            }
-        }
-    });
-
-    /**
-     * set focus on
-     * @returns {myElement} this element
-     **/
-    myElement.prototype.focus = function () {
-        if (this.element) {
-            this.element.focus();
-        }
-        return this;
-    };
-
-
-    /*
-    myElement.prototype.text = function (text = "") {
-        this.element.textContent = text;
-        return this;
-    };*/
-    Reflect.defineProperty(myElement.prototype, "text", {
-        get() {
-            return this.element.textContent;
-        },
-        set(text) {
-            this.element.textContent = text;
-        }
-    });
-
-    /**
-     * Get attribute value
-     * @param {String} attr attribute name
-     * @returns {String} attribute value
-     **/
-    myElement.prototype.get = function (attr) {
-        var result = null;
-        if (this.element) {
-            result = this.element[attr] || Reflect.apply(this.element.getAttribute, this.element, [attr]);
-        }
-        return result;
     };
 
     /**
@@ -499,93 +377,26 @@ const µ = (function () {
     };
 
     /**
-     * Unset attributes
-     * @param {Array} attrs attributes
+     * Get element style
+     * @param {String} style style
+     * @returns {myElement} this element style
+     **/
+    myElement.prototype.style = function (style) {
+        return _.get(this.element, style ? `style.${style}` : "style");
+    };
+
+    /**
+     * Submit FORM
+     * @param {FormData} data FormData
      * @returns {myElement} this element
      **/
-    myElement.prototype.unset = function (attrs) {
-        if (_.isString(attrs)) {
-            attrs = [attrs];
-        }
-        attrs.forEach((attr) => {
-            this.element.removeAttribute(attr);
-        });
-        return this;
-    };
-
-    /**
-     * New element assigner
-     * @param {String} tag tagName
-     * @param {Object} attrs Attributes list
-     * @returns {myElement} new element
-     **/
-    myElement.prototype.append = function (tag, attrs) {
-        if (tag instanceof myCollection || _.isArray(tag)) {
-            const elts = tag.elements || tag;
-            _.forEach(elts, (elt) => {
-                this.element.appendChild(elt.set(attrs).element);
-            });
-            return this;
+    myElement.prototype.submit = function () {
+        if (!_.has(this, "element") || this.tag !== "FORM") {
+            throw new Error("Invalid FORM!");
         } else {
-            const elt = tag instanceof HTMLElement || tag instanceof myElement ? tag.set(attrs) : dom.new(tag, attrs);
-            this.element.appendChild(elt.element);
-            return elt;
+            this.element.submit();
         }
-    };
-
-    /**
-     * New element assigner
-     * @param {String} tag tagName
-     * @param {Object} attrs Attributes list
-     * @returns {myElement} new element
-     **/
-    myElement.prototype.insertFirst = function (tag, attrs) {
-        if (tag instanceof myCollection || _.isArray(tag)) {
-            const elts = tag.elements || tag;
-            _.forEach(elts, (elt) => {
-                this.element.insertAdjacentElement("afterbegin", elt.set(attrs).element);
-            });
-            return this;
-        } else {
-            const elt = tag instanceof HTMLElement || tag instanceof myElement ? tag.set(attrs) : dom.new(tag, attrs);
-            this.element.insertAdjacentElement("afterbegin", elt.element);
-            return elt;
-        }
-    };
-
-    /**
-     * New element assigner
-     * @param {myElement} parent parent
-     * @returns {myElement} this element
-     **/
-    myElement.prototype.appendTo = function (parent) {
-        const elt = parent instanceof myElement ? parent.element : parent;
-        elt.appendChild(this.element);
         return this;
-    };
-
-    /**
-     * New elements assigner
-     * @param {myElement} parent parent
-     * @returns {myCollection} this element
-     **/
-    myCollection.prototype.appendTo = function (parent) {
-        const elt = parent instanceof myElement ? parent.element : parent;
-        _.forEach(this.elements, (element) => element.appendTo(elt));
-        return this;
-    };
-
-    /**
-     * Element prepend
-     * @param {String} tag tagName
-     * @param {Object} attrs Attributes list
-     * @returns {myElement} new element
-     **/
-    myElement.prototype.prepend = function (tag, attrs) {
-        const elt = tag instanceof HTMLElement || tag instanceof myElement ? tag.set(attrs) : dom.new(tag, attrs),
-            parent = this.parent;
-        parent.element.insertBefore(elt.element, this.element);
-        return elt;
     };
 
     /**
@@ -600,12 +411,22 @@ const µ = (function () {
     };
 
     /**
-     * Remove HTMLElement
+     * Element toggle classes prototype
+     * @param {ArrayString} classes Class names
+     * @param {Boolean} toAdd Action
      * @returns {myElement} this element
      **/
-    myElement.prototype.remove = function () {
-        if (this.element) {
-            this.element.parentNode.removeChild(this.element);
+    myElement.prototype.toggleClass = function (classes, toAdd) {
+        if (_.has(this, "element")) {
+            const action = _.isUndefined(toAdd) ? "toggle" : toAdd && "add" || "remove";
+            if (!Array.isArray(classes)) {
+                classes = classes.split(" ");
+            }
+            classes.forEach((cl) => {
+                if (this.element) {
+                    this.element.classList[action](cl);
+                }
+            });
         }
         return this;
     };
@@ -635,36 +456,134 @@ const µ = (function () {
     };
 
     /**
-     * Submit FORM
-     * @param {FormData} data FormData
+     * Element remove listener prototype
+     * @param {String} eventName Event name
+     * @param {Function} fn Callback function
+     * @param {Boolean} capture capture
      * @returns {myElement} this element
      **/
-    myElement.prototype.submit = function () {
-        if (!_.has(this, "element") || this.tag !== "FORM") {
-            throw new Error("Invalid FORM!");
-        } else {
-            this.element.submit();
+    myElement.prototype.unobserve = function (eventName, fn, capture) {
+        if (_.has(this, "element")) {
+            this.element.removeEventListener(eventName, fn, capture);
         }
         return this;
     };
 
     /**
-     * Collection iterator
-     * @param {Function} callback callback function
-     * @returns {myCollection} this collection
+     * Unset attributes
+     * @param {Array} attrs attributes
+     * @returns {myElement} this element
      **/
-    myCollection.prototype.each = function (callback) {
-        this.elements.forEach((element, index) => Reflect.apply(callback, null, [element, index]));
+    myElement.prototype.unset = function (attrs) {
+        if (_.isString(attrs)) {
+            attrs = [attrs];
+        }
+        attrs.forEach((attr) => {
+            this.element.removeAttribute(attr);
+        });
         return this;
     };
 
+    Reflect.defineProperty(myElement.prototype, "checked", {
+        get() {
+            return this.element.checked;
+        },
+        set(checked) {
+            this.element.checked = Boolean(checked);
+        }
+    });
+
+    Reflect.defineProperty(myElement.prototype, "exists", {
+        get() {
+            return Boolean(this.element);
+        }
+    });
+
+    Reflect.defineProperty(myElement.prototype, "files", {
+        get() {
+            return this.element && this.element.files || [];
+        }
+    });
+
+    Reflect.defineProperty(myElement.prototype, "html", {
+        get() {
+            return this.element && this.element.innerHTML || "";
+        },
+        set(code) {
+            if (this.element) {
+                this.element.innerHTML = code;
+            }
+        }
+    });
+
+    Reflect.defineProperty(myElement.prototype, "loaded", {
+        get() {
+            return this.element.onload;
+        },
+        set(cb) {
+            if (this.tag === "IMG" && _.isFunction(cb)) {
+                this.element.onload = () => {
+                    Reflect.apply(cb, this, []);
+                };
+            }
+        }
+    });
+
+    Reflect.defineProperty(myElement.prototype, "parent", {
+        get() {
+            return dom.one(this.element.parentNode);
+        }
+    });
+
+    Reflect.defineProperty(myElement.prototype, "siblings", {
+        get() {
+            const children = dom.many(this.element.parentNode.children);
+            _.remove(children.elements, this);
+            return children;
+        }
+    });
+
+    Reflect.defineProperty(myElement.prototype, "text", {
+        get() {
+            return this.element.textContent;
+        },
+        set(text) {
+            this.element.textContent = text;
+        }
+    });
+
+    Reflect.defineProperty(myElement.prototype, "valid", {
+        get() {
+            return _.get(this.element, "validity.valid");
+        },
+        set(val) {
+            this.element.setCustomValidity(val ? "" : this.get("error") || "Invalid field.");
+        }
+    });
+
+    Reflect.defineProperty(myElement.prototype, "value", {
+        get() {
+            return this.element.value;
+        },
+        set(value) {
+            this.element.value = value;
+        }
+    });
+
+    Reflect.defineProperty(myElement.prototype, "visible", {
+        get() {
+            return this.element && window.getComputedStyle(this.element).visibility === "visible" && window.getComputedStyle(this.element).display !== "none";
+        }
+    });
+
     /**
-     * Collection classes toggler
-     * @param {String} classes Classes list
-     * @returns {myCollection} this collection
+     * New elements assigner
+     * @param {myElement} parent parent
+     * @returns {myCollection} this element
      **/
-    myCollection.prototype.toggleClass = function (...classes) {
-        this.elements.forEach((element) => Reflect.apply(element.toggleClass, element, classes));
+    myCollection.prototype.appendTo = function (parent) {
+        const elt = parent instanceof myElement ? parent.element : parent;
+        _.forEach(this.elements, (element) => element.appendTo(elt));
         return this;
     };
 
@@ -679,12 +598,36 @@ const µ = (function () {
     };
 
     /**
-     * Remove HTMLCollection
-     * @returns {myElement} this element
+     * Collection iterator
+     * @param {Function} callback callback function
+     * @returns {myCollection} this collection
      **/
-    myCollection.prototype.remove = function () {
-        this.elements.forEach((element) => element.remove());
+    myCollection.prototype.each = function (callback) {
+        this.elements.forEach((element, index) => Reflect.apply(callback, null, [element, index]));
         return this;
+    };
+
+    /**
+     * Get element from collection
+     * @param {Number} index index of element
+     * @returns {myElement} indexed element
+     **/
+    myCollection.prototype.get = function (index) {
+        return _.isNumber(index) && index < this.length ? this.elements[index] : null;
+    };
+
+    /**
+     * index of elt in collection
+     * @param {myElement} elt elemnt to find
+     * @returns {Number} index of elt
+     **/
+    myCollection.prototype.indexOf = function (elt) {
+        if (_.isString(elt)) {
+            elt = dom.one(elt);
+        }
+        return _.findIndex(this.elements, (test) => {
+            return _.isEqual(test, elt);
+        });
     };
 
     /**
@@ -704,6 +647,36 @@ const µ = (function () {
     };
 
     /**
+     * Remove HTMLCollection
+     * @returns {myElement} this element
+     **/
+    myCollection.prototype.remove = function () {
+        this.elements.forEach((element) => element.remove());
+        return this;
+    };
+
+    /**
+     * Multiple attributes setter
+     * @param {Object} attrs list of attributes
+     * @param {String} value value
+     * @returns {myCollection} this collection
+     **/
+    myCollection.prototype.set = function (attr, value) {
+        this.elements.forEach((element) => Reflect.apply(element.set, element, [attr, value]));
+        return this;
+    };
+
+    /**
+     * Collection classes toggler
+     * @param {String} classes Classes list
+     * @returns {myCollection} this collection
+     **/
+    myCollection.prototype.toggleClass = function (...classes) {
+        this.elements.forEach((element) => Reflect.apply(element.toggleClass, element, classes));
+        return this;
+    };
+
+    /**
      * Collection remove listener
      * @param {String} eventsName Events name
      * @param {Object} data data
@@ -714,6 +687,18 @@ const µ = (function () {
         this.elements.forEach((element) => Reflect.apply(myElement.prototype.unobserve, element, [eventsName, fn, capture]));
         return this;
     };
+
+    Reflect.defineProperty(myCollection.prototype, "length", {
+        get() {
+            return this.elements.length;
+        },
+        set(len) {
+            if (_.isNumber(len) && len > 0 && len < this.length) {
+                this.elements = this.elements.slice(0, len);
+            }
+            return this;
+        }
+    });
 
     return dom;
 })();

@@ -20,13 +20,11 @@
         "detail": {
             "add": "Ajouter",
             "authors": "Auteurs",
-            "authorsWithComa": "Auteurs séparés par une virgule",
             "categories": "Catégories",
             "close": "Fermer",
             "comments": "Commentaires",
             "connex": "Recherche connexe",
             "description": "Description",
-            "errTitle": "Le titre doit contenir au moins 6 caractères!",
             "filter": "Filtre",
             "from": "Recommandé par",
             "gbooks": "Google Books",

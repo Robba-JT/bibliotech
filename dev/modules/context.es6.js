@@ -14,6 +14,11 @@ define("context", [], (template) => {
         });
     }
 
+    Context.prototype.close = function () {
+        this.context.toggleClass("notdisplayed", true);
+        return this;
+    }
+
     Context.prototype.open = function (event) {
         this.context.toggleClass("notdisplayed", false);
         const thisHeight = this.context.get("clientHeight"),
@@ -24,11 +29,6 @@ define("context", [], (template) => {
             "top": eventY + thisHeight > window.innerHeight ? eventY - thisHeight : eventY,
             "left": eventX + thisWidth > window.innerWidth ? eventX - thisWidth : eventX
         });
-        return this;
-    }
-
-    Context.prototype.close = function () {
-        this.context.toggleClass("notdisplayed", true);
         return this;
     }
 

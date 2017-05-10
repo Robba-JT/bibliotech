@@ -23,19 +23,31 @@ define("Window", [], function () {
         return this;
     };
 
-    Window.prototype.one = function (selector) {
-        return this.window.one(selector);
+    Window.prototype.close = function () {
+        this.window.toggleClass("notdisplayed", true);
+        µ.one(".waiting").toggleClass("notdisplayed", true);
+        µ.one("html").toggleClass("overflown", false);
+        em.emit(this, "close");
+        return this;
+    };
+
+    Window.prototype.closeAll = function () {
+        return this.close().closeOver();
+    };
+
+    Window.prototype.closeOver = function () {
+        this.window.toggleClass("notdisplayed", true);
+        µ.one(".waiting").toggleClass("over", false);
+        em.emit(this, "closeOver");
+        return this;
     };
 
     Window.prototype.many = function (selector) {
         return this.window.many(selector);
     };
 
-    Window.prototype.set = function () {
-        var _window;
-
-        (_window = this.window).set.apply(_window, arguments);
-        return this;
+    Window.prototype.one = function (selector) {
+        return this.window.one(selector);
     };
 
     Window.prototype.open = function () {
@@ -57,23 +69,11 @@ define("Window", [], function () {
         return this;
     };
 
-    Window.prototype.close = function () {
-        this.window.toggleClass("notdisplayed", true);
-        µ.one(".waiting").toggleClass("notdisplayed", true);
-        µ.one("html").toggleClass("overflown", false);
-        em.emit(this, "close");
-        return this;
-    };
+    Window.prototype.set = function () {
+        var _window;
 
-    Window.prototype.closeOver = function () {
-        this.window.toggleClass("notdisplayed", true);
-        µ.one(".waiting").toggleClass("over", false);
-        em.emit(this, "closeOver");
+        (_window = this.window).set.apply(_window, arguments);
         return this;
-    };
-
-    Window.prototype.closeAll = function () {
-        return this.close().closeOver();
     };
 
     Window.prototype.toggle = function () {
