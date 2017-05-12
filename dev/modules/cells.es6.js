@@ -54,7 +54,7 @@ define("cells", ["hdb", "text!../templates/Cell"], function (hdb, template) {
                 event.preventDefault();
             }).observe("drop", (event) => {
                 event.preventDefault();
-                this.cell.prepend(µ.one(`[book=${event.dataTransfer.getData("book")}]`));
+                this.cell.prepend(µ.one(`[book='${event.dataTransfer.getData("book")}']`));
                 if (µ.one("#collection").hasClass("active") && µ.one("#selectedTag span").text) {
                     µ.one("#saveorder").toggleClass("notdisplayed", false);
                 }

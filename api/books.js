@@ -93,7 +93,7 @@ const console = require("../tools/console"),
                         res.send(result.buffer);
                     }).catch((error) => {
                         console.error("error", error);
-                        req.error(error);
+                        req.error(404);
                     });
                 }
             } else {
@@ -156,9 +156,22 @@ const console = require("../tools/console"),
                 }).then(() => {
                     const book = _.remove(req.user.books, ["id", req.book.id]);
                     req.response();
+                    if (_.get(req.book, "id.user") === req.user._id) {
+                        usersDB.findMany({
+                            "_id": {
+                                "$ne": req.user._id
+                            },
+                            "book.id": req.book.id
+                        }).then((users) => {
+                            if (!users.length) {
+                                booksDB.removeOne({
+                                    "id": req.book.id
+                                });
+                            }
+                        });
+                    }
                     if (book.alt) {
                         usersDB.withCover(book.id).then((count) => {
-                            console.log("count", count);
                             if (!count) {
                                 booksDB.removeCover({
                                     "_id": book.alt

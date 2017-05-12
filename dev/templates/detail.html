@@ -72,8 +72,7 @@
         [{#if description}]
         <div class="volumeInfo">
             <span class="title" tabindex="-1">{{description}}:</span>
-            <br>
-            <span description>{[{description}]}</span>
+            <div description>{[{description}]}</div>
         </div>
         [{/if}]
         [{#if categories}]
@@ -90,7 +89,7 @@
         [{/ifRec}]
         <div class="inCollection notdisplayed">
             <form name="formTag" autocomplete="off">
-                <input name="tag" type="text" placeholder="{{newTag}}" list="tagsList" minlength="2" maxlength="30" auto-focus required size="30"/>
+                <input name="tag" type="text" placeholder="{{newTag}}" list="tagsList" minlength="2" maxlength="30" focus required size="30"/>
                 <datalist id="tagsList"></datalist>
                 <button type="submit">+</button>
             </form>

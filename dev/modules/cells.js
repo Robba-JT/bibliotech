@@ -60,7 +60,7 @@ define("cells", ["hdb", "text!../templates/Cell"], function (hdb, template) {
             event.preventDefault();
         }).observe("drop", function (event) {
             event.preventDefault();
-            _this.cell.prepend(µ.one("[book=" + event.dataTransfer.getData("book") + "]"));
+            _this.cell.prepend(µ.one("[book='" + event.dataTransfer.getData("book") + "']"));
             if (µ.one("#collection").hasClass("active") && µ.one("#selectedTag span").text) {
                 µ.one("#saveorder").toggleClass("notdisplayed", false);
             }

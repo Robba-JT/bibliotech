@@ -57,6 +57,8 @@ const bcrypt = require("bcrypt-nodejs"),
             });
         });
 
+        this.findMany = (query) => users.find(query).toArray();
+
         this.withCover = (coverId) => new Q.Promise((resolve, reject) => {
             users.find({
                 "book.alt": coverId

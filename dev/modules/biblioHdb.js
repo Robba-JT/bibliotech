@@ -16,7 +16,9 @@ define("biblioHdb", ["hdb"], function (hdb) {
             "month": "long",
             "day": "numeric"
         };
-        return new Date(date || new Date()).toLocaleDateString(lang || "fr", options);
+        if (date) {
+            return new Date(date).toLocaleDateString(lang || "fr", options);
+        }
     });
 
     hdb.registerHelper("formatInputDate", function (date) {
