@@ -20,11 +20,6 @@ define("biblioHdb", ["hdb"], function (hdb) {
     });
 
     hdb.registerHelper("formatInputDate", function (date) {
-        const options = {
-            "year": "numeric",
-            "month": "numeric",
-            "day": "numeric"
-        };
         if (date) {
             return new Date(date).toISOString().slice(0, 10);
         }
@@ -41,19 +36,10 @@ define("biblioHdb", ["hdb"], function (hdb) {
     });
 
     hdb.registerHelper("ifPers", function (id, options) {
-        try {
-            JSON.parse(id);
-            return options.fn(this);
-        } catch (error) {
-            return options.inverse(this);
-        }
+        return _.isPlainObject(id) && id.user === em.emit("getUser") ? options.fn(this) : options.inverse(this);
     });
 
     hdb.registerHelper("ifRec", function (id, options) {
-        try {
-            if (JSON.parse(id).user) {
-                return options.fn(this);
-            }
-        } catch (error) {}
+        return _.isPlainObject(id) && id.user !== em.emit("getUser") ? options.fn(this) : options.inverse(this);
     });
 });

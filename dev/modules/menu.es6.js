@@ -172,6 +172,22 @@ define("menu", ["Window", "text!../templates/menu", "text!../templates/contacts"
         }
         return !test;
     });
+
+    navbar.observe("mouseover", (event) => {
+        if (_.has(navbar, "timeout")) {
+            clearTimeout(navbar.timeout);
+        }
+        const navbarDiv = event.element.one("#navbar");
+        navbarDiv.toggleClass("transparent", false);
+        µ.one("bookcells").css("top", navbarDiv.get("clientHeight"));
+    }).observe("mouseleave", (event) => {
+        navbar.timeout = setTimeout(() => {
+            event.element.one("#navbar").toggleClass("transparent", true);
+            µ.one("bookcells").css("top", 0);
+            sorts.toggleClass("notdisplayed", true);
+        }, 2500);
+    });
+
     window.addEventListener("contextmenu", (event) => {
         event.preventDefault();
         return false;

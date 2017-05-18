@@ -39,7 +39,6 @@ html {
 
 bookcells {
     transition: top .5s;
-    filter: blur(0);
 }
 
 .overflown {
@@ -203,11 +202,16 @@ search footer {
     -moz-transition: opacity .33s linear;
     -o-transition: opacity .33s linear;
     transition: opacity .33s linear;
-    box-shadow: 0 2px 4px 0 rgba(0, 0, 0, .16), 0 2px 10px 0 rgba(0, 0, 0, .12)!important
+    box-shadow: 0 2px 4px 0 rgba(0, 0, 0, .16), 0 2px 10px 0 rgba(0, 0, 0, .12) !important;
+    filter: blur(0);
 }
 
 #navbar:hover {
     opacity: 1
+}
+
+#navbar.transparent {
+    opacity: 0;
 }
 
 .navbar>* {

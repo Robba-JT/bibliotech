@@ -12,6 +12,7 @@ define("cloud", ["text!../templates/cloud"], function (template) {
                 this.close().reset().generate(this.list);
             });
             em.on("updateTag", this, this.update);
+            em.on("getCloudOptions", () => this.options);
 
             cloud.one("div").observe("click", this.close);
         },

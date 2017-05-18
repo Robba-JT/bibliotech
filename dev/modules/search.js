@@ -1,6 +1,6 @@
 "use strict";
 
-define("search", ["cells", "collection", "Window", "text!../templates/search"], function (cells, collection, Window, template) {
+define("search", ["collection", "Window", "text!../templates/search"], function (collection, Window, template) {
     var Search = function Search() {
         var _this = this;
 
@@ -17,7 +17,7 @@ define("search", ["cells", "collection", "Window", "text!../templates/search"], 
             });
         });
         em.on("associated", function (associated) {
-            cells.reset();
+            em.emit("cellsReset");
             if (_.get(_this.last, "qs.associated") !== associated) {
                 _this.last = {
                     "qs": {
@@ -27,7 +27,7 @@ define("search", ["cells", "collection", "Window", "text!../templates/search"], 
                 _this.last.books = [];
                 _this.associated();
             } else {
-                cells.show(_this.last.cells);
+                em.emit("cellsShow", _this.last.cells);
             }
         });
         em.on("search", this, function (qs) {
@@ -35,15 +35,15 @@ define("search", ["cells", "collection", "Window", "text!../templates/search"], 
                 _this.last.qs = qs;
                 _this.last.books = [];
                 _this.last.cells = [];
-                cells.reset();
+                em.emit("cellsReset");
                 µ.many(".waiting, .roundIcon, .waitAnim").toggleClass("notdisplayed", false);
                 µ.one("sort.active").toggleClass("active", false);
                 em.emit("resetFilter");
                 em.emit("clickMenu", "recherche");
                 _this.get(qs);
             } else {
-                cells.reset();
-                cells.show(_this.last.cells);
+                em.emit("cellsReset");
+                em.emit("cellsShow", _this.last.cells);
             }
         });
 
@@ -57,7 +57,7 @@ define("search", ["cells", "collection", "Window", "text!../templates/search"], 
                 _this.last.qs = search;
                 _this.last.books = [];
                 _this.last.cells = [];
-                cells.reset();
+                em.emit("cellsReset");
                 _this.get(search);
                 event.element.reset();
                 em.emit("resetFilter");
@@ -120,8 +120,8 @@ define("search", ["cells", "collection", "Window", "text!../templates/search"], 
                 });
             }
         } else {
-            cells.reset();
-            cells.show(this.last.cells);
+            em.emit("cellsReset");
+            em.emit("cellsShow", this.last.cells);
         }
         return this;
     };
@@ -148,11 +148,11 @@ define("search", ["cells", "collection", "Window", "text!../templates/search"], 
     Search.prototype.show = function (books) {
         this.last.books = _.unionBy(this.last.books, books, "id");
         var newCells = _.map(books, function (book) {
-            return collection.get(book.id) || cells.getCell(book);
+            return em.emit("getCell", book);
         });
         this.last.cells = _.unionBy(this.last.cells, newCells, "id");
-        cells.show(newCells);
         µ.many(".waiting, .roundIcon").toggleClass("notdisplayed", true);
+        em.emit("cellsShow", newCells);
         return this;
     };
 

@@ -31,12 +31,13 @@ var em = function () {
             data[_key2 - 1] = arguments[_key2];
         }
 
-        var events = _.concat(_.filter(this.onEvents, ["event", event]), _.remove(this.onceEvents, ["event", event]));
+        var events = _.concat(_.filter(this.onEvents, ["event", event]), _.remove(this.onceEvents, ["event", event])),
+            result = [];
 
         _.forEach(events, function (evt) {
-            evt.execute.apply(evt, data);
+            result.push(evt.execute.apply(evt, data));
         });
-        return this;
+        return result.length === 1 ? result[0] : result;
     };
 
     Emitter.prototype.on = function () {

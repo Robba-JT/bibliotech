@@ -9,7 +9,11 @@ define("profile", ["Window", "hdb", "text!../templates/profile"], function (Wind
             _this.window.open();
         });
 
-        em.once("initProfile", this, function () {
+        em.on("getUser", function () {
+            return _this.user._id;
+        });
+
+        em.once("init", this, function () {
             var _this2 = this;
 
             req("/profile").send().then(function (user) {

@@ -44,7 +44,6 @@ define("Window", [], function () {
 
     Window.prototype.open = function () {
         this.window.css({
-            //"top": `${document.body.scrollTop + µ.one("#navbar").get("clientHeight")}px`
             "top": `${µ.one("#navbar").visible ? µ.one("#navbar").get("clientHeight") : 10}px`
         });
         this.window.toggleClass("notdisplayed", false).one("[focus]").focus();

@@ -2,7 +2,7 @@ define("collection", ["cells"], function (cells) {
     const Collection = function () {
         this.tags = {};
         this.cells = [];
-        em.once("initCollect", this, this.init);
+        em.once("init", this, this.init);
         em.on("showCollection", this, this.show);
         em.on("addBook", this, function (cell) {
             if (!this.has(cell.id)) {
@@ -43,6 +43,7 @@ define("collection", ["cells"], function (cells) {
             cells.reset();
             cells.show(_.orderBy(this.cells, `book.${params.by}`, params.sort || "asc"));
         });
+        em.on("fromCollection", this, this.get);
     };
 
     Reflect.defineProperty(Collection.prototype, "length", {

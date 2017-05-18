@@ -1,6 +1,6 @@
 "use strict";
 
-define("detail", ["Window", "hdb", "cloud", "cells", "text!../templates/detail", "text!../templates/newDetail", "text!../templates/Tag", "text!../templates/MostAdded", "text!../templates/Preview", "text!../templates/Context"], function (Window, hdb, cloud, cells, tempDetail, tempNewDetail, tempTag, tempAdded, tempPreview, tempContext) {
+define("detail", ["Window", "hdb", "text!../templates/detail", "text!../templates/newDetail", "text!../templates/Tag", "text!../templates/MostAdded", "text!../templates/Preview", "text!../templates/Context"], function (Window, hdb, tempDetail, tempNewDetail, tempTag, tempAdded, tempPreview, tempContext) {
     var renderDetail = hdb.compile(tempDetail),
         renderNewDetail = hdb.compile(tempNewDetail),
         renderTag = hdb.compile(tempTag),
@@ -14,7 +14,7 @@ define("detail", ["Window", "hdb", "cloud", "cells", "text!../templates/detail",
         em.on("openDetail", this, function (cell) {
             µ.one(".waiting").toggleClass("notdisplayed", false);
             µ.one("html").toggleClass("overflown", true);
-            if (_.isUndefined(cell.id)) {
+            if (_.isPlainObject(cell.book.id) && _.isUndefined(cell.book.id.number)) {
                 _this.empty(cell);
             } else if (cell.book.detailed || cell.book.inCollection) {
                 _this.init(cell);
@@ -242,7 +242,7 @@ define("detail", ["Window", "hdb", "cloud", "cells", "text!../templates/detail",
                     img.set("src", book.src);
                 }
                 cell.observe("click", function () {
-                    em.emit("openDetail", cells.getCell(book, false));
+                    em.emit("openDetail", em.emit("getCell", book, false));
                 });
             });
         }
@@ -375,7 +375,7 @@ define("detail", ["Window", "hdb", "cloud", "cells", "text!../templates/detail",
                 detail.one("form[name=uploadImg]").reset();
             }
         });
-        detail.one("datalist").html = cloud.options.join("");
+        detail.one("datalist").html = em.emit("getCloudOptions").join("");
         detail.many("[searchby]").observe("click", function (event) {
             _this7.close();
             em.emit("search", {

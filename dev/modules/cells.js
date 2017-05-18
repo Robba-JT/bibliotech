@@ -98,12 +98,19 @@ define("cells", ["hdb", "text!../templates/Cell"], function (hdb, template) {
         return this;
     },
         Cells = function Cells() {
+        var _this2 = this;
+
         this.cells = [];
         em.on("showCells", this, this.show);
         em.on("resetCells", this, this.reset);
         em.on("resize", this, this.resize);
         em.on("saveOrder", this, this.saveOrder);
         em.on("newBook", this, this.newBook);
+        em.on("getCell", function (book) {
+            return em.emit("fromCollection", book.id) || _this2.getCell(book);
+        });
+        em.on("cellsReset", this, this.reset);
+        em.on("cellsShow", this, this.show);
     },
         updateWidth = function updateWidth() {
         elt.toggleClass("scrolled", true);
@@ -176,20 +183,9 @@ define("cells", ["hdb", "text!../templates/Cell"], function (hdb, template) {
         _.assign(this.book, _.omit(book, "volumeInfo"), volumeInfo, {
             inCollection: inCollection
         });
-        /*
-            if (volumeInfo.title) {
-                this.cell.one("header").text = volumeInfo.title;
-            }
-            if (volumeInfo.authors) {
-                this.cell.one("figcaption div").text = volumeInfo.authors;
-            }
-            if (volumeInfo.description) {
-                this.cell.one("figure span").text = volumeInfo.description;
-            }
-        */
         this.cell.one("header").text = this.book.title;
         this.cell.one("figcaption div").text = this.book.authors;
-        this.cell.one("figure span").text = this.book.description;
+        this.cell.one("figure span").html = this.book.description;
         this.cell.set("book", this.id);
         return this;
     };
@@ -200,16 +196,20 @@ define("cells", ["hdb", "text!../templates/Cell"], function (hdb, template) {
     };
 
     Cells.prototype.getCells = function (books, inCollection) {
-        var _this2 = this;
+        var _this3 = this;
 
         updateWidth();
         return _.map(books, function (book) {
-            return _this2.getCell(book, inCollection);
+            return _this3.getCell(book, inCollection);
         });
     };
 
     Cells.prototype.newBook = function () {
-        var cell = new Cell({});
+        var cell = new Cell({
+            "id": {
+                "user": em.emit("getUser")
+            }
+        });
         cell.cell.one("img").trigger("click");
     };
 

@@ -5,7 +5,9 @@ define("profile", ["Window", "hdb", "text!../templates/profile"], function (Wind
                 this.window.open();
             });
 
-            em.once("initProfile", this, function () {
+            em.on("getUser", () => this.user._id);
+
+            em.once("init", this, function () {
                 req("/profile").send().then((user) => {
                     this.user = user;
                     this.window = new Window("profile", render(user));

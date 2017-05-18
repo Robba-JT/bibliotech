@@ -22,12 +22,13 @@ const em = (function () {
 
     Emitter.prototype.emit = function (event, ...data) {
         const events = _.concat(_.filter(this.onEvents, ["event", event]),
-            _.remove(this.onceEvents, ["event", event]));
+            _.remove(this.onceEvents, ["event", event])),
+            result = [];
 
         _.forEach(events, (evt) => {
-            evt.execute(...data);
+            result.push(evt.execute(...data));
         });
-        return this;
+        return result.length === 1 ? result[0] : result;
     };
 
     Emitter.prototype.on = function (...args) {

@@ -16,6 +16,9 @@ define("cloud", ["text!../templates/cloud"], function (template) {
             _this.close().reset().generate(_this.list);
         });
         em.on("updateTag", this, this.update);
+        em.on("getCloudOptions", function () {
+            return _this.options;
+        });
 
         cloud.one("div").observe("click", this.close);
     },
