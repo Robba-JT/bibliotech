@@ -15,13 +15,7 @@ const mailsAPI = require("../tools/mails"),
             "browser_type": user.browser_type
         }));
 
-        passport.deserializeUser((data, done) => usersDB.find(data._id).then((user) => {
-            if (user) {
-                done(null, _.assign(user, data));
-            } else {
-                throw new Error("Invalid User");
-            }
-        }).catch(done));
+        passport.deserializeUser((data, done) => usersDB.find(data._id).then((user) => done(null, user && _.assign(user, data))).catch(done));
 
         passport.use(new GoogleStrategy({
             "clientID": googleWeb.client_id,
@@ -191,13 +185,15 @@ const mailsAPI = require("../tools/mails"),
 
         //Logout
         this.out = (req, res) => {
-            req.logout();
-            res.redirect("/");
+            req.disconnect().redirect("/");
         };
 
         //validate
-        this.validate = (req, res, next) => {
-            if (req.isAuthenticated()) {
+        this.validate = (err, req, res, next) => {
+            if (err) {
+                console.error("error", err);
+                req.error(403);
+            } else if (req.isAuthenticated()) {
                 next();
             } else {
                 req.error(403);

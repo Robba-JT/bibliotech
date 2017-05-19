@@ -58,6 +58,7 @@ define("cells", ["hdb", "text!../templates/Cell"], function (hdb, template) {
                 if (µ.one("#collection").hasClass("active") && µ.one("#selectedTag span").text) {
                     µ.one("#saveorder").toggleClass("notdisplayed", false);
                 }
+                em.emit("resetSort");
             });
 
             const cover = this.cell.one("img");
@@ -101,6 +102,7 @@ define("cells", ["hdb", "text!../templates/Cell"], function (hdb, template) {
             em.on("getCell", (book) => em.emit("fromCollection", book.id) || this.getCell(book));
             em.on("cellsReset", this, this.reset);
             em.on("cellsShow", this, this.show);
+            em.on("cellsSort", this, this.sort);
         },
         updateWidth = function () {
             elt.toggleClass("scrolled", true);
@@ -207,6 +209,7 @@ define("cells", ["hdb", "text!../templates/Cell"], function (hdb, template) {
         elt.html = "";
         this.cells = [];
         µ.one("#saveorder").toggleClass("notdisplayed", true);
+        em.emit("defaultSort");
         return this;
     };
 
@@ -233,6 +236,13 @@ define("cells", ["hdb", "text!../templates/Cell"], function (hdb, template) {
             }
         });
         this.cells = _.unionBy(this.cells, cells, "id");
+        return this;
+    };
+
+    Cells.prototype.sort = function (by, sort) {
+        _.forEach(_.orderBy(this.cells, `book.${by}`, sort || "asc"), (book) => {
+            elt.append(book.cell);
+        });
         return this;
     };
 

@@ -4,7 +4,7 @@
     "description": "Virtual bibliotech",
     "main": "bibliotech.js",
     "scripts": {
-        "preinstall": "npm install -g grunt-cli supervisor eslint pm2",
+        "preinstall": "npm install -g grunt-cli supervisor eslint pm2 firebase-tools",
         "grunt": "grunt",
         "test": "echo \"Error: no test specified\" && exit 1"
     },

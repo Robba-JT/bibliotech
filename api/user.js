@@ -16,12 +16,12 @@ const console = require("../tools/console"),
             });
         };
 
-        this.delete = (req) => {
+        this.delete = (req, res) => {
             const pwd = _.get(req, "body.pwd");
-            console.log("pwds", pwd, req.user, usersDB.compareSync(pwd, req.user.pwd));
             if (pwd && usersDB.compareSync(pwd, req.user.password)) {
-                //usersDB.delete(req.user._id);
-                req.response();
+                usersDB.delete(req.user._id).then(() => {
+                    req.disconnect().send();
+                }).catch(req.error);
             } else {
                 req.error(409);
             }

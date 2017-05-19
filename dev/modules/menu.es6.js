@@ -12,6 +12,16 @@ define("menu", ["Window", "text!../templates/menu", "text!../templates/contacts"
 
     µ.one("bookcells").css("top", µ.one("#navbar").get("clientHeight"));
 
+    //Hide
+    navbar.hide = function () {
+        navbar.one("#navbar").toggleClass("transparent", true);
+        µ.one("bookcells").css("top", 0);
+        sorts.toggleClass("notdisplayed", true);
+    };
+
+    //Timeout
+    navbar.timeout = setTimeout(navbar.hide, 5000);
+
     //Toggle
     navbar.many("#affichToggle, #altNavbar").observe("click", toggleMenu);
 
@@ -29,7 +39,10 @@ define("menu", ["Window", "text!../templates/menu", "text!../templates/contacts"
     //Actions
     navbar.one("#recherche").observe("click", () => em.emit("openSearch"));
     navbar.one("#profile").observe("click", () => em.emit("openProfile"));
-    navbar.one("#collection").observe("click", () => em.emit("showCollection"));
+    navbar.one("#collection").observe("click", () => {
+        em.emit("defaultSort");
+        em.emit("showCollection");
+    });
     navbar.one("#tags").observe("click", () => em.emit("openCloud"));
     navbar.one("#saveorder").observe("click", () => em.emit("saveOrder"));
     navbar.one("#newbook").observe("click", () => em.emit("newBook"));
@@ -77,17 +90,26 @@ define("menu", ["Window", "text!../templates/menu", "text!../templates/contacts"
             "top": µ.one("#navbar").get("clientHeight"),
             "left": this.element.offsetLeft
         }).toggleClass("notdisplayed");
-    });
+    }).observe("mouseover", () => sorts.toggleClass("onTris", true)).observe("mouseleave", () => sorts.toggleClass("onTris", false));
     sorts.many("div").observe("click", function () {
         navbar.one("#tris").trigger("click");
-        if (navbar.one("#collection").hasClass("active")) {
-            em.emit("sortCollection", {
-                "by": this.get("by"),
-                "sort": this.get("sort")
-            });
-        }
+        em.emit("cellsSort", this.get("by"), this.get("sort"));
         sorts.many("div").toggleClass("sortBy", false);
         this.toggleClass("sortBy", true);
+    });
+    em.on("resetSort", () => sorts.one(".sortBy").toggleClass("sortBy", false));
+    em.on("defaultSort", () => {
+        sorts.one(".sortBy").toggleClass("sortBy", false);
+        sorts.many("div").get(0).toggleClass("sortBy", true);
+    });
+    sorts.observe("mouseover", () => {
+        if (sorts.timeout) {
+            clearTimeout(sorts.timeout);
+        }
+    }).observe("mouseleave", () => {
+        sorts.timeout = setTimeout(() => {
+            sorts.toggleClass("notdisplayed", true);
+        }, 1000);
     });
 
     //Window
@@ -181,11 +203,7 @@ define("menu", ["Window", "text!../templates/menu", "text!../templates/contacts"
         navbarDiv.toggleClass("transparent", false);
         µ.one("bookcells").css("top", navbarDiv.get("clientHeight"));
     }).observe("mouseleave", (event) => {
-        navbar.timeout = setTimeout(() => {
-            event.element.one("#navbar").toggleClass("transparent", true);
-            µ.one("bookcells").css("top", 0);
-            sorts.toggleClass("notdisplayed", true);
-        }, 2500);
+        navbar.timeout = setTimeout(navbar.hide, 2500);
     });
 
     window.addEventListener("contextmenu", (event) => {

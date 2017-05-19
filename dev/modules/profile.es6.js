@@ -34,9 +34,7 @@ define("profile", ["Window", "hdb", "text!../templates/profile"], function (Wind
                         if (!_.get(parsed, "pwd")) {
                             this.window.one("input[name=pwd]").set("required", true);
                         } else {
-                            req("/profile", "DELETE").send(parsed).then((result) => {
-                                console.log("result", result);
-                            }).catch((error) => err.add(error));
+                            req("/profile", "DELETE").send(parsed).then(() => window.location.reload(true)).catch((error) => err.add(error));
                         }
                     });
                 });

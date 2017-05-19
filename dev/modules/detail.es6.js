@@ -180,7 +180,7 @@ define("detail", ["Window", "hdb", "text!../templates/detail", "text!../template
                 const next = visibles.get(index);
                 window.scrollTo(0, next.get("offsetTop"));
                 next.trigger("click");
-            }, 500);
+            });
             return true;
         });
         this.setEvents();

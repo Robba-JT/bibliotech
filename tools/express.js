@@ -161,6 +161,12 @@ exports = module.exports = (() => {
                         }
                     });
                 };
+                //Logout
+                req.disconnect = () => {
+                    req.logout();
+                    res.clearCookie("_bsession");
+                    return res;
+                };
                 next();
             }
         }).use(require("errorhandler")(_.assign({

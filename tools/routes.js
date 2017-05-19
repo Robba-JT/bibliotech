@@ -14,6 +14,9 @@ module.exports = exports = (function () {
     //Maintenance url
     //.get("*", function (req, res) { req.render("maintenance", 503); })
 
+    //Logout
+    router.get("/logout", loginAPI.out);
+
     //Display pages
     router.get("/", [(req, res, next) => {
         if (req.isAuthenticated()) {
@@ -49,9 +52,6 @@ module.exports = exports = (function () {
 
     //Mot de passe oublié
     router.post("/mail", loginAPI.forgotten);
-
-    //Logout
-    router.get("/logout", loginAPI.out);
 
     //Validate
     router.all("*", loginAPI.validate);

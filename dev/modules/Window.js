@@ -52,7 +52,8 @@ define("Window", [], function () {
 
     Window.prototype.open = function () {
         this.window.css({
-            "top": (µ.one("#navbar").visible ? µ.one("#navbar").get("clientHeight") : 10) + "px"
+            //"top": `${µ.one("#navbar").visible ? µ.one("#navbar").get("clientHeight") : 10}px`
+            "top": "10px"
         });
         this.window.toggleClass("notdisplayed", false).one("[focus]").focus();
         µ.one(".waiting").toggleClass("notdisplayed", false);

@@ -222,8 +222,8 @@ search footer {
 }
 
 .navbar .filtre {
-    vertical-align: top;
-    top: 12px
+    vertical-align: bottom;
+    padding-top: 3px;
 }
 
 .navbar .button {
@@ -544,7 +544,12 @@ search footer {
     z-index: 4;
     position: fixed;
     text-align: left;
-    min-width: 10%
+    min-width: 10%;
+    opacity: .9;
+}
+
+#notifs:hover, sorts:hover, .onTris {
+    opacity: 1;
 }
 
 #notifs>div, sorts>div {

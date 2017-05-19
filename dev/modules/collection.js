@@ -49,10 +49,6 @@ define("collection", ["cells"], function (cells) {
             });
             em.emit("orderByTag", tag, this.cells);
         });
-        em.on("sortCollection", this, function (params) {
-            cells.reset();
-            cells.show(_.orderBy(this.cells, "book." + params.by, params.sort || "asc"));
-        });
         em.on("fromCollection", this, this.get);
     };
 

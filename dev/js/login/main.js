@@ -28,12 +28,14 @@ require(["lodash", "dom", "Request"], function () {
             µ.many(".error").toggleClass("notdisplayed", true);
         });
         µ.many("[name=confirm], [name=password]").observe("keyup", function () {
-            var confirmValue = µ.one("[name=confirm]").value,
-                pwdValue = µ.one("[name=password]").value,
-                test = pwdValue && confirmValue && confirmValue === pwdValue;
+            if (µ.one("[name=confirm]").visible) {
+                var confirmValue = µ.one("[name=confirm]").value,
+                    pwdValue = µ.one("[name=password]").value,
+                    test = pwdValue && confirmValue && confirmValue === pwdValue;
 
-            µ.one("[name=confirm]").valid = test;
-            µ.one("#c").toggleClass("notdisplayed", test);
+                µ.one("[name=confirm]").valid = test;
+                µ.one("#c").toggleClass("notdisplayed", test);
+            }
         });
         µ.one("button.m").observe("click", function () {
             var elt = µ.one("[name=email]");

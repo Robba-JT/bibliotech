@@ -202,7 +202,7 @@ define("detail", ["Window", "hdb", "text!../templates/detail", "text!../template
                 var next = visibles.get(index);
                 window.scrollTo(0, next.get("offsetTop"));
                 next.trigger("click");
-            }, 500);
+            });
             return true;
         });
         this.setEvents();
