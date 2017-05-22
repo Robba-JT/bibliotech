@@ -92,6 +92,7 @@ define("menu", ["Window", "text!../templates/menu", "text!../templates/contacts"
         }).toggleClass("notdisplayed");
     }).observe("mouseover", () => sorts.toggleClass("onTris", true)).observe("mouseleave", () => sorts.toggleClass("onTris", false));
     sorts.many("div").observe("click", function () {
+        window.scrollTo(0, 0);
         navbar.one("#tris").trigger("click");
         em.emit("cellsSort", this.get("by"), this.get("sort"));
         sorts.many("div").toggleClass("sortBy", false);

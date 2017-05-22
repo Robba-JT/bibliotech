@@ -116,6 +116,7 @@ define("menu", ["Window", "text!../templates/menu", "text!../templates/contacts"
         return sorts.toggleClass("onTris", false);
     });
     sorts.many("div").observe("click", function () {
+        window.scrollTo(0, 0);
         navbar.one("#tris").trigger("click");
         em.emit("cellsSort", this.get("by"), this.get("sort"));
         sorts.many("div").toggleClass("sortBy", false);

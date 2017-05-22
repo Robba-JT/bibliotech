@@ -91,6 +91,7 @@ define("cells", ["hdb", "text!../templates/Cell"], function (hdb, template) {
                 if (_this.isVisible()) {
                     window.removeEventListener("scroll", defLoad);
                     cover.element.src = _this.src;
+                    Reflect.deleteProperty(_this, "defLoad");
                 } else {
                     window.addEventListener("scroll", defLoad);
                 }
@@ -193,6 +194,15 @@ define("cells", ["hdb", "text!../templates/Cell"], function (hdb, template) {
     };
 
     //Cells
+    Cells.prototype.defLoad = function () {
+        _.forEach(this.cells, function (cell) {
+            if (_.has(cell, "defLoad")) {
+                cell.defLoad();
+            }
+        });
+        return this;
+    };
+
     Cells.prototype.getCell = function (book, inCollection) {
         return new Cell(book, inCollection);
     };
@@ -249,17 +259,20 @@ define("cells", ["hdb", "text!../templates/Cell"], function (hdb, template) {
     Cells.prototype.show = function (cells) {
         _.forEach(cells, function (book) {
             elt.append(book.cell.toggleClass("notdisplayed", false));
-            if (book.defLoad) {
+            if (_.has(book, "defLoad")) {
                 book.defLoad();
             }
         });
         this.cells = _.unionBy(this.cells, cells, "id");
-        return this;
     };
 
     Cells.prototype.sort = function (by, sort) {
+        elt.html = "";
         _.forEach(_.orderBy(this.cells, "book." + by, sort || "asc"), function (book) {
             elt.append(book.cell);
+            if (_.has(book, "defLoad")) {
+                book.defLoad();
+            }
         });
         return this;
     };
