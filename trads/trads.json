@@ -7,7 +7,7 @@
             "add": "Ajouter",
             "remove": "Supprimer"
         },
-        "Context": {
+        "context": {
             "add": "Ajouter",
             "close": "Fermer",
             "connex": "Recherche connexe",
@@ -171,6 +171,14 @@
             "valid": "Valider",
             "warning": "Attention"
         },
+        "recommand": {
+            "close": "Fermer",
+            "error": "Vous ne pouvez pas vous notifier!",
+            "legend": "Si votre ami est inscrit, il recevra une notification de votre part.<BR>Dans le cas contraire, il recevra par mail une invitation au site.",
+            "mail": "Email",
+            "send": "Envoyer",
+            "title": "Recommandé à un ami"
+        },
         "search": {
             "all": "Tous",
             "alls": "Toutes",
@@ -202,7 +210,7 @@
             "add": "Add",
             "remove": "Remove"
         },
-        "Context": {
+        "context": {
             "add": "Add",
             "close": "Close",
             "connex": "Connex search",
@@ -362,6 +370,14 @@
             "profile": "Profile",
             "valid": "Valid",
             "warning": "Warning"
+        },
+        "recommand": {
+            "close": "Close",
+            "error": "You can not notify you!",
+            "legend": "If your friend is registered , he will receive a notification on your part. Otherwise , he will receive by email an invitation to the site.",
+            "mail": "Email",
+            "send": "Send",
+            "title": "Recommand to a friend"
         },
         "search": {
             "all": "All",

@@ -16,7 +16,7 @@ define("profile", ["Window", "hdb", "text!../templates/profile"], function (Wind
         em.once("init", this, function () {
             var _this2 = this;
 
-            req("/profile").send().then(function (user) {
+            req("profile").send().then(function (user) {
                 _this2.user = user;
                 _this2.window = new Window("profile", render(user));
                 µ.one("#recommand4u").toggleClass("notdisplayed", !user.googleSignIn);
@@ -32,7 +32,7 @@ define("profile", ["Window", "hdb", "text!../templates/profile"], function (Wind
                         }
                     });
                     if (!_.isEmpty(parsed)) {
-                        req("/profile", "PUT").send(parsed).then(function () {
+                        req("profile", "PUT").send(parsed).then(function () {
                             _.assign(user, parsed);
                         }).catch(function (error) {
                             return err.add(error);
@@ -44,7 +44,7 @@ define("profile", ["Window", "hdb", "text!../templates/profile"], function (Wind
                     if (!_.get(parsed, "pwd")) {
                         _this2.window.one("input[name=pwd]").set("required", true);
                     } else {
-                        req("/profile", "DELETE").send(parsed).then(function () {
+                        req("profile", "DELETE").send(parsed).then(function () {
                             return window.location.reload(true);
                         }).catch(function (error) {
                             return err.add(error);
@@ -76,7 +76,7 @@ define("profile", ["Window", "hdb", "text!../templates/profile"], function (Wind
         var _this3 = this;
 
         var old = _.find(this.user.orders, ["tag", order.tag]);
-        req("/order", old ? "PUT" : "POST").send(order).then(function () {
+        req("order", old ? "PUT" : "POST").send(order).then(function () {
             if (old) {
                 _.assign(old, order);
             } else {

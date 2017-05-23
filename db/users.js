@@ -59,12 +59,6 @@ const bcrypt = require("bcrypt-nodejs"),
 
         this.findMany = (query) => users.find(query).toArray();
 
-        this.withCover = (coverId) => new Q.Promise((resolve, reject) => {
-            users.find({
-                "book.alt": coverId
-            }).toArray().count().then(resolve).catch(reject);
-        });
-
         this.hasBook = (user, book) => new Q.Promise((resolve, reject) => {
             users.findOne({
                 _id: user,
@@ -157,6 +151,12 @@ const bcrypt = require("bcrypt-nodejs"),
                     reject(new Error("Invalid password"));
                 }
             });
+        });
+
+        this.withCover = (coverId) => new Q.Promise((resolve, reject) => {
+            users.find({
+                "book.alt": coverId
+            }).toArray().count().then(resolve).catch(reject);
         });
 
         return this;

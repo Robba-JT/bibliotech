@@ -89,12 +89,17 @@ module.exports = exports = (function () {
         .post(booksAPI.add)
         .delete(booksAPI.delete);
 
+    //Notifications
+    router.route("/notifications")
+        .get(booksAPI.notifications)
+        .post(booksAPI.addNotif);
 
     //Detail
     router.get("/detail/*", booksAPI.detail);
     router.put("/detail/:book", booksAPI.update);
     router.post("/detail", booksAPI.create);
 
+    //MostAdded
     router.get("/mostAdded/*", booksAPI.mostAdded);
 
     //Search

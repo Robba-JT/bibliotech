@@ -8,7 +8,7 @@ define("profile", ["Window", "hdb", "text!../templates/profile"], function (Wind
             em.on("getUser", () => this.user._id);
 
             em.once("init", this, function () {
-                req("/profile").send().then((user) => {
+                req("profile").send().then((user) => {
                     this.user = user;
                     this.window = new Window("profile", render(user));
                     µ.one("#recommand4u").toggleClass("notdisplayed", !user.googleSignIn);
@@ -24,7 +24,7 @@ define("profile", ["Window", "hdb", "text!../templates/profile"], function (Wind
                             }
                         });
                         if (!_.isEmpty(parsed)) {
-                            req("/profile", "PUT").send(parsed).then(() => {
+                            req("profile", "PUT").send(parsed).then(() => {
                                 _.assign(user, parsed);
                             }).catch((error) => err.add(error));
                         }
@@ -34,7 +34,7 @@ define("profile", ["Window", "hdb", "text!../templates/profile"], function (Wind
                         if (!_.get(parsed, "pwd")) {
                             this.window.one("input[name=pwd]").set("required", true);
                         } else {
-                            req("/profile", "DELETE").send(parsed).then(() => window.location.reload(true)).catch((error) => err.add(error));
+                            req("profile", "DELETE").send(parsed).then(() => window.location.reload(true)).catch((error) => err.add(error));
                         }
                     });
                 });
@@ -60,7 +60,7 @@ define("profile", ["Window", "hdb", "text!../templates/profile"], function (Wind
 
     Profile.prototype.updateOrder = function (order) {
         const old = _.find(this.user.orders, ["tag", order.tag]);
-        req("/order", old ? "PUT" : "POST").send(order).then(() => {
+        req("order", old ? "PUT" : "POST").send(order).then(() => {
             if (old) {
                 _.assign(old, order);
             } else {

@@ -8,7 +8,7 @@ require(["lodash", "dom", "Request"], function () {
             µ.many(".w, .k").toggleClass("notdisplayed", false);
             µ.one(".m").toggleClass("notdisplayed", true);
             µ.one(".g").text = "";
-            req("/login", µ.one("[name=confirm]").visible ? "POST" : "PUT").send(_.omit(this.parser(), "confirm")).then(function () {
+            req("login", µ.one("[name=confirm]").visible ? "POST" : "PUT").send(_.omit(this.parser(), "confirm")).then(function () {
                 return window.location.reload(true);
             }).catch(function (error) {
                 µ.one(".g").text = _.get(error, "error") || error;
@@ -40,7 +40,7 @@ require(["lodash", "dom", "Request"], function () {
         µ.one("button.m").observe("click", function () {
             var elt = µ.one("[name=email]");
             if (elt.valid) {
-                req("/mail", "POST").send({
+                req("mail", "POST").send({
                     "email": elt.value
                 }).then(function () {
                     _.noop();

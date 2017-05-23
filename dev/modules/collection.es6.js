@@ -68,7 +68,7 @@ define("collection", ["cells"], function (cells) {
     };
 
     Collection.prototype.init = function () {
-        req("/collection").send().then((result) => {
+        req("collection").send().then((result) => {
             µ.many(".waiting, .roundIcon").toggleClass("notdisplayed", true);
             this.tags = _.map(result.books, (book) => {
                 return {

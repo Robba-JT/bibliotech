@@ -147,7 +147,7 @@ module.exports = function (grunt) {
                 "livereload": true
             },
             "jsserver": {
-                "files": ["bibliotech.js", "cluster_bibliotech.js", "api/*.js", "db/*.js", "tools/*.js"],
+                "files": ["bibliotech.js", "cluster_bibliotech.js", "api/*.js", "db/*.js", "tools/*.js", "trads/*.json"],
                 "tasks": ["jshint:server"],
                 "options": {
                     "spawn": false

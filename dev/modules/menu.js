@@ -1,8 +1,10 @@
 "use strict";
 
-define("menu", ["Window", "text!../templates/menu", "text!../templates/contacts", "text!../templates/help", "text!../templates/sorts"], function (Window, tempMenu, tempContacts, tempHelp, tempSorts) {
+define("menu", ["Window", "hdb", "text!../templates/menu", "text!../templates/contacts", "text!../templates/help", "text!../templates/sorts", "text!../templates/Notification"], function (Window, hdb, tempMenu, tempContacts, tempHelp, tempSorts, tempNotif) {
     var navbar = µ.one("navbar").set("innerHTML", tempMenu).toggleClass("notdisplayed"),
         sorts = µ.one("sorts").set("innerHTML", tempSorts),
+        notifs = µ.one("notifs"),
+        renderNotif = hdb.compile(tempNotif),
         contacts = new Window("contacts", tempContacts).set("id", "contactsWindow"),
         help = new Window("help", tempHelp),
         toggleMenu = function toggleMenu() {
@@ -30,7 +32,7 @@ define("menu", ["Window", "text!../templates/menu", "text!../templates/contacts"
     //Logout
     em.on("logout", function () {
         store.clear();
-        req("/logout").send().then(function () {
+        req("logout").send().then(function () {
             window.location.reload("/");
         });
     });
@@ -108,7 +110,7 @@ define("menu", ["Window", "text!../templates/menu", "text!../templates/contacts"
     navbar.one("#tris").observe("click", function (event) {
         sorts.css({
             "top": µ.one("#navbar").get("clientHeight"),
-            "left": this.element.offsetLeft
+            "left": event.element.get("offsetLeft")
         }).toggleClass("notdisplayed");
     }).observe("mouseover", function () {
         return sorts.toggleClass("onTris", true);
@@ -137,6 +139,48 @@ define("menu", ["Window", "text!../templates/menu", "text!../templates/contacts"
         sorts.timeout = setTimeout(function () {
             sorts.toggleClass("notdisplayed", true);
         }, 1000);
+    });
+
+    //Notifications
+    em.on("init", function () {
+        return req("notifications").send().then(function (response) {
+            _.forEach(response, function (notif) {
+                return µ.new("div").set({
+                    "innerHTML": renderNotif(notif),
+                    "by": "notif"
+                }).appendTo(notifs).observe("click", {
+                    "id": notif._id.book,
+                    "src": notif.alt
+                }, function (event) {
+                    return em.emit("openNotif", event.data);
+                });
+            });
+            µ.one("#notifications").toggleClass("notdisplayed", !response.length).one("#notifNumber").text = response.length;
+        }).catch(function (error) {
+            return err.add(error);
+        });
+    });
+    navbar.one("#notifications").observe("click", function (event) {
+        return notifs.css({
+            "top": µ.one("#navbar").get("clientHeight"),
+            "left": event.element.get("offsetLeft")
+        }).toggleClass("notdisplayed");
+    }).observe("mouseover", function () {
+        return notifs.toggleClass("onTris", true);
+    }).observe("mouseleave", function () {
+        return notifs.toggleClass("onTris", false);
+    });
+    notifs.observe("mouseover", function () {
+        if (notifs.timeout) {
+            clearTimeout(notifs.timeout);
+        }
+    }).observe("mouseleave", function () {
+        notifs.timeout = setTimeout(function () {
+            notifs.toggleClass("notdisplayed", true);
+        }, 1000);
+    });
+    em.on("openNotif", function (data) {
+        em.emit("openDetail", em.emit("getCell", data, false));
     });
 
     //Window
@@ -241,6 +285,11 @@ define("menu", ["Window", "text!../templates/menu", "text!../templates/contacts"
         if (event.target.id !== "tris") {
             setTimeout(function () {
                 return sorts.toggleClass("notdisplayed", true);
+            });
+        }
+        if (event.target.id !== "notifications") {
+            setTimeout(function () {
+                return notifs.toggleClass("notdisplayed", true);
             });
         }
     });

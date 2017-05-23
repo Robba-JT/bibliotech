@@ -537,7 +537,7 @@ search footer {
     background-position: -109px -10px
 }
 
-#notifs, sorts {
+notifs, sorts {
     background-color: #fff;
     border-bottom-right-radius: 5px;
     border-bottom-left-radius: 5px;
@@ -548,11 +548,11 @@ search footer {
     opacity: .9;
 }
 
-#notifs:hover, sorts:hover, .onTris {
+notifs:hover, sorts:hover, .onTris {
     opacity: 1;
 }
 
-#notifs>div, sorts>div {
+notifs>div, sorts>div {
     padding: 5px;
     cursor: pointer;
     white-space: nowrap
@@ -580,7 +580,7 @@ sorts>div:hover .desc, .sortBy .desc {
     background-position: -594px -554px
 }
 
-#notifs>div:hover, sorts>div:not(.sortBy):hover {
+notifs>div:hover, sorts>div:not(.sortBy):hover {
     color: #b8860b;
     text-decoration: underline;
     font-family: roboto_italic
@@ -1008,7 +1008,7 @@ cloud span.tag1 {
     max-width: 96%;
     position: fixed;
     left: 10px;
-    border-bottom-right-radius: 10px;
+    /*border-bottom-right-radius: 10px;*/
     box-shadow: 2px 2px 2px 2px #888
 }
 
@@ -1056,11 +1056,11 @@ detail>article>* {
     margin-right: 2px
 }
 
-.windowheader .closeWindow {
+.windowheader .closeWindow, .windowheader #closeRecommand {
     background-position: -622px -470px
 }
 
-.windowheader .closeWindow:hover {
+.windowheader .closeWindow:hover, .windowheader #closeRecommand:hover {
     background-position: -674px -298px
 }
 
@@ -1572,11 +1572,12 @@ div.tag button:not(.libelle):hover {
     float: right
 }
 
-#recommandWindow {
-    z-index: 8
+recommand {
+    z-index: 9 !important;
+    top: 10px;
 }
 
-#recommandWindow legend {
+recommand legend {
     font-family: roboto_italic;
     width: 100%;
     font-size: 13px

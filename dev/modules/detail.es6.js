@@ -1,9 +1,10 @@
-define("detail", ["Window", "hdb", "text!../templates/detail", "text!../templates/newDetail", "text!../templates/Tag", "text!../templates/MostAdded", "text!../templates/Preview", "text!../templates/Context"], function (Window, hdb, tempDetail, tempNewDetail, tempTag, tempAdded, tempPreview, tempContext) {
+define("detail", ["Window", "hdb", "text!../templates/detail", "text!../templates/newDetail", "text!../templates/Tag", "text!../templates/MostAdded", "text!../templates/preview", "text!../templates/context", "text!../templates/recommand"], function (Window, hdb, tempDetail, tempNewDetail, tempTag, tempAdded, tempPreview, tempContext, tempRecommand) {
     const renderDetail = hdb.compile(tempDetail),
         renderNewDetail = hdb.compile(tempNewDetail),
         renderTag = hdb.compile(tempTag),
         renderAdded = hdb.compile(tempAdded),
         renderContext = hdb.compile(tempContext),
+        recommand = new Window("recommand", tempRecommand),
         thief = new ColorThief(),
         detail = µ.one("detail"),
         Detail = function () {
@@ -85,7 +86,7 @@ define("detail", ["Window", "hdb", "text!../templates/detail", "text!../template
     Detail.prototype.create = function () {
         const newBook = detail.one("form[name=newBook]").parser();
         detail.one("form[name=newBook]").reset();
-        req("/detail", "POST").send(newBook).then((id) => {
+        req("detail", "POST").send(newBook).then((id) => {
             _.assign(newBook, {
                 id
             });
@@ -127,6 +128,8 @@ define("detail", ["Window", "hdb", "text!../templates/detail", "text!../template
             "tags": [],
             "comment": ""
         }, this.cell.book);
+
+        recommand.one("[name=book]").value = this.cell.id;
 
         if (_.isPlainObject(cell.book.id)) {
             detail.set("innerHTML", renderNewDetail(_.merge(this.detailBook, {
@@ -226,14 +229,28 @@ define("detail", ["Window", "hdb", "text!../templates/detail", "text!../template
 
     Detail.prototype.preview = function () {
         context.toggleClass("notdisplayed", true);
-        µ.one(".waiting").toggleClass("over", true);
         preview.one("iframe").set("src", "about:blank");
         preview.openOver();
         detail.one("form[target=preview]").trigger("submit");
     };
 
+    recommand.one("#closeRecommand").observe("click", () => {
+        recommand.closeOver();
+        recommand.one("form").reset();
+    });
+    recommand.one("[type=email]").observe("change", (event) => {
+        event.element.valid = event.element.value !== em.emit("getUser");
+    });
+    recommand.one("form").observe("submit", (event) => {
+        event.preventDefault();
+        req("notifications", "POST").send(event.element.parser()).catch((error) => err.add(error));
+        event.element.reset();
+        recommand.closeOver();
+        return false;
+    });
     Detail.prototype.recommand = function () {
-        _.noop();
+        context.toggleClass("notdisplayed", true);
+        recommand.openOver();
         return this;
     };
 
@@ -361,10 +378,7 @@ define("detail", ["Window", "hdb", "text!../templates/detail", "text!../template
         em.on("closeAll", this, this.close);
     };
 
-    preview.one("#closePreview").observe("click", () => {
-        µ.one(".waiting").toggleClass("over", false);
-        preview.closeOver();
-    });
+    preview.one("#closePreview").observe("click", () => preview.closeOver());
 
     detail.observe("contextmenu", (event) => {
         event.preventDefault();

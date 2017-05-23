@@ -1,6 +1,8 @@
-define("menu", ["Window", "text!../templates/menu", "text!../templates/contacts", "text!../templates/help", "text!../templates/sorts"], function (Window, tempMenu, tempContacts, tempHelp, tempSorts) {
+define("menu", ["Window", "hdb", "text!../templates/menu", "text!../templates/contacts", "text!../templates/help", "text!../templates/sorts", "text!../templates/Notification"], function (Window, hdb, tempMenu, tempContacts, tempHelp, tempSorts, tempNotif) {
     const navbar = µ.one("navbar").set("innerHTML", tempMenu).toggleClass("notdisplayed"),
         sorts = µ.one("sorts").set("innerHTML", tempSorts),
+        notifs = µ.one("notifs"),
+        renderNotif = hdb.compile(tempNotif),
         contacts = new Window("contacts", tempContacts).set("id", "contactsWindow"),
         help = new Window("help", tempHelp),
         toggleMenu = () => {
@@ -28,7 +30,7 @@ define("menu", ["Window", "text!../templates/menu", "text!../templates/contacts"
     //Logout
     em.on("logout", () => {
         store.clear();
-        req("/logout").send().then(() => {
+        req("logout").send().then(() => {
             window.location.reload("/");
         });
     });
@@ -85,10 +87,10 @@ define("menu", ["Window", "text!../templates/menu", "text!../templates/contacts"
     contacts.one("#mailLink").observe("click", (event) => event.element.one("a").trigger("click"));
 
     //Sorts
-    navbar.one("#tris").observe("click", function (event) {
+    navbar.one("#tris").observe("click", (event) => {
         sorts.css({
             "top": µ.one("#navbar").get("clientHeight"),
-            "left": this.element.offsetLeft
+            "left": event.element.get("offsetLeft")
         }).toggleClass("notdisplayed");
     }).observe("mouseover", () => sorts.toggleClass("onTris", true)).observe("mouseleave", () => sorts.toggleClass("onTris", false));
     sorts.many("div").observe("click", function () {
@@ -111,6 +113,34 @@ define("menu", ["Window", "text!../templates/menu", "text!../templates/contacts"
         sorts.timeout = setTimeout(() => {
             sorts.toggleClass("notdisplayed", true);
         }, 1000);
+    });
+
+    //Notifications
+    em.on("init", () => req("notifications").send().then((response) => {
+        _.forEach(response, (notif) => µ.new("div").set({
+            "innerHTML": renderNotif(notif),
+            "by": "notif"
+        }).appendTo(notifs).observe("click", {
+            "id": notif._id.book,
+            "src": notif.alt
+        }, (event) => em.emit("openNotif", event.data)));
+        µ.one("#notifications").toggleClass("notdisplayed", !response.length).one("#notifNumber").text = response.length;
+    }).catch((error) => err.add(error)));
+    navbar.one("#notifications").observe("click", (event) => notifs.css({
+        "top": µ.one("#navbar").get("clientHeight"),
+        "left": event.element.get("offsetLeft")
+    }).toggleClass("notdisplayed")).observe("mouseover", () => notifs.toggleClass("onTris", true)).observe("mouseleave", () => notifs.toggleClass("onTris", false));
+    notifs.observe("mouseover", () => {
+        if (notifs.timeout) {
+            clearTimeout(notifs.timeout);
+        }
+    }).observe("mouseleave", () => {
+        notifs.timeout = setTimeout(() => {
+            notifs.toggleClass("notdisplayed", true);
+        }, 1000);
+    });
+    em.on("openNotif", (data) => {
+        em.emit("openDetail", em.emit("getCell", data, false));
     });
 
     //Window
@@ -214,6 +244,9 @@ define("menu", ["Window", "text!../templates/menu", "text!../templates/contacts"
     window.addEventListener("click", (event) => {
         if (event.target.id !== "tris") {
             setTimeout(() => sorts.toggleClass("notdisplayed", true));
+        }
+        if (event.target.id !== "notifications") {
+            setTimeout(() => notifs.toggleClass("notdisplayed", true));
         }
     });
 });

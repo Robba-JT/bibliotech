@@ -100,7 +100,7 @@ define("search", ["collection", "Window", "text!../templates/search"], function 
                 this.show(storeBooks);
                 µ.one(".waitAnim").toggleClass("notdisplayed", true);
             } else {
-                req("/recommanded", "POST").send().then((result) => {
+                req("recommanded", "POST").send().then((result) => {
                     this.show(result);
                     store.set(this.last.qs, result);
                 }).catch((error) => {
@@ -115,7 +115,7 @@ define("search", ["collection", "Window", "text!../templates/search"], function 
     };
 
     Search.prototype.request = function () {
-        req("/search").send(_.merge({}, this.last.qs, {
+        req("search").send(_.merge({}, this.last.qs, {
             "index": this.last.books.length
         })).then((result) => {
             this.show(result.books);

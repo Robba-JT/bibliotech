@@ -20,7 +20,7 @@ var req = function () {
                     this.headers[_.toUpper(head)] = headers[head];
                 }
             }
-            this.url = encodeURI(!_.startsWith(url, "http") && !_.startsWith(url, "/") ? "/" + url : url);
+            this.url = !_.startsWith(url, "http") && !_.startsWith(url, "/") ? "/" + url : url;
             this.req = new XMLHttpRequest();
         } else {
             return new Request(url, method, headers);

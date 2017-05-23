@@ -6,7 +6,7 @@ const console = require("../tools/console"),
     requestAPI = require("./requests"),
     usersDB = require("../db/users"),
     BooksAPI = function () {
-        const insertCover = function (user, cover, palette) {
+        const insertCover = function (by, cover, palette) {
             const base64_marker = ";base64,",
                 base64_index = cover.indexOf(base64_marker),
                 base64 = cover.substr(base64_index + base64_marker.length),
@@ -15,11 +15,12 @@ const console = require("../tools/console"),
             return booksDB.addCover({
                 base64,
                 mime,
-                "palette": palette,
+                palette,
                 "date": new Date(),
-                "by": user
+                by
             });
         };
+
         this.add = (req) => {
             if (req.book) {
                 req.user.books.push({
@@ -48,6 +49,45 @@ const console = require("../tools/console"),
             }
         };
 
+        this.addNotif = (req) => {
+            const email = _.toLower(_.get(req, "body.recommand"));
+            var id = _.get(req, "body.book");
+            try {
+                id = JSON.parse(id);
+            } catch (error) {}
+            if (!id || !email) {
+                req.error(409);
+            } else {
+                const has = _.find(req.user.books, ["id", id]);
+                if (has) {
+                    req.response();
+                    usersDB.hasBook(email, id).then((response) => {
+                        if (!response) {
+                            booksDB.loadOne({
+                                id
+                            }).then((book) => {
+                                const notif = {
+                                    "_id": {
+                                        "to": email,
+                                        "book": id
+                                    },
+                                    "from": `${req.user.name}<${req.user._id}>`,
+                                    "new": true,
+                                    "title": book.title,
+                                    "alt": has.alt,
+                                    "date": new Date()
+                                };
+                                booksDB.updateNotif(notif);
+                                //mailAPI.sendToFriend(thisUser.name, thisUser._id, data.recommand.toLowerCase(), infos);
+                            });
+                        }
+                    });
+                } else {
+                    req.error(409);
+                }
+            }
+        };
+
         this.book = (req) => req.response(req.book);
 
         this.collection = (req) => booksDB.loadAll({
@@ -73,7 +113,7 @@ const console = require("../tools/console"),
             } catch (error) {}
             if (id) {
                 const book = _.find(req.user.books, ["id", id]);
-                if (book && book.alt) {
+                if (!_.isEmpty(book) && book.alt) {
                     booksDB.loadCover({
                         "_id": book.alt
                     }).then((cover) => {
@@ -224,6 +264,13 @@ const console = require("../tools/console"),
             } else {
                 req.error(409);
             }
+        };
+
+        this.notifications = (req) => {
+            booksDB.loadNotifs({
+                "_id.to": req.user._id,
+                "new": true
+            }).then(req.response).catch(req.error);
         };
 
         this.preview = (req) => {

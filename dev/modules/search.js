@@ -112,7 +112,7 @@ define("search", ["collection", "Window", "text!../templates/search"], function 
                 this.show(storeBooks);
                 µ.one(".waitAnim").toggleClass("notdisplayed", true);
             } else {
-                req("/recommanded", "POST").send().then(function (result) {
+                req("recommanded", "POST").send().then(function (result) {
                     _this3.show(result);
                     store.set(_this3.last.qs, result);
                 }).catch(function (error) {
@@ -129,7 +129,7 @@ define("search", ["collection", "Window", "text!../templates/search"], function 
     Search.prototype.request = function () {
         var _this4 = this;
 
-        req("/search").send(_.merge({}, this.last.qs, {
+        req("search").send(_.merge({}, this.last.qs, {
             "index": this.last.books.length
         })).then(function (result) {
             _this4.show(result.books);
