@@ -62,12 +62,12 @@ const bcrypt = require("bcrypt-nodejs"),
         this.hasBook = (user, book) => new Q.Promise((resolve, reject) => {
             users.findOne({
                 _id: user,
-                "books.book": book
-            }, (error, success) => {
+                "books.id": book
+            }, (error, result) => {
                 if (error) {
                     reject(error);
                 } else {
-                    resolve(success);
+                    resolve(result && _.find(result.books, ["id", book]));
                 }
             });
         });

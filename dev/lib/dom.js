@@ -268,12 +268,22 @@ var µ = function () {
             data = null;
         }
         if (_.has(this, "element")) {
+            if (!this.element.listeners) {
+                this.element.listeners = [];
+            }
             eventsName.split(",").forEach(function (eventName) {
-                _this5.element.addEventListener(eventName.trim(), function (event) {
-                    event.data = data;
-                    event.element = _this5;
-                    return Reflect.apply(callback, _this5, [event]);
-                }, capture);
+                var newEvent = {
+                    "event": eventName.trim(),
+                    callback: callback,
+                    "fn": function fn(event) {
+                        event.data = data;
+                        event.element = _this5;
+                        return Reflect.apply(callback, _this5, [event]);
+                    },
+                    capture: capture
+                };
+                _this5.element.addEventListener(newEvent.event, newEvent.fn, newEvent.capture);
+                _this5.element.listeners.push(newEvent);
             });
         }
         return this;
@@ -488,7 +498,27 @@ var µ = function () {
      **/
     myElement.prototype.unobserve = function (eventName, fn, capture) {
         if (_.has(this, "element")) {
-            this.element.removeEventListener(eventName, fn, capture);
+            //this.element.removeEventListener(eventName, fn, capture);
+            var listener = _.remove(this.element.listeners, ["event", eventName, "callback", fn, "capture", capture]);
+            if (event) {
+                this.element.removeEventListener(listener.event, listener.fn, listener.capture);
+            }
+        }
+        return this;
+    };
+
+    /**
+     * Element remove all listener prototype
+     * @param {String} eventName Event name
+     * @returns {myElement} this element
+     **/
+    myElement.prototype.unobserveAll = function (eventName) {
+        var _this7 = this;
+
+        if (_.has(this, "element")) {
+            _.forEach(_.remove(this.element.listeners, ["event", eventName]) || [], function (listener) {
+                return _this7.element.removeEventListener(listener.event, listener.fn, listener.capture);
+            });
         }
         return this;
     };
@@ -499,13 +529,13 @@ var µ = function () {
      * @returns {myElement} this element
      **/
     myElement.prototype.unset = function (attrs) {
-        var _this7 = this;
+        var _this8 = this;
 
         if (_.isString(attrs)) {
             attrs = [attrs];
         }
         attrs.forEach(function (attr) {
-            _this7.element.removeAttribute(attr);
+            _this8.element.removeAttribute(attr);
         });
         return this;
     };
@@ -542,16 +572,22 @@ var µ = function () {
         }
     });
 
+    Reflect.defineProperty(myElement.prototype, "listeners", {
+        get: function get() {
+            return this.element.listeners;
+        }
+    });
+
     Reflect.defineProperty(myElement.prototype, "loaded", {
         get: function get() {
             return this.element.onload;
         },
         set: function set(cb) {
-            var _this8 = this;
+            var _this9 = this;
 
             if (this.tag === "IMG" && _.isFunction(cb)) {
                 this.element.onload = function () {
-                    Reflect.apply(cb, _this8, []);
+                    Reflect.apply(cb, _this9, []);
                 };
             }
         }
@@ -736,6 +772,18 @@ var µ = function () {
     myCollection.prototype.unobserve = function (eventsName, fn, capture) {
         this.elements.forEach(function (element) {
             return Reflect.apply(myElement.prototype.unobserve, element, [eventsName, fn, capture]);
+        });
+        return this;
+    };
+
+    /**
+     * Collection remove  all listeners
+     * @param {String} eventName Event name
+     * @returns {myCollection} this Collection
+     **/
+    myCollection.prototype.unobserveAll = function (eventName) {
+        this.elements.forEach(function (element) {
+            return Reflect.apply(myElement.prototype.unobserveAll, element, [eventName]);
         });
         return this;
     };

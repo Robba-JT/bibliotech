@@ -146,12 +146,10 @@ define("menu", ["Window", "hdb", "text!../templates/menu", "text!../templates/co
         return req("notifications").send().then(function (response) {
             _.forEach(response, function (notif) {
                 return µ.new("div").set({
+                    "notif": _.isPlainObject(notif.id) ? JSON.stringify(notif.id) : notif.id,
                     "innerHTML": renderNotif(notif),
                     "by": "notif"
-                }).appendTo(notifs).observe("click", {
-                    "id": notif._id.book,
-                    "src": notif.alt
-                }, function (event) {
+                }).appendTo(notifs).observe("click", notif, function (event) {
                     return em.emit("openNotif", event.data);
                 });
             });
@@ -180,7 +178,10 @@ define("menu", ["Window", "hdb", "text!../templates/menu", "text!../templates/co
         }, 1000);
     });
     em.on("openNotif", function (data) {
-        em.emit("openDetail", em.emit("getCell", data, false));
+        em.emit("openDetail", em.emit("getCell", data, true));
+        req("notification/" + (_.isPlainObject(data.id) ? JSON.stringify(data.id) : data.id), "DELETE").send();
+        notifs.one("[notif='" + data.id + "'").remove();
+        navbar.one("#notifications").toggleClass("notdisplayed", !notifs.many(".by").length).one("#notifNumber").text = notifs.many(".by").length;
     });
 
     //Window

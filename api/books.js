@@ -7,19 +7,44 @@ const console = require("../tools/console"),
     usersDB = require("../db/users"),
     BooksAPI = function () {
         const insertCover = function (by, cover, palette) {
-            const base64_marker = ";base64,",
-                base64_index = cover.indexOf(base64_marker),
-                base64 = cover.substr(base64_index + base64_marker.length),
-                mime = cover.substring(5, base64_index);
+                const base64_marker = ";base64,",
+                    base64_index = cover.indexOf(base64_marker),
+                    base64 = cover.substr(base64_index + base64_marker.length),
+                    mime = cover.substring(5, base64_index);
 
-            return booksDB.addCover({
-                base64,
-                mime,
-                palette,
-                "date": new Date(),
-                by
-            });
-        };
+                return booksDB.addCover({
+                    base64,
+                    mime,
+                    palette,
+                    "date": new Date(),
+                    by
+                });
+            },
+            loadCover = function (id) {
+                return new Q.Promise((resolve, reject) => {
+                    if (!id) {
+                        reject(404);
+                    } else {
+                        booksDB.loadCover({
+                            "_id": id
+                        }).then((cover) => {
+                            if (cover) {
+                                cover.buffer = Buffer.from(cover.base64, "base64");
+                                resolve(cover);
+                            } else {
+                                reject(404);
+                            }
+                        }).catch(() => reject(404));
+                    }
+                });
+            },
+            sendCover = function (cover, res) {
+                res.set({
+                    "Content-Type": cover.mime,
+                    "Content-Length": cover.buffer.length
+                });
+                res.send(cover.buffer);
+            };
 
         this.add = (req) => {
             if (req.book) {
@@ -114,24 +139,11 @@ const console = require("../tools/console"),
             if (id) {
                 const book = _.find(req.user.books, ["id", id]);
                 if (!_.isEmpty(book) && book.alt) {
-                    booksDB.loadCover({
-                        "_id": book.alt
-                    }).then((cover) => {
-                        const buffer = Buffer.from(cover.base64, "base64");
-                        res.set({
-                            "Content-Type": cover.mime,
-                            "Content-Length": buffer.length
-                        });
-                        res.send(buffer);
-                    }).catch(req.error);
+                    loadCover(book.alt).then((cover) => sendCover(cover, res)).catch(req.error);
+                } else if (_.isPlainObject(id) && id.user !== req.user._id) {
+                    usersDB.hasBook(id.user, id).then((result) => loadCover(result.alt).then((cover) => sendCover(cover, res))).catch(() => req.error(404));
                 } else {
-                    requestAPI.loadCover(id).then((result) => {
-                        res.set({
-                            "Content-Type": result.mime,
-                            "Content-Length": result.buffer.length
-                        });
-                        res.send(result.buffer);
-                    }).catch((error) => {
+                    requestAPI.loadCover(id).then((result) => sendCover(result, res)).catch((error) => {
                         console.error("error", error);
                         req.error(404);
                     });
@@ -225,6 +237,19 @@ const console = require("../tools/console"),
             }
         };
 
+        this.deleteNotif = (req) => {
+            const book = _.get(req, "params[0]");
+            if (book) {
+                booksDB.updateNotif({
+                    "_id": {
+                        "to": req.user._id,
+                        book
+                    },
+                    "new": false
+                }, false).then(() => req.response()).catch(req.error);
+            }
+        };
+
         this.detail = (req) => {
             const id = _.get(req, "params[0]");
             if (id) {
@@ -270,7 +295,27 @@ const console = require("../tools/console"),
             booksDB.loadNotifs({
                 "_id.to": req.user._id,
                 "new": true
-            }).then(req.response).catch(req.error);
+            }).then((notifs) => {
+                const ids = _.map(notifs, "_id.book");
+                console.log("ids", ids);
+                booksDB.loadAll({
+                    "id": {
+                        "$in": ids
+                    }
+                }, {
+                    "_id": false
+                }).then((books) => {
+                    _.forEach(notifs, (notif) => {
+                        const book = _.find(books, ["id", _.get(notif, "_id.book")]);
+                        _.set(book, "from", notif.from);
+                        _.set(book, "detailed", true);
+                        if (notif.alt) {
+                            _.set(book, "cover", true);
+                        }
+                    });
+                    req.response(books);
+                }).catch(req.error);
+            }).catch(req.error);
         };
 
         this.preview = (req) => {

@@ -98,12 +98,12 @@ const Q = require("q"),
             "upsert": true
         });
 
-        this.updateNotif = (data) => db_notifs.update({
+        this.updateNotif = (data, upsert = true) => db_notifs.update({
             "_id": _.get(data, "_id")
         }, {
             "$set": data
         }, {
-            "upsert": true
+            upsert
         });
 
         return this;

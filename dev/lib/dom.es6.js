@@ -252,12 +252,22 @@ const µ = (function () {
             data = null;
         }
         if (_.has(this, "element")) {
+            if (!this.element.listeners) {
+                this.element.listeners = [];
+            }
             eventsName.split(",").forEach((eventName) => {
-                this.element.addEventListener(eventName.trim(), (event) => {
-                    event.data = data;
-                    event.element = this;
-                    return Reflect.apply(callback, this, [event]);
-                }, capture);
+                const newEvent = {
+                    "event": eventName.trim(),
+                    callback,
+                    "fn": (event) => {
+                        event.data = data;
+                        event.element = this;
+                        return Reflect.apply(callback, this, [event]);
+                    },
+                    capture
+                };
+                this.element.addEventListener(newEvent.event, newEvent.fn, newEvent.capture);
+                this.element.listeners.push(newEvent);
             });
         }
         return this;
@@ -464,7 +474,23 @@ const µ = (function () {
      **/
     myElement.prototype.unobserve = function (eventName, fn, capture) {
         if (_.has(this, "element")) {
-            this.element.removeEventListener(eventName, fn, capture);
+            //this.element.removeEventListener(eventName, fn, capture);
+            const listener = _.remove(this.element.listeners, ["event", eventName, "callback", fn, "capture", capture]);
+            if (event) {
+                this.element.removeEventListener(listener.event, listener.fn, listener.capture);
+            }
+        }
+        return this;
+    };
+
+    /**
+     * Element remove all listener prototype
+     * @param {String} eventName Event name
+     * @returns {myElement} this element
+     **/
+    myElement.prototype.unobserveAll = function (eventName) {
+        if (_.has(this, "element")) {
+            _.forEach(_.remove(this.element.listeners, ["event", eventName]) || [], (listener) => this.element.removeEventListener(listener.event, listener.fn, listener.capture));
         }
         return this;
     };
@@ -513,6 +539,12 @@ const µ = (function () {
             if (this.element) {
                 this.element.innerHTML = code;
             }
+        }
+    });
+
+    Reflect.defineProperty(myElement.prototype, "listeners", {
+        get() {
+            return this.element.listeners;
         }
     });
 
@@ -685,6 +717,16 @@ const µ = (function () {
      **/
     myCollection.prototype.unobserve = function (eventsName, fn, capture) {
         this.elements.forEach((element) => Reflect.apply(myElement.prototype.unobserve, element, [eventsName, fn, capture]));
+        return this;
+    };
+
+    /**
+     * Collection remove  all listeners
+     * @param {String} eventName Event name
+     * @returns {myCollection} this Collection
+     **/
+    myCollection.prototype.unobserveAll = function (eventName) {
+        this.elements.forEach((element) => Reflect.apply(myElement.prototype.unobserveAll, element, [eventName]));
         return this;
     };
 

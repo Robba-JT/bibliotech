@@ -118,12 +118,10 @@ define("menu", ["Window", "hdb", "text!../templates/menu", "text!../templates/co
     //Notifications
     em.on("init", () => req("notifications").send().then((response) => {
         _.forEach(response, (notif) => µ.new("div").set({
+            "notif": _.isPlainObject(notif.id) ? JSON.stringify(notif.id) : notif.id,
             "innerHTML": renderNotif(notif),
             "by": "notif"
-        }).appendTo(notifs).observe("click", {
-            "id": notif._id.book,
-            "src": notif.alt
-        }, (event) => em.emit("openNotif", event.data)));
+        }).appendTo(notifs).observe("click", notif, (event) => em.emit("openNotif", event.data)));
         µ.one("#notifications").toggleClass("notdisplayed", !response.length).one("#notifNumber").text = response.length;
     }).catch((error) => err.add(error)));
     navbar.one("#notifications").observe("click", (event) => notifs.css({
@@ -140,7 +138,10 @@ define("menu", ["Window", "hdb", "text!../templates/menu", "text!../templates/co
         }, 1000);
     });
     em.on("openNotif", (data) => {
-        em.emit("openDetail", em.emit("getCell", data, false));
+        em.emit("openDetail", em.emit("getCell", data, true));
+        req(`notification/${_.isPlainObject(data.id) ? JSON.stringify(data.id) : data.id}`, "DELETE").send();
+        notifs.one(`[notif='${data.id}'`).remove();
+        navbar.one("#notifications").toggleClass("notdisplayed", !notifs.many(".by").length).one("#notifNumber").text = notifs.many(".by").length;
     });
 
     //Window

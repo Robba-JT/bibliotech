@@ -663,10 +663,6 @@ cell {
     z-index: 2;
     text-align: center;
     position: relative;
-    -webkit-transition: width 2s;
-    -moz-transition: width 2s;
-    -o-transition: width 2s;
-    transition: width 2s;
     vertical-align: top;
     background-color: #FFF;
     box-shadow: 2px 2px 2px 2px #888;
@@ -674,6 +670,15 @@ cell {
     margin-bottom: 5px;
     margin-left: 5px;
     cursor: pointer;
+    transition: all 1s ease-in-out;
+}
+
+cell.rotated {
+    animation: 1s cellRotate ease-in-out;
+}
+
+@keyframes cellRotate {
+  from { transform: rotateY(0deg); } to { transform: rotateY(90deg); }
 }
 
 cell > * {
@@ -687,19 +692,16 @@ cell img {
 cell:hover {
     color: #000;
     background-color: #b8860b;
-    -webkit-transition: box-shadow .33s ease-in-out, background-color .33s ease-in-out;
-    -moz-transition: box-shadow .33s ease-in-out, background-color .33s ease-in-out;
-    -o-transition: box-shadow .33s ease-in-out, background-color .33s ease-in-out;
     transition: box-shadow .33s ease-in-out, background-color .33s ease-in-out
 }
 
-.isDrag {
+cell.isDrag {
     background-color: silver !important;
     cursor: move;
     opacity: .85;
 }
 
-.isDrag header {
+cell.isDrag header {
     color: silver !important;
     font-size: 150%;
     background-color: #000 !important;
@@ -720,12 +722,6 @@ cell:hover header {
     color: #daa520;
     background-color: #3F3F3F
 }
-
-/*cell article {
-    position: relative;
-    min-height: 30px;
-    padding: 5px
-}*/
 
 cell figure {
     margin: 5px;
@@ -750,7 +746,7 @@ cell figure span, .mostAdded span {
     cursor: url(/images/iconmonstr-x-mark-2-icon.png), pointer;
     transform: scaleY(0);
     transform-origin: 50% bottom;
-    transition:transform .5s ease;
+    transition: transform .5s ease;
 }
 
 cell figure span {
@@ -761,7 +757,7 @@ cell figure:hover span, .mostAdded:hover span {
     transform: scaleY(1);
 }
 
-.altCover {
+cell .altCover {
     width: 128px;
     height: 128px;
     background-position: -65px -735px;
@@ -773,22 +769,19 @@ cell:hover .altCover {
     background-position: -510px -660px
 }
 
-cell .altCover, cell figure .cover {
-    opacity: .75;
-    -webkit-transition: opacity .33s ease-in-out;
-    -moz-transition: opacity .33s ease-in-out;
-    -o-transition: opacity .33s ease-in-out;
-    transition: opacity .33s ease-in-out
+cell figure img {
+    filter: grayscale(90%);
+    transition: all .75s ease-in-out;
 }
 
-cell:hover .altCover, cell:hover figure .cover {
-    opacity: 1
+cell:hover figure img {
+    filter: grayscale(0%);
 }
 
 cell figcaption {
     font-size: 150%;
     text-align: center;
-    position: relative
+    position: relative;
 }
 
 cell footer {

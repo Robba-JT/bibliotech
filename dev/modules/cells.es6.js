@@ -43,7 +43,7 @@ define("cells", ["hdb", "text!../templates/Cell"], function (hdb, template) {
             this.cell.one(".remove").observe("click", (event) => {
                 event.stopPropagation();
                 this.remove();
-            });
+            }, true);
 
             this.cell.observe("click", () => em.emit("openDetail", this)).observe("dragstart", (event) => {
                 event.element.toggleClass("isDrag", true);
@@ -71,15 +71,16 @@ define("cells", ["hdb", "text!../templates/Cell"], function (hdb, template) {
                     "palette": thief.getPalette(cover.element)
                 });
                 if (this.book.palette && this.book.palette.length > 2) {
-                    this.changeBackground(this.book.palette[1]);
+                    this.changeBackground(this.book.palette[0]);
                     this.cell.observe("mouseover", () => {
-                        this.changeBackground(this.book.palette[0]);
+                        this.changeBackground(this.book.palette[1]);
                     });
                     this.cell.observe("mouseleave", () => {
-                        this.changeBackground(this.book.palette[1]);
+                        this.changeBackground(this.book.palette[0]);
                     });
                 }
             };
+
             if (this.src) {
                 const defLoad = this.defLoad = () => {
                     if (this.isVisible()) {
@@ -159,7 +160,9 @@ define("cells", ["hdb", "text!../templates/Cell"], function (hdb, template) {
         em.emit("removeBook", this.id);
         this.book.inCollection = false;
         if (µ.one("#collection").hasClass("active")) {
-            this.cell.remove();
+            this.cell.unobserveAll("click").many("button").unobserveAll("click");
+            this.cell.toggleClass("rotated", true);
+            this.cell.observe("animationend", this.cell.remove);
         } else {
             this.cell.many("button").toggleClass("notdisplayed");
         }
@@ -175,8 +178,8 @@ define("cells", ["hdb", "text!../templates/Cell"], function (hdb, template) {
             inCollection
         });
         this.cell.one("header").text = this.book.title;
-        this.cell.one("figcaption div").text = this.book.authors;
-        this.cell.one("figure span").html = this.book.description;
+        this.cell.one("figcaption > div").text = this.book.authors || "";
+        this.cell.one("figure span").html = this.book.description || "";
         this.cell.set("book", this.id);
         return this;
     };
