@@ -267,7 +267,10 @@ define("detail", ["Window", "hdb", "text!../templates/detail", "text!../template
         const diff = _.omit(_.diff(this.detailBook, this.cell.book), ["src", "palette"]);
         if (!_.isEmpty(diff)) {
             req(`/detail/${this.cell.id}`, "PUT").send(diff).then(() => {
-                this.cell.update(this.detailBook, true).defLoad();
+                this.cell.update(this.detailBook, true);
+                if (_.has(this.cell, "defLoad")) {
+                    this.cell.defLoad();
+                }
                 if (_.has(diff, "tags")) {
                     em.emit("updateTag", {
                         "id": this.cell.id,

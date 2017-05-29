@@ -8,7 +8,15 @@ define("menu", ["Window", "hdb", "text!../templates/menu", "text!../templates/co
         toggleMenu = () => {
             navbar.many(".navbar").toggleClass("notdisplayed");
             µ.one("bookcells").css("top", µ.one("#navbar").get("clientHeight") || 0);
-        };
+        },
+        getNotifs = () => req("notifications").send().then((response) => {
+            _.forEach(response, (notif) => µ.new("div").set({
+                "notif": _.isPlainObject(notif.id) ? JSON.stringify(notif.id) : notif.id,
+                "innerHTML": renderNotif(notif),
+                "by": "notif"
+            }).appendTo(notifs).observe("click", notif, (event) => em.emit("openNotif", event.data)));
+            µ.one("#notifications").toggleClass("notdisplayed", !response.length).one("#notifNumber").text = response.length;
+        }).catch((error) => err.add(error));
 
     var last = "";
 
@@ -116,14 +124,7 @@ define("menu", ["Window", "hdb", "text!../templates/menu", "text!../templates/co
     });
 
     //Notifications
-    em.on("init", () => req("notifications").send().then((response) => {
-        _.forEach(response, (notif) => µ.new("div").set({
-            "notif": _.isPlainObject(notif.id) ? JSON.stringify(notif.id) : notif.id,
-            "innerHTML": renderNotif(notif),
-            "by": "notif"
-        }).appendTo(notifs).observe("click", notif, (event) => em.emit("openNotif", event.data)));
-        µ.one("#notifications").toggleClass("notdisplayed", !response.length).one("#notifNumber").text = response.length;
-    }).catch((error) => err.add(error)));
+    em.on("init", getNotifs);
     navbar.one("#notifications").observe("click", (event) => notifs.css({
         "top": µ.one("#navbar").get("clientHeight"),
         "left": event.element.get("offsetLeft")
@@ -143,6 +144,7 @@ define("menu", ["Window", "hdb", "text!../templates/menu", "text!../templates/co
         notifs.one(`[notif='${data.id}'`).remove();
         navbar.one("#notifications").toggleClass("notdisplayed", !notifs.many(".by").length).one("#notifNumber").text = notifs.many(".by").length;
     });
+    em.on("getNotifs", getNotifs);
 
     //Window
     window.addEventListener("selectstart", (event) => {

@@ -53,9 +53,6 @@ img {
     max-width: 100%;
     height: auto;
     cursor: pointer;
-    -webkit-filter: blur(0);
-    -moz-filter: blur(0);
-    -o-filter: blur(0);
     filter: blur(0)
 }
 
@@ -166,6 +163,11 @@ cell:hover footer .recommanded {
 
 .mostAdded header {
     font-weight: 500;
+}
+
+.mostAdded div {
+    margin-top: 10px !important;
+    margin-bottom: 10px;
 }
 
 .mostAdded img {
@@ -607,9 +609,6 @@ button:disabled, input[type=button]:disabled, input[type=submit]:disabled {
     border-radius: 15px 5px;
     width: 42px;
     height: 42px;
-    -webkit-filter: blur(0);
-    -moz-filter: blur(0);
-    -o-filter: blur(0);
     filter: blur(0);
 }
 
@@ -757,20 +756,23 @@ cell figure:hover span, .mostAdded:hover span {
     transform: scaleY(1);
 }
 
-cell .altCover {
+cell .altCover, .mostAdded .altCover {
     width: 128px;
     height: 128px;
-    background-position: -65px -735px;
     display: inline-block;
     margin-top: 5px
 }
 
-cell:hover .altCover {
+cell .altCover {
+    background-position: -65px -735px;
+}
+
+cell:hover .altCover, .mostAdded .altCover {
     background-position: -510px -660px
 }
 
 cell figure img {
-    filter: grayscale(90%);
+    filter: grayscale(75%);
     transition: all .75s ease-in-out;
 }
 

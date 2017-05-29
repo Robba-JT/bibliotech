@@ -10,6 +10,22 @@ define("menu", ["Window", "hdb", "text!../templates/menu", "text!../templates/co
         toggleMenu = function toggleMenu() {
         navbar.many(".navbar").toggleClass("notdisplayed");
         µ.one("bookcells").css("top", µ.one("#navbar").get("clientHeight") || 0);
+    },
+        getNotifs = function getNotifs() {
+        return req("notifications").send().then(function (response) {
+            _.forEach(response, function (notif) {
+                return µ.new("div").set({
+                    "notif": _.isPlainObject(notif.id) ? JSON.stringify(notif.id) : notif.id,
+                    "innerHTML": renderNotif(notif),
+                    "by": "notif"
+                }).appendTo(notifs).observe("click", notif, function (event) {
+                    return em.emit("openNotif", event.data);
+                });
+            });
+            µ.one("#notifications").toggleClass("notdisplayed", !response.length).one("#notifNumber").text = response.length;
+        }).catch(function (error) {
+            return err.add(error);
+        });
     };
 
     var last = "";
@@ -142,22 +158,7 @@ define("menu", ["Window", "hdb", "text!../templates/menu", "text!../templates/co
     });
 
     //Notifications
-    em.on("init", function () {
-        return req("notifications").send().then(function (response) {
-            _.forEach(response, function (notif) {
-                return µ.new("div").set({
-                    "notif": _.isPlainObject(notif.id) ? JSON.stringify(notif.id) : notif.id,
-                    "innerHTML": renderNotif(notif),
-                    "by": "notif"
-                }).appendTo(notifs).observe("click", notif, function (event) {
-                    return em.emit("openNotif", event.data);
-                });
-            });
-            µ.one("#notifications").toggleClass("notdisplayed", !response.length).one("#notifNumber").text = response.length;
-        }).catch(function (error) {
-            return err.add(error);
-        });
-    });
+    em.on("init", getNotifs);
     navbar.one("#notifications").observe("click", function (event) {
         return notifs.css({
             "top": µ.one("#navbar").get("clientHeight"),
@@ -183,6 +184,7 @@ define("menu", ["Window", "hdb", "text!../templates/menu", "text!../templates/co
         notifs.one("[notif='" + data.id + "'").remove();
         navbar.one("#notifications").toggleClass("notdisplayed", !notifs.many(".by").length).one("#notifNumber").text = notifs.many(".by").length;
     });
+    em.on("getNotifs", getNotifs);
 
     //Window
     window.addEventListener("selectstart", function (event) {

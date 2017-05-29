@@ -8,6 +8,7 @@ define("firebase", ["json!../config-firebase.json"], function (config) {
     }).then(function (token) {
         console.log("token", token);
     }).catch(function (error) {
-        return err.add(error);
+        err.add(error);
+        //setInterval(() => em.emit("getNotifs"), 30000);
     });
 });

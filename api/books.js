@@ -292,12 +292,18 @@ const console = require("../tools/console"),
         };
 
         this.notifications = (req) => {
-            booksDB.loadNotifs({
+            const query = {
                 "_id.to": req.user._id,
                 "new": true
-            }).then((notifs) => {
+            };
+            if (req.session.lastNotifs) {
+                query.date = {
+                    "$gte": new Date(req.session.lastNotifs)
+                };
+            }
+            console.log("query", query);
+            booksDB.loadNotifs(query).then((notifs) => {
                 const ids = _.map(notifs, "_id.book");
-                console.log("ids", ids);
                 booksDB.loadAll({
                     "id": {
                         "$in": ids
@@ -305,6 +311,8 @@ const console = require("../tools/console"),
                 }, {
                     "_id": false
                 }).then((books) => {
+                    req.session.lastNotifs = new Date();
+                    req.session.save();
                     _.forEach(notifs, (notif) => {
                         const book = _.find(books, ["id", _.get(notif, "_id.book")]);
                         _.set(book, "from", notif.from);

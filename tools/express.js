@@ -98,7 +98,6 @@ exports = module.exports = (() => {
                     reqMeta = meta[lang];
 
                 req.trads = trads[lang];
-
                 req.render = (page, labels = {}, status) => {
                     if (_.isNumber(labels) && !status) {
                         status = labels;
