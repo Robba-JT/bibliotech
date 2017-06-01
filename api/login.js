@@ -1,4 +1,5 @@
 const mailsAPI = require("../tools/mails"),
+    emitter = require("../tools/emitter"),
     _ = require("lodash"),
     passport = require("passport"),
     googleWeb = require("../google_client_config").web,
@@ -184,7 +185,8 @@ const mailsAPI = require("../tools/mails"),
         };
 
         //Logout
-        this.out = (req, res) => {
+        this.out = (req) => {
+            emitter.removeByUser(req.user._id);
             req.disconnect().redirect("/");
         };
 

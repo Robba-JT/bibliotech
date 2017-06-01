@@ -57,8 +57,8 @@ const nodemailer = require("nodemailer"),
 
         this.sendToFriend = (...args) => {
             const {
-                name,
                 mail,
+                name,
                 friend,
                 book,
                 callback

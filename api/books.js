@@ -1,4 +1,6 @@
 const console = require("../tools/console"),
+    mailsAPI = require("../tools/mails"),
+    emitter = require("../tools/emitter"),
     _ = require("lodash"),
     Q = require("q"),
     booksDB = require("../db/books"),
@@ -103,7 +105,7 @@ const console = require("../tools/console"),
                                     "date": new Date()
                                 };
                                 booksDB.updateNotif(notif);
-                                //mailAPI.sendToFriend(thisUser.name, thisUser._id, data.recommand.toLowerCase(), infos);
+                                mailsAPI.sendToFriend(req.user._id, req.user.name, email, book);
                             });
                         }
                     });
@@ -291,18 +293,13 @@ const console = require("../tools/console"),
             }
         };
 
+        this.notification = (req) => emitter.once("notif", req.user._id, (notif) => req.response(notif));
+
         this.notifications = (req) => {
-            const query = {
+            booksDB.loadNotifs({
                 "_id.to": req.user._id,
                 "new": true
-            };
-            if (req.session.lastNotifs) {
-                query.date = {
-                    "$gte": new Date(req.session.lastNotifs)
-                };
-            }
-            console.log("query", query);
-            booksDB.loadNotifs(query).then((notifs) => {
+            }).then((notifs) => {
                 const ids = _.map(notifs, "_id.book");
                 booksDB.loadAll({
                     "id": {
@@ -311,8 +308,6 @@ const console = require("../tools/console"),
                 }, {
                     "_id": false
                 }).then((books) => {
-                    req.session.lastNotifs = new Date();
-                    req.session.save();
                     _.forEach(notifs, (notif) => {
                         const book = _.find(books, ["id", _.get(notif, "_id.book")]);
                         _.set(book, "from", notif.from);

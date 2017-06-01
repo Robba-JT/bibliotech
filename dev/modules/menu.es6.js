@@ -9,12 +9,15 @@ define("menu", ["Window", "hdb", "text!../templates/menu", "text!../templates/co
             navbar.many(".navbar").toggleClass("notdisplayed");
             µ.one("bookcells").css("top", µ.one("#navbar").get("clientHeight") || 0);
         },
-        getNotifs = () => req("notifications").send().then((response) => {
-            _.forEach(response, (notif) => µ.new("div").set({
+        createNotif = (notif) => {
+            µ.new("div").set({
                 "notif": _.isPlainObject(notif.id) ? JSON.stringify(notif.id) : notif.id,
                 "innerHTML": renderNotif(notif),
                 "by": "notif"
-            }).appendTo(notifs).observe("click", notif, (event) => em.emit("openNotif", event.data)));
+            }).appendTo(notifs).observe("click", notif, (event) => em.emit("openNotif", event.data));
+        },
+        getNotifs = () => req("notifications").send().then((response) => {
+            _.forEach(response, createNotif);
             µ.one("#notifications").toggleClass("notdisplayed", !response.length).one("#notifNumber").text = response.length;
         }).catch((error) => err.add(error));
 
@@ -145,6 +148,7 @@ define("menu", ["Window", "hdb", "text!../templates/menu", "text!../templates/co
         navbar.one("#notifications").toggleClass("notdisplayed", !notifs.many(".by").length).one("#notifNumber").text = notifs.many(".by").length;
     });
     em.on("getNotifs", getNotifs);
+    em.on("notif", createNotif);
 
     //Window
     window.addEventListener("selectstart", (event) => {

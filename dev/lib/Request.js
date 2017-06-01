@@ -46,6 +46,11 @@ var req = function () {
         return this;
     };
 
+    Request.prototype.long = function () {
+        this.req.timeout = 300000;
+        return this.send();
+    };
+
     /**
      * Request sending method
      * @param {Object} data data to send

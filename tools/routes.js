@@ -94,6 +94,8 @@ module.exports = exports = (function () {
         .get(booksAPI.notifications)
         .post(booksAPI.addNotif);
 
+    router.get("/notification", booksAPI.notification);
+
     router.delete("/notification/*", booksAPI.deleteNotif);
 
     //Detail
