@@ -1,6 +1,7 @@
 define("search", ["collection", "Window", "text!../templates/search"], function (collection, Window, template) {
     const Search = function () {
         this.last = {};
+        this.index = 0;
         this.window = new Window("search", template);
 
         em.on("openSearch", () => {
@@ -29,6 +30,7 @@ define("search", ["collection", "Window", "text!../templates/search"], function 
                 this.last.qs = qs;
                 this.last.books = [];
                 this.last.cells = [];
+                this.index = 0;
                 em.emit("cellsReset");
                 µ.many(".waiting, .roundIcon, .waitAnim").toggleClass("notdisplayed", false);
                 µ.one("sort.active").toggleClass("active", false);
@@ -116,10 +118,11 @@ define("search", ["collection", "Window", "text!../templates/search"], function 
 
     Search.prototype.request = function () {
         req("search").send(_.merge({}, this.last.qs, {
-            "index": this.last.books.length
+            "index": this.index
         })).then((result) => {
             this.show(result.books);
-            if (result.books.length === 40 && this.last.books.length < 400) {
+            this.index += result.books.length;
+            if (result.books.length === 40 && this.index < 360) {
                 this.request();
             } else {
                 µ.one(".waitAnim").toggleClass("notdisplayed", true);

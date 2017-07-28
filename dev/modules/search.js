@@ -5,6 +5,7 @@ define("search", ["collection", "Window", "text!../templates/search"], function 
         var _this = this;
 
         this.last = {};
+        this.index = 0;
         this.window = new Window("search", template);
 
         em.on("openSearch", function () {
@@ -35,6 +36,7 @@ define("search", ["collection", "Window", "text!../templates/search"], function 
                 _this.last.qs = qs;
                 _this.last.books = [];
                 _this.last.cells = [];
+                _this.index = 0;
                 em.emit("cellsReset");
                 µ.many(".waiting, .roundIcon, .waitAnim").toggleClass("notdisplayed", false);
                 µ.one("sort.active").toggleClass("active", false);
@@ -130,10 +132,11 @@ define("search", ["collection", "Window", "text!../templates/search"], function 
         var _this4 = this;
 
         req("search").send(_.merge({}, this.last.qs, {
-            "index": this.last.books.length
+            "index": this.index
         })).then(function (result) {
             _this4.show(result.books);
-            if (result.books.length === 40 && _this4.last.books.length < 400) {
+            _this4.index += result.books.length;
+            if (result.books.length === 40 && _this4.index < 360) {
                 _this4.request();
             } else {
                 µ.one(".waitAnim").toggleClass("notdisplayed", true);
