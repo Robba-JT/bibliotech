@@ -9,7 +9,7 @@ const console = require("./tools/console"),
     }),
     config = require(path.join(__dirname, "./config"))[process.env.NODE_ENV || "production"];
 
-process.stdout.write("\u001b[2J\u001b[0;0H");
+//process.stdout.write("\u001b[2J\u001b[0;0H");
 console.info(`Starting environment: ${process.env.NODE_ENV}`);
 
 require("pmx").init({
