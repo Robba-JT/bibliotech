@@ -1,4 +1,4 @@
-const em = (function () {
+;(function (ctx) {
     const Emitter = function () {
             this.onEvents = [];
             this.onceEvents = [];
@@ -57,5 +57,5 @@ const em = (function () {
         return this;
     };
 
-    return new Emitter();
-})();
+    ctx.em = new Emitter();
+})(window);

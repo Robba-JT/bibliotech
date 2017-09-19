@@ -1,4 +1,4 @@
-const store = (function () {
+;(function (ctx) {
     const Store = function () {
         this.valid = Boolean(window.sessionStorage);
         this.store = window.sessionStorage;
@@ -66,5 +66,5 @@ const store = (function () {
         return this;
     };
 
-    return new Store();
-}());
+    ctx.store = new Store();
+})(window);

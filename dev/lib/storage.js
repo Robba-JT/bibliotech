@@ -1,6 +1,6 @@
 "use strict";
 
-var store = function () {
+;(function (ctx) {
     var Store = function Store() {
         this.valid = Boolean(window.sessionStorage);
         this.store = window.sessionStorage;
@@ -68,5 +68,5 @@ var store = function () {
         return this;
     };
 
-    return new Store();
-}();
+    ctx.store = new Store();
+})(window);

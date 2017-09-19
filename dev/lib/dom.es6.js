@@ -1,4 +1,4 @@
-const µ = (function () {
+;(function (ctx) {
     const dom = {},
         sizables = [
             "width", "max-width",
@@ -742,5 +742,5 @@ const µ = (function () {
         }
     });
 
-    return dom;
-})();
+    ctx.µ = dom;
+})(window);

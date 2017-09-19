@@ -1,6 +1,6 @@
 "use strict";
 
-var em = function () {
+;(function (ctx) {
     var Emitter = function Emitter() {
         this.onEvents = [];
         this.onceEvents = [];
@@ -74,5 +74,5 @@ var em = function () {
         return this;
     };
 
-    return new Emitter();
-}();
+    ctx.em = new Emitter();
+})(window);

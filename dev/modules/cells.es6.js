@@ -146,7 +146,7 @@ define("cells", ["hdb", "text!../templates/Cell"], function (hdb, template) {
     };
 
     Cell.prototype.isVisible = function () {
-        return document.body.scrollTop + window.outerHeight > this.cell.element.offsetTop && this.cell.visible;
+        return window.scrollY + window.outerHeight > this.cell.element.offsetTop && this.cell.visible;
     };
 
     Cell.prototype.resize = function () {

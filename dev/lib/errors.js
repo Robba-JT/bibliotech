@@ -1,6 +1,6 @@
 "use strict";
 
-var err = function () {
+;(function (ctx) {
     var Err = function Err(error) {
         this.error = error;
         this.code = error.code || "";
@@ -25,5 +25,5 @@ var err = function () {
         });
     };
 
-    return new Errors();
-}();
+    ctx.err = new Errors();
+})(window);

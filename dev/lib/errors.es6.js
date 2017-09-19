@@ -1,4 +1,4 @@
-const err = (function () {
+;(function (ctx) {
     const Err = function (error) {
             this.error = error;
             this.code = error.code || "";
@@ -21,5 +21,5 @@ const err = (function () {
         _.forEach(this.errors, (error) => error.show());
     };
 
-    return new Errors();
-})();
+    ctx.err = new Errors();
+})(window);

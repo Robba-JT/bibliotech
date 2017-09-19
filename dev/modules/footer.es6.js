@@ -1,8 +1,8 @@
 define("footer", [], function () {
-    const toTop = (event) => {
+    const toTop = () => {
         if (!µ.one("detail").visible) {
             const interval = setInterval(() => {
-                const reduce = ((document.body.scrollTop / 2) - 0.1).toFixed(1);
+                const reduce = ((window.scrollY / 2) - 0.1).toFixed(1);
                 window.scrollTo(0, reduce);
                 if (reduce <= 0.1) {
                     window.scroll(0, 0);
@@ -12,7 +12,7 @@ define("footer", [], function () {
         }
     };
 
-    µ.one(window).observe("scroll", () => µ.one("#footer").toggleClass("notdisplayed", !document.body.scrollTop));
+    µ.one(window).observe("scroll", () => µ.one("#footer").toggleClass("notdisplayed", !window.scrollY));
     µ.one("#footer").observe("click", toTop);
     em.on("toTop", toTop);
 });

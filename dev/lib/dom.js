@@ -1,6 +1,6 @@
 "use strict";
 
-var µ = function () {
+;(function (ctx) {
     var dom = {},
         sizables = ["width", "max-width", "height", "max-height", "top", "left", "bottom", "right", "border", "border-top", "border-right", "border-bottom", "border-left", "border-radius", "padding", "padding-top", "padding-right", "padding-bottom", "padding-left", "margin", "margin-top", "margin-right", "margin-bottom", "margin-left"],
 
@@ -800,5 +800,5 @@ var µ = function () {
         }
     });
 
-    return dom;
-}();
+    ctx.µ = dom;
+})(window);

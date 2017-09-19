@@ -5,6 +5,7 @@ require.config({
         "emitter": "../lib/emitter",
         "errors": "../lib/errors",
         "hdb": "../lib/handlebars.min",
+	    "json": "../lib/require-json.min",
         "lodash": "../lib/lodash",
         "Request": "../lib/Request",
         "store": "../lib/storage",

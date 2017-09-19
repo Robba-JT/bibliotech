@@ -1,11 +1,11 @@
-const req = (function () {
-    /**
-     * Ajax request constructor
-     * @param {String} url url
-     * @param {String} method method
-     * @param {Object} headers specific headers
-     * @class {Request} this request
-     **/
+/**
+ * Ajax request constructor
+ * @param {String} url url
+ * @param {String} method method
+ * @param {Object} headers specific headers
+ * @class {Request} this request
+ **/
+;(function (ctx, constr) {
     const Request = function (url, method = "GET", headers = {}) {
         if (this instanceof Request) {
             this.method = _.toUpper(method);
@@ -16,7 +16,7 @@ const req = (function () {
                 }
             }
             this.url = !_.startsWith(url, "http") && !_.startsWith(url, "/") ? `/${url}` : url;
-            this.req = new XMLHttpRequest();
+            this.req = new constr();
         } else {
             return new Request(url, method, headers);
         }
@@ -42,7 +42,7 @@ const req = (function () {
     };
 
     Request.prototype.long = function () {
-        this.req.timeout = 300000;
+        this.req.timeout = 900000;
         return this.send();
     };
 
@@ -70,7 +70,7 @@ const req = (function () {
                 this.setHeaders();
                 this.req.addEventListener("error", reject);
                 this.req.addEventListener("readystatechange", () => {
-                    if (this.req.readyState === XMLHttpRequest.DONE) {
+                    if (this.req.readyState === constr.DONE) {
                         if (this.req.status === 403) {
                             em.emit("logout");
                         } else if (_.includes([200, 204], this.req.status)) {
@@ -128,5 +128,6 @@ const req = (function () {
         }
     });
 
-    return Request;
-})();
+    ctx.req = Request;
+
+}(window, XMLHttpRequest));

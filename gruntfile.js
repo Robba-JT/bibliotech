@@ -1,4 +1,5 @@
-const _ = require("lodash");
+const _ = require("lodash"),
+    path = require("path");
 
 module.exports = function (grunt) {
     require("load-grunt-tasks")(grunt, {
@@ -22,7 +23,7 @@ module.exports = function (grunt) {
         "babel": {
             "options": {
                 "sourceMap": false,
-                "presets": ["es2015"]
+                "presets": [path.join(__dirname, "./node_modules/babel-preset-es2015")]
             },
             "dist": {
                 "files": [{

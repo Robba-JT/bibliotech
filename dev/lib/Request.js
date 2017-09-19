@@ -1,13 +1,13 @@
 "use strict";
 
-var req = function () {
-    /**
-     * Ajax request constructor
-     * @param {String} url url
-     * @param {String} method method
-     * @param {Object} headers specific headers
-     * @class {Request} this request
-     **/
+/**
+ * Ajax request constructor
+ * @param {String} url url
+ * @param {String} method method
+ * @param {Object} headers specific headers
+ * @class {Request} this request
+ **/
+;(function (ctx, constr) {
     var Request = function Request(url) {
         var method = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "GET";
         var headers = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
@@ -21,7 +21,7 @@ var req = function () {
                 }
             }
             this.url = !_.startsWith(url, "http") && !_.startsWith(url, "/") ? "/" + url : url;
-            this.req = new XMLHttpRequest();
+            this.req = new constr();
         } else {
             return new Request(url, method, headers);
         }
@@ -47,7 +47,7 @@ var req = function () {
     };
 
     Request.prototype.long = function () {
-        this.req.timeout = 300000;
+        this.req.timeout = 900000;
         return this.send();
     };
 
@@ -77,7 +77,7 @@ var req = function () {
                 _this.setHeaders();
                 _this.req.addEventListener("error", reject);
                 _this.req.addEventListener("readystatechange", function () {
-                    if (_this.req.readyState === XMLHttpRequest.DONE) {
+                    if (_this.req.readyState === constr.DONE) {
                         if (_this.req.status === 403) {
                             em.emit("logout");
                         } else if (_.includes([200, 204], _this.req.status)) {
@@ -135,5 +135,5 @@ var req = function () {
         }
     });
 
-    return Request;
-}();
+    ctx.req = Request;
+})(window, XMLHttpRequest);

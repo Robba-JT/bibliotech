@@ -37,6 +37,12 @@ process.on("SIGUSR2", function () {
     cluster.reload();
 });
 
+process.stdout.on("error", function (err) {
+    if (err.code === "EPIPE") {
+        process.exit(0);
+    }
+});
+
 console.warn("spawned cluster, kill -s SIGUSR2", process.pid, "to reload");
 
 sticky.createBalancer({
