@@ -7,7 +7,8 @@
  * @param {Object} headers specific headers
  * @class {Request} this request
  **/
-;(function (ctx, constr) {
+;
+(function (ctx, constr) {
     var Request = function Request(url) {
         var method = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "GET";
         var headers = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
@@ -78,7 +79,7 @@
                 _this.req.addEventListener("error", reject);
                 _this.req.addEventListener("readystatechange", function () {
                     if (_this.req.readyState === constr.DONE) {
-                        if (_this.req.status === 403) {
+                        if (_.includes([401, 403], _this.req.status)) {
                             em.emit("logout");
                         } else if (_.includes([200, 204], _this.req.status)) {
                             try {
@@ -131,7 +132,10 @@
 
     Reflect.defineProperty(Request.prototype, "error", {
         get: function get() {
-            return this.req.status !== 200 && this.req.status !== 204 && this.req.responseText;
+            return this.req.status !== 200 && this.req.status !== 204 && {
+                "code": this.req.status,
+                "error": this.req.responseText
+            };
         }
     });
 

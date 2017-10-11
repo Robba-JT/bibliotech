@@ -171,6 +171,7 @@ const mailsAPI = require("../tools/mails"),
                 if (error || !user) {
                     req.error(401, req.trads.error.invalidCredential);
                 } else {
+                    console.log("req.sessions", req.sessions);
                     req.login(user, (err) => {
                         if (err) {
                             console.error("login new", err);
@@ -198,7 +199,7 @@ const mailsAPI = require("../tools/mails"),
             } else if (req.isAuthenticated()) {
                 next();
             } else {
-                req.error(403);
+                req.error(401);
             }
         };
         return this;

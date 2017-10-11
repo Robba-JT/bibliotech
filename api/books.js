@@ -24,9 +24,7 @@ const console = require("../tools/console"),
             },
             loadCover = function (id) {
                 return new Q.Promise((resolve, reject) => {
-                    if (!id) {
-                        reject(404);
-                    } else {
+                    if (id) {
                         booksDB.loadCover({
                             "_id": id
                         }).then((cover) => {
@@ -37,6 +35,8 @@ const console = require("../tools/console"),
                                 reject(404);
                             }
                         }).catch(() => reject(404));
+                    } else {
+                        reject(404);
                     }
                 });
             },
@@ -361,7 +361,9 @@ const console = require("../tools/console"),
                     if (_.find(result, ["state", "fulfilled"])) {
                         update["books.$.alt"] = result[0].value;
                     }
-                    if (!_.isEmpty(update)) {
+                    if (_.isEmpty(update)) {
+                        req.response();
+                    } else {
                         usersDB.update({
                             "_id": req.user._id,
                             "books.id": req.book.id
@@ -370,8 +372,6 @@ const console = require("../tools/console"),
                         }).then(() => {
                             req.response();
                         }).catch(req.error);
-                    } else {
-                        req.response();
                     }
                 });
             } else {

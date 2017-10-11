@@ -45,10 +45,10 @@ const Q = require("q"),
 
         this.loadOne = (filter) => new Q.Promise((resolve, reject) => {
             db_books.findOne(filter).then((book) => {
-                if (!book) {
-                    reject();
-                } else {
+                if (book) {
                     resolve(book);
+                } else {
+                    reject();
                 }
             }).catch(reject);
         });

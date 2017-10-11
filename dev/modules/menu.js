@@ -240,6 +240,7 @@ define("menu", ["Window", "hdb", "text!../templates/menu", "text!../templates/co
             } else {
                 if (event.keyCode === 27) {
                     em.emit(µ.one(".over").visible ? "closeOver" : "closeAll");
+                    em.emit("closeCloud");
                     test = true;
                 } else if (event.keyCode === 8 && !_.includes(["INPUT", "TEXTAREA"], _.toUpper(event.target.tagName))) {
                     test = true;

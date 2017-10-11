@@ -9,7 +9,7 @@ const console = require("./tools/console"),
     }),
     config = require(path.join(__dirname, "./config"))[process.env.NODE_ENV || "production"];
 
-//process.stdout.write("\u001b[2J\u001b[0;0H");
+process.stdout.write("\u001b[2J\u001b[0;0H");
 console.info(`Starting environment: ${process.env.NODE_ENV}`);
 
 require("pmx").init({
@@ -35,12 +35,6 @@ cluster.run();
 process.on("SIGUSR2", function () {
     console.warn("Got SIGUSR2, reloading cluster...");
     cluster.reload();
-});
-
-process.stdout.on("error", function (err) {
-    if (err.code === "EPIPE") {
-        process.exit(0);
-    }
 });
 
 console.warn("spawned cluster, kill -s SIGUSR2", process.pid, "to reload");

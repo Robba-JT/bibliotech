@@ -10,24 +10,22 @@ const _ = require("lodash"),
     };
 
 Event.prototype.execute = function (...data) {
-    return this.callback.call(null, data);
+    return Reflect.apply(this.callback, null, data);
 };
 
 Emitter.prototype.emit = function (event, user, ...data) {
     const events = _.concat(_.filter(this.onEvents, {
-                "title": event,
-                "user": user
-            }),
-            _.remove(this.onceEvents, {
-                "title": event,
-                "user": user
-            })),
-        result = [];
+            "title": event,
+            "user": user
+        }),
+        _.remove(this.onceEvents, {
+            "title": event,
+            "user": user
+        }));
 
-    _.forEach(events, (evt) => {
+    return _.transform(events, (result, evt) => {
         result.push(evt.execute(...data));
-    });
-    return result.length === 1 ? result[0] : result;
+    }, []);
 };
 
 Emitter.prototype.on = function (...args) {
