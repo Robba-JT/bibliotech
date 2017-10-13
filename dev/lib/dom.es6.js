@@ -1,5 +1,9 @@
-;(function (ctx) {
-    const dom = {},
+;
+(function () {
+    const _global = typeof global === "object" && global && global.Object === Object && global,
+        _self = typeof self === "object" && self && self.Object === Object && self,
+        ctx = _global || _self || Function("return this")(),
+        dom = {},
         sizables = [
             "width", "max-width",
             "height", "max-height",
@@ -604,7 +608,7 @@
 
     Reflect.defineProperty(myElement.prototype, "visible", {
         get() {
-            return this.element && window.getComputedStyle(this.element).visibility === "visible" && window.getComputedStyle(this.element).display !== "none";
+            return this.element && ctx.getComputedStyle(this.element).visibility === "visible" && ctx.getComputedStyle(this.element).display !== "none";
         }
     });
 
@@ -743,4 +747,4 @@
     });
 
     ctx.µ = dom;
-})(window);
+}).call(this);

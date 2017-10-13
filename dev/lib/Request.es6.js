@@ -6,23 +6,26 @@
  * @class {Request} this request
  **/
 ;
-(function (ctx, constr) {
-    const Request = function (url, method = "GET", headers = {}) {
-        if (this instanceof Request) {
-            this.method = _.toUpper(method);
-            this.headers = {};
-            for (const head in headers) {
-                if (_.has(headers, head)) {
-                    this.headers[_.toUpper(head)] = headers[head];
+(function () {
+    const _global = typeof global === "object" && global && global.Object === Object && global,
+        _self = typeof self === "object" && self && self.Object === Object && self,
+        ctx = _global || _self || Function("return this")(),
+        Request = function (url, method = "GET", headers = {}) {
+            if (this instanceof Request) {
+                this.method = _.toUpper(method);
+                this.headers = {};
+                for (const head in headers) {
+                    if (_.has(headers, head)) {
+                        this.headers[_.toUpper(head)] = headers[head];
+                    }
                 }
+                this.url = !_.startsWith(url, "http") && !_.startsWith(url, "/") ? `/${url}` : url;
+                this.req = new XMLHttpRequest();
+            } else {
+                return new Request(url, method, headers);
             }
-            this.url = !_.startsWith(url, "http") && !_.startsWith(url, "/") ? `/${url}` : url;
-            this.req = new constr();
-        } else {
-            return new Request(url, method, headers);
-        }
-        return this;
-    };
+            return this;
+        };
 
     Request.prototype.jsonToQueryString = function (params) {
         let query = "";
@@ -42,9 +45,9 @@
         return this;
     };
 
-    Request.prototype.long = function () {
+    Request.prototype.long = function (data) {
         this.req.timeout = 900000;
-        return this.send();
+        return this.send(data);
     };
 
     /**
@@ -54,6 +57,27 @@
      **/
     Request.prototype.send = function (data) {
         return this.url ? new Promise((resolve, reject) => {
+            const formatError = (evt) => {
+                    this.error = {
+                        "state": this.req.readyState,
+                        "status": this.req.status,
+                        "error": this.req.responseText,
+                        "type": evt.type
+                    };
+                    if (_.includes([401, 403], this.req.status)) {
+                        em.emit("logout");
+                    } else {
+                        reject(this.error);
+                    }
+                },
+                formatResponse = () => {
+                    this.response = this.req.responseText;
+                    try {
+                        this.response = JSON.parse(this.req.response);
+                    } catch (error) {}
+                    resolve(this.response);
+                };
+
             try {
                 if (this.method === "GET") {
                     this.jsonToQueryString(data);
@@ -69,26 +93,10 @@
                 }
                 this.req.open(this.method, this.url, true);
                 this.setHeaders();
-                this.req.addEventListener("error", reject);
-                this.req.addEventListener("readystatechange", () => {
-                    if (this.req.readyState === constr.DONE) {
-                        if (_.includes([401, 403], this.req.status)) {
-                            em.emit("logout");
-                        } else if (_.includes([200, 204], this.req.status)) {
-                            try {
-                                resolve(JSON.parse(this.req.response));
-                            } catch (error) {
-                                resolve(this.req.responseText);
-                            }
-                        } else {
-                            try {
-                                reject(JSON.parse(this.req.response));
-                            } catch (error) {
-                                reject(this.req.responseText);
-                            }
-                        }
-                    }
-                });
+                this.req.addEventListener("error", formatError);
+                this.req.addEventListener("abort", formatError);
+                this.req.addEventListener("timeout", formatError);
+                this.req.addEventListener("load", formatResponse);
                 this.req.send(this.data);
             } catch (error) {
                 reject(error);
@@ -109,29 +117,6 @@
         return this;
     };
 
-    Reflect.defineProperty(Request.prototype, "response", {
-        get() {
-            if (_.has([200, 204], this.req.status)) {
-                try {
-                    return JSON.parse(this.req.response);
-                } catch (error) {
-                    return this.req.responseText;
-                }
-            } else {
-                return null;
-            }
-        }
-    });
-
-    Reflect.defineProperty(Request.prototype, "error", {
-        get() {
-            return this.req.status !== 200 && this.req.status !== 204 && {
-                "code": this.req.status,
-                "error": this.req.responseText
-            };
-        }
-    });
-
     ctx.req = Request;
 
-}(window, XMLHttpRequest));
+}).call(this);

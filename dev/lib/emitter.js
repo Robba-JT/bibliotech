@@ -1,7 +1,13 @@
 "use strict";
 
-;(function (ctx) {
-    var Emitter = function Emitter() {
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+;
+(function () {
+    var _global = (typeof global === "undefined" ? "undefined" : _typeof(global)) === "object" && global && global.Object === Object && global,
+        _self = (typeof self === "undefined" ? "undefined" : _typeof(self)) === "object" && self && self.Object === Object && self,
+        ctx = _global || _self || Function("return this")(),
+        Emitter = function Emitter() {
         this.onEvents = [];
         this.onceEvents = [];
     },
@@ -75,4 +81,4 @@
     };
 
     ctx.em = new Emitter();
-})(window);
+}).call(undefined);

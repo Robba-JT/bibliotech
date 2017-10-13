@@ -7,7 +7,8 @@ define("notifications", ["json!../config-firebase.json"], function (config) {
             em.emit("notif", notif);
             return longPoll();
         }).catch(function (error) {
-            return err.add(error);
+            var timeout = error.type === "timeout" ? 0 : 3000;
+            setTimeout(longPoll, timeout);
         });
     };
     try {

@@ -10,7 +10,7 @@
         <input type="text" name="name" autocomplete="off" placeholder="{{name}}" value="[{name}]" minlength="4" required focus/>
     </p>
     <p>
-        <input type="password" name="pwd" error="{{errPwd}}" wrongpwd="Invalid password" placeholder="{{password}}" minlength="4" maxlength="12"/>
+        <input type="password" autocomplete="off" name="pwd" error="{{errPwd}}" wrongpwd="Invalid password" placeholder="{{password}}" minlength="4" maxlength="12"/>
     </p>
     <p class="errMsg notdisplayed">{{msgPwd}}</p>
     <p class="googleSignIn notdisplayed">
@@ -28,10 +28,10 @@
         <input type="button" id="delete" value="{{deleteAccount}}" message="{{deleteConfirm}}" titre="{{warning}}"/>
     </p>
     <p>
-        <input type="password" name="newPwd" error="{{errPwd}}" placeholder="{{newPwd}}" class="notdisplayed" minlength="4" maxlength="12"/>
+        <input type="password" name="newPwd" autocomplete="off" error="{{errPwd}}" placeholder="{{newPwd}}" class="notdisplayed" minlength="4" maxlength="12"/>
     </p>
     <p>
-        <input type="password" name="confirmPwd" class="notdisplayed" error="{{errConfirm}}" placeholder="{{confirmPwd}}" minlength="4" maxlength="12"/>
+        <input type="password" name="confirmPwd" autocomplete="off" class="notdisplayed" error="{{errConfirm}}" placeholder="{{confirmPwd}}" minlength="4" maxlength="12"/>
     </p>
 </form>
 <p>{{nbBooks}}:&nbsp;

@@ -1,5 +1,9 @@
-;(function (ctx) {
-    const Emitter = function () {
+;
+(function () {
+    const _global = typeof global === "object" && global && global.Object === Object && global,
+        _self = typeof self === "object" && self && self.Object === Object && self,
+        ctx = _global || _self || Function("return this")(),
+        Emitter = function () {
             this.onEvents = [];
             this.onceEvents = [];
         },
@@ -22,7 +26,7 @@
 
     Emitter.prototype.emit = function (event, ...data) {
         const events = _.concat(_.filter(this.onEvents, ["event", event]),
-            _.remove(this.onceEvents, ["event", event])),
+                _.remove(this.onceEvents, ["event", event])),
             result = [];
 
         _.forEach(events, (evt) => {
@@ -58,4 +62,4 @@
     };
 
     ctx.em = new Emitter();
-})(window);
+}).call(this);

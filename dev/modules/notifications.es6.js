@@ -4,7 +4,10 @@ define("notifications", ["json!../config-firebase.json"], function (config) {
             console.log("notif", notif);
             em.emit("notif", notif);
             return longPoll();
-        }).catch((error) => err.add(error));
+        }).catch((error) => {
+            const timeout = error.type === "timeout" ? 0 : 3000;
+            setTimeout(longPoll, timeout);
+        });
     };
     try {
         firebase.initializeApp(config);

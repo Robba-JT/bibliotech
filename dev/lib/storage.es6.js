@@ -1,8 +1,12 @@
-;(function (ctx) {
-    const Store = function () {
-        this.valid = Boolean(window.sessionStorage);
-        this.store = window.sessionStorage;
-    };
+;
+(function () {
+    const _global = typeof global === "object" && global && global.Object === Object && global,
+        _self = typeof self === "object" && self && self.Object === Object && self,
+        ctx = _global || _self || Function("return this")(),
+        Store = function () {
+            this.valid = Boolean(ctx.sessionStorage);
+            this.store = ctx.sessionStorage;
+        };
 
     /**
      * clear session storage
@@ -67,4 +71,4 @@
     };
 
     ctx.store = new Store();
-})(window);
+}).call(this);

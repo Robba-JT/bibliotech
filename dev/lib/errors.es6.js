@@ -1,5 +1,9 @@
-;(function (ctx) {
-    const Err = function (error) {
+;
+(function () {
+    const _global = typeof global === "object" && global && global.Object === Object && global,
+        _self = typeof self === "object" && self && self.Object === Object && self,
+        ctx = _global || _self || Function("return this")(),
+        Err = function (error) {
             this.error = error;
             this.code = error.code || "";
             this.message = error.message || error;
@@ -22,4 +26,4 @@
     };
 
     ctx.err = new Errors();
-})(window);
+}).call(this);

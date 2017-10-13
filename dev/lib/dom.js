@@ -1,7 +1,13 @@
 "use strict";
 
-;(function (ctx) {
-    var dom = {},
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+;
+(function () {
+    var _global = (typeof global === "undefined" ? "undefined" : _typeof(global)) === "object" && global && global.Object === Object && global,
+        _self = (typeof self === "undefined" ? "undefined" : _typeof(self)) === "object" && self && self.Object === Object && self,
+        ctx = _global || _self || Function("return this")(),
+        dom = {},
         sizables = ["width", "max-width", "height", "max-height", "top", "left", "bottom", "right", "border", "border-top", "border-right", "border-bottom", "border-left", "border-radius", "padding", "padding-top", "padding-right", "padding-bottom", "padding-left", "margin", "margin-top", "margin-right", "margin-bottom", "margin-left"],
 
     /**
@@ -636,7 +642,7 @@
 
     Reflect.defineProperty(myElement.prototype, "visible", {
         get: function get() {
-            return this.element && window.getComputedStyle(this.element).visibility === "visible" && window.getComputedStyle(this.element).display !== "none";
+            return this.element && ctx.getComputedStyle(this.element).visibility === "visible" && ctx.getComputedStyle(this.element).display !== "none";
         }
     });
 
@@ -801,4 +807,4 @@
     });
 
     ctx.µ = dom;
-})(window);
+}).call(undefined);

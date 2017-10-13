@@ -1,5 +1,7 @@
 "use strict";
 
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
 /**
  * Ajax request constructor
  * @param {String} url url
@@ -8,8 +10,11 @@
  * @class {Request} this request
  **/
 ;
-(function (ctx, constr) {
-    var Request = function Request(url) {
+(function () {
+    var _global = (typeof global === "undefined" ? "undefined" : _typeof(global)) === "object" && global && global.Object === Object && global,
+        _self = (typeof self === "undefined" ? "undefined" : _typeof(self)) === "object" && self && self.Object === Object && self,
+        ctx = _global || _self || Function("return this")(),
+        Request = function Request(url) {
         var method = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "GET";
         var headers = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
 
@@ -22,7 +27,7 @@
                 }
             }
             this.url = !_.startsWith(url, "http") && !_.startsWith(url, "/") ? "/" + url : url;
-            this.req = new constr();
+            this.req = new XMLHttpRequest();
         } else {
             return new Request(url, method, headers);
         }
@@ -47,9 +52,9 @@
         return this;
     };
 
-    Request.prototype.long = function () {
+    Request.prototype.long = function (data) {
         this.req.timeout = 900000;
-        return this.send();
+        return this.send(data);
     };
 
     /**
@@ -61,6 +66,27 @@
         var _this = this;
 
         return this.url ? new Promise(function (resolve, reject) {
+            var formatError = function formatError(evt) {
+                _this.error = {
+                    "state": _this.req.readyState,
+                    "status": _this.req.status,
+                    "error": _this.req.responseText,
+                    "type": evt.type
+                };
+                if (_.includes([401, 403], _this.req.status)) {
+                    em.emit("logout");
+                } else {
+                    reject(_this.error);
+                }
+            },
+                formatResponse = function formatResponse() {
+                _this.response = _this.req.responseText;
+                try {
+                    _this.response = JSON.parse(_this.req.response);
+                } catch (error) {}
+                resolve(_this.response);
+            };
+
             try {
                 if (_this.method === "GET") {
                     _this.jsonToQueryString(data);
@@ -76,26 +102,10 @@
                 }
                 _this.req.open(_this.method, _this.url, true);
                 _this.setHeaders();
-                _this.req.addEventListener("error", reject);
-                _this.req.addEventListener("readystatechange", function () {
-                    if (_this.req.readyState === constr.DONE) {
-                        if (_.includes([401, 403], _this.req.status)) {
-                            em.emit("logout");
-                        } else if (_.includes([200, 204], _this.req.status)) {
-                            try {
-                                resolve(JSON.parse(_this.req.response));
-                            } catch (error) {
-                                resolve(_this.req.responseText);
-                            }
-                        } else {
-                            try {
-                                reject(JSON.parse(_this.req.response));
-                            } catch (error) {
-                                reject(_this.req.responseText);
-                            }
-                        }
-                    }
-                });
+                _this.req.addEventListener("error", formatError);
+                _this.req.addEventListener("abort", formatError);
+                _this.req.addEventListener("timeout", formatError);
+                _this.req.addEventListener("load", formatResponse);
                 _this.req.send(_this.data);
             } catch (error) {
                 reject(error);
@@ -116,28 +126,5 @@
         return this;
     };
 
-    Reflect.defineProperty(Request.prototype, "response", {
-        get: function get() {
-            if (_.has([200, 204], this.req.status)) {
-                try {
-                    return JSON.parse(this.req.response);
-                } catch (error) {
-                    return this.req.responseText;
-                }
-            } else {
-                return null;
-            }
-        }
-    });
-
-    Reflect.defineProperty(Request.prototype, "error", {
-        get: function get() {
-            return this.req.status !== 200 && this.req.status !== 204 && {
-                "code": this.req.status,
-                "error": this.req.responseText
-            };
-        }
-    });
-
     ctx.req = Request;
-})(window, XMLHttpRequest);
+}).call(undefined);
