@@ -50,10 +50,11 @@ exports = module.exports = (() => {
 
     app.engine("html", require("consolidate").swig)
         .set("view engine", "html")
-        .set("views", path.join(__dirname, "../dev/views"))
+        .set("views", path.join(__dirname, "../static/views"))
         .set("json spaces", 1)
         .enable("etag").set("etag", true)
         .set("x-powered-by", false)
+	.use(require("helmet")())
         .use(require("compression")({
             "level": 9,
             "memLevel": 9
@@ -73,12 +74,21 @@ exports = module.exports = (() => {
         .use(session)
         .use(device.capture())
         .use((req, res, next) => {
+	/*
             if (req.secure) {
                 next();
             } else {
                 console.warn("Switch to secure port", req.connection.remoteAddress);
                 res.redirect("https://".concat(req.get("host")).concat(req.url));
             }
+	*/
+			console.log(req.get("host"), req.get("url"));
+			if (req.secure && req.get("host") === "bookcase.tech") {
+				next();
+			} else {
+				console.warn("Switch to secure port", req.connection.remoteAddress);
+                res.redirect("https://bookcase.tech".concat(req.url));
+			}
         })
         .use((req, res, next) => {
             res.set({
@@ -149,12 +159,12 @@ exports = module.exports = (() => {
                 //Gestion Template
                 req.template = (template, params = {}) => {
                     const file = path.join(pathStatic, `./templates/${template}.html`);
-                    res.render(file, _.assign(params, {
+                   res.render(file, _.assign(params, {
                         version,
                         lang
                     }, _.get(req.trads, template)), (error, html) => {
                         if (error) {
-                            req.error(404);
+                            req.error(404, error);
                         } else {
                             res.send(_.replace(_.replace(html, /\[{/g, "{{"), /\}]/g, "}}"));
                         }

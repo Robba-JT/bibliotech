@@ -3,9 +3,13 @@ require("nconf").argv().env().defaults({
 });
 
 const app = require("./tools/express").app,
+    fs = require("fs"),
+    path = require("path"),
     secureServer = require("https").Server({
-        "pfx": require("fs").readFileSync(require("path").join(__dirname, "/ssl/bibliotech.pfx")),
-        "passphrase": require("nconf").get("config").passPhrase
+        //"pfx": require("fs").readFileSync(require("path").join(__dirname, "/ssl/bibliotech.pfx")),
+        //"passphrase": require("nconf").get("config").passPhrase
+        "cert": fs.readFileSync(path.join(__dirname, "/ssl/fullchain.pem")),
+    	"key": fs.readFileSync(path.join(__dirname, "/ssl/privkey.pem"))
     }, app),
     console = require("./tools/console"),
     sticky = require("sticky-listen");
